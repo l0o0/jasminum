@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RDF xmlns="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+     xmlns:em="http://www.mozilla.org/2004/em-rdf#">
+
+  <Description about="urn:mozilla:install-manifest">
+    <em:id>jasminum@linxzh.com</em:id>
+    <em:name>Jasminum</em:name>
+    <em:version>0.0.1</em:version>
+    <em:type>2</em:type>
+    <em:iconURL>chrome://jasminum/skin/icon.png</em:iconURL>
+    <em:multiprocessCompatible>true</em:multiprocessCompatible>
+    <em:creator>Xingzhong Lin</em:creator>
+    <!--
+    <em:homepageURL>http://www.google.com</em:homepageURL>
+    <em:optionsURL>chrome://znote/content/options.xul</em:optionsURL>
+    <em:updateURL>https://raw.githubusercontent.com/jlegewie/zotfile/master/zotfile-update.rdf</em:updateURL>
+    -->
+
+    <em:targetApplication>
+      <Description>
+        <em:id>zotero@chnm.gmu.edu</em:id>
+        <em:minVersion>5.0.0</em:minVersion>
+        <em:maxVersion>5.*</em:maxVersion>
+      </Description>
+    </em:targetApplication>
+    
+    <em:targetApplication>
+      <Description>
+        <em:id>{ec8030f7-c20a-464f-9b0e-13a3a9e97384}</em:id>
+        <em:minVersion>4.0</em:minVersion>
+        <em:maxVersion>45.*</em:maxVersion>
+      </Description>
+    </em:targetApplication>
+
+    <em:localized>
+      <Description>
+        <em:locale>en-US</em:locale>
+        <em:name>Jasminum</em:name>
+        <em:description>TODO</em:description>
+      </Description>
+    </em:localized>
+  </Description>
+</RDF>

@@ -1,0 +1,43 @@
+<?xml version="1.0"?>
+<!DOCTYPE window SYSTEM "chrome://zoteroscihub/locale/overlay.dtd">
+
+<overlay id="zoteroscihub-preferences"
+	xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul"
+  xmlns:html="http://www.w3.org/1999/xhtml">
+
+  <prefwindow id="zotero-prefs">
+    <prefpane id="zotero-prefpane-zoteroscihub"
+            insertafter="zotero-prefpane-advanced"
+            label="Zotero Scihub"
+            image="chrome://zoteroscihub/skin/favicon.png"
+						onpaneload="initPreferences();"
+            >
+      <preferences id="zotero-preferences-zoteroscihub">
+        <preference id="pref-zoteroscihub-automatic-pdf-download" name="extensions.zotero.zoteroscihub.automatic_pdf_download" type="bool"/>
+        <preference id="pref-zoteroscihub-scihub-url" name="extensions.zotero.zoteroscihub.scihub_url" type="string"/>
+      </preferences>
+      <vbox flex="1">
+        <grid>
+          <columns>
+            <column/>
+            <column flex="1"/>
+          </columns>
+          <rows>
+            <row>
+              <label value="Automatic PDF Download"/>
+              <checkbox id="id-zoteroscihub-automatic-pdf-download" preference="pref-zoteroscihub-automatic-pdf-download"/>
+            </row>
+            <row>
+              <label value="Scihub URL: (Note https only works with sci-hub.tw due to invalid SSL certs on mirrors)"/>
+              <textbox id="id-zoteroscihub-scihub-url" preference="pref-zoteroscihub-scihub-url"/>
+            </row>
+          </rows>
+        </grid>
+      </vbox>
+    </prefpane>
+  </prefwindow>
+
+	<!-- Include the main extension logic -->
+	<script src="chrome://zoteroscihub/content/scripts/preferences.js"/>
+
+</overlay>
