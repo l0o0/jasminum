@@ -138,6 +138,22 @@ Zotero.Jasminum = {
     return urlEncodedDataPairs.join("&").replace(/%20/g, "+");
   },
 
+  selectRow: function (rowSelectors) {
+    var io = {dataIn : rowSelectors, dataOut: null};
+    var newDialog = window.openDialog("chrome://zotero/content/ingester/selectitems.xul",
+      "_blank","chrome,modal,centerscreen,resizable=yes", io);
+    return  io.dataOut;
+  },
+
+  getIDFromUrl: function (url) {
+    if (!url) return false;
+	  // add regex for navi.cnki.net
+	  var dbname = url.match(/[?&](?:db|table)[nN]ame=([^&#]*)/i);
+	  var filename = url.match(/[?&]filename=([^&#]*)/i);
+	  if (!dbname || !dbname[1] || !filename || !filename[1] || dbname[1].match("TEMP$")) return false;
+	  return { dbname: dbname[1], filename: filename[1], url: url };
+  },
+
   updateItems: function (items, suppress_warnings) {
     if (items.length == 0) return;
     var item = items.shift();
@@ -163,15 +179,23 @@ Zotero.Jasminum = {
       resultGet.send();
       resultGet.onload = function () {
         var resultResp = resultGet.responseText;
-        // console.log(resultResp);
         var parser = new DOMParser();
         var html = parser.parseFromString(resultResp, "text/html");
         // //table[@class='GridTableContent']//tr[not (@class)]
         var rows = html.querySelectorAll('table.GridTableContent > tbody > tr');
         console.log(rows.length);
+        // Get the right item from search result.
+        var rowIndicators = {};
         for (let idx = 1; idx < rows.length; idx++) {
-          console.log(rows[idx].textContent.split(/\s+/).join(" "));
+          var rowText = rows[idx].textContent.split(/\s+/).join(" ");
+          rowIndicators[rowText] = idx;
+          console.log(rowText);
         }
+        var targetIndicator = selectRow(rowIndicators);
+        var targetRow = rows[Object.values(targetIndicator)[0]];
+        // Retrive selected item meta data.
+        var targetUrl = targetRow.getElementsByClassName('fz14')[0].href;
+        var targetID = this.getIDFromUrl(targetUrl);
       };
     };
   },
