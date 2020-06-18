@@ -2,45 +2,18 @@
 <?xml-stylesheet href="chrome://jasminum/skin/overlay.css" type="text/css"?>
 <!DOCTYPE overlay SYSTEM "chrome://jasminum/locale/overlay.dtd">
 
-<overlay
-    id="jasminum"
+<overlay id="jasminum" 
     xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul">
 
-    <script
-        type="application/x-javascript"
-        src="chrome://jasminum/content/scripts/jasminum.js"/>
+    <script type="application/x-javascript" src="chrome://jasminum/content/scripts/jasminum.js"/>
 
-		<commandset id="mainCommandSet">
-			<command id="cmd_zotero_scihub_update_all" oncommand="Zotero.Jasminum.updateAll();"/>
-		</commandset>
+    <!-- <popup id="zotero-collectionmenu">
+        <menuseparator/>
+        <menuitem id="zotero-collJasminumectionmenu-jasminum" label="&zotero.jasminum.updateCollection.label;" oncommand="Zotero.Jasminum.updateSelectedEntity()">
+    </popup> -->
 
-		<menupopup id="menu_ToolsPopup">
-				<menuseparator/>
-				<menuitem
-						id="zotero-scihub-tools-updateall"
-						label="&zotero.scihub.updateAll.label;"
-						command="cmd_zotero_scihub_update_all"
-						class="menuitem-iconic zotero-scihub-icon"/>
-		</menupopup>
-
-
-    <popup id="zotero-collectionmenu">
-				<menuseparator/>
-        <menuitem
-            id="zotero-collectionmenu-scihub"
-            label="&zotero.scihub.updateCollection.label;"
-            oncommand="Zotero.Scihub.updateSelectedEntity()"
-						class="menuitem-iconic zotero-scihub-icon"/>
-    </popup>
-
-    <popup
-        id="zotero-itemmenu"
-        onpopupshowing="ZoteroPane.buildItemContextMenu();">
-				<menuseparator/>
-        <menuitem
-            id="zotero-itemmenu-scihub"
-            label="&zotero.scihub.update.label;"
-            oncommand="Zotero.Scihub.updateSelectedItems()"
-						class="menuitem-iconic zotero-scihub-icon"/>
-    </popup>
+    <menupopup id="zotero-itemmenu">
+        <menuseparator id="id-jasminum-separator"/>
+        <menuitem id="zotero-itemmenu-jasminum" label="&zotero.jasminum.update.label;" oncommand="Zotero.Jasminum.updateSelectedItems()"/>
+    </menupopup>
 </overlay>

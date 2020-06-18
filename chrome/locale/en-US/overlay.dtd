@@ -1,3 +1,3 @@
-<!ENTITY zotero.scihub.update.label "Update Scihub PDF">
-<!ENTITY zotero.scihub.updateAll.label "Update All Scihub PDFs">
-<!ENTITY zotero.scihub.updateCollection.label "Update Collection Scihub PDFs">
+<!ENTITY zotero.jasminum.update.label "Update Scihub PDF">
+<!ENTITY zotero.jasminum.updateAll.label "Update All Scihub PDFs">
+<!ENTITY zotero.jasminum.updateCollection.label "Update Collection Scihub PDFs">
