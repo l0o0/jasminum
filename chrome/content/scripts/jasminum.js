@@ -139,19 +139,39 @@ Zotero.Jasminum = {
   },
 
   selectRow: function (rowSelectors) {
-    var io = {dataIn : rowSelectors, dataOut: null};
-    var newDialog = window.openDialog("chrome://zotero/content/ingester/selectitems.xul",
-      "_blank","chrome,modal,centerscreen,resizable=yes", io);
-    return  io.dataOut;
+    var io = { dataIn: rowSelectors, dataOut: null };
+    var newDialog = window.openDialog(
+      "chrome://zotero/content/ingester/selectitems.xul",
+      "_blank",
+      "chrome,modal,centerscreen,resizable=yes",
+      io
+    );
+    return io.dataOut;
   },
 
   getIDFromUrl: function (url) {
     if (!url) return false;
-	  // add regex for navi.cnki.net
-	  var dbname = url.match(/[?&](?:db|table)[nN]ame=([^&#]*)/i);
-	  var filename = url.match(/[?&]filename=([^&#]*)/i);
-	  if (!dbname || !dbname[1] || !filename || !filename[1] || dbname[1].match("TEMP$")) return false;
-	  return { dbname: dbname[1], filename: filename[1], url: url };
+    // add regex for navi.cnki.net
+    var dbname = url.match(/[?&](?:db|table)[nN]ame=([^&#]*)/i);
+    var filename = url.match(/[?&]filename=([^&#]*)/i);
+    if (
+      !dbname ||
+      !dbname[1] ||
+      !filename ||
+      !filename[1] ||
+      dbname[1].match("TEMP$")
+    )
+      return false;
+    return { dbname: dbname[1], filename: filename[1] };
+  },
+
+  parseRef: function (targetID) {
+    var postData =
+      "formfilenames=" +
+      encodeURIComponent(targetID.dbname + "!" + targetID.filename + "!1!0,") +
+      "&hid_kLogin_headerUrl=/KLogin/Request/GetKHeader.ashx%3Fcallback%3D%3F" +
+      "&hid_KLogin_FooterUrl=/KLogin/Request/GetKHeader.ashx%3Fcallback%3D%3F" +
+      "&CookieName=FileNameS";
   },
 
   updateItems: function (items, suppress_warnings) {
@@ -182,7 +202,7 @@ Zotero.Jasminum = {
         var parser = new DOMParser();
         var html = parser.parseFromString(resultResp, "text/html");
         // //table[@class='GridTableContent']//tr[not (@class)]
-        var rows = html.querySelectorAll('table.GridTableContent > tbody > tr');
+        var rows = html.querySelectorAll("table.GridTableContent > tbody > tr");
         console.log(rows.length);
         // Get the right item from search result.
         var rowIndicators = {};
@@ -194,8 +214,50 @@ Zotero.Jasminum = {
         var targetIndicator = selectRow(rowIndicators);
         var targetRow = rows[Object.values(targetIndicator)[0]];
         // Retrive selected item meta data.
-        var targetUrl = targetRow.getElementsByClassName('fz14')[0].href;
+        var targetUrl = targetRow.getElementsByClassName("fz14")[0].href;
         var targetID = this.getIDFromUrl(targetUrl);
+        console.log(targetID);
+        // Get reference data from CNKI by ID.
+        var httpRequest = new XMLHttpRequest();
+        var postData = "formfilenames=" + encodeURIComponent(targetID.dbname + "!" + targetID.filename + "!1!0,")
+		    + '&hid_kLogin_headerUrl=/KLogin/Request/GetKHeader.ashx%3Fcallback%3D%3F'
+		    + '&hid_KLogin_FooterUrl=/KLogin/Request/GetKHeader.ashx%3Fcallback%3D%3F'
+		    + '&CookieName=FileNameS';
+        httpRequest.open(
+          "GET",
+          "https://kns.cnki.net/kns/ViewPage/viewsave.aspx?displayMode=Refworks&" +
+            postData,
+          true
+        );
+        httpRequest.send();
+        httpRequest.onreadystatechange = function () {
+          if (httpRequest.readyState == 4 && httpRequest.status == 200) {
+            var resp = httpRequest.responseText;
+            // console.log(resp);
+            var parser = new DOMParser();
+            var html = parser.parseFromString(resp, "text/html");
+            var data = Zotero.Utilities.xpath(
+              html,
+              "//table[@class='mainTable']//td"
+            )[0]
+              .innerHTML.replace(/<br>/g, "\n")
+              .replace(
+                /^RT\s+Conference Proceeding/gim,
+                "RT Conference Proceedings"
+              )
+              .replace(/^RT\s+Dissertation\/Thesis/gim, "RT Dissertation")
+              .replace(/^(A[1-4]|U2)\s*([^\r\n]+)/gm, function (
+                m,
+                tag,
+                authors
+              ) {
+                authors = authors.split(/\s*[;，,]\s*/); // that's a special comma
+                if (!authors[authors.length - 1].trim()) authors.pop();
+                return tag + " " + authors.join("\n" + tag + " ");
+              });
+            console.log(data);
+          }
+        };
       };
     };
   },
