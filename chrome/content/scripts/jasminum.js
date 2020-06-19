@@ -27,6 +27,15 @@ Zotero.Jasminum = {
     },
   },
 
+  displayMenuitem: function () {
+    var pane = Services.wm.getMostRecentWindow("navigator:browser").ZoteroPane;
+    var items = pane.getSelectedItems();
+    var show_menu = items.some(item => Zotero.Jasminum.checkItem(item));
+    pane.document.getElementById("zotero-itemmenu-jasminum").hidden = !show_menu;
+    pane.document.getElementById("id-jasminum-separator").hidden = !show_menu;
+    console.log(show_menu);
+  },
+
   updateSelectedEntity: function (libraryId) {
     Zotero.debug("Updating items in entity");
     if (!ZoteroPane.canEdit()) {
@@ -54,40 +63,39 @@ Zotero.Jasminum = {
       suppress_warnings
     );
   },
-  updateAll: function () {
-    Zotero.debug("Updating all items in Zotero");
-    var items = [];
+//   updateAll: function () {
+//     Zotero.debug("Updating all items in Zotero");
+//     var items = [];
 
-    // Get all items
-    Zotero.Items.getAll().then(function (items) {
-      // Once we have all items, make sure it's a regular item.
-      // And that the library is editable
-      // Then add that item to our list.
-      items.map(function (item) {
-        if (item.isRegularItem() && !item.isCollection()) {
-          var libraryId = item.getField("libraryID");
-          if (
-            libraryId == null ||
-            libraryId == "" ||
-            Zotero.Libraries.isEditable(libraryId)
-          ) {
-            items.push(item);
-          }
-        }
-      });
-    });
-
-    // Update all of our items with pdfs.
-    suppress_warnings = true;
-    Zotero.Jasminum.updateItems(items, suppress_warnings);
-  },
+//     // Get all items
+//     Zotero.Items.getAll().then(function (items) {
+//       // Once we have all items, make sure it's a regular item.
+//       // And that the library is editable
+//       // Then add that item to our list.
+//       items.map(function (item) {
+//         if (item.isRegularItem() && !item.isCollection()) {
+//           var libraryId = item.getField("libraryID");
+//           if (
+//             libraryId == null ||
+//             libraryId == "" ||
+//             Zotero.Libraries.isEditable(libraryId)
+//           ) {
+//             items.push(item);
+//           }
+//         }
+//       });
+//     });
+//     // Update all of our items with pdfs.
+//     suppress_warnings = true;
+//     Zotero.Jasminum.updateItems(items, suppress_warnings);
+//   },
 
   checkItem: function (item) {
     // filename like author_title.ext, ext=pdf/caj
     if (!item.isAttachment()) return false;
     var filename = item.getFilename();
     var ext = filename.substr(filename.length - 3, 3);
-    if (filename != "pdf" && filename != "caj") return false;
+    if (ext != "pdf" && ext != "caj") return false;
     return true;
   },
 
@@ -177,9 +185,9 @@ Zotero.Jasminum = {
   updateItems: function (items, suppress_warnings) {
     if (items.length == 0) return;
     var item = items.shift();
-    if (!this.checkItem(item)) return;
-    var fileData = this.splitFilename(item.getFilename());
-    var searchData = this.createPost(fileData);
+    if (!Zotero.Jasminum.checkItem(item)) return;
+    var fileData = Zotero.Jasminum.splitFilename(item.getFilename());
+    var searchData = Zotero.Jasminum.createPost(fileData);
     var httpPost = new XMLHttpRequest();
     var SEARCH_HANDLE_URL =
       "https://kns.cnki.net/kns/request/SearchHandler.ashx";
@@ -211,11 +219,11 @@ Zotero.Jasminum = {
           rowIndicators[rowText] = idx;
           console.log(rowText);
         }
-        var targetIndicator = selectRow(rowIndicators);
+        var targetIndicator = Zotero.Jasminum.selectRow(rowIndicators);
         var targetRow = rows[Object.values(targetIndicator)[0]];
         // Retrive selected item meta data.
         var targetUrl = targetRow.getElementsByClassName("fz14")[0].href;
-        var targetID = this.getIDFromUrl(targetUrl);
+        var targetID = Zotero.Jasminum.getIDFromUrl(targetUrl);
         console.log(targetID);
         // Get reference data from CNKI by ID.
         var httpRequest = new XMLHttpRequest();
@@ -267,6 +275,11 @@ window.addEventListener(
   "load",
   function (e) {
     Zotero.Jasminum.init();
+    if(window.ZoteroPane) {
+        var doc = window.ZoteroPane.document;
+        // add event listener for zotfile menu items
+        doc.getElementById('zotero-itemmenu').addEventListener('popupshowing', Zotero.Jasminum.displayMenuitem, false);
+    }
   },
   false
 );
