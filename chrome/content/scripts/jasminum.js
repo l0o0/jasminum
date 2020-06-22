@@ -343,12 +343,49 @@ Zotero.Jasminum = {
     promiseTranslate: function (translate, libraryID) {
         console.log("start translate");
         var deferred = Q.defer();
-        translate.setHandler("itemDone", function (obj, newItem) {
-            console.log(newItem);
+        translate.setHandler("itemDone", function (translate, newItem) {
+            for (var i = 0, n = newItem.getCreators().length; i < n; i++) {
+				var creator = newItem.getCreators()[i];
+				if (creator.ref.firstName) continue;
+				
+				var lastSpace = creator.ref.lastName.lastIndexOf(' ');
+				if (creator.ref.lastName.search(/[A-Za-z]/) !== -1 && lastSpace !== -1) {
+					// western name. split on last space
+					creator.ref.firstName = creator.ref.lastName.substr(0, lastSpace);
+					creator.ref.lastName = creator.ref.lastName.substr(lastSpace + 1);
+				}
+				else {
+					// Chinese name. first character is last name, the rest are first name
+					creator.ref.firstName = creator.ref.lastName.substr(1);
+					creator.ref.lastName = creator.ref.lastName.charAt(0);
+				}
+            }
+            // Clean up tags. Remove numbers from end
+			for (var j = 0, l = newItem.getTags().length; j < l; j++) {
+				newItem.getTags()[j].name = newItem.getTags()[j].name.replace(/:\d+$/, '');
+            }
+            // Clean up abstract
+            if (newItem.getField('abstractNote')) {
+                newItem.getField('abstractNote') = newItem.getField('abstractNote')
+                    .replace(/\s*[\r\n]\s*/g, '\n')
+                    .replace(/&lt;.*?&gt;/g, "");
+            }
+            // Remove wront CN field.
+            if (newItem.getField('callNumber')) {
+                //	newItem.extra = 'CN ' + newItem.callNumber;
+                newItem.setField('callNumber') = "";
+            }
+            // Remove note
+            if (newItem.getNotes()) {
+                Zotero.Items.erase(newItem.getNotes());
+            }
+
         });
 
         translate.setHandler("done", function (translate, success) {
             if (success && translate.newItems.length) {
+                console.log('112');
+                console.log(translate.newItems[0]);
                 deferred.resolve(translate.newItems[0]);
             } else {
                 deferred.reject(
@@ -391,7 +428,17 @@ Zotero.Jasminum = {
                 translate.setString(data);
                 Zotero.Jasminum.promiseTranslate(translate, libraryID);
             })
-            .then((data) => console.log(data));
+            .then(function(newItem) {
+                console.log('last');
+                console.log(newItem);
+				for(var j=0; j<itemCollections.length; j++) {
+					var collection = Zotero.Collections.get(itemCollections[j]);
+					collection.addItem(newItem.id);
+                }
+                // Put old item to new item.
+                item.setSource(newItem.id);
+				item.save();
+            });
     },
 };
 
