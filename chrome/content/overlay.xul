@@ -9,7 +9,7 @@
 
     <!-- <popup id="zotero-collectionmenu">
         <menuseparator/>
-        <menuitem id="zotero-collJasminumectionmenu-jasminum" label="&zotero.jasminum.updateCollection.label;" oncommand="Zotero.Jasminum.updateSelectedEntity()">
+        <menuitem id="zotero-collectionmenu-jasminum" label="&zotero.jasminum.updateCollection.label;" oncommand="Zotero.Jasminum.updateSelectedEntity()">
     </popup> -->
 
     <menupopup id="zotero-itemmenu">

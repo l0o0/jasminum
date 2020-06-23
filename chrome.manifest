@@ -1,6 +1,6 @@
 content jasminum chrome/content/
 skin jasminum default	chrome/skin/default/jasminum/
 locale jasminum en-US chrome/locale/en-US/
-
+locale jasminum zh-CN chrome/locale/zh-CN/
 overlay chrome://zotero/content/zoteroPane.xul chrome://jasminum/content/overlay.xul
 overlay chrome://zotero/content/preferences/preferences.xul chrome://jasminum/content/preferences.xul

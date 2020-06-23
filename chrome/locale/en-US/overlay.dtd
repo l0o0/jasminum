@@ -1,3 +1,2 @@
-<!ENTITY zotero.jasminum.update.label "Update CNKI Ref">
-<!ENTITY zotero.jasminum.updateAll.label "Update All CNKI Refs">
-<!ENTITY zotero.jasminum.updateCollection.label "Update Collection CNKI Refs">
+<!ENTITY zotero.jasminum.update.label "Retrieving CNKI Metadata…">
+<!ENTITY zotero.jasminum.updateCollection.label "Retrieving CNKI Metadata In Collection…">

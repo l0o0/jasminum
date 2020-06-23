@@ -13,6 +13,7 @@ Zotero.Jasminum = {
         //   },
         //   false
         // );
+        Components.utils.import("resource://zotero/q.js");
     },
 
     notifierCallback: {
@@ -34,6 +35,7 @@ Zotero.Jasminum = {
         var pane = Services.wm.getMostRecentWindow("navigator:browser")
             .ZoteroPane;
         var items = pane.getSelectedItems();
+        Zotero.debug("selected item length: " + items.length);
         var show_menu = items.some((item) => Zotero.Jasminum.checkItem(item));
         pane.document.getElementById(
             "zotero-itemmenu-jasminum"
@@ -41,7 +43,7 @@ Zotero.Jasminum = {
         pane.document.getElementById(
             "id-jasminum-separator"
         ).hidden = !show_menu;
-        // console.log(show_menu);
+        Zotero.debug("show menu: " + show_menu);
     },
 
     updateSelectedEntity: function (libraryId) {
@@ -74,9 +76,19 @@ Zotero.Jasminum = {
     },
 
     checkItem: function (item) {
-        // filename like author_title.ext, ext=pdf/caj
-        if (!item.isAttachment()) return false;
-        var filename = item.getFilename();
+        // Return true, when item is OK for update cnki data.
+        if (
+            !item.isAttachment() ||
+            item.isRegularItem() ||
+            !item.isTopLevelItem()
+        ) {
+            return false;
+        }
+
+        var filename = item.attachmentFilename();
+        // Find Chinese characters in string
+        if (escape(filename).indexOf("%u") < 0) return false;
+        // Extension should be CAJ or PDF
         var ext = filename.substr(filename.length - 3, 3);
         if (ext != "pdf" && ext != "caj") return false;
         return true;
@@ -100,9 +112,9 @@ Zotero.Jasminum = {
             ua: "1.21",
             isinEn: "1",
             PageName: "ASP.brief_result_aspx",
-            DbPrefix: "CJFQ",
+            DbPrefix: "SCDB",
             DbCatalog: "中国学术期刊网络出版总库",
-            ConfigFile: "CJFQ.xml",
+            ConfigFile: "SCDB.xml",
             db_opt: "CJFQ,CDFD,CMFD,CPFD,IPFD,CCND,CCJD",
             year_type: "echar",
             CKB_extension: "ZYW",
@@ -130,7 +142,7 @@ Zotero.Jasminum = {
     },
 
     selectRow: function (rowSelectors) {
-        console.log("select window start");
+        Zotero.debug("select window start");
         var io = { dataIn: rowSelectors, dataOut: null };
         var newDialog = window.openDialog(
             "chrome://zotero/content/ingester/selectitems.xul",
@@ -169,11 +181,11 @@ Zotero.Jasminum = {
     },
 
     cleanItem: function () {
-        console.log("clean parent");
+        Zotero.debug("clean parent");
     },
 
-    searchPrepare: function (url, searchData) {
-        console.log("start prepare");
+    searchPrepare: function (url, fileData) {
+        Zotero.debug("start prepare");
         var request = new XMLHttpRequest();
         var deferred = Q.defer();
 
@@ -185,7 +197,7 @@ Zotero.Jasminum = {
 
         function onload() {
             if (request.status === 200) {
-                deferred.resolve([request.responseText, searchData]);
+                deferred.resolve([request.responseText, fileData]);
             } else {
                 deferred.reject(
                     new Error(
@@ -203,17 +215,17 @@ Zotero.Jasminum = {
     },
 
     search: function (searchPrepareout) {
-        console.log("start search");
+        Zotero.debug("start search");
         var request = new XMLHttpRequest();
         var deferred = Q.defer();
-        console.log(1);
         var keyword = encodeURI(searchPrepareout[1].keyword);
-        console.log(2);
+        Zotero.debug(searchPrepareout);
+        Zotero.debug("keyword: " + keyword);
         var resultUrl =
             "https://kns.cnki.net/kns/brief/brief.aspx?pagename=" +
             searchPrepareout[0] +
             `&t=${Date.parse(new Date())}&keyValue=${keyword}&S=1&sorttype=`;
-        console.log(resultUrl);
+        Zotero.debug(resultUrl);
         request.open("GET", resultUrl, true);
         request.onload = onload;
         request.onerror = onerror;
@@ -222,7 +234,7 @@ Zotero.Jasminum = {
 
         function onload() {
             if (request.status === 200) {
-                console.log(request.responseText);
+                // Zotero.debug(request.responseText);
                 deferred.resolve(
                     Zotero.Jasminum.getSearchItems(request.responseText)
                 );
@@ -241,34 +253,37 @@ Zotero.Jasminum = {
     },
 
     getSearchItems: function (resptext) {
-        console.log("get item from search");
+        Zotero.debug("get item from search");
         var parser = new DOMParser();
         var html = parser.parseFromString(resptext, "text/html");
         var rows = html.querySelectorAll("table.GridTableContent > tbody > tr");
-        console.log(rows.length);
+        Zotero.debug("搜索结果：" + (rows.length - 1));
         var targetRow;
         if (rows.length <= 1) {
-            console.log("No items found.");
+            Zotero.debug("No items found.");
             return null;
-        } else if ((rows.length = 2)) {
+        } else if (rows.length == 2) {
             targetRow = rows[1];
         } else {
             // Get the right item from search result.
             var rowIndicators = {};
             for (let idx = 1; idx < rows.length; idx++) {
                 var rowText = rows[idx].textContent.split(/\s+/).join(" ");
-                rowIndicators[rowText] = idx;
-                console.log(rowText);
+                rowIndicators[idx] = rowText;
+                Zotero.debug(rowText);
             }
             var targetIndicator = Zotero.Jasminum.selectRow(rowIndicators);
-            targetRow = rows[Object.values(targetIndicator)[0]];
+            // Zotero.debug(targetIndicator);
+            // No item selected, return null
+            if (!targetIndicator) return null;
+            targetRow = rows[Object.keys(targetIndicator)[0]];
         }
-        console.log(targetRow.textContent);
+        // Zotero.debug(targetRow.textContent);
         return targetRow;
     },
 
-    getRef: function (targetRow) {
-        console.log("start get ref");
+    getRefworks: function (targetRow) {
+        Zotero.debug("start get ref");
         var request = new XMLHttpRequest();
         var deferred = Q.defer();
 
@@ -278,7 +293,7 @@ Zotero.Jasminum = {
 
         var targetUrl = targetRow.getElementsByClassName("fz14")[0].href;
         var targetID = Zotero.Jasminum.getIDFromUrl(targetUrl);
-        console.log(targetID);
+        Zotero.debug(targetID);
         // Get reference data from CNKI by ID.
         var postData =
             "formfilenames=" +
@@ -302,7 +317,7 @@ Zotero.Jasminum = {
         function onload() {
             if (request.status === 200) {
                 var resp = request.responseText;
-                // console.log(resp);
+                // Zotero.debug(resp);
                 var parser = new DOMParser();
                 var html = parser.parseFromString(resp, "text/html");
                 var data = Zotero.Utilities.xpath(
@@ -324,7 +339,7 @@ Zotero.Jasminum = {
                         if (!authors[authors.length - 1].trim()) authors.pop();
                         return tag + " " + authors.join("\n" + tag + " ");
                     });
-                console.log(data);
+                Zotero.debug(data);
                 deferred.resolve(data);
             } else {
                 deferred.reject(
@@ -341,51 +356,66 @@ Zotero.Jasminum = {
     },
 
     promiseTranslate: function (translate, libraryID) {
-        console.log("start translate");
+        Zotero.debug("start translate");
         var deferred = Q.defer();
         translate.setHandler("itemDone", function (translate, newItem) {
+            Zotero.debug(newItem);
+            Zotero.debug("作者数目：" + newItem.getCreators().length);
             for (var i = 0, n = newItem.getCreators().length; i < n; i++) {
-				var creator = newItem.getCreators()[i];
-				if (creator.ref.firstName) continue;
-				
-				var lastSpace = creator.ref.lastName.lastIndexOf(' ');
-				if (creator.ref.lastName.search(/[A-Za-z]/) !== -1 && lastSpace !== -1) {
-					// western name. split on last space
-					creator.ref.firstName = creator.ref.lastName.substr(0, lastSpace);
-					creator.ref.lastName = creator.ref.lastName.substr(lastSpace + 1);
-				}
-				else {
-					// Chinese name. first character is last name, the rest are first name
-					creator.ref.firstName = creator.ref.lastName.substr(1);
-					creator.ref.lastName = creator.ref.lastName.charAt(0);
-				}
+                var creator = newItem.getCreators()[i];
+                if (creator.ref.firstName) continue;
+
+                var lastSpace = creator.ref.lastName.lastIndexOf(" ");
+                if (
+                    creator.ref.lastName.search(/[A-Za-z]/) !== -1 &&
+                    lastSpace !== -1
+                ) {
+                    // western name. split on last space
+                    creator.ref.firstName = creator.ref.lastName.substr(
+                        0,
+                        lastSpace
+                    );
+                    creator.ref.lastName = creator.ref.lastName.substr(
+                        lastSpace + 1
+                    );
+                } else {
+                    // Chinese name. first character is last name, the rest are first name
+                    creator.ref.firstName = creator.ref.lastName.substr(1);
+                    creator.ref.lastName = creator.ref.lastName.charAt(0);
+                }
             }
             // Clean up tags. Remove numbers from end
-			for (var j = 0, l = newItem.getTags().length; j < l; j++) {
-				newItem.getTags()[j].name = newItem.getTags()[j].name.replace(/:\d+$/, '');
+            for (var j = 0, l = newItem.getTags().length; j < l; j++) {
+                newItem.getTags()[j].name = newItem
+                    .getTags()
+                    [j].name.replace(/:\d+$/, "");
             }
             // Clean up abstract
-            if (newItem.getField('abstractNote')) {
-                newItem.getField('abstractNote') = newItem.getField('abstractNote')
-                    .replace(/\s*[\r\n]\s*/g, '\n')
-                    .replace(/&lt;.*?&gt;/g, "");
+            if (newItem.getField("abstractNote")) {
+                newItem.setField(
+                    "abstractNote",
+                    newItem
+                        .getField("abstractNote")
+                        .replace(/\s*[\r\n]\s*/g, "\n")
+                        .replace(/&lt;.*?&gt;/g, "")
+                );
             }
             // Remove wront CN field.
-            if (newItem.getField('callNumber')) {
+            if (newItem.getField("callNumber")) {
                 //	newItem.extra = 'CN ' + newItem.callNumber;
-                newItem.setField('callNumber') = "";
+                newItem.setField("callNumber", "");
             }
             // Remove note
             if (newItem.getNotes()) {
                 Zotero.Items.erase(newItem.getNotes());
             }
-
+            newItem.setField("libraryCatalog", "CNKI");
         });
 
         translate.setHandler("done", function (translate, success) {
             if (success && translate.newItems.length) {
-                console.log('112');
-                console.log(translate.newItems[0]);
+                Zotero.debug("112");
+                Zotero.debug(translate.newItems[0]);
                 deferred.resolve(translate.newItems[0]);
             } else {
                 deferred.reject(
@@ -411,33 +441,36 @@ Zotero.Jasminum = {
         // 	collection.addItem(newItem.id);
         // }
         if (!Zotero.Jasminum.checkItem(item)) return;
-        var fileData = Zotero.Jasminum.splitFilename(item.getFilename());
+        var fileData = Zotero.Jasminum.splitFilename(item.attachmentFilename());
         var searchData = Zotero.Jasminum.createPost(fileData);
         var httpPost = new XMLHttpRequest();
         var SEARCH_HANDLE_URL =
             "https://kns.cnki.net/kns/request/SearchHandler.ashx";
         var url = SEARCH_HANDLE_URL + "?" + searchData;
-        Zotero.Jasminum.searchPrepare(url, searchData)
+        Zotero.Jasminum.searchPrepare(url, fileData)
             .then((searchPrepareout) =>
                 Zotero.Jasminum.search(searchPrepareout)
             )
-            .then((targetRow) => Zotero.Jasminum.getRef(targetRow))
+            .then((targetRow) => Zotero.Jasminum.getRefworks(targetRow))
             .then(function (data) {
                 var translate = new Zotero.Translate.Import();
                 translate.setTranslator("1a3506da-a303-4b0a-a1cd-f216e6138d86");
                 translate.setString(data);
-                Zotero.Jasminum.promiseTranslate(translate, libraryID);
+                return Zotero.Jasminum.promiseTranslate(translate, libraryID);
             })
-            .then(function(newItem) {
-                console.log('last');
-                console.log(newItem);
-				for(var j=0; j<itemCollections.length; j++) {
-					var collection = Zotero.Collections.get(itemCollections[j]);
-					collection.addItem(newItem.id);
+            .then(function (newItem) {
+                Zotero.debug("last");
+                Zotero.debug(newItem);
+                for (var j = 0; j < itemCollections.length; j++) {
+                    var collection = Zotero.Collections.get(itemCollections[j]);
+                    collection.addItem(newItem.id);
                 }
                 // Put old item to new item.
                 item.setSource(newItem.id);
-				item.save();
+                item.save();
+                if (items.length) {
+                    Zotero.Jasminum.updateItems(items, suppress_warnings);
+                }
             });
     },
 };
