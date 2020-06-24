@@ -440,14 +440,14 @@ Zotero.Jasminum = {
             .then(function (newItem) {
                 Zotero.debug("**Jasminum last");
                 Zotero.debug(newItem);
-                await Zotero.DB.executeTransaction(async function () {
+                Zotero.DB.executeTransaction(async function () {
                     if (itemCollections.length) {
                         for (let collectionID of itemCollections) {
                             newItem.addToCollection(collectionID);
                         }
                         await newItem.save();
                     }
-                    
+
                     // Put old item as a child of the new item
                     item.parentID = newItem.id;
                     await item.save();
