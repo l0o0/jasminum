@@ -389,29 +389,30 @@ Zotero.Jasminum = {
     getChapterUrl: async function (itemUrl) {
         Zotero.debug("** Jasminum get chapter url.");
         var respText = await this.promiseGet(itemUrl);
-
         var parser = new DOMParser();
         var respHTML = parser.parseFromString(respText, "text/html");
         var chapterDown = Zotero.Utilities.xpath(
             respHTML,
             "//a[contains(text(), '分章下载')]"
         );
-        if (!chapterDown) {
+        if (chapterDown.length === 0) {
+            Zotero.debug('No chapter found.');
             return null;
         }
         var readerUrl = Zotero.Utilities.xpath(
             respHTML,
             "//a[contains(text(), '在线阅读')]"
         )[0].href;
-        Zotero.debug(readerUrl);
+        Zotero.debug("** Jasminum reader url: " + readerUrl);
         var respText = await this.promiseGet(readerUrl);
         var parser = new DOMParser();
         var respHTML = parser.parseFromString(respText, "text/html");
-        var chatperUrl = Zotero.Utilities.xpath(
+        var chapterUrl = Zotero.Utilities.xpath(
             respHTML,
             "//iframe[@id='treeView']"
-        )[0].src;
-        return chapterUrl;
+        )[0].getAttribute('src');
+        Zotero.debug("** Jasminum chapter url: " + chapterUrl);
+        return "https://kreader.cnki.net/Kreader/" + chapterUrl;
     },
 
     getBookmark: async function (items) {
@@ -422,20 +423,24 @@ Zotero.Jasminum = {
         var parentItemType = parentItem.itemTypeID; // theis = 7
         var itemUrl = "";
         var itemChapterUrl = "";
+
         if (
             parentItemType === 7 &&
             parentItem.getField("extra") &&
-            parentItem.getField("extra").include("cnki")
+            parentItem.getField("extra").includes("cnki")
         ) {
+            Zotero.debug('1');
             itemChapterUrl = parentItem.getField("extra");
         } else if (
             parentItemType === 7 &&
             parentItem.getField("url") &&
-            parentItem.getField("url").include("cnki")
+            parentItem.getField("url").includes("cnki")
         ) {
+            Zotero.debug('2');
             itemUrl = parentItem.getField("url");
-            itemChapterUrl = Zotero.Jasminum.getChapterUrl(itemUrl);
+            itemChapterUrl = await Zotero.Jasminum.getChapterUrl(itemUrl);
         } else {
+            Zotero.debug('3');
             var fileData = Zotero.Jasminum.splitFilename(item.getFilename());
             var searchPrepareOut = await Zotero.Jasminum.searchPrepare(
                 fileData
@@ -445,31 +450,34 @@ Zotero.Jasminum = {
                 fileData
             );
             itemUrl = targetRow.querySelector("a.fz14").href;
-            itemChapterUrl = Zotero.Jasminum.getChapterUrl(itemUrl);
+            itemChapterUrl = await Zotero.Jasminum.getChapterUrl(itemUrl);
             // 获取文献链接URL -> 获取章节目录URL
         }
 
+        Zotero.debug("** Jasminum item chapter url: " + itemChapterUrl);
         var chapterText = await this.promiseGet(itemChapterUrl);
         var parser = new DOMParser();
-        var html = parser.parseFromString(xhr.response, "text/html");
-        var tree = html.getElementById("treeDiv");
+        var chapterHTML = parser.parseFromString(chapterText, "text/html");
+        var tree = chapterHTML.getElementById("treeDiv");
         var rows = tree.querySelectorAll("tr");
         var rows_array = [];
         for (let row of rows) {
+            Zotero.debug(row.textContent.trim());
             var cols = row.querySelectorAll("td");
             var level = cols.length - 1;
             var title = row.textContent.trim();
             var onclickText = cols[cols.length - 1]
-                .querySelector("a")
-                .onclick.toString();
+                .querySelector("a").getAttribute('onclick');
             var pageRex = onclickText.match(/CDMDNodeClick\('(\d+)'/);
             var page = pageRex[1];
             var bookmark = `BookmarkBegin\nBookmarkTitle: ${title}\nBookmarkLevel: ${level}\nBookmarkPageNumber: ${page}`;
             rows_array.push(bookmark);
         }
         var bookmarks = rows_array.join("\n");
+        return bookmarks;
     },
 };
 
 var items = Zotero.getActiveZoteroPane().getSelectedItems();
-Zotero.Jasminum.getBookmark(items);
+var bookmarks = Zotero.Jasminum.getBookmark(items);
+Zotero.debug(bookmarks);
