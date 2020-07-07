@@ -37,13 +37,19 @@ Zotero.Jasminum = {
             .ZoteroPane;
         var items = pane.getSelectedItems();
         Zotero.debug("**Jasminum selected item length: " + items.length);
-        var show_menu = items.some((item) => Zotero.Jasminum.checkItem(item));
+        var showMenu = items.some((item) => Zotero.Jasminum.checkItem(item));
         pane.document.getElementById(
             "zotero-itemmenu-jasminum"
-        ).hidden = !show_menu;
+        ).hidden = !showMenu;
         pane.document.getElementById(
             "id-jasminum-separator"
-        ).hidden = !show_menu;
+        ).hidden = !showMenu;
+        if (items.length === 1) {
+            var showMenuPDF = this.checkItemPDF(items[0]);
+            pane.document.getElementById(
+                "zotero-itemmenu-jasminum-bookmark"
+            ).hidden = !showMenuPDF;
+        }
         Zotero.debug("**Jasminum show menu: " + show_menu);
     },
 
@@ -321,8 +327,6 @@ Zotero.Jasminum = {
             }
         });
 
-        // TODO itemDone handler
-
         let newItems = translate.translate({
             libraryID: libraryID,
             saveAttachments: false,
@@ -335,7 +339,49 @@ Zotero.Jasminum = {
         throw new Error("No items found");
     },
 
-    updateItems: async function (items, suppress_warnings) {
+    fixItem: function(newItem) {
+        var creators = newItem.getCreators();
+        for (var i = 0; i < creators.length; i++) {
+            var creator = creators[i];
+            if (creator.firstName) continue;
+
+            var lastSpace = creator.lastName.lastIndexOf(" ");
+            if (
+                creator.lastName.search(/[A-Za-z]/) !== -1 &&
+                lastSpace !== -1
+            ) {
+                // western name. split on last space
+                creator.firstName = creator.lastName.substr(
+                    0,
+                    lastSpace
+                );
+                creator.lastName = creator.lastName.substr(
+                    lastSpace + 1
+                );
+            } else {
+                // Chinese name. first character is last name, the rest are first name
+                creator.firstName = creator.lastName.substr(1);
+                creator.lastName = creator.lastName.charAt(0);
+            }
+            creators[i] = creator;
+        }
+        newItem.setCreators(creators);
+        // Clean up abstract
+        if (newItem.getField('abstractNote')) {
+            newItem.setField('abstractNote', newItem.getField('abstractNote')
+                .replace(/\s*[\r\n]\s*/g, "\n")
+                .replace(/&lt;.*?&gt;/g, ""));
+        }
+        // Remove wront CN field.
+        newItem.setField('callNumber', '');
+        newItem.setField('libraryCatalog', "CNKI");
+        if (newItem.getNotes()) {
+            Zotero.Items.erase(newItem.getNotes());
+        }
+        return newItem;
+    },
+
+    updateItems: async function (items) {
         var zp = Zotero.getActiveZoteroPane();
         if (items.length == 0) return;
         var selectParent = true ? items.length === 1 : false;
@@ -356,31 +402,29 @@ Zotero.Jasminum = {
             libraryID
         );
         Zotero.debug(newItem);
-        // newItem = Zotero.Jasminum.fixItem(newItem);
+        newItem = Zotero.Jasminum.fixItem(newItem);
         Zotero.debug("**Jasminum DB trans ...");
-        Zotero.DB.executeTransaction(async function () {
-            if (itemCollections.length) {
-                for (let collectionID of itemCollections) {
-                    newItem.addToCollection(collectionID);
-                }
-                await newItem.save();
-            }
+        if (itemCollections.length) {
+            for (let collectionID of itemCollections) {
+                newItem.addToCollection(collectionID);
+            }           
+        }
 
-            // Put old item as a child of the new item
-            item.parentID = newItem.id;
-            await item.save();
-        });
+        // Put old item as a child of the new item
+        item.parentID = newItem.id;
+        item.saveTx();
+        newItem.saveTx();
         if (items.length) {
-            Zotero.Jasminum.updateItems(items, suppress_warnings);
+            Zotero.Jasminum.updateItems(items);
+        } else {
+            await zp.selectItem(newItem.id);
         }
         Zotero.debug("** Jasminum finished.");
-        Zotero.debug(newItem);
-        // Zotero.Jasminum.fixItem(newItem);
-        //await zp.selectItem(newItem.id);
     },
 
     checkItemPDF: function (item) {
         return (
+            item.isAttachment() &&
             item.attachmentContentType &&
             item.attachmentContentType === "application/pdf" &&
             escape(item.getFilename()).indexOf("%u") < 0
@@ -439,8 +483,11 @@ Zotero.Jasminum = {
             itemUrl = parentItem.getField("url");
             itemChapterUrl = await Zotero.Jasminum.getChapterUrl(itemUrl);
         } else {
-            Zotero.debug("3"); // TODO: use title and author
-            var fileData = Zotero.Jasminum.splitFilename(item.getFilename());
+            Zotero.debug("3");
+            var fileData = {
+                keyword: parentItem.getField('title'),
+                author: parentItem.getCreator(0).lastName + parentItem.getCreator(0).firstName
+            };
             var searchPrepareOut = await Zotero.Jasminum.searchPrepare(
                 fileData
             );
@@ -499,8 +546,10 @@ Zotero.Jasminum = {
             tmpPath: cacheFile.path + ".tmp",
         });
         var pdftk = "C:\\Program Files (x86)\\PDFtk Server\\bin\\pdftk.exe";
-        if (!Zotero.isWin) {
-            pdftk = "pdftk";
+        if (Zotero.isLinux) {
+            pdftk = "/usr/bin/pdftk";
+        } else if (Zotero.isMac) {
+            pdftk = "Path in mac"; // TODO
         }
 
         var args = [
@@ -552,8 +601,12 @@ Zotero.Jasminum = {
         Zotero.Items.erase(item.id);
     },
 
-    addBookmarkItems: async function (item) {
+    addBookmarkItem: async function (item) {
         var bookmark = await Zotero.Jasminum.getBookmark(item);
         await Zotero.Jasminum.addBookmark(items[0], bookmark);
     },
 };
+
+
+var items = ZoteroPane.getSelectedItems();
+await Zotero.Jasminum.addBookmarkItem(items[0]);
