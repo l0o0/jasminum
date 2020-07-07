@@ -13,6 +13,7 @@ Zotero.Jasminum = {
         //   },
         //   false
         // );
+        Components.utils.import("resource://gre/modules/osfile.jsm");
         Zotero.debug("Init Jasminum ...");
     },
 
@@ -396,7 +397,7 @@ Zotero.Jasminum = {
             "//a[contains(text(), '分章下载')]"
         );
         if (chapterDown.length === 0) {
-            Zotero.debug('No chapter found.');
+            Zotero.debug("No chapter found.");
             return null;
         }
         var readerUrl = Zotero.Utilities.xpath(
@@ -410,15 +411,13 @@ Zotero.Jasminum = {
         var chapterUrl = Zotero.Utilities.xpath(
             respHTML,
             "//iframe[@id='treeView']"
-        )[0].getAttribute('src');
+        )[0].getAttribute("src");
         Zotero.debug("** Jasminum chapter url: " + chapterUrl);
         return "https://kreader.cnki.net/Kreader/" + chapterUrl;
     },
 
-    getBookmark: async function (items) {
+    getBookmark: async function (item) {
         // demo url     https://kreader.cnki.net/Kreader/buildTree.aspx?dbCode=cdmd&FileName=1020622678.nh&TableName=CMFDTEMP&sourceCode=GHSFU&date=&year=2020&period=&fileNameList=&compose=&subscribe=&titleName=&columnCode=&previousType=_&uid=
-        if (items.length == 0) return;
-        var item = items.shift();
         var parentItem = item.parentItem;
         var parentItemType = parentItem.itemTypeID; // theis = 7
         var itemUrl = "";
@@ -429,18 +428,18 @@ Zotero.Jasminum = {
             parentItem.getField("extra") &&
             parentItem.getField("extra").includes("cnki")
         ) {
-            Zotero.debug('1');
+            Zotero.debug("1");
             itemChapterUrl = parentItem.getField("extra");
         } else if (
             parentItemType === 7 &&
             parentItem.getField("url") &&
             parentItem.getField("url").includes("cnki")
         ) {
-            Zotero.debug('2');
+            Zotero.debug("2");
             itemUrl = parentItem.getField("url");
             itemChapterUrl = await Zotero.Jasminum.getChapterUrl(itemUrl);
         } else {
-            Zotero.debug('3');
+            Zotero.debug("3"); // TODO: use title and author
             var fileData = Zotero.Jasminum.splitFilename(item.getFilename());
             var searchPrepareOut = await Zotero.Jasminum.searchPrepare(
                 fileData
@@ -467,17 +466,94 @@ Zotero.Jasminum = {
             var level = cols.length - 1;
             var title = row.textContent.trim();
             var onclickText = cols[cols.length - 1]
-                .querySelector("a").getAttribute('onclick');
+                .querySelector("a")
+                .getAttribute("onclick");
             var pageRex = onclickText.match(/CDMDNodeClick\('(\d+)'/);
             var page = pageRex[1];
             var bookmark = `BookmarkBegin\nBookmarkTitle: ${title}\nBookmarkLevel: ${level}\nBookmarkPageNumber: ${page}`;
             rows_array.push(bookmark);
         }
-        var bookmarks = rows_array.join("\n");
-        return bookmarks;
+        var bookmark = rows_array.join("\n");
+        return bookmark;
+    },
+
+    addBookmark: async function (item, bookmark) {
+        Zotero.debug("** Jasminum add bookmark begin");
+        Zotero.debug(item);
+        let cacheFile = Zotero.getTempDirectory();
+        cacheFile.append("bookmark.txt");
+        let tmpDir = OS.Path.dirname(cacheFile.path);
+        if (cacheFile.exists()) {
+            cacheFile.remove(false);
+        }
+
+        let cachePDF = Zotero.getTempDirectory();
+        cachePDF.append("output.pdf");
+        if (cachePDF.exists()) {
+            cachePDF.remove(false);
+        }
+
+        let encoder = new TextEncoder();
+        let array = encoder.encode(bookmark);
+        let promise = OS.File.writeAtomic(cacheFile.path, array, {
+            tmpPath: cacheFile.path + ".tmp",
+        });
+        var pdftk = "C:\\Program Files (x86)\\PDFtk Server\\bin\\pdftk.exe";
+        if (!Zotero.isWin) {
+            pdftk = "pdftk";
+        }
+
+        var args = [
+            item.getFilePath(),
+            "update_info_utf8",
+            cacheFile.path,
+            "output",
+            cachePDF.path,
+        ];
+        Zotero.debug(
+            "PDFtk: Running " +
+                pdftk +
+                " " +
+                args.map((arg) => "'" + arg + "'").join(" ")
+        );
+        try {
+            await Zotero.Utilities.Internal.exec(pdftk, args);
+            Zotero.debug("PDFtk: Add bookmark:");
+            await this.updateBookmarkAttachment(item, cachePDF.path);
+            cacheFile.remove(false);
+            cachePDF.remove(false);
+            Zotero.debug("** Jasminum add bookmark complete!");
+        } catch (e) {
+            Zotero.logError(e);
+            try {
+                cacheFile.remove(false);
+            } catch (e) {
+                Zotero.logError(e);
+            }
+            throw new Zotero.Exception.Alert("PDFtk add bookmark failed.");
+        }
+    },
+
+    updateBookmarkAttachment: async function (item, markedpdf) {
+        var parentItem = item.parentItem;
+        var parentItemID = parentItem.id;
+        var libraryID = parentItem.libraryID;
+        var fileBaseName = item.getFilename();
+        Zotero.debug(parentItemID + fileBaseName + markedpdf + libraryID);
+        var file = markedpdf;
+        var newItem = await Zotero.Attachments.importFromFile({
+            file,
+            libraryID,
+            fileBaseName,
+            parentItemID,
+        });
+        await newItem.saveTx();
+        // delete old attachment
+        Zotero.Items.erase(item.id);
+    },
+
+    addBookmarkItems: async function (item) {
+        var bookmark = await Zotero.Jasminum.getBookmark(item);
+        await Zotero.Jasminum.addBookmark(items[0], bookmark);
     },
 };
-
-var items = Zotero.getActiveZoteroPane().getSelectedItems();
-var bookmarks = Zotero.Jasminum.getBookmark(items);
-Zotero.debug(bookmarks);
