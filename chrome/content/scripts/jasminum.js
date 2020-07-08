@@ -41,16 +41,17 @@ Zotero.Jasminum = {
         pane.document.getElementById(
             "zotero-itemmenu-jasminum"
         ).hidden = !showMenu;
-        pane.document.getElementById(
-            "id-jasminum-separator"
-        ).hidden = !showMenu;
+        var showMenuPDF = false;
         if (items.length === 1) {
-            var showMenuPDF = this.checkItemPDF(items[0]);
+            showMenuPDF = Zotero.Jasminum.checkItemPDF(items[0]);
             pane.document.getElementById(
                 "zotero-itemmenu-jasminum-bookmark"
             ).hidden = !showMenuPDF;
         }
-        Zotero.debug("**Jasminum show menu: " + show_menu);
+        pane.document.getElementById("id-jasminum-separator").hidden = !(
+            showMenu || showMenuPDF
+        );
+        Zotero.debug("**Jasminum show menu: " + (showMenu || showMenuPDF));
     },
 
     updateSelectedEntity: function (libraryId) {
@@ -77,11 +78,7 @@ Zotero.Jasminum = {
 
     updateSelectedItems: function () {
         Zotero.debug("**Jasminum Updating Selected items");
-        suppress_warnings = false;
-        Zotero.Jasminum.updateItems(
-            ZoteroPane.getSelectedItems(),
-            suppress_warnings
-        );
+        Zotero.Jasminum.updateItems(ZoteroPane.getSelectedItems());
     },
 
     checkItem: function (item) {
@@ -198,7 +195,7 @@ Zotero.Jasminum = {
             var xhr = new XMLHttpRequest();
             xhr.open("GET", url);
             xhr.onload = function () {
-                if (this.status === 200) {
+                if (Zotero.Jasminum.status === 200) {
                     resolve(xhr.response);
                 } else {
                     reject({
@@ -223,21 +220,20 @@ Zotero.Jasminum = {
             "https://kns.cnki.net/kns/request/SearchHandler.ashx";
         var url = SEARCH_HANDLE_URL + "?" + searchData;
         Zotero.debug("**Jasminum start prepare");
-        var searchPrepareOut = await this.promiseGet(url);
+        var searchPrepareOut = await Zotero.Jasminum.promiseGet(url);
         return searchPrepareOut;
     },
 
     search: async function (searchPrepareOut, fileData) {
         Zotero.debug("**Jasminum start search");
         var keyword = encodeURI(fileData.keyword);
-        Zotero.debug(searchPrepareOut);
         Zotero.debug("**Jasminum  keyword: " + keyword);
         var resultUrl =
             "https://kns.cnki.net/kns/brief/brief.aspx?pagename=" +
             searchPrepareOut +
             `&t=${Date.parse(new Date())}&keyValue=${keyword}&S=1&sorttype=`;
         Zotero.debug(resultUrl);
-        var searchResult = await this.promiseGet(resultUrl);
+        var searchResult = await Zotero.Jasminum.promiseGet(resultUrl);
         var targetRow = Zotero.Jasminum.getSearchItems(xhr.response);
         return targetRow;
     },
@@ -277,7 +273,7 @@ Zotero.Jasminum = {
         if (targetRow == null) {
             return new Error("No items returned from the CNKI");
         }
-
+        Zotero.debug(targetRow);
         var targetUrl = targetRow.getElementsByClassName("fz14")[0].href;
         var targetID = Zotero.Jasminum.getIDFromUrl(targetUrl);
         Zotero.debug(targetID);
@@ -293,7 +289,7 @@ Zotero.Jasminum = {
         var url =
             "https://kns.cnki.net/kns/ViewPage/viewsave.aspx?displayMode=Refworks&" +
             postData;
-        var resp = await this.promiseGet(url);
+        var resp = await Zotero.Jasminum.promiseGet(url);
         // Zotero.debug(resp);
         var parser = new DOMParser();
         var html = parser.parseFromString(resp, "text/html");
@@ -339,7 +335,7 @@ Zotero.Jasminum = {
         throw new Error("No items found");
     },
 
-    fixItem: function(newItem) {
+    fixItem: function (newItem) {
         var creators = newItem.getCreators();
         for (var i = 0; i < creators.length; i++) {
             var creator = creators[i];
@@ -351,13 +347,8 @@ Zotero.Jasminum = {
                 lastSpace !== -1
             ) {
                 // western name. split on last space
-                creator.firstName = creator.lastName.substr(
-                    0,
-                    lastSpace
-                );
-                creator.lastName = creator.lastName.substr(
-                    lastSpace + 1
-                );
+                creator.firstName = creator.lastName.substr(0, lastSpace);
+                creator.lastName = creator.lastName.substr(lastSpace + 1);
             } else {
                 // Chinese name. first character is last name, the rest are first name
                 creator.firstName = creator.lastName.substr(1);
@@ -367,14 +358,18 @@ Zotero.Jasminum = {
         }
         newItem.setCreators(creators);
         // Clean up abstract
-        if (newItem.getField('abstractNote')) {
-            newItem.setField('abstractNote', newItem.getField('abstractNote')
-                .replace(/\s*[\r\n]\s*/g, "\n")
-                .replace(/&lt;.*?&gt;/g, ""));
+        if (newItem.getField("abstractNote")) {
+            newItem.setField(
+                "abstractNote",
+                newItem
+                    .getField("abstractNote")
+                    .replace(/\s*[\r\n]\s*/g, "\n")
+                    .replace(/&lt;.*?&gt;/g, "")
+            );
         }
         // Remove wront CN field.
-        newItem.setField('callNumber', '');
-        newItem.setField('libraryCatalog', "CNKI");
+        newItem.setField("callNumber", "");
+        newItem.setField("libraryCatalog", "CNKI");
         if (newItem.getNotes()) {
             Zotero.Items.erase(newItem.getNotes());
         }
@@ -390,9 +385,12 @@ Zotero.Jasminum = {
         var libraryID = item.libraryID;
         if (!Zotero.Jasminum.checkItem(item)) return;
         var fileData = Zotero.Jasminum.splitFilename(item.getFilename());
-        var searchPrepareOut = Zotero.Jasminum.searchPrepare(fileData);
-        // Zotero.debug(searchPrepareOut);
+        var searchPrepareOut = await Zotero.Jasminum.searchPrepare(fileData);
+        Zotero.debug("searchPrepareOut");
+        Zotero.debug(searchPrepareOut);
         var targetRow = Zotero.Jasminum.search(searchPrepareOut, fileData);
+        Zotero.debug("targetRow");
+        Zotero.debug(targetRow);
         var data = Zotero.Jasminum.getRefworks(targetRow);
         var translate = new Zotero.Translate.Import();
         translate.setTranslator("1a3506da-a303-4b0a-a1cd-f216e6138d86");
@@ -407,7 +405,7 @@ Zotero.Jasminum = {
         if (itemCollections.length) {
             for (let collectionID of itemCollections) {
                 newItem.addToCollection(collectionID);
-            }           
+            }
         }
 
         // Put old item as a child of the new item
@@ -433,7 +431,7 @@ Zotero.Jasminum = {
 
     getChapterUrl: async function (itemUrl) {
         Zotero.debug("** Jasminum get chapter url.");
-        var respText = await this.promiseGet(itemUrl);
+        var respText = await Zotero.Jasminum.promiseGet(itemUrl);
         var parser = new DOMParser();
         var respHTML = parser.parseFromString(respText, "text/html");
         var chapterDown = Zotero.Utilities.xpath(
@@ -449,7 +447,7 @@ Zotero.Jasminum = {
             "//a[contains(text(), '在线阅读')]"
         )[0].href;
         Zotero.debug("** Jasminum reader url: " + readerUrl);
-        var respText = await this.promiseGet(readerUrl);
+        var respText = await Zotero.Jasminum.promiseGet(readerUrl);
         var parser = new DOMParser();
         var respHTML = parser.parseFromString(respText, "text/html");
         var chapterUrl = Zotero.Utilities.xpath(
@@ -485,8 +483,10 @@ Zotero.Jasminum = {
         } else {
             Zotero.debug("3");
             var fileData = {
-                keyword: parentItem.getField('title'),
-                author: parentItem.getCreator(0).lastName + parentItem.getCreator(0).firstName
+                keyword: parentItem.getField("title"),
+                author:
+                    parentItem.getCreator(0).lastName +
+                    parentItem.getCreator(0).firstName,
             };
             var searchPrepareOut = await Zotero.Jasminum.searchPrepare(
                 fileData
@@ -501,7 +501,7 @@ Zotero.Jasminum = {
         }
 
         Zotero.debug("** Jasminum item chapter url: " + itemChapterUrl);
-        var chapterText = await this.promiseGet(itemChapterUrl);
+        var chapterText = await Zotero.Jasminum.promiseGet(itemChapterUrl);
         var parser = new DOMParser();
         var chapterHTML = parser.parseFromString(chapterText, "text/html");
         var tree = chapterHTML.getElementById("treeDiv");
@@ -568,7 +568,7 @@ Zotero.Jasminum = {
         try {
             await Zotero.Utilities.Internal.exec(pdftk, args);
             Zotero.debug("PDFtk: Add bookmark:");
-            await this.updateBookmarkAttachment(item, cachePDF.path);
+            await Zotero.Jasminum.updateBookmarkAttachment(item, cachePDF.path);
             cacheFile.remove(false);
             cachePDF.remove(false);
             Zotero.debug("** Jasminum add bookmark complete!");
