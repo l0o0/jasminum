@@ -15,6 +15,7 @@
     <menupopup id="zotero-itemmenu">
         <menuseparator id="id-jasminum-separator"/>
         <menuitem id="zotero-itemmenu-jasminum" label="&zotero.jasminum.update.label;" oncommand="Zotero.Jasminum.updateSelectedItems()"/>
+        <menuitem id="zotero-itemmenu-jasminum-namehandler" label="&zotero.jasminum.namehandler.label;" oncommand="Zotero.Jasminum.handleName()"/>
         <menuitem id="zotero-itemmenu-jasminum-bookmark" label="&zotero.jasminum.addBookmark.label;" oncommand="Zotero.Jasminum.addBookmarkItem()"/>
     </menupopup>
 </overlay>

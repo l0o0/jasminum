@@ -1,5 +1,5 @@
 Zotero.Jasminum = {
-    init: function () {
+    init: async function () {
         // // Register the callback in Zotero as an item observer
         // var notifierID = Zotero.Notifier.registerObserver(
         //   Zotero.Jasminum.notifierCallback,
@@ -13,6 +13,7 @@ Zotero.Jasminum = {
         //   },
         //   false
         // );
+        await Zotero.Schema.schemaUpdatePromise;
         Components.utils.import("resource://gre/modules/osfile.jsm");
         Zotero.debug("Init Jasminum ...");
     },
@@ -41,6 +42,12 @@ Zotero.Jasminum = {
         pane.document.getElementById(
             "zotero-itemmenu-jasminum"
         ).hidden = !showMenu;
+        var showMenuName = items.some((item) =>
+            Zotero.Jasminum.checkItemName(item)
+        );
+        pane.document.getElementById(
+            "zotero-itemmenu-jasminum-namehandler"
+        ).hidden = !showMenuName;
         var showMenuPDF = false;
         if (items.length === 1) {
             showMenuPDF = Zotero.Jasminum.checkItemPDF(items[0]);
@@ -50,7 +57,12 @@ Zotero.Jasminum = {
             ).hidden = !showMenuPDF;
         }
         pane.document.getElementById("id-jasminum-separator").hidden = !(
-            showMenu || showMenuPDF
+            showMenu ||
+            showMenuPDF ||
+            showMenuName
+        );
+        Zotero.debug(
+            "**Jasminum show menu: " + showMenu + showMenuName + showMenuPDF
         );
         Zotero.debug("**Jasminum show menu: " + (showMenu || showMenuPDF));
     },
@@ -120,7 +132,7 @@ Zotero.Jasminum = {
             isinEn: "1",
             PageName: "ASP.brief_result_aspx",
             DbPrefix: "SCDB",
-            DbCatalog: "中国学术期刊网络出版总库",
+            DbCatalog: "中国学术期刊网络出版总库", // TODO "中国学术文献网络出版总库" 时常变化
             ConfigFile: "SCDB.xml",
             db_opt: "CJFQ,CDFD,CMFD,CPFD,IPFD,CCND,CCJD",
             year_type: "echar",
@@ -415,8 +427,8 @@ Zotero.Jasminum = {
 
         // Put old item as a child of the new item
         item.parentID = newItem.id;
-        item.saveTx();
-        newItem.saveTx();
+        await item.saveTx();
+        await newItem.saveTx();
         if (items.length) {
             Zotero.Jasminum.updateItems(items);
         }
@@ -425,11 +437,12 @@ Zotero.Jasminum = {
 
     checkItemPDF: function (item) {
         return (
+            !item.isTopLevelItem() &&
             item.isAttachment() &&
             item.attachmentContentType &&
             item.attachmentContentType === "application/pdf" &&
-            escape(item.getFilename()).includes("%u") &&
-            !item.isTopLevelItem()
+            item.parentItem.getField("libraryCatalog") &&
+            item.parentItem.getField("libraryCatalog").includes("CNKI")
         ); // Contain Chinese
     },
 
@@ -611,6 +624,42 @@ Zotero.Jasminum = {
         var item = ZoteroPane.getSelectedItems()[0];
         var bookmark = await Zotero.Jasminum.getBookmark(item);
         await Zotero.Jasminum.addBookmark(item, bookmark);
+    },
+
+    checkItemName: function (item) {
+        return item.isRegularItem() && item.isTopLevelItem();
+    },
+
+    handleName: async function () {
+        var items = ZoteroPane.getSelectedItems();
+        for (let item of items) {
+            var creators = item.getCreators();
+            for (var i = 0; i < creators.length; i++) {
+                var creator = creators[i];
+                if (
+                    // English Name pass
+                    creator.lastName.search(/[A-Za-z]/) !== -1 ||
+                    creator.lastName.search(/[A-Za-z]/) !== -1
+                ) {
+                    continue;
+                }
+                if (creator.lastName && creator.firstName) {
+                    creator.lastName = creator.lastName + creator.firstName;
+                    creator.firstName = "";
+                    creator.fieldMode = 1;
+                } else {
+                    var chineseName = creator.lastName
+                        ? creator.lastName
+                        : creator.firstName;
+                    creator.lastName = chineseName.charAt(0);
+                    creator.firstName = chineseName.substr(1);
+                    creator.fieldMode = 0;
+                }
+                creators[i] = creator;
+            }
+            item.setCreators(creators);
+            item.saveTx();
+        }
     },
 };
 
