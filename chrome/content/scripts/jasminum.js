@@ -513,7 +513,8 @@ Zotero.Jasminum = {
                 searchPrepareOut,
                 fileData
             );
-            itemUrl = targetRow.querySelector("a.fz14").href;
+            itemUrl = targetRow.querySelector("a.fz14").getAttribute("href");
+            itemUrl = "https://kns.cnki.net/KCMS" + itemUrl.slice(4);
             itemChapterUrl = await Zotero.Jasminum.getChapterUrl(itemUrl);
             // 获取文献链接URL -> 获取章节目录URL
         }
