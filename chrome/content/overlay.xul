@@ -14,8 +14,23 @@
 
     <menupopup id="zotero-itemmenu">
         <menuseparator id="id-jasminum-separator"/>
-        <menuitem id="zotero-itemmenu-jasminum" label="&zotero.jasminum.update.label;" oncommand="Zotero.Jasminum.updateSelectedItems()"/>
-        <menuitem id="zotero-itemmenu-jasminum-namehandler" label="&zotero.jasminum.namehandler.label;" oncommand="Zotero.Jasminum.handleName()"/>
-        <menuitem id="zotero-itemmenu-jasminum-bookmark" label="&zotero.jasminum.addBookmark.label;" oncommand="Zotero.Jasminum.addBookmarkItem()"/>
+        <menuitem 
+            id="zotero-itemmenu-jasminum" 
+            label="&zotero.jasminum.update.label;" 
+            oncommand="Zotero.Jasminum.updateSelectedItems()"
+            class="menuitem-iconic zotero-jasminum-searchCNKI-icon"
+        />
+        <menuitem 
+            id="zotero-itemmenu-jasminum-namehandler" 
+            label="&zotero.jasminum.namehandler.label;" 
+            oncommand="Zotero.Jasminum.handleName()"
+            class="menuitem-iconic zotero-jasminum-name-icon"
+        />
+        <menuitem 
+            id="zotero-itemmenu-jasminum-bookmark" 
+            label="&zotero.jasminum.addBookmark.label;" 
+            oncommand="Zotero.Jasminum.addBookmarkItem()"
+            class="menuitem-iconic zotero-jasminum-bookmark-icon"
+        />
     </menupopup>
 </overlay>

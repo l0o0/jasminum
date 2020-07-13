@@ -1,3 +1,11 @@
-.zotero-scihub-icon {
-	list-style-image: url('chrome://zoteroscihub/skin/favicon.png');
+.zotero-jasminum-searchCNKI-icon {
+	list-style-image: url('chrome://jasminum/skin/searchCNKI.png');
+}
+
+.zotero-jasminum-name-icon {
+	list-style-image: url('chrome://jasminum/skin/name.png');
+}
+
+.zotero-jasminum-bookmark-icon {
+	list-style-image: url('chrome://jasminum/skin/bookmark.png');
 }
