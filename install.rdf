@@ -36,14 +36,14 @@
       <Description>
         <em:locale>en-US</em:locale>
         <em:name>Jasminum</em:name>
-        <em:description>TODO</em:description>
+        <em:description>A simple Add-on to enhance Chinese user experience.</em:description>
       </Description>
     </em:localized>
     <em:localized>
       <Description>
         <em:locale>zh-CN</em:locale>
         <em:name>Jasminum</em:name>
-        <em:description>简介</em:description>
+        <em:description>一个简单的 Zotero 中文插件</em:description>
       </Description>
     </em:localized>
   </Description>
