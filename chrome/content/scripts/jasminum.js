@@ -111,15 +111,23 @@ Zotero.Jasminum = {
         var ext = filename.substr(filename.length - 3, 3);
         if (ext != "pdf" && ext != "caj") return false;
         return true;
-    },
+    }.bind(Zotero.Jasminum),
 
     splitFilename: function (filename) {
         // Make query parameters from filename
         var prefix = filename.substr(0, filename.length - 4);
         var prefixArr = prefix.split("_");
+        var author = "";
+        var keyword = "";
+        if (prefixArr.length > 1 && prefixArr[prefixArr.length-1].length <=4) {
+            author = prefixArr[prefixArr.length-1];
+            keyword = prefixArr.slice(0, prefixArr.length-1).join(" ");
+        } else {
+            keyword = prefixArr.join(" ");
+        }
         return {
-            author: prefixArr[prefixArr.length - 1],
-            keyword: prefixArr.slice(0, prefixArr.length - 1).join(" "),
+            author: author,
+            keyword: keyword,
         };
     },
 
