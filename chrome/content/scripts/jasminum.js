@@ -123,7 +123,17 @@ Zotero.Jasminum = {
         };
     },
 
-    createPost: function (fileData) {
+    createPost: async function (fileData) {
+        var searchUrl =
+            "https://kns.cnki.net/kns/brief/result.aspx?dbprefix=SCDB&crossDbcodes=CJFQ,CDFD,CMFD,CPFD,IPFD,CCND,CCJD";
+        var respText = await Zotero.Jasminum.promiseGet(searchUrl);
+        var dbCatalog = "";
+        if (respText.includes("中国学术期刊网络出版总库")) {
+            dbCatalog = "中国学术期刊网络出版总库";
+        } else {
+            dbCatalog = "中国学术文献网络出版总库";
+        }
+        Zotero.debug("** Jasminum search dbCatalog: " + dbCatalog);
         // Create a search string.
         static_post_data = {
             action: "",
@@ -191,17 +201,6 @@ Zotero.Jasminum = {
         return { dbname: dbname[1], filename: filename[1], dbcode: dbcode[1] };
     },
 
-    parseRef: function (targetID) {
-        var postData =
-            "formfilenames=" +
-            encodeURIComponent(
-                targetID.dbname + "!" + targetID.filename + "!1!0,"
-            ) +
-            "&hid_kLogin_headerUrl=/KLogin/Request/GetKHeader.ashx%3Fcallback%3D%3F" +
-            "&hid_KLogin_FooterUrl=/KLogin/Request/GetKHeader.ashx%3Fcallback%3D%3F" +
-            "&CookieName=FileNameS";
-    },
-
     promiseGet: function (url) {
         Zotero.debug("** Jasminum create http get.");
         return new Promise(function (resolve, reject) {
@@ -228,7 +227,7 @@ Zotero.Jasminum = {
     },
 
     searchPrepare: async function (fileData) {
-        var searchData = Zotero.Jasminum.createPost(fileData);
+        var searchData = await Zotero.Jasminum.createPost(fileData);
         var SEARCH_HANDLE_URL =
             "https://kns.cnki.net/kns/request/SearchHandler.ashx";
         var url = SEARCH_HANDLE_URL + "?" + searchData;
@@ -442,8 +441,9 @@ Zotero.Jasminum = {
             item.attachmentContentType &&
             item.attachmentContentType === "application/pdf" &&
             item.parentItem.getField("libraryCatalog") &&
-            item.parentItem.getField("libraryCatalog").includes("CNKI")
-        ); // Contain Chinese
+            item.parentItem.getField("libraryCatalog").includes("CNKI") &&
+            item.parentItem.itemTypeID === 7
+        );
     },
 
     getChapterUrl: async function (itemUrl) {
@@ -478,19 +478,16 @@ Zotero.Jasminum = {
     getBookmark: async function (item) {
         // demo url     https://kreader.cnki.net/Kreader/buildTree.aspx?dbCode=cdmd&FileName=1020622678.nh&TableName=CMFDTEMP&sourceCode=GHSFU&date=&year=2020&period=&fileNameList=&compose=&subscribe=&titleName=&columnCode=&previousType=_&uid=
         var parentItem = item.parentItem;
-        var parentItemType = parentItem.itemTypeID; // theis = 7
         var itemUrl = "";
         var itemChapterUrl = "";
 
         if (
-            parentItemType === 7 &&
             parentItem.getField("extra") &&
             parentItem.getField("extra").includes("cnki")
         ) {
             Zotero.debug("1");
             itemChapterUrl = parentItem.getField("extra");
         } else if (
-            parentItemType === 7 &&
             parentItem.getField("url") &&
             parentItem.getField("url").includes("cnki")
         ) {
@@ -658,8 +655,10 @@ Zotero.Jasminum = {
                 }
                 creators[i] = creator;
             }
-            item.setCreators(creators);
-            item.saveTx();
+            if (creators != item.getCreators()) {
+                item.setCreators(creators);
+                item.saveTx();
+            }
         }
     },
 };

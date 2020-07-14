@@ -10,11 +10,6 @@
     <em:iconURL>chrome://jasminum/skin/icon.png</em:iconURL>
     <em:multiprocessCompatible>true</em:multiprocessCompatible>
     <em:creator>Xingzhong Lin</em:creator>
-    <!--
-    <em:homepageURL>http://www.google.com</em:homepageURL>
-    <em:optionsURL>chrome://znote/content/options.xul</em:optionsURL>
-    <em:updateURL>https://raw.githubusercontent.com/jlegewie/zotfile/master/zotfile-update.rdf</em:updateURL>
-    -->
 
     <em:targetApplication>
       <Description>
