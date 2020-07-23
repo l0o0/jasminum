@@ -150,7 +150,7 @@ Zotero.Jasminum = {
             isinEn: "1",
             PageName: "ASP.brief_result_aspx",
             DbPrefix: "SCDB",
-            DbCatalog: "中国学术期刊网络出版总库", // TODO "中国学术文献网络出版总库" 时常变化
+            DbCatalog: dbCatalog,
             ConfigFile: "SCDB.xml",
             db_opt: "CJFQ,CDFD,CMFD,CPFD,IPFD,CCND,CCJD",
             year_type: "echar",
