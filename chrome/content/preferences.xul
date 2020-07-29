@@ -1,20 +1,20 @@
 <?xml version="1.0"?>
-<!DOCTYPE window SYSTEM "chrome://zoteroscihub/locale/overlay.dtd">
+<!DOCTYPE window SYSTEM "chrome://jasminum/locale/overlay.dtd">
 
-<overlay id="zoteroscihub-preferences"
+<overlay id="jasminum-preferences"
 	xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul"
   xmlns:html="http://www.w3.org/1999/xhtml">
 
   <prefwindow id="zotero-prefs">
-    <prefpane id="zotero-prefpane-zoteroscihub"
+    <prefpane id="zotero-prefpane-jasminum"
             insertafter="zotero-prefpane-advanced"
-            label="Zotero Scihub"
-            image="chrome://zoteroscihub/skin/favicon.png"
+            label="Jasminum"
+            image="chrome://jasminum/skin/icon.png"
 						onpaneload="initPreferences();"
             >
-      <preferences id="zotero-preferences-zoteroscihub">
-        <preference id="pref-zoteroscihub-automatic-pdf-download" name="extensions.zotero.zoteroscihub.automatic_pdf_download" type="bool"/>
-        <preference id="pref-zoteroscihub-scihub-url" name="extensions.zotero.zoteroscihub.scihub_url" type="string"/>
+      <preferences id="zotero-preferences-jasminum">
+        <preference id="pref-jasminum-pdftkpath" name="extensions.zotero.jasminum.pdftkpath" type="bool"/>
+        <preference id="pref-jasminum-autoupdate" name="extensions.zotero.jasminum.autoupdate" type="string"/>
       </preferences>
       <vbox flex="1">
         <grid>
@@ -24,12 +24,11 @@
           </columns>
           <rows>
             <row>
-              <label value="Automatic PDF Download"/>
-              <checkbox id="id-zoteroscihub-automatic-pdf-download" preference="pref-zoteroscihub-automatic-pdf-download"/>
+              <checkbox value="&zotero.jasminum.autoupdate.label;" preference="pref-jasminum-autoupdate"/>
             </row>
             <row>
-              <label value="Scihub URL: (Note https only works with sci-hub.tw due to invalid SSL certs on mirrors)"/>
-              <textbox id="id-zoteroscihub-scihub-url" preference="pref-zoteroscihub-scihub-url"/>
+              <label value="&zotero.jasminum.pdftkpath.label;"/>
+              <checkbox id="id-jasminum-pdftkpath" preference="pref-jasminum-pdftkpath"/>
             </row>
           </rows>
         </grid>
@@ -38,6 +37,6 @@
   </prefwindow>
 
 	<!-- Include the main extension logic -->
-	<script src="chrome://zoteroscihub/content/scripts/preferences.js"/>
+	<script src="chrome://jasminum/content/scripts/preferences.js"/>
 
 </overlay>

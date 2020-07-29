@@ -1,5 +1,5 @@
 <!ENTITY zotero.jasminum.update.label "抓取知网元数据…">
 <!ENTITY zotero.jasminum.addBookmark.label "添加PDF书签…">
 <!ENTITY zotero.jasminum.namehandler.label "合并/拆分姓名">
-
-
+<!ENTITY zotero.jasminum.pdftkpath.label "PDFtk Service 安装路径">
+<!ENTITY zotero.jasminum.autoupdate.label "添加中文PDF/CAJ时自动从知网抓取题录">
