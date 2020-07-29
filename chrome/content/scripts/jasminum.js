@@ -450,7 +450,7 @@ Zotero.Jasminum = {
             item.attachmentContentType === "application/pdf" &&
             item.parentItem.getField("libraryCatalog") &&
             item.parentItem.getField("libraryCatalog").includes("CNKI") &&
-            item.parentItem.itemTypeID === 7
+            Zotero.ItemTypes.getName(item.parentItem.itemTypeID) === 'thesis'
         );
     },
 
