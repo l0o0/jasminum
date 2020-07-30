@@ -14,8 +14,22 @@ Zotero.Jasminum = {
         //   false
         // );
         await Zotero.Schema.schemaUpdatePromise;
+        this.initPref();
         Components.utils.import("resource://gre/modules/osfile.jsm");
         Zotero.debug("Init Jasminum ...");
+    },
+
+    initPref: function () {
+        if (Zotero.Prefs.get("zotero.jasminum.pdftkpath") === undefined) {
+            var pdftkpath = "C:\\Program Files (x86)\\PDFtk Server\\bin";
+            if (Zotero.isMac || Zotero.isLinux) {
+                pdftkpath = "/usr/bin";
+            }
+            Zotero.Prefs.set("zotero.jasminum.pdftkpath", pdftkpath);
+        }
+        if (Zotero.Prefs.get("zotero.jasminum.autoupdate") === undefined) {
+            Zotero.Prefs.set("zotero.jasminum.autoupdate", false);
+        }
     },
 
     notifierCallback: {
@@ -119,9 +133,12 @@ Zotero.Jasminum = {
         var prefixArr = prefix.split("_");
         var author = "";
         var keyword = "";
-        if (prefixArr.length > 1 && prefixArr[prefixArr.length-1].length <=4) {
-            author = prefixArr[prefixArr.length-1];
-            keyword = prefixArr.slice(0, prefixArr.length-1).join(" ");
+        if (
+            prefixArr.length > 1 &&
+            prefixArr[prefixArr.length - 1].length <= 4
+        ) {
+            author = prefixArr[prefixArr.length - 1];
+            keyword = prefixArr.slice(0, prefixArr.length - 1).join(" ");
         } else {
             keyword = prefixArr.join(" ");
         }
@@ -450,7 +467,7 @@ Zotero.Jasminum = {
             item.attachmentContentType === "application/pdf" &&
             item.parentItem.getField("libraryCatalog") &&
             item.parentItem.getField("libraryCatalog").includes("CNKI") &&
-            Zotero.ItemTypes.getName(item.parentItem.itemTypeID) === 'thesis'
+            Zotero.ItemTypes.getName(item.parentItem.itemTypeID) === "thesis"
         );
     },
 
@@ -569,13 +586,13 @@ Zotero.Jasminum = {
         let promise = OS.File.writeAtomic(cacheFile.path, array, {
             tmpPath: cacheFile.path + ".tmp",
         });
-        var pdftk = "C:\\Program Files (x86)\\PDFtk Server\\bin\\pdftk.exe";
-        if (Zotero.isLinux) {
-            pdftk = "/usr/bin/pdftk";
-        } else if (Zotero.isMac) {
-            pdftk = "Path in mac"; // TODO
+        var pdftk = Zotero.Prefs.get("zotero.jasminum.pdftkpath");
+        if (Zotero.isWin) {
+            pdftk = OS.Path.join(pdftk, "pdftk.exe");
+        } else {
+            pdftk = OS.Path.join(pdftk, "pdftk");
         }
-
+        Zotero.debug("** Jasminum pdftk path: " + pdftk);
         var args = [
             item.getFilePath(),
             "update_info_utf8",
