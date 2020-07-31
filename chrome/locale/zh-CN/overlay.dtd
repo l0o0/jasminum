@@ -3,5 +3,15 @@
 <!ENTITY jasminum.namehandler.label "合并/拆分姓名">
 <!ENTITY jasminum.namehandler.split.label "拆分姓名">
 <!ENTITY jasminum.namehandler.merge.label "合并姓名">
-
-
+<!ENTITY jasminum.pdftkpath.label "PDFtk Service 安装路径">
+<!ENTITY jasminum.autoupdate.label "添加中文PDF/CAJ时自动从知网抓取题录">
+<!ENTITY jasminum.chinese "中文插件设置">
+<!ENTITY jasminum.translators "非官方维护中文翻译器">
+<!ENTITY jasminum.check "检查">
+<!ENTITY jasminum.chinese.caption "知网参数设置">
+<!ENTITY jasminum.pdftk.caption "PDFtk Server 路径设置">
+<!ENTITY jasminum.choose "选择">
+<!ENTITY jasminum "茉莉花">
+<!ENTITY jasminum.pdftk.info "添加书签功能依赖于PDFtk server，正确安装并设置好安装目录才能实现书签添加功能，请选择PDFtk可执行文件所在目录">
+<!ENTITY pdftk.path.check.ok "PDFtk Server安装目录检查通过">
+<!ENTITY pdftk.path.check.error "未在该目录下发现pdftk执行程序">

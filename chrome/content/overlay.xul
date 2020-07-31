@@ -14,7 +14,6 @@
 
     <menupopup id="zotero-itemmenu">
 		<menuseparator id="id-jasminum-separator"/>
-		<menuseparator/>
 		<menu id="zotero-itemmenu-jasminum-namehandler" 
             label="&jasminum.namehandler.label;" 
             class="menu-iconic jasminum-name-icon">
