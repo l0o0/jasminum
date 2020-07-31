@@ -1,5 +1,7 @@
-<!ENTITY zotero.jasminum.update.label "抓取知网元数据…">
-<!ENTITY zotero.jasminum.addBookmark.label "添加PDF书签…">
-<!ENTITY zotero.jasminum.namehandler.label "合并/拆分姓名">
+<!ENTITY jasminum.update.label "抓取知网元数据…">
+<!ENTITY jasminum.addBookmark.label "添加PDF书签…">
+<!ENTITY jasminum.namehandler.label "合并/拆分姓名">
+<!ENTITY jasminum.namehandler.split.label "拆分姓名">
+<!ENTITY jasminum.namehandler.merge.label "合并姓名">
 
 

@@ -13,24 +13,23 @@
     </popup> -->
 
     <menupopup id="zotero-itemmenu">
-        <menuseparator id="id-jasminum-separator"/>
-        <menuitem 
-            id="zotero-itemmenu-jasminum" 
-            label="&zotero.jasminum.update.label;" 
-            oncommand="Zotero.Jasminum.updateSelectedItems()"
-            class="menuitem-iconic zotero-jasminum-searchCNKI-icon"
-        />
-        <menuitem 
-            id="zotero-itemmenu-jasminum-namehandler" 
-            label="&zotero.jasminum.namehandler.label;" 
-            oncommand="Zotero.Jasminum.handleName()"
-            class="menuitem-iconic zotero-jasminum-name-icon"
-        />
-        <menuitem 
-            id="zotero-itemmenu-jasminum-bookmark" 
-            label="&zotero.jasminum.addBookmark.label;" 
-            oncommand="Zotero.Jasminum.addBookmarkItem()"
-            class="menuitem-iconic zotero-jasminum-bookmark-icon"
-        />
-    </menupopup>
+		<menuseparator id="id-jasminum-separator"/>
+		<menuseparator/>
+		<menu id="zotero-itemmenu-jasminum-namehandler" 
+            label="&jasminum.namehandler.label;" 
+            class="menu-iconic jasminum-name-icon">
+			<menupopup id="jasminum">
+				<menuitem  label="&jasminum.namehandler.split.label;" oncommand="Zotero.Jasminum.splitName();"/>
+				<menuitem  label="&jasminum.namehandler.merge.label;" oncommand="Zotero.Jasminum.mergeName();"/>
+			</menupopup>
+		</menu>
+		<menuitem id="zotero-itemmenu-jasminum" 
+            label="&jasminum.update.label;"
+            class="menuitem-iconic jasminum-searchCNKI-icon" 
+            oncommand="Zotero.Jasminum.updateSelectedItems();"/>
+		<menuitem id="zotero-itemmenu-jasminum-bookmark"
+            label="&jasminum.addBookmark.label;"
+            class="menuitem-iconic jasminum-bookmark-icon" 
+            oncommand="Zotero.Jasminum.addBookmarkItem();"/>
+	</menupopup>
 </overlay>

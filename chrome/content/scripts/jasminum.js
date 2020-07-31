@@ -119,9 +119,12 @@ Zotero.Jasminum = {
         var prefixArr = prefix.split("_");
         var author = "";
         var keyword = "";
-        if (prefixArr.length > 1 && prefixArr[prefixArr.length-1].length <=4) {
-            author = prefixArr[prefixArr.length-1];
-            keyword = prefixArr.slice(0, prefixArr.length-1).join(" ");
+        if (
+            prefixArr.length > 1 &&
+            prefixArr[prefixArr.length - 1].length <= 4
+        ) {
+            author = prefixArr[prefixArr.length - 1];
+            keyword = prefixArr.slice(0, prefixArr.length - 1).join(" ");
         } else {
             keyword = prefixArr.join(" ");
         }
@@ -400,11 +403,10 @@ Zotero.Jasminum = {
     updateItems: async function (items) {
         var zp = Zotero.getActiveZoteroPane();
         if (items.length == 0) return;
-        var selectParent = true ? items.length === 1 : false;
         var item = items.shift();
         var itemCollections = item.getCollections();
         var libraryID = item.libraryID;
-        if (!Zotero.Jasminum.checkItem(item)) return;
+        if (!Zotero.Jasminum.checkItem(item)) return; // TODO Need notify
         var fileData = Zotero.Jasminum.splitFilename(item.getFilename());
         var searchPrepareOut = await Zotero.Jasminum.searchPrepare(fileData);
         Zotero.debug("searchPrepareOut");
@@ -636,7 +638,37 @@ Zotero.Jasminum = {
         return item.isRegularItem() && item.isTopLevelItem();
     },
 
-    handleName: async function () {
+    splitName: async function () {
+        var items = ZoteroPane.getSelectedItems();
+        for (let item of items) {
+            var creators = item.getCreators();
+            for (var i = 0; i < creators.length; i++) {
+                var creator = creators[i];
+                if (
+                    // English Name pass
+                    creator.lastName.search(/[A-Za-z]/) !== -1 ||
+                    creator.firstName.search(/[A-Za-z]/) !== -1 ||
+                    creator.firstName // 如果有姓就不拆分了
+                ) {
+                    continue;
+                }
+
+                var chineseName = creator.lastName
+                    ? creator.lastName
+                    : creator.firstName;
+                creator.lastName = chineseName.charAt(0);
+                creator.firstName = chineseName.substr(1);
+                creator.fieldMode = 0;
+                creators[i] = creator;
+            }
+            if (creators != item.getCreators()) {
+                item.setCreators(creators);
+                item.saveTx();
+            }
+        }
+    },
+
+    mergeName: async function () {
         var items = ZoteroPane.getSelectedItems();
         for (let item of items) {
             var creators = item.getCreators();
@@ -649,18 +681,9 @@ Zotero.Jasminum = {
                 ) {
                     continue;
                 }
-                if (creator.lastName && creator.firstName) {
-                    creator.lastName = creator.lastName + creator.firstName;
-                    creator.firstName = "";
-                    creator.fieldMode = 1;
-                } else {
-                    var chineseName = creator.lastName
-                        ? creator.lastName
-                        : creator.firstName;
-                    creator.lastName = chineseName.charAt(0);
-                    creator.firstName = chineseName.substr(1);
-                    creator.fieldMode = 0;
-                }
+                creator.lastName = creator.lastName + creator.firstName;
+                creator.firstName = "";
+                creator.fieldMode = 1;
                 creators[i] = creator;
             }
             if (creators != item.getCreators()) {
