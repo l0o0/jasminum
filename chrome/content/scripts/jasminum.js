@@ -13,7 +13,8 @@ Zotero.Jasminum = {
         //   },
         //   false
         // );
-        await Zotero.Schema.schemaUpdatePromise;
+        // 等待数据维护更新完毕
+        // await Zotero.Schema.schemaUpdatePromise;
         this.initPref();
         Components.utils.import("resource://gre/modules/osfile.jsm");
         Zotero.debug("Init Jasminum ...");
@@ -506,14 +507,9 @@ Zotero.Jasminum = {
         var itemChapterUrl = "";
 
         if (
-            parentItem.getField("extra") &&
-            parentItem.getField("extra").includes("cnki")
-        ) {
-            Zotero.debug("1");
-            itemChapterUrl = parentItem.getField("extra");
-        } else if (
+            // 匹配知网 URL
             parentItem.getField("url") &&
-            parentItem.getField("url").includes("cnki")
+            parentItem.getField("url").match(/^https?:\/\/([^/]+\.)?cnki\.net/)
         ) {
             Zotero.debug("2");
             itemUrl = parentItem.getField("url");
