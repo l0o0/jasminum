@@ -29,10 +29,10 @@
                                 <caption label="&jasminum.pdftk.caption;"/>
                                 <description>&jasminum.pdftk.info; <label value="PDFtk Server" href="https://www.pdflabs.com/tools/pdftk-server/"/></description>
                                 <hbox>
-                                    <textbox id="jasminum-pdftk-path" preference="pref-jasminum-pdftkpath" oncommand="Zotero.Jasminum.Prefs.choosePath();" readonly="true"/>
-                                    <button label="&jasminum.choose;" oncommand="Zotero.Jasminum.Prefs.checkPath();"/>
-                                    <image id="path-accept" src="chrome://jasminum/skin/accept.png" tooltiptext="&pdftk.path.check.ok;" hidden="true"/>
-                                    <image id="path-error" src="chrome://jasminum/skin/exclamation.png" tooltiptext="&pdftk.path.check.error;" hidden="true"/>
+                                    <textbox id="jasminum-pdftk-path" preference="pref-jasminum-pdftkpath" readonly="true" flex="1"/>
+                                    <button label="&jasminum.choose;" oncommand="Zotero.Jasminum.Prefs.choosePath();"/>
+                                    <image id="path-accept" src="chrome://jasminum/skin/accept.png" width='16' height='16' tooltiptext="&pdftk.path.check.ok;" hidden="true"/>
+                                    <image id="path-error" src="chrome://jasminum/skin/exclamation.png" width='16' height='16' tooltiptext="&pdftk.path.check.error;" hidden="true"/>
                                 </hbox>
                             </groupbox>
                         </vbox>
@@ -45,6 +45,6 @@
             </tabpanels>
         </tabbox>
         </prefpane>
-        <script type="application/javascript" src="chrome://jasminum/content/preferences.js"/>
+        <script type="application/javascript" src="chrome://jasminum/content/scripts/preferences.js"/>
     </prefwindow>
 </overlay>
