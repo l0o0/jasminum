@@ -6,10 +6,11 @@
     xmlns:html="http://www.w3.org/1999/xhtml">
     
     <prefwindow id="zotero-prefs">
-        <prefpane id="zotero-prefpane-jasminum" insertafter="zotero-prefpane-advanced" label="&jasminum;" image="chrome://jasminum/skin/icon.png" onpaneload="Zotero.Jasminum.Prefs.initPref();">
+        <prefpane id="zotero-prefpane-jasminum" insertafter="zotero-prefpane-advanced" label="&jasminum;" image="chrome://jasminum/skin/icon.png" onpaneload="initPref();">
             <preferences id="zotero-preferences-jasminum">
                 <preference id="pref-jasminum-pdftkpath" name="extensions.zotero.jasminum.pdftkpath" type="string"/>
                 <preference id="pref-jasminum-autoupdate" name="extensions.zotero.jasminum.autoupdate" type="bool"/>
+                <preference id="pref-jasminum-namepatent" name="extensions.zotero.jasminum.namepatent" type="string"/>
             </preferences>
             <tabbox>
                 <tabs>
@@ -23,16 +24,19 @@
                             <groupbox>
                                 <caption label="&jasminum.chinese.caption;"/>
                                 <checkbox id="jasminum-autoupdate" label="&jasminum.autoupdate.label;" preference="pref-jasminum-autoupdate"/>
-
+                                <vbox>
+                                    <description>&jasminum.namepatent.desc;</description>
+                                    <textbox id="jasminum-namepatent" preference="pref-jasminum-namepatent" flex="1"/>
+                                </vbox>
                             </groupbox>
                             <groupbox>
                                 <caption label="&jasminum.pdftk.caption;"/>
                                 <description>&jasminum.pdftk.info; <label value="PDFtk Server" href="https://www.pdflabs.com/tools/pdftk-server/"/></description>
                                 <hbox>
                                     <textbox id="jasminum-pdftk-path" preference="pref-jasminum-pdftkpath" readonly="true" flex="1"/>
-                                    <button label="&jasminum.choose;" oncommand="Zotero.Jasminum.Prefs.choosePath();"/>
-                                    <image id="path-accept" src="chrome://jasminum/skin/accept.png" width='16' height='16' tooltiptext="&pdftk.path.check.ok;" hidden="true"/>
-                                    <image id="path-error" src="chrome://jasminum/skin/exclamation.png" width='16' height='16' tooltiptext="&pdftk.path.check.error;" hidden="true"/>
+                                    <button label="&jasminum.choose;" oncommand="choosePath();"/>
+                                    <image id="path-accept" src="chrome://jasminum/skin/accept.png" tooltiptext="&pdftk.path.check.ok;" hidden="true"/>
+                                    <image id="path-error" src="chrome://jasminum/skin/exclamation.png" tooltiptext="&pdftk.path.check.error;" hidden="true"/>
                                 </hbox>
                             </groupbox>
                         </vbox>

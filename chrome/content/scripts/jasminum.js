@@ -1,35 +1,35 @@
 Zotero.Jasminum = {
     init: async function () {
-        // // Register the callback in Zotero as an item observer
-        // var notifierID = Zotero.Notifier.registerObserver(
-        //   Zotero.Jasminum.notifierCallback,
-        //   ["item"]
-        // );
-        // // Unregister callback when the window closes (important to avoid a memory leak)
-        // window.addEventListener(
-        //   "unload",
-        //   function (e) {
-        //     Zotero.Notifier.unregisterObserver(notifierID);
-        //   },
-        //   false
-        // );
+        // Register the callback in Zotero as an item observer
+        var notifierID = Zotero.Notifier.registerObserver(
+            Zotero.Jasminum.notifierCallback,
+            ["item"]
+        );
+        // Unregister callback when the window closes (important to avoid a memory leak)
+        window.addEventListener(
+            "unload",
+            function (e) {
+                Zotero.Notifier.unregisterObserver(notifierID);
+            },
+            false
+        );
         // 等待数据维护更新完毕
         // await Zotero.Schema.schemaUpdatePromise;
-        this.initPref();
+        Zotero.Jasminum.initPref();
         Components.utils.import("resource://gre/modules/osfile.jsm");
         Zotero.debug("Init Jasminum ...");
     },
 
     initPref: function () {
-        if (Zotero.Prefs.get("zotero.jasminum.pdftkpath") === undefined) {
+        if (Zotero.Prefs.get("jasminum.pdftkpath") === undefined) {
             var pdftkpath = "C:\\Program Files (x86)\\PDFtk Server\\bin";
             if (Zotero.isMac || Zotero.isLinux) {
                 pdftkpath = "/usr/bin";
             }
-            Zotero.Prefs.set("zotero.jasminum.pdftkpath", pdftkpath);
+            Zotero.Prefs.set("jasminum.pdftkpath", pdftkpath);
         }
-        if (Zotero.Prefs.get("zotero.jasminum.autoupdate") === undefined) {
-            Zotero.Prefs.set("zotero.jasminum.autoupdate", false);
+        if (Zotero.Prefs.get("jasminum.autoupdate") === undefined) {
+            Zotero.Prefs.set("jasminum.autoupdate", false);
         }
     },
 
@@ -38,12 +38,16 @@ Zotero.Jasminum = {
         // TODO Add a check function here
         notify: function (event, type, ids, extraData) {
             // var automatic_pdf_download_bool = Zotero.Prefs.get('zoteroscihub.automatic_pdf_download');
-            if (event == "add") {
-                suppress_warnings = true;
-                Zotero.Jasminum.updateItems(
-                    Zotero.Items.get(ids),
-                    suppress_warnings
-                );
+            if (event == "add" && Zotero.Prefs.get("jasminum.autoupdate")) {
+                Zotero.debug("** Jasminum new items added.");
+                var items = [];
+                for (let item of Zotero.Items.get(ids)) {
+                    if (Zotero.Jasminum.checkItem(item)) {
+                        items.push(item);
+                    }
+                }
+                Zotero.debug(`** Jasminum add ${items.length} items`);
+                Zotero.Jasminum.updateItems(items);
             }
         },
     },
@@ -126,7 +130,7 @@ Zotero.Jasminum = {
         var ext = filename.substr(filename.length - 3, 3);
         if (ext != "pdf" && ext != "caj") return false;
         return true;
-    }.bind(Zotero.Jasminum),
+    },
 
     splitFilename: function (filename) {
         // Make query parameters from filename
@@ -409,6 +413,7 @@ Zotero.Jasminum = {
         newItem.setField("callNumber", "");
         newItem.setField("libraryCatalog", "CNKI");
         newItem.setField("url", targetUrl);
+        // TODO keep tags according global config.
         if (newItem.getNotes()) {
             Zotero.Items.erase(newItem.getNotes());
         }
@@ -581,7 +586,7 @@ Zotero.Jasminum = {
         let promise = OS.File.writeAtomic(cacheFile.path, array, {
             tmpPath: cacheFile.path + ".tmp",
         });
-        var pdftk = Zotero.Prefs.get("zotero.jasminum.pdftkpath");
+        var pdftk = Zotero.Prefs.get("jasminum.pdftkpath");
         if (Zotero.isWin) {
             pdftk = OS.Path.join(pdftk, "pdftk.exe");
         } else {
