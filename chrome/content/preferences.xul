@@ -24,6 +24,7 @@
                             <groupbox>
                                 <caption label="&jasminum.chinese.caption;"/>
                                 <checkbox id="jasminum-autoupdate" label="&jasminum.autoupdate.label;" preference="pref-jasminum-autoupdate"/>
+                                <separator/>
                                 <vbox>
                                     <description>&jasminum.namepatent.desc;</description>
                                     <textbox id="jasminum-namepatent" preference="pref-jasminum-namepatent" flex="1"/>
@@ -32,7 +33,7 @@
                             <groupbox>
                                 <caption label="&jasminum.pdftk.caption;"/>
                                 <description>&jasminum.pdftk.info; <label value="PDFtk Server" href="https://www.pdflabs.com/tools/pdftk-server/"/></description>
-                                <hbox>
+                                <hbox style="margin: 0" align="center">
                                     <textbox id="jasminum-pdftk-path" preference="pref-jasminum-pdftkpath" readonly="true" flex="1"/>
                                     <button label="&jasminum.choose;" oncommand="choosePath();"/>
                                     <image id="path-accept" src="chrome://jasminum/skin/accept.png" tooltiptext="&pdftk.path.check.ok;" hidden="true"/>

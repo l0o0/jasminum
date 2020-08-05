@@ -31,6 +31,9 @@ Zotero.Jasminum = {
         if (Zotero.Prefs.get("jasminum.autoupdate") === undefined) {
             Zotero.Prefs.set("jasminum.autoupdate", false);
         }
+        if (Zotero.Prefs.get("jasminum.namepatent") === undefined) {
+            Zotero.Prefs.set("jasminum.namepatent", "{%t}_{%g}");
+        }
     },
 
     notifierCallback: {
