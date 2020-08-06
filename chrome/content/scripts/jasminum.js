@@ -38,7 +38,6 @@ Zotero.Jasminum = {
 
     notifierCallback: {
         // Check new added item, and adds meta data.
-        // TODO Add a check function here
         notify: function (event, type, ids, extraData) {
             // var automatic_pdf_download_bool = Zotero.Prefs.get('zoteroscihub.automatic_pdf_download');
             if (event == "add" && Zotero.Prefs.get("jasminum.autoupdate")) {
@@ -137,22 +136,33 @@ Zotero.Jasminum = {
 
     splitFilename: function (filename) {
         // Make query parameters from filename
+        var patentArr = patent.split("_");
         var prefix = filename.substr(0, filename.length - 4);
-        var prefixArr = prefix.split("_");
+
         var author = "";
-        var keyword = "";
-        if (
-            prefixArr.length > 1 &&
-            prefixArr[prefixArr.length - 1].length <= 4
-        ) {
-            author = prefixArr[prefixArr.length - 1];
-            keyword = prefixArr.slice(0, prefixArr.length - 1).join(" ");
-        } else {
-            keyword = prefixArr.join(" ");
+        var title = "";
+        // Remove year string
+        if (patent.includes("{%y}")) {
+            patentArr.splice(patentArr.indexOf("{%y}"), 1);
+            prefix = prefix.replace(/[0-9]{4}[\._]/g, "");
         }
+        var prefixArr = prefix.replace(/^_|_$/g, "").split("_");
+        console.log(patentArr);
+        console.log(prefixArr);
+        if (patentArr.includes("{%g}")) {
+            var authorIdx = patentArr.indexOf("{%g}");
+            var authorIdx = authorIdx === 0 ? 0 : prefixArr.length - 1;
+            console.log(authorIdx);
+            author = prefixArr[authorIdx];
+            prefixArr.splice(authorIdx, 1);
+            title = prefixArr.join("");
+        } else {
+            title = prefixArr.join("");
+        }
+
         return {
-            author: author,
-            keyword: keyword,
+            author: author.replace(",", ""),
+            keyword: title,
         };
     },
 
@@ -416,7 +426,10 @@ Zotero.Jasminum = {
         newItem.setField("callNumber", "");
         newItem.setField("libraryCatalog", "CNKI");
         newItem.setField("url", targetUrl);
-        // TODO keep tags according global config.
+        // Keep tags according global config.
+        if (Zotero.Prefs.get("automaticTags") === false) {
+            newItem.tags = [];
+        }
         if (newItem.getNotes()) {
             Zotero.Items.erase(newItem.getNotes());
         }
