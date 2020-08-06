@@ -136,9 +136,10 @@ Zotero.Jasminum = {
 
     splitFilename: function (filename) {
         // Make query parameters from filename
+        var patent = Zotero.Prefs.get("jasminum.namepatent");
         var patentArr = patent.split("_");
         var prefix = filename.substr(0, filename.length - 4);
-
+        var prefix = prefix.replace("_省略_", ""); // Long title contains _省略_
         var author = "";
         var title = "";
         // Remove year string
@@ -155,9 +156,9 @@ Zotero.Jasminum = {
             console.log(authorIdx);
             author = prefixArr[authorIdx];
             prefixArr.splice(authorIdx, 1);
-            title = prefixArr.join("");
+            title = prefixArr.join(" ");
         } else {
-            title = prefixArr.join("");
+            title = prefixArr.join(" ");
         }
 
         return {
@@ -362,6 +363,7 @@ Zotero.Jasminum = {
                 if (!authors[authors.length - 1].trim()) authors.pop();
                 return tag + " " + authors.join("\n" + tag + " ");
             });
+        var data = data.replace(/vo (\d+)\n/, "VO $1\n"); // Divide VO and IS to different line.
         targetUrl = `https://kns.cnki.net/KCMS/detail/detail.aspx?dbcode=${targetID.dbcode}&dbname=${targetID.dbname}&filename=${targetID.filename}&v=`;
         Zotero.debug(data);
         return [data, targetUrl];
@@ -444,6 +446,7 @@ Zotero.Jasminum = {
         var libraryID = item.libraryID;
         if (!Zotero.Jasminum.checkItem(item)) return; // TODO Need notify
         var fileData = Zotero.Jasminum.splitFilename(item.getFilename());
+        Zotero.debug(fileData);
         var searchPrepareOut = await Zotero.Jasminum.searchPrepare(fileData);
         Zotero.debug("searchPrepareOut");
         Zotero.debug(searchPrepareOut);
@@ -661,8 +664,32 @@ Zotero.Jasminum = {
 
     addBookmarkItem: async function () {
         var item = ZoteroPane.getSelectedItems()[0];
+        if (!(await Zotero.Jasminum.checkPath())) {
+            alert(
+                "Can't find PDFtk Server execute file. Please install PDFtk Server and choose the folder in the Jasminum preference window."
+            );
+            return false;
+        }
         var bookmark = await Zotero.Jasminum.getBookmark(item);
         await Zotero.Jasminum.addBookmark(item, bookmark);
+    },
+
+    checkPath: async function () {
+        Zotero.debug("** Jasminum check path.");
+        var pdftkpath = Zotero.Prefs.get("jasminum.pdftkpath");
+        Zotero.debug(pdftkpath);
+        var pdftk = "";
+        if (Zotero.isWin) {
+            Zotero.debug("1");
+            pdftk = OS.Path.join(pdftkpath, "pdftk.exe");
+        } else {
+            Zotero.debug("2");
+            pdftk = OS.Path.join(pdftkpath, "pdftk");
+        }
+        Zotero.debug(pdftk);
+        var fileExist = await OS.File.exists(pdftk);
+        Zotero.debug(fileExist);
+        return fileExist;
     },
 
     checkItemName: function (item) {

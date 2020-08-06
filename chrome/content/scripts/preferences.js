@@ -2,7 +2,7 @@ initPref = async function () {
     Components.utils.import("resource://gre/modules/osfile.jsm");
     var jasminum_pdftk_path = Zotero.Prefs.get("jasminum.pdftkpath");
     document.getElementById("jasminum-pdftk-path").value = jasminum_pdftk_path;
-    var fileExist = await checkPath();
+    var fileExist = await Zotero.Jasminum.checkPath();
     pathCheckIcon(fileExist);
 };
 
@@ -27,26 +27,8 @@ choosePath = async function () {
     Zotero.debug("** Jasminum " + fp.file.path);
     Zotero.Prefs.set("jasminum.pdftkpath", fp.file.path);
     document.getElementById("jasminum-pdftk-path").value = fp.file.path;
-    var fileExist = await checkPath();
+    var fileExist = await Zotero.Jasminum.checkPath();
     pathCheckIcon(fileExist);
-};
-
-checkPath = async function () {
-    Zotero.debug("** Jasminum check path.");
-    var pdftkpath = Zotero.Prefs.get("jasminum.pdftkpath");
-    Zotero.debug(pdftkpath);
-    var pdftk = "";
-    if (Zotero.isWin) {
-        Zotero.debug("1");
-        pdftk = OS.Path.join(pdftkpath, "pdftk.exe");
-    } else {
-        Zotero.debug("2");
-        pdftk = OS.Path.join(pdftkpath, "pdftk");
-    }
-    Zotero.debug(pdftk);
-    var fileExist = await OS.File.exists(pdftk);
-    Zotero.debug(fileExist);
-    return fileExist;
 };
 
 pathCheckIcon = function (fileExist) {
