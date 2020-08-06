@@ -1,6 +1,7 @@
-# Jasminum - 茉莉花  
-
-![](chrome/skin/default/jasminum/icon.png)
+<div align="center">
+  <span align="center"> <img class="center" src="./chrome/skin/default/jasminum/icon.png" alt="Icon"></span>
+  <h1 align="center">Jasminum - 茉莉花</h1>
+</div>
 
 一个简单的 Zotero 中文插件（这个插件并不是 Zotero translator），实现的功能有：
 
