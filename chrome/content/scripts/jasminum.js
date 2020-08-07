@@ -238,8 +238,7 @@ Zotero.Jasminum = {
             !filename ||
             !filename[1] ||
             !dbcode ||
-            !dbcode[1] ||
-            dbname[1].match("TEMP$")
+            !dbcode[1]
         )
             return false;
         return { dbname: dbname[1], filename: filename[1], dbcode: dbcode[1] };
@@ -329,7 +328,9 @@ Zotero.Jasminum = {
         if (targetRow == null) {
             return new Error("No items returned from the CNKI");
         }
-        var targetUrl = targetRow.getElementsByClassName("fz14")[0].href;
+        var targetUrl = targetRow
+            .getElementsByClassName("fz14")[0]
+            .getAttribute("href");
         var targetID = Zotero.Jasminum.getIDFromUrl(targetUrl);
         Zotero.debug(targetID);
         // Get reference data from CNKI by ID.
@@ -529,7 +530,6 @@ Zotero.Jasminum = {
         var parentItem = item.parentItem;
         var itemUrl = "";
         var itemChapterUrl = "";
-
         if (
             // 匹配知网 URL
             parentItem.getField("url") &&
@@ -538,7 +538,6 @@ Zotero.Jasminum = {
             Zotero.debug("2");
             itemUrl = parentItem.getField("url");
             Zotero.debug("** Jasminum item url: " + itemUrl);
-            itemChapterUrl = await Zotero.Jasminum.getChapterUrl(itemUrl);
         } else {
             Zotero.debug("3");
             var fileData = {
@@ -556,11 +555,12 @@ Zotero.Jasminum = {
             );
             itemUrl = targetRow.querySelector("a.fz14").getAttribute("href");
             itemUrl = "https://kns.cnki.net/KCMS" + itemUrl.slice(4);
-            itemChapterUrl = await Zotero.Jasminum.getChapterUrl(itemUrl);
             // 获取文献链接URL -> 获取章节目录URL
         }
+        itemChapterUrl = await Zotero.Jasminum.getChapterUrl(itemUrl);
         Zotero.debug("** Jasminum item url: " + itemUrl);
         Zotero.debug("** Jasminum item chapter url: " + itemChapterUrl);
+        // Next line raises: Invalid chrome URI: /
         var chapterText = await Zotero.Jasminum.promiseGet(itemChapterUrl);
         var parser = new DOMParser();
         var chapterHTML = parser.parseFromString(chapterText, "text/html");
@@ -588,13 +588,28 @@ Zotero.Jasminum = {
         Zotero.debug("** Jasminum add bookmark begin");
         Zotero.debug(item);
         let cacheFile = Zotero.getTempDirectory();
+        let cachePDF = Zotero.getTempDirectory();
+        // PDFtk will throw errors when args contains Chinese character
+        // So create a tmp folder.
+        if (Zotero.isWin) {
+            var newTmp = OS.Path.join(cacheFile.path.slice(0, 3), "tmp");
+            Zotero.debug("** Jasminum new tmp path " + newTmp);
+            cacheFile = Zotero.getTempDirectory();
+            cachePDF = Zotero.getTempDirectory();
+            cacheFile.initWithPath(newTmp);
+            cachePDF.initWithPath(newTmp);
+            if (!cacheFile.exists()) {
+                cacheFile.create(
+                    Components.interfaces.nsIFile.DIRECTORY_TYPE,
+                    0777
+                );
+            }
+        }
         cacheFile.append("bookmark.txt");
-        let tmpDir = OS.Path.dirname(cacheFile.path);
         if (cacheFile.exists()) {
             cacheFile.remove(false);
         }
 
-        let cachePDF = Zotero.getTempDirectory();
         cachePDF.append("output.pdf");
         if (cachePDF.exists()) {
             cachePDF.remove(false);
@@ -668,6 +683,12 @@ Zotero.Jasminum = {
             alert(
                 "Can't find PDFtk Server execute file. Please install PDFtk Server and choose the folder in the Jasminum preference window."
             );
+            return false;
+        }
+        // Show alert when file is missing
+        var attachmentExists = await OS.File.exists(item.getFilePath());
+        if (!attachmentExists) {
+            alert("Item Attachment file is missing.");
             return false;
         }
         var bookmark = await Zotero.Jasminum.getBookmark(item);
