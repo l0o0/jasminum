@@ -672,6 +672,13 @@ Zotero.Jasminum = {
             fileBaseName,
             parentItemID,
         });
+        // Transfer notes, tags and related item to the new PDF.
+        var tags = item.getTags();
+        var note = item.getNote();
+        if (note != "") newItem.setNote(note);
+        if (tags.length) newItem.setTags(tags);
+        newItem.setRelations(item.getRelations());
+
         await newItem.saveTx();
         // delete old attachment
         Zotero.Items.erase(item.id);
