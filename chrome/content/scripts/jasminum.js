@@ -586,7 +586,7 @@ Zotero.Jasminum = {
 
     addBookmark: async function (item, bookmark) {
         Zotero.debug("** Jasminum add bookmark begin");
-        Zotero.debug(item);
+        // Zotero.debug(item);
         let cacheFile = Zotero.getTempDirectory();
         let cachePDF = Zotero.getTempDirectory();
         // PDFtk will throw errors when args contains Chinese character
@@ -663,7 +663,9 @@ Zotero.Jasminum = {
         var parentItem = item.parentItem;
         var parentItemID = parentItem.id;
         var libraryID = parentItem.libraryID;
-        var fileBaseName = item.getFilename().replace(/\.pdf/g, "");
+        var fileBaseName = OS.Path.basename(
+            OS.Path.normalize(item.getFilename())
+        ).replace(/\.pdf/g, "");
         Zotero.debug(parentItemID + fileBaseName + markedpdf + libraryID);
         var file = markedpdf;
         var newItem = await Zotero.Attachments.importFromFile({
