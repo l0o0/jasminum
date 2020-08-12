@@ -512,7 +512,7 @@ Zotero.Jasminum = {
         var readerUrl = Zotero.Utilities.xpath(
             respHTML,
             "//a[contains(text(), '在线阅读')]"
-        )[0].href;
+        )[0].getAttribute("href");
         Zotero.debug("** Jasminum reader url: " + readerUrl);
         var respText = await Zotero.Jasminum.promiseGet(readerUrl);
         var parser = new DOMParser();
@@ -522,7 +522,7 @@ Zotero.Jasminum = {
             "//iframe[@id='treeView']"
         )[0].getAttribute("src");
         Zotero.debug("** Jasminum chapter url: " + chapterUrl);
-        return "https://kreader.cnki.net/Kreader/" + chapterUrl;
+        return "https://kreader.cnki.net/Kreader" + chapterUrl;
     },
 
     getBookmark: async function (item) {
