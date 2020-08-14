@@ -432,6 +432,17 @@ Zotero.Jasminum = {
         // Keep tags according global config.
         if (Zotero.Prefs.get("automaticTags") === false) {
             newItem.tags = [];
+        } else {
+            // Change tag type.
+            var tags = newItem.getTags();
+            if (tags.length > 0) {
+                var newTags = [];
+                for (let tag of tags) {
+                    tag.type = 1;
+                    newTags.push(tag);
+                }
+                newItem.setTags(newTags);
+            }
         }
         if (newItem.getNotes()) {
             Zotero.Items.erase(newItem.getNotes());
