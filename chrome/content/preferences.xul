@@ -11,6 +11,7 @@
                 <preference id="pref-jasminum-pdftkpath" name="extensions.zotero.jasminum.pdftkpath" type="string"/>
                 <preference id="pref-jasminum-autoupdate" name="extensions.zotero.jasminum.autoupdate" type="bool"/>
                 <preference id="pref-jasminum-namepatent" name="extensions.zotero.jasminum.namepatent" type="string"/>
+                <preference id="pref-jasminum.zhnamesplit" name="extensions.zotero.jasminum.zhnamesplit" type="bool"/>
             </preferences>
             <tabbox>
                 <tabs>
@@ -24,6 +25,7 @@
                             <groupbox>
                                 <caption label="&jasminum.chinese.caption;"/>
                                 <checkbox id="jasminum-autoupdate" label="&jasminum.autoupdate.label;" preference="pref-jasminum-autoupdate"/>
+                                <checkbox id="jasminum.zhnamesplit" label="&jasminum.zhnamesplit.label;" preference="pref-jasminum.zhnamesplit"/>
                                 <separator/>
                                 <vbox>
                                     <description>&jasminum.namepatent.desc;</description>

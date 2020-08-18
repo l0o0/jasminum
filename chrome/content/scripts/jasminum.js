@@ -34,6 +34,9 @@ Zotero.Jasminum = {
         if (Zotero.Prefs.get("jasminum.namepatent") === undefined) {
             Zotero.Prefs.set("jasminum.namepatent", "{%t}_{%g}");
         }
+        if (Zotero.Prefs.get("jasminum.zhnamesplit") === undefined) {
+            Zotero.Prefs.set("jasminum.zhnamesplit", true);
+        }
     },
 
     notifierCallback: {
@@ -394,27 +397,30 @@ Zotero.Jasminum = {
     },
 
     fixItem: function (newItem, targetUrl) {
-        var creators = newItem.getCreators();
-        for (var i = 0; i < creators.length; i++) {
-            var creator = creators[i];
-            if (creator.firstName) continue;
+        // 是否处理中文姓名
+        if (Zotero.Prefs.get("jasminum.zhnamesplit")) {
+            var creators = newItem.getCreators();
+            for (var i = 0; i < creators.length; i++) {
+                var creator = creators[i];
+                if (creator.firstName) continue;
 
-            var lastSpace = creator.lastName.lastIndexOf(" ");
-            if (
-                creator.lastName.search(/[A-Za-z]/) !== -1 &&
-                lastSpace !== -1
-            ) {
-                // western name. split on last space
-                creator.firstName = creator.lastName.substr(0, lastSpace);
-                creator.lastName = creator.lastName.substr(lastSpace + 1);
-            } else {
-                // Chinese name. first character is last name, the rest are first name
-                creator.firstName = creator.lastName.substr(1);
-                creator.lastName = creator.lastName.charAt(0);
+                var lastSpace = creator.lastName.lastIndexOf(" ");
+                if (
+                    creator.lastName.search(/[A-Za-z]/) !== -1 &&
+                    lastSpace !== -1
+                ) {
+                    // western name. split on last space
+                    creator.firstName = creator.lastName.substr(0, lastSpace);
+                    creator.lastName = creator.lastName.substr(lastSpace + 1);
+                } else {
+                    // Chinese name. first character is last name, the rest are first name
+                    creator.firstName = creator.lastName.substr(1);
+                    creator.lastName = creator.lastName.charAt(0);
+                }
+                creators[i] = creator;
             }
-            creators[i] = creator;
+            newItem.setCreators(creators);
         }
-        newItem.setCreators(creators);
         // Clean up abstract
         if (newItem.getField("abstractNote")) {
             newItem.setField(
