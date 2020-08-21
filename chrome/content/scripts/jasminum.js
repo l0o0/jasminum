@@ -170,51 +170,39 @@ Zotero.Jasminum = {
         };
     },
 
-    createPost: async function (fileData) {
-        var searchUrl =
-            "https://kns.cnki.net/kns/brief/result.aspx?dbprefix=SCDB&crossDbcodes=CJFQ,CDFD,CMFD,CPFD,IPFD,CCND,CCJD";
-        var respText = await Zotero.Jasminum.promiseGet(searchUrl);
-        var dbCatalog = "";
-        if (respText.includes("中国学术期刊网络出版总库")) {
-            dbCatalog = "中国学术期刊网络出版总库";
-        } else {
-            dbCatalog = "中国学术文献网络出版总库";
-        }
-        Zotero.debug("** Jasminum search dbCatalog: " + dbCatalog);
-        // Create a search string.
-        static_post_data = {
-            action: "",
-            NaviCode: "*",
-            ua: "1.21",
-            isinEn: "1",
-            PageName: "ASP.brief_result_aspx",
-            DbPrefix: "SCDB",
-            DbCatalog: dbCatalog,
-            ConfigFile: "SCDB.xml",
-            db_opt: "CJFQ,CDFD,CMFD,CPFD,IPFD,CCND,CCJD",
-            year_type: "echar",
-            CKB_extension: "ZYW",
-            txt_1_sel: "SU$%=|",
-            txt_1_value1: fileData.keyword,
-            txt_1_relation: "#CNKI_AND",
-            txt_1_special1: "=",
-            au_1_sel: "AU",
-            au_1_sel2: "AF",
-            au_1_value1: fileData.author,
-            au_1_special1: "=",
-            au_1_special2: "%",
-            his: "0",
-            __: Date() + " (中国标准时间)",
-        };
-        var urlEncodedDataPairs = [];
-        for (name in static_post_data) {
-            urlEncodedDataPairs.push(
-                encodeURIComponent(name) +
-                    "=" +
-                    encodeURIComponent(static_post_data[name])
-            );
-        }
-        return urlEncodedDataPairs.join("&").replace(/%20/g, "+");
+    setCookieSandbox: function () {
+        var cookieData =
+            "Ecp_ClientId=5191230153502598871; cnkiUserKey=ee10ba99-62af-5b83-d845-2b5c7b5c6d1a; _pk_ref=%5B%22%22%2C%22%22%2C1597801224%2C%22https%3A%2F%2Fwww.cnki.net%2F%22%5D; Ecp_IpLoginFail=200819115.236.162.162; ASP.NET_SessionId=m5y1r25x4ycq4f3o5r3uboow; SID_kns8=kns8011103; CurrSortField=%e5%8f%91%e8%a1%a8%e6%97%b6%e9%97%b4%2f(%e5%8f%91%e8%a1%a8%e6%97%b6%e9%97%b4%2c%27TIME%27); CurrSortFieldType=desc";
+        var userAgent =
+            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/70.0.3538.77 Safari/537.36";
+        var url = "https://kns8.cnki.net/nindex/";
+        var sandbox = new Zotero.CookieSandbox("", url, cookieData, userAgent);
+        Zotero.Jasminum.CookieSandbox = sandbox;
+    },
+
+    createPostData: function (fileData) {
+        var postData =
+            'IsSearch=true&QueryJson={"Platform":"","DBCode":"SCDB",' +
+            '"KuaKuCode":"CJFQ,CCND,CIPD,CDMD,CYFD,BDZK,SCOD,CISD,SNAD,CCJD,GXDB' +
+            '_SECTION,CJFN","QNode":{"QGroup":[{"Key":"Subject","Title":"","Logic"' +
+            ':4,"Items":[],"ChildItems":[{"Key":"input[data-tipid=gradetxt-1]",' +
+            '"Title":"篇名","Logic":0,"Items":[{"Key":"","Title":"TITLE","Logic":1,' +
+            '"Name":"SU","Operate":"%=","Value":"TITLE","ExtendType":1,"ExtendValue"' +
+            ':"中英文对照","Value2":""}],"ChildItems":[]},{"Key":"input[data-tipid=' +
+            'gradetxt-2]","Title":"作者","Logic":1,"Items":[{"Key":"","Title":"AUTHOR' +
+            '","Logic":1,"Name":"AU","Operate":"=","Value":"AUTHOR","ExtendType":1,' +
+            '"ExtendValue":"中英文对照","Value2":""}],"ChildItems":[]}]},{"Key":' +
+            '"ControlGroup","Title":"","Logic":1,"Items":[],"ChildItems":[]},{"Key"' +
+            ':"NaviParam","Title":"","Logic":1,"Items":[{"Key":"navi","Title":"",' +
+            '"Logic":1,"Name":"专题子栏目代码","Operate":"=","Value":"","ExtendType"' +
+            ':13,"ExtendValue":"","Value2":"","BlurType":""}],"ChildItems":[]}]}}' +
+            "PageName=AdvSearch&HandlerId=0&DBCode=SCDB&KuaKuCodes=CJFQ,CCND,CIPD," +
+            "CDMD,CYFD,BDZK,SCOD,CISD,SNAD,CCJD,GXDB_SECTION,CJFN&CurPage=1&" +
+            "RecordsCntPerPage=20&CurDisplayMode=listmode&CurrSortField=发表时间/" +
+            "(发表时间,'TIME')&CurrSortFieldType=desc&IsSortSearch=false&IsSentenceSearch=false";
+        postData = postData.replace(/TITLE/g, fileData.keyword);
+        postData = postData.replace(/AUTHOR/g, fileData.author);
+        return encodeURI(postData);
     },
 
     selectRow: function (rowSelectors) {
@@ -272,27 +260,29 @@ Zotero.Jasminum = {
         });
     },
 
-    searchPrepare: async function (fileData) {
-        var searchData = await Zotero.Jasminum.createPost(fileData);
-        var SEARCH_HANDLE_URL =
-            "https://kns.cnki.net/kns/request/SearchHandler.ashx";
-        var url = SEARCH_HANDLE_URL + "?" + searchData;
-        Zotero.debug("**Jasminum start prepare");
-        var searchPrepareOut = await Zotero.Jasminum.promiseGet(url);
-        return searchPrepareOut;
-    },
-
-    search: async function (searchPrepareOut, fileData) {
+    search: async function (fileData) {
         Zotero.debug("**Jasminum start search");
-        var keyword = encodeURI(fileData.keyword);
-        Zotero.debug("**Jasminum  keyword: " + keyword);
-        var resultUrl =
-            "https://kns.cnki.net/kns/brief/brief.aspx?pagename=" +
-            searchPrepareOut +
-            `&t=${Date.parse(new Date())}&keyValue=${keyword}&S=1&sorttype=`;
-        Zotero.debug(resultUrl);
-        var searchResult = await Zotero.Jasminum.promiseGet(resultUrl);
-        var targetRow = Zotero.Jasminum.getSearchItems(searchResult);
+        var postData = Zotero.Jasminum.createPostData(fileData);
+        var requestHeaders = {
+            Host: "kns8.cnki.net",
+            Connection: "keep-alive",
+            "Content-Type": "application/x-www-form-urlencoded; charset=UTF-8",
+            Origin: "https://kns8.cnki.net",
+            "X-Requested-With": "XMLHttpRequest",
+            Referer: "https://kns8.cnki.net/kns/AdvSearch?dbcode=CJFQ",
+        };
+        var postUrl = "https://kns8.cnki.net/kns/Brief/GetGridTableHtml";
+        if (!Zotero.Jasminum.CookieSandbox) {
+            Zotero.Jasminum.setCookieSandbox();
+        }
+        Zotero.debug(Zotero.Jasminum.CookieSandbox);
+        var resp = await Zotero.HTTP.request("POST", postUrl, {
+            headers: requestHeaders,
+            cookieSandbox: Zotero.Jasminum.CookieSandbox,
+            body: postData,
+        });
+        Zotero.debug(resp.responseText);
+        var targetRow = Zotero.Jasminum.getSearchItems(resp.responseText);
         return targetRow;
     },
 
@@ -300,7 +290,9 @@ Zotero.Jasminum = {
         Zotero.debug("**Jasminum get item from search");
         var parser = new DOMParser();
         var html = parser.parseFromString(resptext, "text/html");
-        var rows = html.querySelectorAll("table.GridTableContent > tbody > tr");
+        var rows = html.querySelectorAll(
+            "table.result-table-list > tbody > tr"
+        );
         Zotero.debug("**Jasminum 搜索结果：" + (rows.length - 1));
         var targetRow;
         if (rows.length <= 1) {
@@ -457,7 +449,6 @@ Zotero.Jasminum = {
     },
 
     updateItems: async function (items) {
-        var zp = Zotero.getActiveZoteroPane();
         if (items.length == 0) return;
         var item = items.shift();
         var itemCollections = item.getCollections();
@@ -465,13 +456,7 @@ Zotero.Jasminum = {
         if (!Zotero.Jasminum.checkItem(item)) return; // TODO Need notify
         var fileData = Zotero.Jasminum.splitFilename(item.getFilename());
         Zotero.debug(fileData);
-        var searchPrepareOut = await Zotero.Jasminum.searchPrepare(fileData);
-        Zotero.debug("searchPrepareOut");
-        Zotero.debug(searchPrepareOut);
-        var targetRow = await Zotero.Jasminum.search(
-            searchPrepareOut,
-            fileData
-        );
+        var targetRow = await Zotero.Jasminum.search(fileData);
         Zotero.debug("targetRow");
         Zotero.debug(targetRow.textContent);
         var [data, targetUrl] = await Zotero.Jasminum.getRefworks(targetRow);
