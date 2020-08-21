@@ -181,28 +181,33 @@ Zotero.Jasminum = {
     },
 
     createPostData: function (fileData) {
+        var queryJson =
+            '{"Platform":"","DBCode":"SCDB","KuaKuCode":"CJFQ,CCND,CIPD,CDMD,' +
+            'CYFD,BDZK,SCOD,CISD,SNAD,CCJD,GXDB_SECTION,CJFN","QNode":' +
+            '{"QGroup":[{"Key":"Subject","Title":"","Logic":4,"Items":[],' +
+            '"ChildItems":[{"Key":"input[data-tipid=gradetxt-1]",' +
+            '"Title":"篇名","Logic":0,"Items":[{"Key":"","Title":"TITLE",' +
+            '"Logic":1,"Name":"SU","Operate":"%=","Value":"TITLE",' +
+            '"ExtendType":1,"ExtendValue":"中英文对照","Value2":""}],' +
+            '"ChildItems":[]},{"Key":"input[data-tipid=gradetxt-2]",' +
+            '"Title":"作者","Logic":1,"Items":[{"Key":"","Title":"AUTHOR",' +
+            '"Logic":1,"Name":"AU","Operate":"=","Value":"AUTHOR",' +
+            '"ExtendType":1,"ExtendValue":"中英文对照","Value2":""}],"ChildItems":[]}]},' +
+            '{"Key":"ControlGroup","Title":"","Logic":1,"Items":[],"ChildItems":[]},' +
+            '{"Key":"NaviParam","Title":"","Logic":1,"Items":[{"Key":"navi","Title":"",' +
+            '"Logic":1,"Name":"专题子栏目代码","Operate":"=","Value":"","ExtendType":13,' +
+            '"ExtendValue":"","Value2":"","BlurType":""}],"ChildItems":[]}]}}';
+        queryJson = queryJson.replace(/TITLE/g, fileData.keyword);
+        queryJson = queryJson.replace(/AUTHOR/g, fileData.author);
         var postData =
-            'IsSearch=true&QueryJson={"Platform":"","DBCode":"SCDB",' +
-            '"KuaKuCode":"CJFQ,CCND,CIPD,CDMD,CYFD,BDZK,SCOD,CISD,SNAD,CCJD,GXDB' +
-            '_SECTION,CJFN","QNode":{"QGroup":[{"Key":"Subject","Title":"","Logic"' +
-            ':4,"Items":[],"ChildItems":[{"Key":"input[data-tipid=gradetxt-1]",' +
-            '"Title":"篇名","Logic":0,"Items":[{"Key":"","Title":"TITLE","Logic":1,' +
-            '"Name":"SU","Operate":"%=","Value":"TITLE","ExtendType":1,"ExtendValue"' +
-            ':"中英文对照","Value2":""}],"ChildItems":[]},{"Key":"input[data-tipid=' +
-            'gradetxt-2]","Title":"作者","Logic":1,"Items":[{"Key":"","Title":"AUTHOR' +
-            '","Logic":1,"Name":"AU","Operate":"=","Value":"AUTHOR","ExtendType":1,' +
-            '"ExtendValue":"中英文对照","Value2":""}],"ChildItems":[]}]},{"Key":' +
-            '"ControlGroup","Title":"","Logic":1,"Items":[],"ChildItems":[]},{"Key"' +
-            ':"NaviParam","Title":"","Logic":1,"Items":[{"Key":"navi","Title":"",' +
-            '"Logic":1,"Name":"专题子栏目代码","Operate":"=","Value":"","ExtendType"' +
-            ':13,"ExtendValue":"","Value2":"","BlurType":""}],"ChildItems":[]}]}}' +
-            "PageName=AdvSearch&HandlerId=0&DBCode=SCDB&KuaKuCodes=CJFQ,CCND,CIPD," +
-            "CDMD,CYFD,BDZK,SCOD,CISD,SNAD,CCJD,GXDB_SECTION,CJFN&CurPage=1&" +
-            "RecordsCntPerPage=20&CurDisplayMode=listmode&CurrSortField=发表时间/" +
-            "(发表时间,'TIME')&CurrSortFieldType=desc&IsSortSearch=false&IsSentenceSearch=false";
-        postData = postData.replace(/TITLE/g, fileData.keyword);
-        postData = postData.replace(/AUTHOR/g, fileData.author);
-        return encodeURI(postData);
+            "IsSearch=true&QueryJson=" +
+            encodeURIComponent(queryJson) +
+            "&PageName=AdvSearch&HandlerId=0&DBCode=SCDB" +
+            "&KuaKuCodes=CJFQ%2CCCND%2CCIPD%2CCDMD%2CCYFD%2CBDZK%2CSCOD%2CCISD%2CSNAD%2CCCJD%2CGXDB_SECTION%2CCJFN" +
+            "&CurPage=1&RecordsCntPerPage=20&CurDisplayMode=listmode" +
+            "&CurrSortField=%25e5%258f%2591%25e8%25a1%25a8%25e6%2597%25b6%25e9%2597%25b4%252f(%25e5%258f%2591%25e8%25a1%25a8%25e6%2597%25b6%25e9%2597%25b4%252c%2527TIME%2527)" +
+            "&CurrSortFieldType=desc&IsSortSearch=false&IsSentenceSearch=false";
+        return postData;
     },
 
     selectRow: function (rowSelectors) {
