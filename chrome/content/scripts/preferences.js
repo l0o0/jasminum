@@ -38,3 +38,20 @@ pathCheckIcon = function (fileExist) {
     Zotero.debug("1" + document.getElementById("path-accept").hidden);
     Zotero.debug("2" + document.getElementById("path-error").hidden);
 };
+/*
+var listitem, translator, listcell, set;
+var listbox = document.getElementById("listbox");
+listitem = document.createElement("listitem");
+listitem.setAttribute("label", set);
+listcell = document.createElement("listcell");
+listcell.setAttribute("label", translator.label);
+listitem.appendChild(listcell);
+listcell = document.createElement("listcell");
+listcell.setAttribute("label", translator.label);
+listitem.appendChild(listcell);
+listcell = document.createElement("listcell");
+listcell.setAttribute("label", translator.label);
+listitem.appendChild(listcell);
+
+listbox.appendChild(listitem);
+*/

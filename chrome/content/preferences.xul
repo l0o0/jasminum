@@ -19,7 +19,7 @@
                     <tab label="&jasminum.translators;"/>
                 </tabs>
 
-                <tabpanels id="zotero-prefpane-jasminum" orient="vertical">
+                <tabpanels id="zotero-prefpane-jasminum" orient="vertical" minheight="350">
                     <tabpanel id="zotero-prefpane-chinese-tab">
                         <vbox flex="1">
                             <groupbox>
@@ -27,9 +27,9 @@
                                 <checkbox id="jasminum-autoupdate" label="&jasminum.autoupdate.label;" preference="pref-jasminum-autoupdate"/>
                                 <checkbox id="jasminum.zhnamesplit" label="&jasminum.zhnamesplit.label;" preference="pref-jasminum.zhnamesplit"/>
                                 <separator/>
-                                <vbox>
+                                <vbox flex="1">
                                     <description>&jasminum.namepatent.desc;</description>
-                                    <textbox id="jasminum-namepatent" preference="pref-jasminum-namepatent" flex="1"/>
+                                    <textbox id="jasminum-namepatent" preference="pref-jasminum-namepatent"/>
                                 </vbox>
                             </groupbox>
                             <groupbox>
@@ -45,8 +45,37 @@
                         </vbox>
                     </tabpanel>
                 <tabpanel id="zotero-prefpane-translators-tab" orient="vertical">
-                    <hbox>
-                        <description>正在设计中</description>
+                    <listbox id="translators-listbox" flex="1">
+		            <listhead>
+		            	<listheader label="Translators"/>
+		            	<listheader label="Current"/>
+                        <listheader label="UpdateTime"/>
+		            </listhead>
+		            <listcols>
+		            	<listcol flex="1"/>
+		            	<listcol width="150"/>
+                        <listcol width="150"/>
+		            </listcols>
+                    <listitem>
+                      <listcell label="知网"/>
+                      <listcell label="20200101"/>
+                      <listcell label="20200829"/>
+                    </listitem>
+                    <listitem>
+                      <listcell label="万方"/>
+                      <listcell label="20200101"/>
+                      <listcell label="20200829"/>
+                    </listitem>
+                    <listitem>
+                      <listcell label="维普"/>
+                      <listcell label="20200101"/>
+                      <listcell label="20200829"/>
+                    </listitem>
+	                </listbox>
+                    <hbox style="display: block">
+                        <button label="Refresh" oncommand="alert('refresh');"/>
+                        <button label="Update Translators" oncommand="alert('Update Translators');"/>
+                        <button label="Backup" oncommand="alert('Backup');"/>
                     </hbox>
                 </tabpanel>
             </tabpanels>
