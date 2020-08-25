@@ -50,13 +50,15 @@
 		            	<listheader label="Translators"/>
 		            	<listheader label="Current"/>
                         <listheader label="UpdateTime"/>
+                        <listheader label="Update"/>
 		            </listhead>
 		            <listcols>
 		            	<listcol flex="1"/>
 		            	<listcol width="150"/>
                         <listcol width="150"/>
+                        <listcol width="100"/>
 		            </listcols>
-                    <listitem>
+                    <!-- <listitem>
                       <listcell label="知网"/>
                       <listcell label="20200101"/>
                       <listcell label="20200829"/>
@@ -70,10 +72,10 @@
                       <listcell label="维普"/>
                       <listcell label="20200101"/>
                       <listcell label="20200829"/>
-                    </listitem>
+                    </listitem> -->
 	                </listbox>
                     <hbox style="display: block">
-                        <button label="Refresh" oncommand="alert('refresh');"/>
+                        <button label="Refresh" icon="refresh" oncommand="initTranslatorPanel();"/>
                         <button label="Update Translators" oncommand="alert('Update Translators');"/>
                         <button label="Backup" oncommand="alert('Backup');"/>
                     </hbox>

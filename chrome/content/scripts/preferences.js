@@ -4,6 +4,7 @@ initPref = async function () {
     document.getElementById("jasminum-pdftk-path").value = jasminum_pdftk_path;
     var fileExist = await Zotero.Jasminum.checkPath();
     pathCheckIcon(fileExist);
+    initTranslatorPanel();
 };
 
 // https://developer.mozilla.org/en-US/docs/Mozilla/Tech/XPCOM/Reference/Interface/nsIFilePicker
@@ -38,20 +39,50 @@ pathCheckIcon = function (fileExist) {
     Zotero.debug("1" + document.getElementById("path-accept").hidden);
     Zotero.debug("2" + document.getElementById("path-error").hidden);
 };
-/*
-var listitem, translator, listcell, set;
-var listbox = document.getElementById("listbox");
-listitem = document.createElement("listitem");
-listitem.setAttribute("label", set);
-listcell = document.createElement("listcell");
-listcell.setAttribute("label", translator.label);
-listitem.appendChild(listcell);
-listcell = document.createElement("listcell");
-listcell.setAttribute("label", translator.label);
-listitem.appendChild(listcell);
-listcell = document.createElement("listcell");
-listcell.setAttribute("label", translator.label);
-listitem.appendChild(listcell);
 
-listbox.appendChild(listitem);
-*/
+initTranslatorPanel = async function () {
+    var web = new Zotero.Translate.Web();
+    var translators = await web._translatorProvider.getAllForType("web");
+    var translators = translators.sort((a, b) =>
+        a.label.localeCompare(b.label)
+    );
+    var labelCN = {
+        CNKI: "中国知网",
+        "Baidu Scholar": "百度学术",
+        BiliBili: "哔哩哔哩视频",
+        GFSOSO: "谷粉学术",
+        Soopat: "Soopat专利",
+        SuperLib: "全国图书馆联盟",
+        WanFang: "万方学术",
+        WeiPu: "维普学术",
+        Wenjin: "中国国家图书馆",
+    };
+    var translatorsCN = translators.filter((t) => t.label in labelCN);
+    var listitem, listcell, button;
+    var listbox = document.getElementById("translators-listbox");
+    for (let translator of translatorsCN) {
+        listitem = document.createElement("listitem");
+        listitem.setAttribute("allowevents", "true");
+        listcell = document.createElement("listcell");
+        listcell.setAttribute("label", labelCN[translator.label]);
+        listcell.setAttribute("id", translator.label + "1");
+        listitem.appendChild(listcell);
+        listcell = document.createElement("listcell");
+        listcell.setAttribute("label", translator.lastUpdated);
+        listcell.setAttribute("id", translator.label + "2");
+        listitem.appendChild(listcell);
+        listcell = document.createElement("listcell");
+        listcell.setAttribute("label", translator.fileName);
+        listcell.setAttribute("id", translator.label + "3");
+        listitem.appendChild(listcell);
+        listcell = document.createElement("listcell");
+        listcell.setAttribute("id", translator.label + "4");
+        button = document.createElement("button");
+        button.setAttribute("oncommand", "alert('update');");
+        button.setAttribute("image", "chrome://jasminum/skin/accept.png");
+        listcell.appendChild(button);
+        listitem.appendChild(listcell);
+
+        listbox.appendChild(listitem);
+    }
+};
