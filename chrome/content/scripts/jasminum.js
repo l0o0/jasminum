@@ -15,6 +15,8 @@ Zotero.Jasminum = {
         );
         // 等待数据维护更新完毕
         // await Zotero.Schema.schemaUpdatePromise;
+        Zotero.Jasminum.userAgent =
+            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/70.0.3538.77 Safari/537.36";
         Zotero.Jasminum.initPref();
         Components.utils.import("resource://gre/modules/osfile.jsm");
         Zotero.debug("Init Jasminum ...");
@@ -180,15 +182,14 @@ Zotero.Jasminum = {
             "f3o5r3uboow; SID_kns8=kns8011103; CurrSortField=%e5%8f%91%e" +
             "8%a1%a8%e6%97%b6%e9%97%b4%2f(%e5%8f%91%e8%a1%a8%e6%97%b6%e9" +
             "%97%b4%2c%27TIME%27); CurrSortFieldType=desc";
-        var userAgent =
-            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/70.0.3538.77 Safari/537.36";
+        var userAgent = Zotero.Jasminum.userAgent;
         var url = "https://kns8.cnki.net/nindex/";
         var sandbox = new Zotero.CookieSandbox("", url, cookieData, userAgent);
         Zotero.Jasminum.CookieSandbox = sandbox;
     },
 
     // Cookie for getting Refworks data
-    setRefCookieSandbox : function () {
+    setRefCookieSandbox: function () {
         var cookieData =
             "Ecp_ClientId=2200704084100797650; cnkiUserKey=0beb3437-b013" +
             "-ce59-6565-4ce9c4550bc1; ASPSESSIONIDCQRBDBSR=GAIDHDJABKDAJ" +
@@ -197,11 +198,26 @@ Zotero.Jasminum = {
             "0y5nom4; CurrSortField=%e5%8f%91%e8%a1%a8%e6%97%b6%e9%97%b4" +
             "%2f(%e5%8f%91%e8%a1%a8%e6%97%b6%e9%97%b4%2c%27TIME%27); Cur" +
             "rSortFieldType=desc";
-        var userAgent =
-            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/70.0.3538.77 Safari/537.36";
+        var userAgent = Zotero.Jasminum.userAgent;
         var url = "https://kns8.cnki.net/nindex/";
         var sandbox = new Zotero.CookieSandbox("", url, cookieData, userAgent);
         Zotero.Jasminum.RefCookieSandbox = sandbox;
+    },
+
+    // Cookie for CNKI reader
+    setReaderCookieSandbox: function (url) {
+        var encodeUrl = encodeURIComponent(url + '"]');
+        var cookieData =
+            "Ecp_ClientId=5191230153502598871; cnkiUserKey=ee10ba99-62af" +
+            "-5b83-d845-2b5c7b5c6d1a; Ecp_IpLoginFail=200824115.236.162." +
+            "162; ASP.NET_SessionId=umewgx0hhjf0i1dendd1qq51; SID=111063; " +
+            "_pk_ref=%5B%22%22%2C%22%22%2C1598322437%2C%22" +
+            url +
+            "; _pk_ses=*";
+
+        var userAgent = Zotero.Jasminum.userAgent;
+        var sandbox = new Zotero.CookieSandbox("", url, cookieData, userAgent);
+        return sandbox;
     },
 
     createPostData: function (fileData) {
@@ -365,7 +381,7 @@ Zotero.Jasminum = {
         var parser = new DOMParser();
         var html = parser.parseFromString(resptext, "text/html");
         var rows = html.querySelectorAll(
-            "table.-taresultble-list > tbody > tr"
+            "table.result-table-list > tbody > tr"
         );
         Zotero.debug("**Jasminum 搜索结果：" + rows.length);
         var targetRow;
@@ -403,12 +419,14 @@ Zotero.Jasminum = {
         var targetID = Zotero.Jasminum.getIDFromUrl(targetUrl);
         Zotero.debug(targetID);
         // Get reference data from CNKI by ID.
-        var postData = 
-            "filename=" + targetID.filename +
+        var postData =
+            "filename=" +
+            targetID.filename +
             "&displaymode=Refworks&orderparam=0&ordertype=desc" +
-            "&selectfield=&dbname=" + targetID.dbname +
+            "&selectfield=&dbname=" +
+            targetID.dbname +
             "&random=0.008818957206744082";
-            
+
         var url = "https://kns8.cnki.net/kns/manage/ShowExport";
         if (!Zotero.Jasminum.RefCookieSandbox) {
             Zotero.Jasminum.setRefCookieSandbox();
@@ -432,7 +450,7 @@ Zotero.Jasminum = {
                 if (!authors[authors.length - 1].trim()) authors.pop();
                 return tag + " " + authors.join("\n" + tag + " ");
             })
-            .replace(/vo (\d+)\n/, "VO $1\n");   // Divide VO and IS to different line
+            .replace(/vo (\d+)\n/, "VO $1\n"); // Divide VO and IS to different line
         targetUrl = `https://kns.cnki.net/KCMS/detail/detail.aspx?dbcode=${targetID.dbcode}&dbname=${targetID.dbname}&filename=${targetID.filename}&v=`;
         Zotero.debug(data);
         return [data, targetUrl];
@@ -461,7 +479,7 @@ Zotero.Jasminum = {
         throw new Error("No items found");
     },
 
-    fixItem: function (newItem, targetUrl) {
+    fixItem: async function (newItem, targetUrl) {
         // 是否处理中文姓名
         if (Zotero.Prefs.get("jasminum.zhnamesplit")) {
             var creators = newItem.getCreators();
@@ -495,6 +513,16 @@ Zotero.Jasminum = {
                     .replace(/\s*[\r\n]\s*/g, "\n")
                     .replace(/&lt;.*?&gt;/g, "")
             );
+        }
+        // Keep full abstract text.
+        if (newItems.abstractNote.endsWith("...")) {
+            var resp = await Zotero.HTTP.request("GET", targetUrl);
+            var parser = new DOMParser();
+            var html = parser.parseFromString(resp.responseText, "text/html");
+            var abs = html.querySelector("#ChDivSummary");
+            if (abs.innerText) {
+                newItem.setField("abstractNote", abs.innerText);
+            }
         }
         // Remove wront CN field.
         newItem.setField("callNumber", "");
@@ -571,74 +599,30 @@ Zotero.Jasminum = {
         );
     },
 
-    getChapterUrl: async function (itemUrl) {
-        Zotero.debug("** Jasminum get chapter url.");
-        var respText = await Zotero.HTTP.request("GET", itemUrl);
-        var parser = new DOMParser();
-        var respHTML = parser.parseFromString(respText, "text/html");
-        var chapterDown = Zotero.Utilities.xpath(
-            respHTML,
-            "//a[contains(text(), '分章下载')]"
-        );
-        if (chapterDown.length === 0) {
-            Zotero.debug("No chapter found.");
-            return null;
-        }
-        var readerUrl = Zotero.Utilities.xpath(
-            respHTML,
-            "//a[contains(text(), '在线阅读')]"
-        )[0].getAttribute("href");
-        Zotero.debug("** Jasminum reader url: " + readerUrl);
-        var respText = await Zotero.HTTP.request("GET", readerUrl);
-        var parser = new DOMParser();
-        var respHTML = parser.parseFromString(respText, "text/html");
-        var chapterUrl = Zotero.Utilities.xpath(
-            respHTML,
-            "//iframe[@id='treeView']"
-        )[0].getAttribute("src");
-        Zotero.debug("** Jasminum chapter url: " + chapterUrl);
-        return "https://kreader.cnki.net/Kreader" + chapterUrl;
+    getReaderUrl: async function (itemUrl) {
+        Zotero.debug("** Jasminum get Reader url.");
+        var itemid = Zotero.Jasminum.getIDFromUrl(itemUrl);
+        var readerUrl =
+            "https://kreader.cnki.net/Kreader/CatalogViewPage.aspx?dbCode=" +
+            itemid.dbcode +
+            "&filename=" +
+            itemid.filename +
+            "&tablename=" +
+            itemid.dbname +
+            "&compose=&first=1&uid=";
+        return readerUrl;
     },
 
-    getBookmark: async function (item) {
-        // demo url     https://kreader.cnki.net/Kreader/buildTree.aspx?dbCode=cdmd&FileName=1020622678.nh&TableName=CMFDTEMP&sourceCode=GHSFU&date=&year=2020&period=&fileNameList=&compose=&subscribe=&titleName=&columnCode=&previousType=_&uid=
-        var parentItem = item.parentItem;
-        var itemUrl = "";
-        var itemChapterUrl = "";
-        if (
-            // 匹配知网 URL
-            parentItem.getField("url") &&
-            parentItem.getField("url").match(/^https?:\/\/([^/]+\.)?cnki\.net/)
-        ) {
-            Zotero.debug("2");
-            itemUrl = parentItem.getField("url");
-            Zotero.debug("** Jasminum item url: " + itemUrl);
-        } else {
-            Zotero.debug("3");
-            var fileData = {
-                keyword: parentItem.getField("title"),
-                author:
-                    parentItem.getCreator(0).lastName +
-                    parentItem.getCreator(0).firstName,
-            };
-            var searchPrepareOut = await Zotero.Jasminum.searchPrepare(
-                fileData
-            );
-            var targetRow = await Zotero.Jasminum.search(
-                searchPrepareOut,
-                fileData
-            );
-            itemUrl = targetRow.querySelector("a.fz14").getAttribute("href");
-            itemUrl = "https://kns.cnki.net/KCMS" + itemUrl.slice(4);
-            // 获取文献链接URL -> 获取章节目录URL
-        }
-        itemChapterUrl = await Zotero.Jasminum.getChapterUrl(itemUrl);
-        Zotero.debug("** Jasminum item url: " + itemUrl);
-        Zotero.debug("** Jasminum item chapter url: " + itemChapterUrl);
-        // Next line raises: Invalid chrome URI: /
-        var chapterText = await Zotero.HTTP.request("GET", itemChapterUrl);
+    getChapterText: async function (readerUrl) {
+        var sandbox = Zotero.Jasminum.setReaderCookieSandbox(readerUrl);
+        var chapter = await Zotero.HTTP.request("GET", readerUrl, {
+            cookieSandbox: sandbox,
+        });
         var parser = new DOMParser();
-        var chapterHTML = parser.parseFromString(chapterText, "text/html");
+        var chapterHTML = parser.parseFromString(
+            chapter.responseText,
+            "text/html"
+        );
         var tree = chapterHTML.getElementById("treeDiv");
         var rows = tree.querySelectorAll("tr");
         var rows_array = [];
@@ -655,7 +639,42 @@ Zotero.Jasminum = {
             var bookmark = `BookmarkBegin\nBookmarkTitle: ${title}\nBookmarkLevel: ${level}\nBookmarkPageNumber: ${page}`;
             rows_array.push(bookmark);
         }
-        var bookmark = rows_array.join("\n");
+        return rows_array.join("\n");
+    },
+    // Find chapter page number from CNKI reader side bar.
+    getBookmark: async function (item) {
+        // demo url     https://kreader.cnki.net/Kreader/buildTree.aspx?dbCode=cdmd&FileName=1020622678.nh&TableName=CMFDTEMP&sourceCode=GHSFU&date=&year=2020&period=&fileNameList=&compose=&subscribe=&titleName=&columnCode=&previousType=_&uid=
+        var parentItem = item.parentItem;
+        var itemUrl = "";
+        var itemReaderUrl = "";
+        if (
+            // 匹配知网 URL
+            parentItem.getField("url") &&
+            parentItem.getField("url").match(/^https?:\/\/([^/]+\.)?cnki\.net/)
+        ) {
+            Zotero.debug("2");
+            itemUrl = parentItem.getField("url");
+        } else {
+            Zotero.debug("3");
+            var fileData = {
+                keyword: parentItem.getField("title"),
+                author:
+                    parentItem.getCreator(0).lastName +
+                    parentItem.getCreator(0).firstName,
+            };
+            var searchPrepareOut = await Zotero.Jasminum.searchPrepare(
+                fileData
+            );
+            var targetRow = await Zotero.Jasminum.search(fileData);
+            itemUrl = targetRow.querySelector("a.fz14").getAttribute("href");
+            itemUrl = "https://kns.cnki.net/KCMS" + itemUrl.slice(4);
+            // 获取文献链接URL -> 获取章节目录URL
+        }
+        itemReaderUrl = await Zotero.Jasminum.getReaderUrl(itemUrl);
+        Zotero.debug("** Jasminum item url: " + itemUrl);
+        Zotero.debug("** Jasminum item Reader url: " + itemReaderUrl);
+        // Next line raises: Invalid chrome URI: /
+        var bookmark = Zotero.Jasminum.getChapterText(itemReaderUrl);
         return bookmark;
     },
 
@@ -786,10 +805,8 @@ Zotero.Jasminum = {
         Zotero.debug(pdftkpath);
         var pdftk = "";
         if (Zotero.isWin) {
-            Zotero.debug("1");
             pdftk = OS.Path.join(pdftkpath, "pdftk.exe");
         } else {
-            Zotero.debug("2");
             pdftk = OS.Path.join(pdftkpath, "pdftk");
         }
         Zotero.debug(pdftk);
