@@ -467,11 +467,13 @@ Zotero.Jasminum = {
         var creators;
         // 学位论文，导师 -> contributor
         if (newItem.getNotes()) {
-            if (Zotero.ItemTypes.getName(item.itemTypeID) == "thesis") {
+            if (Zotero.ItemTypes.getName(newItem.itemTypeID) == "thesis") {
                 creators = newItem.getCreators();
-                var note = Zotero.Items.get(newItem.getNotes()[0]).split(
-                    "<br />"
-                );
+                var note = Zotero.Items
+                    .get(newItem.getNotes()[0])
+                    .getNote()
+                    .split(/<br\s?\/>/);
+                // Zotero.debug(note);
                 for (let line of note) {
                     if (line.startsWith("A3")) {
                         var creator = {
