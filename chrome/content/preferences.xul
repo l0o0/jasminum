@@ -75,9 +75,9 @@
                     </listitem> -->
 	                </listbox>
                     <hbox style="display: block">
-                        <button label="Refresh" icon="refresh" oncommand="initTranslatorPanel();"/>
-                        <button label="Update Translators" oncommand="alert('Update Translators');"/>
-                        <button label="Backup" oncommand="alert('Backup');"/>
+                        <button label="Refresh" icon="refresh" oncommand="alert('开发中');"/>
+                        <button label="Update Translators" oncommand="alert('开发中');"/>
+                        <button label="Backup" oncommand="alert('开发中');"/>
                     </hbox>
                 </tabpanel>
             </tabpanels>
