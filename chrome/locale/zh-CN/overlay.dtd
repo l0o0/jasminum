@@ -16,4 +16,4 @@
 <!ENTITY pdftk.path.check.ok "PDFtk Server安装目录检查通过">
 <!ENTITY pdftk.path.check.error "未在该目录下发现pdftk执行程序">
 <!ENTITY jasminum.namepatent.desc "根据文件名抓取知网元数据，文件名格式设置:{&#37;g}=全名，{&#37;t}=标题名，{&#37;y}=年份，以下划线_分隔，不用考虑文件后缀名">
-<!ENTITY jasminum.zhnamesplit.label "抓取题录信息时拆分中文姓，名(此选项对网页抓取无效，只对茉莉花插件中的抓取有效)">
+<!ENTITY jasminum.zhnamesplit.label "抓取题录信息时拆分中文姓，名(包括知网页面抓取)">

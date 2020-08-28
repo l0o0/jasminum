@@ -19,6 +19,7 @@ Zotero.Jasminum = {
             "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/70.0.3538.77 Safari/537.36";
         Zotero.Jasminum.initPref();
         Components.utils.import("resource://gre/modules/osfile.jsm");
+        Zotero.Jasminum.CNDB = ["CNKI"];
         Zotero.debug("Init Jasminum ...");
     },
 
@@ -45,16 +46,35 @@ Zotero.Jasminum = {
         // Check new added item, and adds meta data.
         notify: function (event, type, ids, extraData) {
             // var automatic_pdf_download_bool = Zotero.Prefs.get('zoteroscihub.automatic_pdf_download');
-            if (event == "add" && Zotero.Prefs.get("jasminum.autoupdate")) {
-                Zotero.debug("** Jasminum new items added.");
-                var items = [];
-                for (let item of Zotero.Items.get(ids)) {
-                    if (Zotero.Jasminum.checkItem(item)) {
-                        items.push(item);
+            if (event == "add") {
+                // Auto update meta data
+                var addedItems = Zotero.Items.get(ids);
+                if (Zotero.Prefs.get("jasminum.autoupdate")) {
+                    Zotero.debug("** Jasminum new items added.");
+                    var items = [];
+                    for (let item of addedItems) {
+                        if (Zotero.Jasminum.checkItem(item)) {
+                            items.push(item);
+                        }
                     }
+                    Zotero.debug(`** Jasminum add ${items.length} items`);
+                    Zotero.Jasminum.updateItems(items);
                 }
-                Zotero.debug(`** Jasminum add ${items.length} items`);
-                Zotero.Jasminum.updateItems(items);
+                // Split or merge name
+                if (!Zotero.Prefs.get("jasminum.zhnamesplit")) {
+                    Zotero.debug("** Jasminum merge CN name");
+                    var items = [];
+                    for (let item of addedItems) {
+                        if (
+                            Zotero.Jasminum.CNDB.includes(
+                                item.getField("libraryCatalog")
+                            )
+                        ) {
+                            items.push(item);
+                        }
+                    }
+                    Zotero.Jasminum.mergeName(items);
+                }
             }
         },
     },
@@ -818,8 +838,17 @@ Zotero.Jasminum = {
         return item.isRegularItem() && item.isTopLevelItem();
     },
 
-    splitName: async function () {
+    splitNameM: function () {
         var items = ZoteroPane.getSelectedItems();
+        Zotero.Jasminum.splitName(items);
+    },
+
+    mergeNameM: function () {
+        var items = ZoteroPane.getSelectedItems();
+        Zotero.Jasminum.mergeName(items);
+    },
+
+    splitName: async function (items) {
         for (let item of items) {
             var creators = item.getCreators();
             for (var i = 0; i < creators.length; i++) {
@@ -848,8 +877,7 @@ Zotero.Jasminum = {
         }
     },
 
-    mergeName: async function () {
-        var items = ZoteroPane.getSelectedItems();
+    mergeName: async function (items) {
         for (let item of items) {
             var creators = item.getCreators();
             for (var i = 0; i < creators.length; i++) {

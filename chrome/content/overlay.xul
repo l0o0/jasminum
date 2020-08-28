@@ -18,8 +18,8 @@
             label="&jasminum.namehandler.label;" 
             class="menu-iconic jasminum-name-icon">
 			<menupopup id="jasminum">
-				<menuitem  label="&jasminum.namehandler.split.label;" oncommand="Zotero.Jasminum.splitName();"/>
-				<menuitem  label="&jasminum.namehandler.merge.label;" oncommand="Zotero.Jasminum.mergeName();"/>
+				<menuitem  label="&jasminum.namehandler.split.label;" oncommand="Zotero.Jasminum.splitNameM();"/>
+				<menuitem  label="&jasminum.namehandler.merge.label;" oncommand="Zotero.Jasminum.mergeNameM();"/>
 			</menupopup>
 		</menu>
 		<menuitem id="zotero-itemmenu-jasminum" 
