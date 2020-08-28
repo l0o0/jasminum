@@ -469,8 +469,7 @@ Zotero.Jasminum = {
         if (newItem.getNotes()) {
             if (Zotero.ItemTypes.getName(newItem.itemTypeID) == "thesis") {
                 creators = newItem.getCreators();
-                var note = Zotero.Items
-                    .get(newItem.getNotes()[0])
+                var note = Zotero.Items.get(newItem.getNotes()[0])
                     .getNote()
                     .split(/<br\s?\/>/);
                 // Zotero.debug(note);
@@ -540,17 +539,17 @@ Zotero.Jasminum = {
         // Keep tags according global config.
         if (Zotero.Prefs.get("automaticTags") === false) {
             newItem.tags = [];
-        } else {
-            // Change tag type.
-            var tags = newItem.getTags();
-            if (tags.length > 0) {
-                var newTags = [];
-                for (let tag of tags) {
-                    tag.type = 1;
-                    newTags.push(tag);
-                }
-                newItem.setTags(newTags);
+        }
+        // Change tag type
+        var tags = newItem.getTags();
+        // Zotero.debug('** Jasminum tags length: ' + tags.length);
+        if (tags.length > 0) {
+            var newTags = [];
+            for (let tag of tags) {
+                tag.type = 1;
+                newTags.push(tag);
             }
+            newItem.setTags(newTags);
         }
         return newItem;
     },
@@ -585,6 +584,10 @@ Zotero.Jasminum = {
 
         // Put old item as a child of the new item
         item.parentID = newItem.id;
+        // Use Zotfile to rename file
+        if (typeof Zotero.ZotFile.renameSelectedAttachments === "function") {
+            Zotero.ZotFile.renameSelectedAttachments();
+        }
         await item.saveTx();
         await newItem.saveTx();
         if (items.length) {
@@ -785,6 +788,14 @@ Zotero.Jasminum = {
         }
         var bookmark = await Zotero.Jasminum.getBookmark(item);
         await Zotero.Jasminum.addBookmark(item, bookmark);
+        // Use zotfile to add TOC
+        var note = item.getNote();
+        if (
+            note == 0 &&
+            typeof Zotero.ZotFile.pdfOutline.getOutline === "function"
+        ) {
+            Zotero.ZotFile.pdfOutline.getOutline();
+        }
     },
 
     checkPath: async function () {
