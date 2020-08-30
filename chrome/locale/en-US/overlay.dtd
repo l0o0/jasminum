@@ -17,3 +17,4 @@
 <!ENTITY pdftk.path.check.error "Can't find PDFtk execute file in this folder.">
 <!ENTITY jasminum.namepatent.desc "Filename format:{&#37;g}=Chinese fullname，{&#37;t}=title, {&#37;y}=year, seperate by '_'，ignore file extension">
 <!ENTITY jasminum.zhnamesplit.label "Split firstname and lastname when get metadata(Including CNKI web translators)">
+<!ENTITY jasminum.rename.label "Use Zotfile to rename attachment(Need Zotfile installed)">

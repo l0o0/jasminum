@@ -12,6 +12,7 @@
                 <preference id="pref-jasminum-autoupdate" name="extensions.zotero.jasminum.autoupdate" type="bool"/>
                 <preference id="pref-jasminum-namepatent" name="extensions.zotero.jasminum.namepatent" type="string"/>
                 <preference id="pref-jasminum.zhnamesplit" name="extensions.zotero.jasminum.zhnamesplit" type="bool"/>
+                <preference id="pref-jasminum.rename" name="extensions.zotero.jasminum.rename" type="bool"/>
             </preferences>
             <tabbox>
                 <tabs>
@@ -26,6 +27,7 @@
                                 <caption label="&jasminum.chinese.caption;"/>
                                 <checkbox id="jasminum-autoupdate" label="&jasminum.autoupdate.label;" preference="pref-jasminum-autoupdate"/>
                                 <checkbox id="jasminum.zhnamesplit" label="&jasminum.zhnamesplit.label;" preference="pref-jasminum.zhnamesplit"/>
+                                <checkbox id="jasminum.rename" label="&jasminum.rename.label;" preference="pref-jasminum.rename"/>
                                 <separator/>
                                 <vbox flex="1">
                                     <description>&jasminum.namepatent.desc;</description>

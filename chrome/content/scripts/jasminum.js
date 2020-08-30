@@ -40,6 +40,9 @@ Zotero.Jasminum = {
         if (Zotero.Prefs.get("jasminum.zhnamesplit") === undefined) {
             Zotero.Prefs.set("jasminum.zhnamesplit", true);
         }
+        if (Zotero.Prefs.get("jasminum.rename") === undefined) {
+            Zotero.Prefs.set("jasminum.rename", true);
+        }
     },
 
     notifierCallback: {
@@ -443,7 +446,12 @@ Zotero.Jasminum = {
         var data = resp.responseText
             .replace("<ul class='literature-list'><li>", "")
             .replace("<br></li></ul>", "")
-            .replace(/<br>/g, "\n")
+            .replace(/\n/g, "<br>")
+            .replace(/<br><br><br>\s+/g, "") // In abstract
+            .replace(/<br>\s+/g, " ") // In keyword
+            .replace(/<br><br>AB/g, "<br>AB") // AB leading
+            .replace(/<br><br>/g, " ") // In keyword
+            .replace(/(<br>)+/g, "\n")
             .replace(
                 /^RT\s+Conference Proceeding/gim,
                 "RT Conference Proceedings"
@@ -544,12 +552,14 @@ Zotero.Jasminum = {
         }
         // Keep full abstract text.
         if (newItem.getField("abstractNote").endsWith("...")) {
+            Zotero.debug("** Jasminum get full abstract text.");
             var resp = await Zotero.HTTP.request("GET", targetUrl);
             var parser = new DOMParser();
             var html = parser.parseFromString(resp.responseText, "text/html");
             var abs = html.querySelector("#ChDivSummary");
+            Zotero.debug("** Jasminum abs " + abs.innerText);
             if (abs.innerText) {
-                newItem.setField("abstractNote", abs.innerText);
+                newItem.setField("abstractNote", abs.innerText.trim());
             }
         }
         // Remove wront CN field.
@@ -605,7 +615,10 @@ Zotero.Jasminum = {
         // Put old item as a child of the new item
         item.parentID = newItem.id;
         // Use Zotfile to rename file
-        if (typeof Zotero.ZotFile.renameSelectedAttachments === "function") {
+        if (
+            Zotero.Prefs.get("jasminum.rename") &&
+            typeof Zotero.ZotFile != "undefined"
+        ) {
             Zotero.ZotFile.renameSelectedAttachments();
         }
         await item.saveTx();
@@ -810,10 +823,7 @@ Zotero.Jasminum = {
         await Zotero.Jasminum.addBookmark(item, bookmark);
         // Use zotfile to add TOC
         var note = item.getNote();
-        if (
-            note == 0 &&
-            typeof Zotero.ZotFile.pdfOutline.getOutline === "function"
-        ) {
+        if (note == 0 && typeof Zotero.ZotFile != "undefined") {
             Zotero.ZotFile.pdfOutline.getOutline();
         }
     },
