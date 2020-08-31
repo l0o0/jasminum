@@ -29,6 +29,6 @@
 		<menuitem id="zotero-itemmenu-jasminum-bookmark"
             label="&jasminum.addBookmark.label;"
             class="menuitem-iconic jasminum-bookmark-icon" 
-            oncommand="Zotero.Jasminum.addBookmarkItem();"/>
+            oncommand="Zotero.Jasminum.addBookmarkItemM();"/>
 	</menupopup>
 </overlay>

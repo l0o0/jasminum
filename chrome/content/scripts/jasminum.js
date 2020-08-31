@@ -43,11 +43,14 @@ Zotero.Jasminum = {
         if (Zotero.Prefs.get("jasminum.rename") === undefined) {
             Zotero.Prefs.set("jasminum.rename", true);
         }
+        if (Zotero.Prefs.get("jasminum.autobookmark") === undefined) {
+            Zotero.Prefs.set("jasminum.autobookmark", true);
+        }
     },
 
     notifierCallback: {
         // Check new added item, and adds meta data.
-        notify: function (event, type, ids, extraData) {
+        notify: async function (event, type, ids, extraData) {
             // var automatic_pdf_download_bool = Zotero.Prefs.get('zoteroscihub.automatic_pdf_download');
             if (event == "add") {
                 // Auto update meta data
@@ -77,6 +80,30 @@ Zotero.Jasminum = {
                         }
                     }
                     Zotero.Jasminum.mergeName(items);
+                }
+                if (Zotero.Prefs.get("jasminum.autobookmark")) {
+                    for (let item of addedItems) {
+                        if (
+                            Zotero.ItemTypes.getName(newItem.itemTypeID) ==
+                                "thesis" &&
+                            item.getField("libraryCatalog") == "CNKI"
+                        ) {
+                            var attachmentIDs = item.getAttachments();
+                            if (attachmentIDs.length > 0) {
+                                for (let id of attachmentIDs) {
+                                    var attachmentItem = Zotero.Items.get(id);
+                                    if (
+                                        attachmentItem.attachmentContentType ==
+                                        "application/pdf"
+                                    ) {
+                                        await Zotero.Jasminum.addBookmarkItem(
+                                            attachmentItem
+                                        );
+                                    }
+                                }
+                            }
+                        }
+                    }
                 }
             }
         },
@@ -805,8 +832,7 @@ Zotero.Jasminum = {
         }
     },
 
-    addBookmarkItem: async function () {
-        var item = ZoteroPane.getSelectedItems()[0];
+    addBookmarkItem: async function (item) {
         if (!(await Zotero.Jasminum.checkPath())) {
             alert(
                 "Can't find PDFtk Server execute file. Please install PDFtk Server and choose the folder in the Jasminum preference window."
@@ -826,6 +852,12 @@ Zotero.Jasminum = {
         if (note == 0 && typeof Zotero.ZotFile != "undefined") {
             Zotero.ZotFile.pdfOutline.getOutline();
         }
+    },
+
+    // Function to be called in Menu
+    addBookmarkItemM: async function () {
+        var item = ZoteroPane.getSelectedItems()[0];
+        await Zotero.Jasminum.addBookmarkItem(item);
     },
 
     checkPath: async function () {
