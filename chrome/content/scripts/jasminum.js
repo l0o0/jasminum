@@ -194,7 +194,6 @@ Zotero.Jasminum = {
         var patent = Zotero.Prefs.get("jasminum.namepatent");
         var patentArr = patent.split("_");
         var prefix = filename.substr(0, filename.length - 4);
-        var prefix = prefix.replace("_省略_", ""); // Long title contains _省略_
         var author = "";
         var title = "";
         // Remove year string
@@ -211,6 +210,10 @@ Zotero.Jasminum = {
             console.log(authorIdx);
             author = prefixArr[authorIdx];
             prefixArr.splice(authorIdx, 1);
+            var missIndex = prefixArr.indexOf("省略");
+            if (missIndex > 0) {
+                prefixArr.splice(missIndex - 1, 3); // Delete before and after 省略
+            }
             title = prefixArr.join(" ");
         } else {
             title = prefixArr.join(" ");
@@ -310,7 +313,7 @@ Zotero.Jasminum = {
                         Title: fileData.keyword,
                         Logic: 1,
                         Name: "TI", // 搜索字段代码
-                        Operate: "=", // 精确匹配
+                        Operate: fileData.keyword.includes(' ') ? "%" : "=", // =精确匹配, % 模糊匹配
                         Value: fileData.keyword,
                         ExtendType: 1,
                         ExtendValue: "中英文对照",
@@ -661,6 +664,7 @@ Zotero.Jasminum = {
             Zotero.Jasminum.updateItems(items);
         }
         Zotero.debug("** Jasminum finished.");
+    }
     },
 
     checkItemPDF: function (item) {
