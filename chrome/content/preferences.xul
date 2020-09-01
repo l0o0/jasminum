@@ -38,7 +38,7 @@
                             </groupbox>
                             <groupbox>
                                 <caption label="&jasminum.pdftk.caption;"/>
-                                <description>&jasminum.pdftk.info; <label value="PDFtk Server" href="https://www.pdflabs.com/tools/pdftk-server/"/></description>
+                                <description>&jasminum.pdftk.info; <label class="zotero-text-link" value="PDFtk Server" href="https://www.pdflabs.com/tools/pdftk-server/"/></description>
                                 <hbox style="margin: 0" align="center">
                                     <textbox id="jasminum-pdftk-path" preference="pref-jasminum-pdftkpath" readonly="true" flex="1"/>
                                     <button label="&jasminum.choose;" oncommand="choosePath();"/>
