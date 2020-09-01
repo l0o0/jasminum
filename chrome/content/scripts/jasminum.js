@@ -84,7 +84,7 @@ Zotero.Jasminum = {
                 if (Zotero.Prefs.get("jasminum.autobookmark")) {
                     for (let item of addedItems) {
                         if (
-                            Zotero.ItemTypes.getName(newItem.itemTypeID) ==
+                            Zotero.ItemTypes.getName(item.itemTypeID) ==
                                 "thesis" &&
                             item.getField("libraryCatalog") == "CNKI"
                         ) {
@@ -469,16 +469,17 @@ Zotero.Jasminum = {
             cookieSandbox: Zotero.Jasminum.RefCookieSandbox,
             body: postData,
         });
-        // Zotero.debug(resp);
+        Zotero.debug(resp.responseText);
         var data = resp.responseText
             .replace("<ul class='literature-list'><li>", "")
             .replace("<br></li></ul>", "")
-            .replace(/\n/g, "<br>")
-            .replace(/<br><br><br>\s+/g, "") // In abstract
-            .replace(/<br>\s+/g, " ") // In keyword
-            .replace(/<br><br>AB/g, "<br>AB") // AB leading
-            .replace(/<br><br>/g, " ") // In keyword
-            .replace(/(<br>)+/g, "\n")
+            .replace(/<br>|\r/g, "\n")
+            .replace(/vo (\d+)\n/, "VO $1\n") // Divide VO and IS to different line
+            .replace(/\n+/g, "\n")
+            .replace(/\n([A-Z][A-Z1-9]\s)/g, "<br>$1")
+            .replace(/\n/g, "")
+            .replace(/<br>/g, "\n")
+            .replace(/\t/g, "") // \t in abstract
             .replace(
                 /^RT\s+Conference Proceeding/gim,
                 "RT Conference Proceedings"
@@ -489,9 +490,9 @@ Zotero.Jasminum = {
                 if (!authors[authors.length - 1].trim()) authors.pop();
                 return tag + " " + authors.join("\n" + tag + " ");
             })
-            .replace(/vo (\d+)\n/, "VO $1\n"); // Divide VO and IS to different line
+            .trim();
         targetUrl = `https://kns.cnki.net/KCMS/detail/detail.aspx?dbcode=${targetID.dbcode}&dbname=${targetID.dbname}&filename=${targetID.filename}&v=`;
-        Zotero.debug(data);
+        Zotero.debug(data.split("\n"));
         return [data, targetUrl];
     },
 
@@ -647,6 +648,12 @@ Zotero.Jasminum = {
             typeof Zotero.ZotFile != "undefined"
         ) {
             Zotero.ZotFile.renameSelectedAttachments();
+        }
+        if (
+            Zotero.Prefs.get("jasminum.autobookmark") &&
+            Zotero.Jasminum.checkItemPDF(item)
+        ) {
+            await Zotero.Jasminum.addBookmarkItem(item);
         }
         await item.saveTx();
         await newItem.saveTx();
@@ -815,7 +822,6 @@ Zotero.Jasminum = {
         );
         try {
             await Zotero.Utilities.Internal.exec(pdftk, args);
-            Zotero.debug("PDFtk: Add bookmark complete");
             await OS.File.copy(cachePDF.path, item.getFilePath());
             cacheFile.remove(false);
             cachePDF.remove(false);
