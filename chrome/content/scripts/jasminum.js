@@ -313,7 +313,7 @@ Zotero.Jasminum = {
                         Title: fileData.keyword,
                         Logic: 1,
                         Name: "TI", // 搜索字段代码
-                        Operate: fileData.keyword.includes(' ') ? "%" : "=", // =精确匹配, % 模糊匹配
+                        Operate: fileData.keyword.includes(" ") ? "%" : "=", // =精确匹配, % 模糊匹配
                         Value: fileData.keyword,
                         ExtendType: 1,
                         ExtendValue: "中英文对照",
@@ -624,47 +624,54 @@ Zotero.Jasminum = {
         var fileData = Zotero.Jasminum.splitFilename(item.getFilename());
         Zotero.debug(fileData);
         var targetRow = await Zotero.Jasminum.search(fileData);
-        Zotero.debug("targetRow");
-        Zotero.debug(targetRow.textContent);
-        var [data, targetUrl] = await Zotero.Jasminum.getRefworks(targetRow);
-        var translate = new Zotero.Translate.Import();
-        translate.setTranslator("1a3506da-a303-4b0a-a1cd-f216e6138d86");
-        translate.setString(data);
-        var newItem = await Zotero.Jasminum.promiseTranslate(
-            translate,
-            libraryID
-        );
-        Zotero.debug(newItem);
-        newItem = await Zotero.Jasminum.fixItem(newItem, targetUrl);
-        Zotero.debug("** Jasminum DB trans ...");
-        if (itemCollections.length) {
-            for (let collectionID of itemCollections) {
-                newItem.addToCollection(collectionID);
+        if (targetRow) {
+            Zotero.debug("targetRow");
+            Zotero.debug(targetRow.textContent);
+            var [data, targetUrl] = await Zotero.Jasminum.getRefworks(
+                targetRow
+            );
+            var translate = new Zotero.Translate.Import();
+            translate.setTranslator("1a3506da-a303-4b0a-a1cd-f216e6138d86");
+            translate.setString(data);
+            var newItem = await Zotero.Jasminum.promiseTranslate(
+                translate,
+                libraryID
+            );
+            Zotero.debug(newItem);
+            newItem = await Zotero.Jasminum.fixItem(newItem, targetUrl);
+            Zotero.debug("** Jasminum DB trans ...");
+            if (itemCollections.length) {
+                for (let collectionID of itemCollections) {
+                    newItem.addToCollection(collectionID);
+                }
             }
-        }
 
-        // Put old item as a child of the new item
-        item.parentID = newItem.id;
-        // Use Zotfile to rename file
-        if (
-            Zotero.Prefs.get("jasminum.rename") &&
-            typeof Zotero.ZotFile != "undefined"
-        ) {
-            Zotero.ZotFile.renameSelectedAttachments();
+            // Put old item as a child of the new item
+            item.parentID = newItem.id;
+            // Use Zotfile to rename file
+            if (
+                Zotero.Prefs.get("jasminum.rename") &&
+                typeof Zotero.ZotFile != "undefined"
+            ) {
+                Zotero.ZotFile.renameSelectedAttachments();
+            }
+            if (
+                Zotero.Prefs.get("jasminum.autobookmark") &&
+                Zotero.Jasminum.checkItemPDF(item)
+            ) {
+                await Zotero.Jasminum.addBookmarkItem(item);
+            }
+            await item.saveTx();
+            await newItem.saveTx();
+            if (items.length) {
+                Zotero.Jasminum.updateItems(items);
+            }
+            Zotero.debug("** Jasminum finished.");
+        } else {
+            alert(
+                `No result found!\n作者：${fileData.author}\n篇名：${fileData.keyword}`
+            );
         }
-        if (
-            Zotero.Prefs.get("jasminum.autobookmark") &&
-            Zotero.Jasminum.checkItemPDF(item)
-        ) {
-            await Zotero.Jasminum.addBookmarkItem(item);
-        }
-        await item.saveTx();
-        await newItem.saveTx();
-        if (items.length) {
-            Zotero.Jasminum.updateItems(items);
-        }
-        Zotero.debug("** Jasminum finished.");
-    }
     },
 
     checkItemPDF: function (item) {
@@ -754,6 +761,9 @@ Zotero.Jasminum = {
                     parentItem.getCreator(0).firstName,
             };
             var targetRow = await Zotero.Jasminum.search(fileData);
+            if (!targetRow) {
+                return null;
+            }
             itemUrl = targetRow.querySelector("a.fz14").getAttribute("href");
             itemUrl = "https://kns.cnki.net/KCMS" + itemUrl.slice(4);
             // 获取文献链接URL -> 获取章节目录URL
@@ -856,6 +866,9 @@ Zotero.Jasminum = {
             return false;
         }
         var bookmark = await Zotero.Jasminum.getBookmark(item);
+        if (!bookmark) {
+            alert("No Bookmark found!\n书签信息未找到")；
+        }
         await Zotero.Jasminum.addBookmark(item, bookmark);
         // Use zotfile to add TOC
         var note = item.getNote();
