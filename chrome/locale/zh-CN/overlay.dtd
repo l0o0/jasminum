@@ -18,4 +18,6 @@
 <!ENTITY jasminum.namepatent.desc "根据文件名抓取知网元数据，文件名格式设置:{&#37;g}=全名，{&#37;t}=标题名，{&#37;y}=年份，以下划线_分隔，不用考虑文件后缀名">
 <!ENTITY jasminum.zhnamesplit.label "抓取题录信息时拆分中文姓，名(包括知网页面抓取)">
 <!ENTITY jasminum.rename.label "拉取知网元数据后调用Zotfile重命名附件(需安装Zotfile)">
-<!ENTITY jasminum.autobookmark.label "从知网添加学位论文时自动添加书签">
+<!ENTITY jasminum.autobookmark.label "从知网添加学位论文时自动添加书签(暂不支持从知网网页抓取论文)">
+<!ENTITY jasminum.zhnamedot.label "当拉取知网元数据时去除 Zotfile 重命名文件名中的逗号(, )">
+<!ENTITY jasminum.namehandler.removeDot.label "去除文件中逗号">

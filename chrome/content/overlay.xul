@@ -20,6 +20,7 @@
 			<menupopup id="jasminum">
 				<menuitem  label="&jasminum.namehandler.split.label;" oncommand="Zotero.Jasminum.splitNameM();"/>
 				<menuitem  label="&jasminum.namehandler.merge.label;" oncommand="Zotero.Jasminum.mergeNameM();"/>
+                <menuitem  label="&jasminum.namehandler.removeDot.label;" oncommand="Zotero.Jasminum.removeDotM();"/>
 			</menupopup>
 		</menu>
 		<menuitem id="zotero-itemmenu-jasminum" 

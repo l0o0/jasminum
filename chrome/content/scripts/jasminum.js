@@ -867,7 +867,7 @@ Zotero.Jasminum = {
         }
         var bookmark = await Zotero.Jasminum.getBookmark(item);
         if (!bookmark) {
-            alert("No Bookmark found!\n书签信息未找到")；
+            alert("No Bookmark found!\n书签信息未找到");
         }
         await Zotero.Jasminum.addBookmark(item, bookmark);
         // Use zotfile to add TOC
@@ -962,6 +962,27 @@ Zotero.Jasminum = {
             if (creators != item.getCreators()) {
                 item.setCreators(creators);
                 item.saveTx();
+            }
+        }
+    },
+
+    removeDotM: function () {
+        var items = ZoteroPane.getSelectedItems();
+        Zotero.Jasminum.removeDot(items);
+    },
+
+    removeDot: async function (items) {
+        for (let item of items) {
+            var attachmentIDs = item.getAttachments();
+            for (let id of attachmentIDs) {
+                var atta = Zotero.Items.get(id);
+                var newName = atta.attachmentFilename.replace(
+                    /([\u4e00-\u9fa5]), ([\u4e00-\u9fa5])/g,
+                    "$1$2"
+                );
+                await atta.renameAttachmentFile(newName);
+                atta.setField("title", newName);
+                atta.saveTx();
             }
         }
     },

@@ -19,3 +19,5 @@
 <!ENTITY jasminum.zhnamesplit.label "Split firstname and lastname when get metadata(Including CNKI web translators)">
 <!ENTITY jasminum.rename.label "Use Zotfile to rename attachment(Need Zotfile installed)">
 <!ENTITY jasminum.autobookmark.label "Add bookmark to thesis PDF when adding thesis item from CNKI">
+<!ENTITY jasminum.zhnamedot.label "Remove ', ' between Chinese characters when Zotfile rename attachment file.">
+<!ENTITY jasminum.namehandler.removeDot.label "Remove dot in filename">

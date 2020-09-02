@@ -14,6 +14,7 @@
                 <preference id="pref-jasminum.zhnamesplit" name="extensions.zotero.jasminum.zhnamesplit" type="bool"/>
                 <preference id="pref-jasminum.rename" name="extensions.zotero.jasminum.rename" type="bool"/>
                 <preference id="pref-jasminum.autobookmark" name="extensions.zotero.jasminum.autobookmark" type="bool"/>
+                <preference id="pref-jasminum.zhnamedot" name="extensions.zotero.jasminum.zhnamedot" type="bool"/>
             </preferences>
             <tabbox>
                 <tabs>
@@ -30,6 +31,7 @@
                                 <checkbox id="jasminum.zhnamesplit" label="&jasminum.zhnamesplit.label;" preference="pref-jasminum.zhnamesplit"/>
                                 <checkbox id="jasminum.rename" label="&jasminum.rename.label;" preference="pref-jasminum.rename"/>
                                 <checkbox id="jasminum.autobookmark" label="&jasminum.autobookmark.label;" preference="pref-jasminum.autobookmark"/>
+                                <!-- <checkbox id="jasminum.zhnamedot" label="&jasminum.zhnamedot.label;" preference="pref-jasminum.zhnamedot"/> -->
                                 <separator/>
                                 <vbox flex="1">
                                     <description>&jasminum.namepatent.desc;</description>
