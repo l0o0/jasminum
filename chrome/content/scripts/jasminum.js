@@ -977,7 +977,7 @@ Zotero.Jasminum = {
             for (let id of attachmentIDs) {
                 var atta = Zotero.Items.get(id);
                 var newName = atta.attachmentFilename.replace(
-                    /([\u4e00-\u9fa5]), ([\u4e00-\u9fa5])/g,
+                    /([_\u4e00-\u9fa5]), ([_\u4e00-\u9fa5])/g,
                     "$1$2"
                 );
                 await atta.renameAttachmentFile(newName);
