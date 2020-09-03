@@ -74,8 +74,8 @@
                         </hbox>
                     </tabpanel>
                     <tabpanel id="zotero-prefpane-translators-tab" orient="vertical">
-                        <description style="white-space: pre-wrap; font-size: 14px">首先非常感谢各位使用我编写的茉莉花插件🌹
-因本人能力和时间有限，如果大家在使用中有一些问题或建议，可以欢迎发送反馈到邮箱：linxzh1989@gmail.com。
+                        <description style="white-space: pre-wrap;">首先非常感谢各位使用茉莉花插件🌹
+因能力和时间限制，难免会有一些不足。如果使用中遇到一些问题或者建议，欢迎发送反馈到邮箱：linxzh1989@gmail.com。
 最后也欢迎大家加入 Zotero中文插件 QQ群 913637964，一起学习交流。
                         </description>
                         <hbox>
