@@ -669,7 +669,7 @@ Zotero.Jasminum = {
             Zotero.debug("** Jasminum finished.");
         } else {
             alert(
-                `No result found!\n作者：${fileData.author}\n篇名：${fileData.keyword}`
+                `No result found!\n作者：${fileData.author}\n篇名：${fileData.keyword}\n请检查设置中的文件名模板是否与实际实际情况相符`
             );
         }
     },
