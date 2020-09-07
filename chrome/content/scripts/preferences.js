@@ -72,18 +72,19 @@ initTranslatorPanel = async function (updateJson) {
         listcell.setAttribute("id", translator.label + "2");
         listitem.appendChild(listcell);
         listcell = document.createElement("listcell");
-        listcell.setAttribute(
-            "label",
-            updateJson[translator.label].lastUpdated
-        );
+        listcell.setAttribute("label", "XXX");
         listcell.setAttribute("id", translator.label + "3");
         listitem.appendChild(listcell);
         listcell = document.createElement("listcell");
         listcell.setAttribute("id", translator.label + "4");
         button = document.createElement("button");
-        button.setAttribute("oncommand", "alert('update');");
+        button.setAttribute(
+            "oncommand",
+            `updateTranslator('${translator.label}');`
+        );
         listcell.setAttribute("id", translator.label + "5");
         button.setAttribute("image", "chrome://jasminum/skin/accept.png");
+        button.setAttribute("id", translator.label + "5button");
         listcell.appendChild(button);
         listitem.appendChild(listcell);
 
@@ -101,7 +102,7 @@ getUpdates = async function () {
         var updateJson = JSON.parse(resp.responseText);
         return updateJson;
     } catch (e) {
-        alert("获取更新失败，请稍后重试");
+        alert("获取更新信息失败，请稍后重试");
     }
 };
 
@@ -120,29 +121,46 @@ downloadTo = async function (label) {
         await OS.File.writeAtomic(cacheFile.path, array, {
             tmpPath: cacheFile.path + ".tmp",
         });
-        return true;
+        return cacheFile;
     } catch (e) {
         alert(`${label}.js 下载失败,请稍后尝试重新下载\n` + e);
         return false;
     }
 };
 
-moveTo = function(cacheFile) {
-    var translatorDir = OS.Path.join(Zotero.Prefs.get("dataDir"), 'translators');
+moveTo = async function (cacheFile) {
+    var desPath = OS.Path.join(
+        Zotero.Prefs.get("dataDir"),
+        "translators",
+        OS.Path.basename(cacheFile.path)
+    );
     try {
-        await OS.File.move(cacheFile.path, translatorDir);
+        await OS.File.move(cacheFile.path, desPath);
         return true;
-    } catch(e) {
-        alert("文件复制失败");
+    } catch (e) {
+        alert("文件复制失败\n" + e);
         return false;
     }
 };
 
-updateIcon = function(label, status) {
-    var button = document.getElementById(label + '5');
+updateIcon = function (label, status) {
+    var button = document.getElementById(label + "5button");
     if (status) {
         button.setAttribute("image", "chrome://jasminum/skin/accept.png");
+        var now = new Date();
+        now = now.toISOString("yyyy-MM-dd").slice(0, 19).replace("T", " ");
+        var current = document.getElementById(label + "2");
+        current.setAttribute("label", now);
     } else {
         button.setAttribute("image", "chrome://jasminum/skin/information.png");
     }
-}
+};
+
+updateTranslator = async function (label) {
+    var downloadFile = await downloadTo(label);
+    if (downloadFile) {
+        var moveStatus = await moveTo(downloadFile);
+        Zotero.debug("------------" + moveStatus);
+        updateIcon(label, moveStatus);
+    }
+};
