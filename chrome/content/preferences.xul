@@ -81,9 +81,9 @@
                     </listitem> -->
 	                </listbox>
                     <hbox style="display: block">
-                        <button label="Refresh" icon="refresh" oncommand="alert('开发中');"/>
-                        <button label="Update Translators" oncommand="alert('开发中');"/>
-                        <button label="Backup" oncommand="alert('开发中');"/>
+                        <button label="&jasminum.refresh.label;" icon="refresh" oncommand="getUpdates();"/>
+                        <button label="&jasminum.updateall.label;" oncommand="updateAll();"/>
+                        <!-- <button label="Backup" oncommand="alert('开发中');"/> -->
                     </hbox>
                 </tabpanel>
             </tabpanels>

@@ -21,3 +21,5 @@
 <!ENTITY jasminum.autobookmark.label "Add bookmark to thesis PDF when adding thesis item from CNKI">
 <!ENTITY jasminum.zhnamedot.label "Remove ', ' between Chinese characters when Zotfile rename attachment file.">
 <!ENTITY jasminum.namehandler.removeDot.label "Remove dot in filename">
+<!ENTITY jasminum.refresh.label "Refresh">
+<!ENTITY jasminum.refresh.label "Update All">

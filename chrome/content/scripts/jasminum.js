@@ -140,7 +140,6 @@ Zotero.Jasminum = {
         Zotero.debug(
             "**Jasminum show menu: " + showMenu + showMenuName + showMenuPDF
         );
-        Zotero.debug("**Jasminum show menu: " + (showMenu || showMenuPDF));
     },
 
     updateSelectedEntity: function (libraryId) {

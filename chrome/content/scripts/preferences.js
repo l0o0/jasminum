@@ -40,23 +40,24 @@ pathCheckIcon = function (fileExist) {
     Zotero.debug("2" + document.getElementById("path-error").hidden);
 };
 
-initTranslatorPanel = async function (updateJson) {
+var labelCN = {
+    CNKI: "中国知网",
+    "Baidu Scholar": "百度学术",
+    BiliBili: "哔哩哔哩视频",
+    GFSOSO: "谷粉学术",
+    Soopat: "Soopat专利",
+    SuperLib: "全国图书馆联盟",
+    WanFang: "万方学术",
+    WeiPu: "维普学术",
+    Wenjin: "中国国家图书馆",
+};
+
+initTranslatorPanel = async function () {
     var web = new Zotero.Translate.Web();
     var translators = await web._translatorProvider.getAllForType("web");
     var translators = translators.sort((a, b) =>
         a.label.localeCompare(b.label)
     );
-    var labelCN = {
-        CNKI: "中国知网",
-        "Baidu Scholar": "百度学术",
-        BiliBili: "哔哩哔哩视频",
-        GFSOSO: "谷粉学术",
-        Soopat: "Soopat专利",
-        SuperLib: "全国图书馆联盟",
-        WanFang: "万方学术",
-        WeiPu: "维普学术",
-        Wenjin: "中国国家图书馆",
-    };
     var translatorsCN = translators.filter((t) => t.label in labelCN);
     var listitem, listcell, button;
     var listbox = document.getElementById("translators-listbox");
@@ -64,7 +65,10 @@ initTranslatorPanel = async function (updateJson) {
         listitem = document.createElement("listitem");
         listitem.setAttribute("allowevents", "true");
         listcell = document.createElement("listcell");
-        listcell.setAttribute("label", labelCN[translator.label]);
+        listcell.setAttribute(
+            "label",
+            `${labelCN[translator.label]}(${translator.label}.js)`
+        );
         listcell.setAttribute("id", translator.label + "1");
         listitem.appendChild(listcell);
         listcell = document.createElement("listcell");
@@ -72,7 +76,7 @@ initTranslatorPanel = async function (updateJson) {
         listcell.setAttribute("id", translator.label + "2");
         listitem.appendChild(listcell);
         listcell = document.createElement("listcell");
-        listcell.setAttribute("label", "XXX");
+        listcell.setAttribute("label", "---");
         listcell.setAttribute("id", translator.label + "3");
         listitem.appendChild(listcell);
         listcell = document.createElement("listcell");
@@ -100,9 +104,18 @@ getUpdates = async function () {
     var resp = await Zotero.HTTP.request("POST", url, postData);
     try {
         var updateJson = JSON.parse(resp.responseText);
-        return updateJson;
+        refreshTime(updateJson);
     } catch (e) {
         alert("获取更新信息失败，请稍后重试");
+    }
+};
+
+refreshTime = function (updateJson) {
+    for (let key in updateJson) {
+        let cell = document.getElementById(key + "3");
+        if (cell) {
+            cell.setAttribute("label", updateJson.key.lastUpdated);
+        }
     }
 };
 
@@ -163,4 +176,8 @@ updateTranslator = async function (label) {
         Zotero.debug("------------" + moveStatus);
         updateIcon(label, moveStatus);
     }
+};
+
+updateAll = async function() {
+    labelCN.forEach(label => await updateTranslator(label));
 };
