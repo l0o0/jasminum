@@ -99,9 +99,15 @@ initTranslatorPanel = async function () {
 getUpdates = async function () {
     var url = "https://www.linxingzhong.top/zt";
     var postData = {
-        key: "zoteroCNTranslators",
+        key: "zoteroKey",
     };
-    var resp = await Zotero.HTTP.request("POST", url, postData);
+    var headers = {"Content-Type":"application/json"};
+    // Maybe need to set max retry in this post request.
+    var resp = await Zotero.HTTP.request("POST", url, 
+        {
+            body: JSON.stringify(postData),
+            headers: headers
+        });
     try {
         var updateJson = JSON.parse(resp.responseText);
         refreshTime(updateJson);
