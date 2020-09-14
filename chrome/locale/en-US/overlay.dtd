@@ -22,4 +22,7 @@
 <!ENTITY jasminum.zhnamedot.label "Remove ', ' between Chinese characters when Zotfile rename attachment file.">
 <!ENTITY jasminum.namehandler.removeDot.label "Remove dot in filename">
 <!ENTITY jasminum.refresh.label "Refresh">
-<!ENTITY jasminum.refresh.label "Update All">
+<!ENTITY jasminum.updateall.label "Update All">
+<!ENTITY jasminum.updateT.label "Update">
+<!ENTITY jasminum.refreshInfo.label "Get translator udpate information">
+<!ENTITY jasminum.updateallInfo.label "Update all CN translators(Be careful)">

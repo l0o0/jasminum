@@ -81,9 +81,9 @@
                     </listitem> -->
 	                </listbox>
                     <hbox style="display: block">
-                        <button label="&jasminum.refresh.label;" icon="refresh" oncommand="getUpdates();"/>
-                        <button label="&jasminum.updateall.label;" oncommand="updateAll();"/>
-                        <!-- <button label="Backup" oncommand="alert('开发中');"/> -->
+                        <button label="&jasminum.refresh.label;" tooltiptext="&jasminum.refreshInfo.label;" oncommand="getUpdates();"/>
+                        <button label="&jasminum.updateall.label;" tooltiptext="&jasminum.updateallInfo.label;" oncommand="updateAll();"/>
+                        <!-- <label class="zotero-text-link" value="如何在Zotero Connector 中更新Translator" href=""/> -->
                     </hbox>
                 </tabpanel>
             </tabpanels>

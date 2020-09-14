@@ -22,4 +22,7 @@
 <!ENTITY jasminum.zhnamedot.label "当拉取知网元数据时去除 Zotfile 重命名文件名中的逗号(, )">
 <!ENTITY jasminum.namehandler.removeDot.label "去除文件名中逗号">
 <!ENTITY jasminum.refresh.label "刷新">
-<!ENTITY jasminum.refresh.label "更新全部">
+<!ENTITY jasminum.updateall.label "更新全部">
+<!ENTITY jasminum.updateT.label "更新">
+<!ENTITY jasminum.refreshInfo.label "获取TranslatorCN更新信息">
+<!ENTITY jasminum.updateallInfo.label "更新全部TranslatorsCN(慎点)">

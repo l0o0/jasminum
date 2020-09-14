@@ -52,43 +52,51 @@ var labelCN = {
     Wenjin: "中国国家图书馆",
 };
 
-initTranslatorPanel = async function () {
-    var web = new Zotero.Translate.Web();
-    var translators = await web._translatorProvider.getAllForType("web");
-    var translators = translators.sort((a, b) =>
-        a.label.localeCompare(b.label)
+getLastUpdateFromFile = async function (label) {
+    var desPath = OS.Path.join(
+        Zotero.Prefs.get("dataDir"),
+        "translators",
+        label + ".js"
     );
-    var translatorsCN = translators.filter((t) => t.label in labelCN);
+    var array = await OS.File.read(desPath);
+    var decoder = new TextDecoder();
+    var js = decoder.decode(array).split("\n").slice(0, 20);
+    var lastUpdate = js.filter((line) => line.includes('"lastUpdated": '));
+    var group = lastUpdate[0].match(
+        /(\d{4}\-\d{1,}\-\d{1,}\s\d{1,}:\d{1,}:\d{1,})/g
+    );
+    return group ? group[0] : "---";
+};
+
+initTranslatorPanel = async function () {
     var listitem, listcell, button;
     var listbox = document.getElementById("translators-listbox");
-    for (let translator of translatorsCN) {
+    for (let label of Object.keys(labelCN)) {
         listitem = document.createElement("listitem");
         listitem.setAttribute("allowevents", "true");
         listcell = document.createElement("listcell");
-        listcell.setAttribute(
-            "label",
-            `${labelCN[translator.label]}(${translator.label}.js)`
-        );
-        listcell.setAttribute("id", translator.label + "1");
+        listcell.setAttribute("label", `${labelCN[label]}(${label}.js)`);
+        listcell.setAttribute("id", label + "1");
         listitem.appendChild(listcell);
         listcell = document.createElement("listcell");
-        listcell.setAttribute("label", translator.lastUpdated);
-        listcell.setAttribute("id", translator.label + "2");
+        var localLastUpdate = await getLastUpdateFromFile(label);
+        listcell.setAttribute("label", localLastUpdate);
+        listcell.setAttribute("id", label + "2");
         listitem.appendChild(listcell);
         listcell = document.createElement("listcell");
         listcell.setAttribute("label", "---");
-        listcell.setAttribute("id", translator.label + "3");
+        listcell.setAttribute("id", label + "3");
         listitem.appendChild(listcell);
         listcell = document.createElement("listcell");
-        listcell.setAttribute("id", translator.label + "4");
+        listcell.setAttribute("id", label + "4");
         button = document.createElement("button");
-        button.setAttribute(
-            "oncommand",
-            `updateTranslator('${translator.label}');`
-        );
-        listcell.setAttribute("id", translator.label + "5");
-        button.setAttribute("image", "chrome://jasminum/skin/accept.png");
-        button.setAttribute("id", translator.label + "5button");
+        button.setAttribute("tooltiptext", "Click to update");
+        button.setAttribute("disabled", true);
+        button.setAttribute("id", label + "6");
+        button.setAttribute("oncommand", `updateTranslator('${label}');`);
+        listcell.setAttribute("id", label + "5");
+        button.setAttribute("image", "chrome://jasminum/skin/information.png");
+        button.setAttribute("id", label + "5button");
         listcell.appendChild(button);
         listitem.appendChild(listcell);
 
@@ -101,26 +109,27 @@ getUpdates = async function () {
     var postData = {
         key: "zoteroKey",
     };
-    var headers = {"Content-Type":"application/json"};
+    var headers = { "Content-Type": "application/json" };
     // Maybe need to set max retry in this post request.
-    var resp = await Zotero.HTTP.request("POST", url, 
-        {
-            body: JSON.stringify(postData),
-            headers: headers
-        });
+    var resp = await Zotero.HTTP.request("POST", url, {
+        body: JSON.stringify(postData),
+        headers: headers,
+    });
     try {
         var updateJson = JSON.parse(resp.responseText);
         refreshTime(updateJson);
     } catch (e) {
-        alert("获取更新信息失败，请稍后重试");
+        alert("获取更新信息失败，请稍后重试\n" + e);
     }
 };
 
 refreshTime = function (updateJson) {
     for (let key in updateJson) {
         let cell = document.getElementById(key + "3");
+        let button = document.getElementById(key + "6");
         if (cell) {
-            cell.setAttribute("label", updateJson.key.lastUpdated);
+            cell.setAttribute("label", updateJson[key].lastUpdated);
+            button.setAttribute("disable", false);
         }
     }
 };
@@ -140,50 +149,41 @@ downloadTo = async function (label) {
         await OS.File.writeAtomic(cacheFile.path, array, {
             tmpPath: cacheFile.path + ".tmp",
         });
-        return cacheFile;
+        var desPath = OS.Path.join(
+            Zotero.Prefs.get("dataDir"),
+            "translators",
+            OS.Path.basename(cacheFile.path)
+        );
+        await OS.File.move(cacheFile.path, desPath);
+        return true;
     } catch (e) {
         alert(`${label}.js 下载失败,请稍后尝试重新下载\n` + e);
         return false;
     }
 };
 
-moveTo = async function (cacheFile) {
-    var desPath = OS.Path.join(
-        Zotero.Prefs.get("dataDir"),
-        "translators",
-        OS.Path.basename(cacheFile.path)
-    );
-    try {
-        await OS.File.move(cacheFile.path, desPath);
-        return true;
-    } catch (e) {
-        alert("文件复制失败\n" + e);
-        return false;
-    }
-};
-
-updateIcon = function (label, status) {
+updateIcon = async function (label, status) {
     var button = document.getElementById(label + "5button");
     if (status) {
         button.setAttribute("image", "chrome://jasminum/skin/accept.png");
-        var now = new Date();
-        now = now.toISOString("yyyy-MM-dd").slice(0, 19).replace("T", " ");
         var current = document.getElementById(label + "2");
-        current.setAttribute("label", now);
+        var currentLastUpdate = await getLastUpdateFromFile(label);
+        Zotero.debug("---------------" + currentLastUpdate);
+        current.setAttribute("label", currentLastUpdate);
     } else {
-        button.setAttribute("image", "chrome://jasminum/skin/information.png");
+        button.setAttribute("image", "chrome://jasminum/skin/exclamation.png");
     }
 };
 
 updateTranslator = async function (label) {
-    var downloadFile = await downloadTo(label);
-    if (downloadFile) {
-        var moveStatus = await moveTo(downloadFile);
-        Zotero.debug("------------" + moveStatus);
-        updateIcon(label, moveStatus);
+    var status = await downloadTo(label);
+    if (status) {
+        updateIcon(label, status);
     }
 };
 
-updateAll = async function() {
-    labelCN.forEach(label => await updateTranslator(label));
+updateAll = async function () {
+    Object.keys(labelCN).forEach(
+        async (label) => await updateTranslator(label)
+    );
 };
