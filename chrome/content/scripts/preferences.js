@@ -58,8 +58,9 @@ getLastUpdateFromFile = async function (label) {
 
 initTranslatorPanel = async function () {
     var tabpanel = document.getElementById("zotero-prefpane-translators-tab");
-    tabpanel.removeChild(tabpanel.firstChild);
-    var data = getUpdates();
+    
+    var data = await getUpdates();
+    Zotero.debug(data);
     var listitem, listcell, button;
     var listbox = document.createElement("listbox");
     listbox.setAttribute("id", "translators-listbox");
@@ -95,11 +96,12 @@ initTranslatorPanel = async function () {
     listcols.appendChild(listcol);
     listbox.appendChild(listcol);
 
-    for (let f of data) {
+    for (let label in data) {
+        Zotero.debug(label);
         listitem = document.createElement("listitem");
         listitem.setAttribute("allowevents", "true");
         listcell = document.createElement("listcell");
-        listcell.setAttribute("label", `${data[f].description}(${f})`);
+        listcell.setAttribute("label", `${data[label].description}(${label})`);
         listcell.setAttribute("id", label + "1");
         listitem.appendChild(listcell);
         listcell = document.createElement("listcell");
@@ -117,7 +119,7 @@ initTranslatorPanel = async function () {
         button.setAttribute("tooltiptext", "Click to update");
         button.setAttribute("disabled", true);
         button.setAttribute("id", label + "6");
-        button.setAttribute("oncommand", `updateTranslator('${f}');`);
+        button.setAttribute("oncommand", `updateTranslator('${label}');`);
         listcell.setAttribute("id", label + "5");
         button.setAttribute("image", "chrome://jasminum/skin/information.png");
         button.setAttribute("id", label + "5button");
@@ -126,7 +128,8 @@ initTranslatorPanel = async function () {
 
         listbox.appendChild(listitem);
     }
-    tabpanel.appendChild(listbox, tabpanel.firstChild);
+    tabpanel.removeChild(tabpanel.firstChild);
+    tabpanel.insertBefore(listbox, tabpanel.firstChild);
 };
 
 getUpdates = async function () {
@@ -142,7 +145,7 @@ getUpdates = async function () {
     });
     try {
         var updateJson = JSON.parse(resp.responseText);
-        refreshTime(updateJson);
+        return updateJson;
     } catch (e) {
         alert("获取更新信息失败，请稍后重试\n" + e);
     }
