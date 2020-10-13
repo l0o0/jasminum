@@ -4,7 +4,7 @@ initPref = async function () {
     document.getElementById("jasminum-pdftk-path").value = jasminum_pdftk_path;
     var fileExist = await Zotero.Jasminum.checkPath();
     pathCheckIcon(fileExist);
-    initTranslatorPanel();
+    // initTranslatorPanel();
 };
 
 // https://developer.mozilla.org/en-US/docs/Mozilla/Tech/XPCOM/Reference/Interface/nsIFilePicker
@@ -40,23 +40,11 @@ pathCheckIcon = function (fileExist) {
     Zotero.debug("2" + document.getElementById("path-error").hidden);
 };
 
-var labelCN = {
-    CNKI: "中国知网",
-    "Baidu Scholar": "百度学术",
-    BiliBili: "哔哩哔哩视频",
-    GFSOSO: "谷粉学术",
-    Soopat: "Soopat专利",
-    SuperLib: "全国图书馆联盟",
-    WanFang: "万方学术",
-    WeiPu: "维普学术",
-    Wenjin: "中国国家图书馆",
-};
-
 getLastUpdateFromFile = async function (label) {
     var desPath = OS.Path.join(
         Zotero.Prefs.get("dataDir"),
         "translators",
-        label + ".js"
+        label
     );
     var array = await OS.File.read(desPath);
     var decoder = new TextDecoder();
@@ -69,13 +57,49 @@ getLastUpdateFromFile = async function (label) {
 };
 
 initTranslatorPanel = async function () {
+    var tabpanel = document.getElementById("zotero-prefpane-translators-tab");
+    tabpanel.removeChild(tabpanel.firstChild);
+    var data = getUpdates();
     var listitem, listcell, button;
-    var listbox = document.getElementById("translators-listbox");
-    for (let label of Object.keys(labelCN)) {
+    var listbox = document.createElement("listbox");
+    listbox.setAttribute("id", "translators-listbox");
+    listbox.setAttribute("flex", "1");
+
+    var listhead = document.createElement("listhead");
+    var listheader = document.createElement("listheader");
+    listheader.setAttribute("label", "Translators");
+    listhead.appendChild(listheader);
+    listheader = document.createElement("listheader");
+    listheader.setAttribute("label", "Current");
+    listhead.appendChild(listheader);
+    listheader = document.createElement("listheader");
+    listheader.setAttribute("label", "UpdateTime");
+    listhead.appendChild(listheader);
+    listheader = document.createElement("listheader");
+    listheader.setAttribute("label", "Update");
+    listhead.appendChild(listheader);
+    listbox.appendChild(listhead);
+
+    var listcols = document.createElement("listcols");
+    var listcol = document.createElement("listcol");
+    listcol.setAttribute("flex", "1");
+    listcols.appendChild(listcol);
+    listcol = document.createElement("listcol");
+    listcol.setAttribute("width", "150");
+    listcols.appendChild(listcol);
+    listcol = document.createElement("listcol");
+    listcol.setAttribute("width", "150");
+    listcols.appendChild(listcol);
+    listcol = document.createElement("listcol");
+    listcol.setAttribute("width", "100");
+    listcols.appendChild(listcol);
+    listbox.appendChild(listcol);
+
+    for (let f of data) {
         listitem = document.createElement("listitem");
         listitem.setAttribute("allowevents", "true");
         listcell = document.createElement("listcell");
-        listcell.setAttribute("label", `${labelCN[label]}(${label}.js)`);
+        listcell.setAttribute("label", `${data[f].description}(${f})`);
         listcell.setAttribute("id", label + "1");
         listitem.appendChild(listcell);
         listcell = document.createElement("listcell");
@@ -93,7 +117,7 @@ initTranslatorPanel = async function () {
         button.setAttribute("tooltiptext", "Click to update");
         button.setAttribute("disabled", true);
         button.setAttribute("id", label + "6");
-        button.setAttribute("oncommand", `updateTranslator('${label}');`);
+        button.setAttribute("oncommand", `updateTranslator('${f}');`);
         listcell.setAttribute("id", label + "5");
         button.setAttribute("image", "chrome://jasminum/skin/information.png");
         button.setAttribute("id", label + "5button");
@@ -102,6 +126,7 @@ initTranslatorPanel = async function () {
 
         listbox.appendChild(listitem);
     }
+    tabpanel.appendChild(listbox, tabpanel.firstChild);
 };
 
 getUpdates = async function () {
@@ -136,12 +161,12 @@ refreshTime = function (updateJson) {
 
 downloadTo = async function (label) {
     let cacheFile = Zotero.getTempDirectory();
-    var filename = label + ".js";
+    var filename = label;
     cacheFile.append(filename);
     if (cacheFile.exists()) {
         cacheFile.remove(false);
     }
-    var url = `https://gitee.com/l0o0/translators_CN/raw/master/translators/${label}.js`;
+    var url = `https://gitee.com/l0o0/translators_CN/raw/master/translators/${label}`;
     try {
         var resp = await Zotero.HTTP.request("GET", url);
         let encoder = new TextEncoder();

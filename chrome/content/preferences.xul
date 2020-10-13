@@ -51,7 +51,14 @@
                         </vbox>
                     </tabpanel>
                 <tabpanel id="zotero-prefpane-translators-tab" orient="vertical">
-                    <listbox id="translators-listbox" flex="1">
+                    <groupbox flex='1' align="center">
+                        <spacer flex="1"/>
+                        <hbox style="display: block" align="center">
+                            <button label="&jasminum.init.label;" tooltiptext="&jasminum.initInfo.label;" oncommand="initTranslatorPanel();"/>
+                        </hbox>
+                        <spacer flex="1"/>
+                    </groupbox>
+                    <!-- <listbox id="translators-listbox" flex="1">
 		            <listhead>
 		            	<listheader label="Translators"/>
 		            	<listheader label="Current"/>
@@ -63,7 +70,7 @@
 		            	<listcol width="150"/>
                         <listcol width="150"/>
                         <listcol width="100"/>
-		            </listcols>
+		            </listcols> -->
                     <!-- <listitem>
                       <listcell label="知网"/>
                       <listcell label="20200101"/>
@@ -79,7 +86,7 @@
                       <listcell label="20200101"/>
                       <listcell label="20200829"/>
                     </listitem> -->
-	                </listbox>
+	                <!-- </listbox> -->
                     <hbox style="display: block">
                         <button label="&jasminum.refresh.label;" tooltiptext="&jasminum.refreshInfo.label;" oncommand="getUpdates();"/>
                         <button label="&jasminum.updateall.label;" tooltiptext="&jasminum.updateallInfo.label;" oncommand="updateAll();"/>
