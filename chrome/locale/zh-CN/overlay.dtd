@@ -28,3 +28,4 @@
 <!ENTITY jasminum.updateallInfo.label "更新全部TranslatorsCN(慎点)">
 <!ENTITY jasminum.init.label "获取更新信息">
 <!ENTITY jasminum.initInfo.label "从Translators CN 中获取翻译器信息">
+<!ENTITY jasminum.about "关于">

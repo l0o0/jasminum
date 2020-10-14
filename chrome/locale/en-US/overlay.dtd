@@ -28,3 +28,4 @@
 <!ENTITY jasminum.updateallInfo.label "Update all CN translators(Be careful)">
 <!ENTITY jasminum.init.label "Get Updates">
 <!ENTITY jasminum.initInfo.label "Fetch translator data from Translators CN">
+<!ENTITY jasminum.about "About">

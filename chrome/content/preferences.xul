@@ -20,6 +20,7 @@
                 <tabs>
                     <tab label="&jasminum.chinese;"/>
                     <tab label="&jasminum.translators;"/>
+                    <tab label="&jasminum.about;"/>
                 </tabs>
 
                 <tabpanels id="zotero-prefpane-jasminum" orient="vertical" minheight="350">
@@ -50,51 +51,42 @@
                             </groupbox>
                         </vbox>
                     </tabpanel>
-                <tabpanel id="zotero-prefpane-translators-tab" orient="vertical">
-                    <groupbox flex='1' align="center">
-                        <spacer flex="1"/>
-                        <hbox style="display: block" align="center">
-                            <button label="&jasminum.init.label;" tooltiptext="&jasminum.initInfo.label;" oncommand="initTranslatorPanel();"/>
+                    <tabpanel id="zotero-prefpane-translators-tab" orient="vertical">
+                        <listbox id="translators-listbox" flex="1">
+		                <listhead>
+		                	<listheader label="Translators"/>
+		                	<listheader label="Local"/>
+                            <listheader label="NewUpdate"/>
+                            <listheader label="Update"/>
+		                </listhead>
+		                <listcols>
+		                	<listcol flex="1"/>
+		                	<listcol width="200"/>
+                            <listcol width="200"/>
+                            <listcol width="100"/>
+		                </listcols>
+	                    </listbox>
+                        <hbox style="display: block">
+                            <button label="&jasminum.refresh.label;" tooltiptext="&jasminum.refreshInfo.label;" oncommand="initTranslatorPanel();"/>
+                            <button label="&jasminum.updateall.label;" tooltiptext="&jasminum.updateallInfo.label;" oncommand="updateAll();"/>
+                            <label value="更新之后还需要在浏览器Zotero Connector中更新翻译器信息"/>
+                            <label class="zotero-text-link" value="如何在浏览器中更新翻译器" href=""/>
                         </hbox>
-                        <spacer flex="1"/>
-                    </groupbox>
-                    <!-- <listbox id="translators-listbox" flex="1">
-		            <listhead>
-		            	<listheader label="Translators"/>
-		            	<listheader label="Current"/>
-                        <listheader label="UpdateTime"/>
-                        <listheader label="Update"/>
-		            </listhead>
-		            <listcols>
-		            	<listcol flex="1"/>
-		            	<listcol width="150"/>
-                        <listcol width="150"/>
-                        <listcol width="100"/>
-		            </listcols> -->
-                    <!-- <listitem>
-                      <listcell label="知网"/>
-                      <listcell label="20200101"/>
-                      <listcell label="20200829"/>
-                    </listitem>
-                    <listitem>
-                      <listcell label="万方"/>
-                      <listcell label="20200101"/>
-                      <listcell label="20200829"/>
-                    </listitem>
-                    <listitem>
-                      <listcell label="维普"/>
-                      <listcell label="20200101"/>
-                      <listcell label="20200829"/>
-                    </listitem> -->
-	                <!-- </listbox> -->
-                    <hbox style="display: block">
-                        <button label="&jasminum.refresh.label;" tooltiptext="&jasminum.refreshInfo.label;" oncommand="getUpdates();"/>
-                        <button label="&jasminum.updateall.label;" tooltiptext="&jasminum.updateallInfo.label;" oncommand="updateAll();"/>
-                        <!-- <label class="zotero-text-link" value="如何在Zotero Connector 中更新Translator" href=""/> -->
-                    </hbox>
-                </tabpanel>
-            </tabpanels>
-        </tabbox>
+                    </tabpanel>
+                    <tabpanel id="zotero-prefpane-translators-tab" orient="vertical">
+                        <description style="white-space: pre-wrap;">首先非常感谢各位使用我编写的茉莉花插件🌹
+因本人能力和时间有限，如果大家在使用中有遇到了一些问题或建议，可以欢迎发送反馈到邮箱：linxzh1989@gmail.com。
+最后也欢迎大家加入 Zotero中文插件 QQ群 913637964，一起学习交流。
+                        </description>
+                        <hbox>
+                            <label value="Jasminum 项目地址:"/><label class="zotero-text-link" value="https://github.com/l0o0/jasminum" href="https://github.com/l0o0/jasminum"/>
+                        </hbox>
+                        <hbox>
+                            <label value="Translators_CN 项目地址"/><label class="zotero-text-link" value="https://github.com/l0o0/translators_CN" href="https://github.com/l0o0/translators_CN"/>
+                        </hbox>
+                    </tabpanel>
+                </tabpanels>
+            </tabbox>
         </prefpane>
         <script type="application/javascript" src="chrome://jasminum/content/scripts/preferences.js"/>
     </prefwindow>

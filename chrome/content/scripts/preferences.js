@@ -46,6 +46,11 @@ getLastUpdateFromFile = async function (label) {
         "translators",
         label
     );
+    Zotero.debug(desPath);
+    if (!(await OS.File.exists(desPath))) {
+        Zotero.debug(label + " not exists");
+        return "---";
+    }
     var array = await OS.File.read(desPath);
     var decoder = new TextDecoder();
     var js = decoder.decode(array).split("\n").slice(0, 20);
@@ -53,83 +58,73 @@ getLastUpdateFromFile = async function (label) {
     var group = lastUpdate[0].match(
         /(\d{4}\-\d{1,}\-\d{1,}\s\d{1,}:\d{1,}:\d{1,})/g
     );
+    Zotero.debug("***" + group[0]);
     return group ? group[0] : "---";
 };
 
 initTranslatorPanel = async function () {
-    var tabpanel = document.getElementById("zotero-prefpane-translators-tab");
-    
+    var listbox = document.getElementById("translators-listbox");
+    var count = listbox.childElementCount;
     var data = await getUpdates();
-    Zotero.debug(data);
+    // Zotero.debug(data);
     var listitem, listcell, button;
-    var listbox = document.createElement("listbox");
-    listbox.setAttribute("id", "translators-listbox");
-    listbox.setAttribute("flex", "1");
+    if (count == 2) {
+        // Create table in panel
+        for (let label in data) {
+            Zotero.debug(label);
+            listitem = document.createElement("listitem");
+            listitem.setAttribute("allowevents", "true");
+            listcell = document.createElement("listcell");
+            listcell.setAttribute("label", `${data[label].description}`);
+            listcell.setAttribute("tooltiptext", label);
+            listcell.setAttribute("id", label + "1");
+            listitem.appendChild(listcell);
+            listcell = document.createElement("listcell");
+            var localLastUpdate = await getLastUpdateFromFile(label);
+            Zotero.debug(localLastUpdate);
+            listcell.setAttribute("label", localLastUpdate);
+            listcell.setAttribute("id", label + "2");
+            listitem.appendChild(listcell);
+            listcell = document.createElement("listcell");
+            listcell.setAttribute("label", `${data[label].lastUpdated}`);
+            listcell.setAttribute("id", label + "3");
+            listitem.appendChild(listcell);
+            listcell = document.createElement("listcell");
+            listcell.setAttribute("id", label + "4");
+            button = document.createElement("button");
+            // button.setAttribute("disabled", true);
+            button.setAttribute("id", label + "6");
+            button.setAttribute("oncommand", `updateTranslator('${label}');`);
+            listcell.setAttribute("id", label + "5");
+            if (localLastUpdate == data[label].lastUpdated) {
+                button.setAttribute(
+                    "image",
+                    "chrome://jasminum/skin/accept.png"
+                );
+                button.setAttribute("tooltiptext", "不必更新");
+            } else {
+                button.setAttribute(
+                    "image",
+                    "chrome://jasminum/skin/information.png"
+                );
+                button.setAttribute("tooltiptext", "点击下载更新");
+            }
+            button.setAttribute("id", label + "5button");
+            listcell.appendChild(button);
+            listitem.appendChild(listcell);
 
-    var listhead = document.createElement("listhead");
-    var listheader = document.createElement("listheader");
-    listheader.setAttribute("label", "Translators");
-    listhead.appendChild(listheader);
-    listheader = document.createElement("listheader");
-    listheader.setAttribute("label", "Current");
-    listhead.appendChild(listheader);
-    listheader = document.createElement("listheader");
-    listheader.setAttribute("label", "UpdateTime");
-    listhead.appendChild(listheader);
-    listheader = document.createElement("listheader");
-    listheader.setAttribute("label", "Update");
-    listhead.appendChild(listheader);
-    listbox.appendChild(listhead);
-
-    var listcols = document.createElement("listcols");
-    var listcol = document.createElement("listcol");
-    listcol.setAttribute("flex", "1");
-    listcols.appendChild(listcol);
-    listcol = document.createElement("listcol");
-    listcol.setAttribute("width", "150");
-    listcols.appendChild(listcol);
-    listcol = document.createElement("listcol");
-    listcol.setAttribute("width", "150");
-    listcols.appendChild(listcol);
-    listcol = document.createElement("listcol");
-    listcol.setAttribute("width", "100");
-    listcols.appendChild(listcol);
-    listbox.appendChild(listcol);
-
-    for (let label in data) {
-        Zotero.debug(label);
-        listitem = document.createElement("listitem");
-        listitem.setAttribute("allowevents", "true");
-        listcell = document.createElement("listcell");
-        listcell.setAttribute("label", `${data[label].description}(${label})`);
-        listcell.setAttribute("id", label + "1");
-        listitem.appendChild(listcell);
-        listcell = document.createElement("listcell");
-        var localLastUpdate = await getLastUpdateFromFile(label);
-        listcell.setAttribute("label", localLastUpdate);
-        listcell.setAttribute("id", label + "2");
-        listitem.appendChild(listcell);
-        listcell = document.createElement("listcell");
-        listcell.setAttribute("label", "---");
-        listcell.setAttribute("id", label + "3");
-        listitem.appendChild(listcell);
-        listcell = document.createElement("listcell");
-        listcell.setAttribute("id", label + "4");
-        button = document.createElement("button");
-        button.setAttribute("tooltiptext", "Click to update");
-        button.setAttribute("disabled", true);
-        button.setAttribute("id", label + "6");
-        button.setAttribute("oncommand", `updateTranslator('${label}');`);
-        listcell.setAttribute("id", label + "5");
-        button.setAttribute("image", "chrome://jasminum/skin/information.png");
-        button.setAttribute("id", label + "5button");
-        listcell.appendChild(button);
-        listitem.appendChild(listcell);
-
-        listbox.appendChild(listitem);
+            listbox.appendChild(listitem);
+        }
+    } else {
+        // Update lastUpdate time
+        for (let label in data) {
+            var localLastUpdate = await getLastUpdateFromFile(label);
+            listcell = document.getElementById(label + "2");
+            listcell.setAttribute("label", localLastUpdate);
+            listcell = document.getElementById(label + "3");
+            listcell.setAttribute("label", data[label].lastUpdated);
+        }
     }
-    tabpanel.removeChild(tabpanel.firstChild);
-    tabpanel.insertBefore(listbox, tabpanel.firstChild);
 };
 
 getUpdates = async function () {
@@ -148,17 +143,6 @@ getUpdates = async function () {
         return updateJson;
     } catch (e) {
         alert("获取更新信息失败，请稍后重试\n" + e);
-    }
-};
-
-refreshTime = function (updateJson) {
-    for (let key in updateJson) {
-        let cell = document.getElementById(key + "3");
-        let button = document.getElementById(key + "6");
-        if (cell) {
-            cell.setAttribute("label", updateJson[key].lastUpdated);
-            button.setAttribute("disable", false);
-        }
     }
 };
 
@@ -196,7 +180,7 @@ updateIcon = async function (label, status) {
         button.setAttribute("image", "chrome://jasminum/skin/accept.png");
         var current = document.getElementById(label + "2");
         var currentLastUpdate = await getLastUpdateFromFile(label);
-        Zotero.debug("---------------" + currentLastUpdate);
+        // Zotero.debug("---------------" + currentLastUpdate);
         current.setAttribute("label", currentLastUpdate);
     } else {
         button.setAttribute("image", "chrome://jasminum/skin/exclamation.png");
@@ -211,7 +195,7 @@ updateTranslator = async function (label) {
 };
 
 updateAll = async function () {
-    Object.keys(labelCN).forEach(
-        async (label) => await updateTranslator(label)
-    );
+    var data = await getUpdates();
+    Object.keys(data).forEach(async (label) => await updateTranslator(label));
+    alert("更新完毕");
 };
