@@ -21,3 +21,11 @@
 <!ENTITY jasminum.autobookmark.label "Add bookmark to thesis PDF when adding thesis item from CNKI">
 <!ENTITY jasminum.zhnamedot.label "Remove ', ' between Chinese characters when Zotfile rename attachment file.">
 <!ENTITY jasminum.namehandler.removeDot.label "Remove dot in filename">
+<!ENTITY jasminum.refresh.label "Refresh">
+<!ENTITY jasminum.updateall.label "Update All">
+<!ENTITY jasminum.updateT.label "Update">
+<!ENTITY jasminum.refreshInfo.label "Get translator udpate information">
+<!ENTITY jasminum.updateallInfo.label "Update all CN translators(Be careful)">
+<!ENTITY jasminum.init.label "Get Updates">
+<!ENTITY jasminum.initInfo.label "Fetch translator data from Translators CN">
+<!ENTITY jasminum.about "About">

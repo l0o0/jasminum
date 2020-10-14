@@ -4,7 +4,7 @@ initPref = async function () {
     document.getElementById("jasminum-pdftk-path").value = jasminum_pdftk_path;
     var fileExist = await Zotero.Jasminum.checkPath();
     pathCheckIcon(fileExist);
-    initTranslatorPanel();
+    // initTranslatorPanel();
 };
 
 // https://developer.mozilla.org/en-US/docs/Mozilla/Tech/XPCOM/Reference/Interface/nsIFilePicker
@@ -40,79 +40,120 @@ pathCheckIcon = function (fileExist) {
     Zotero.debug("2" + document.getElementById("path-error").hidden);
 };
 
-initTranslatorPanel = async function (updateJson) {
-    var web = new Zotero.Translate.Web();
-    var translators = await web._translatorProvider.getAllForType("web");
-    var translators = translators.sort((a, b) =>
-        a.label.localeCompare(b.label)
+getLastUpdateFromFile = async function (label) {
+    var desPath = OS.Path.join(
+        Zotero.Prefs.get("dataDir"),
+        "translators",
+        label
     );
-    var labelCN = {
-        CNKI: "中国知网",
-        "Baidu Scholar": "百度学术",
-        BiliBili: "哔哩哔哩视频",
-        GFSOSO: "谷粉学术",
-        Soopat: "Soopat专利",
-        SuperLib: "全国图书馆联盟",
-        WanFang: "万方学术",
-        WeiPu: "维普学术",
-        Wenjin: "中国国家图书馆",
-    };
-    var translatorsCN = translators.filter((t) => t.label in labelCN);
-    var listitem, listcell, button;
-    var listbox = document.getElementById("translators-listbox");
-    for (let translator of translatorsCN) {
-        listitem = document.createElement("listitem");
-        listitem.setAttribute("allowevents", "true");
-        listcell = document.createElement("listcell");
-        listcell.setAttribute("label", labelCN[translator.label]);
-        listcell.setAttribute("id", translator.label + "1");
-        listitem.appendChild(listcell);
-        listcell = document.createElement("listcell");
-        listcell.setAttribute("label", translator.lastUpdated);
-        listcell.setAttribute("id", translator.label + "2");
-        listitem.appendChild(listcell);
-        listcell = document.createElement("listcell");
-        listcell.setAttribute(
-            "label",
-            updateJson[translator.label].lastUpdated
-        );
-        listcell.setAttribute("id", translator.label + "3");
-        listitem.appendChild(listcell);
-        listcell = document.createElement("listcell");
-        listcell.setAttribute("id", translator.label + "4");
-        button = document.createElement("button");
-        button.setAttribute("oncommand", "alert('update');");
-        listcell.setAttribute("id", translator.label + "5");
-        button.setAttribute("image", "chrome://jasminum/skin/accept.png");
-        listcell.appendChild(button);
-        listitem.appendChild(listcell);
+    Zotero.debug(desPath);
+    if (!(await OS.File.exists(desPath))) {
+        Zotero.debug(label + " not exists");
+        return "---";
+    }
+    var array = await OS.File.read(desPath);
+    var decoder = new TextDecoder();
+    var js = decoder.decode(array).split("\n").slice(0, 20);
+    var lastUpdate = js.filter((line) => line.includes('"lastUpdated": '));
+    var group = lastUpdate[0].match(
+        /(\d{4}\-\d{1,}\-\d{1,}\s\d{1,}:\d{1,}:\d{1,})/g
+    );
+    Zotero.debug("***" + group[0]);
+    return group ? group[0] : "---";
+};
 
-        listbox.appendChild(listitem);
+initTranslatorPanel = async function () {
+    var listbox = document.getElementById("translators-listbox");
+    var count = listbox.childElementCount;
+    var data = await getUpdates();
+    // Zotero.debug(data);
+    var listitem, listcell, button;
+    if (count == 2) {
+        // Create table in panel
+        for (let label in data) {
+            Zotero.debug(label);
+            listitem = document.createElement("listitem");
+            listitem.setAttribute("allowevents", "true");
+            listcell = document.createElement("listcell");
+            listcell.setAttribute("label", `${data[label].description}`);
+            listcell.setAttribute("tooltiptext", label);
+            listcell.setAttribute("id", label + "1");
+            listitem.appendChild(listcell);
+            listcell = document.createElement("listcell");
+            var localLastUpdate = await getLastUpdateFromFile(label);
+            Zotero.debug(localLastUpdate);
+            listcell.setAttribute("label", localLastUpdate);
+            listcell.setAttribute("id", label + "2");
+            listitem.appendChild(listcell);
+            listcell = document.createElement("listcell");
+            listcell.setAttribute("label", `${data[label].lastUpdated}`);
+            listcell.setAttribute("id", label + "3");
+            listitem.appendChild(listcell);
+            listcell = document.createElement("listcell");
+            listcell.setAttribute("id", label + "4");
+            button = document.createElement("button");
+            // button.setAttribute("disabled", true);
+            button.setAttribute("id", label + "6");
+            button.setAttribute("oncommand", `updateTranslator('${label}');`);
+            listcell.setAttribute("id", label + "5");
+            if (localLastUpdate == data[label].lastUpdated) {
+                button.setAttribute(
+                    "image",
+                    "chrome://jasminum/skin/accept.png"
+                );
+                button.setAttribute("tooltiptext", "不必更新");
+            } else {
+                button.setAttribute(
+                    "image",
+                    "chrome://jasminum/skin/information.png"
+                );
+                button.setAttribute("tooltiptext", "点击下载更新");
+            }
+            button.setAttribute("id", label + "5button");
+            listcell.appendChild(button);
+            listitem.appendChild(listcell);
+
+            listbox.appendChild(listitem);
+        }
+    } else {
+        // Update lastUpdate time
+        for (let label in data) {
+            var localLastUpdate = await getLastUpdateFromFile(label);
+            listcell = document.getElementById(label + "2");
+            listcell.setAttribute("label", localLastUpdate);
+            listcell = document.getElementById(label + "3");
+            listcell.setAttribute("label", data[label].lastUpdated);
+        }
     }
 };
 
 getUpdates = async function () {
     var url = "https://www.linxingzhong.top/zt";
     var postData = {
-        key: "zoteroCNTranslators",
+        key: "zoteroKey",
     };
-    var resp = await Zotero.HTTP.request("POST", url, postData);
+    var headers = { "Content-Type": "application/json" };
+    // Maybe need to set max retry in this post request.
+    var resp = await Zotero.HTTP.request("POST", url, {
+        body: JSON.stringify(postData),
+        headers: headers,
+    });
     try {
         var updateJson = JSON.parse(resp.responseText);
         return updateJson;
     } catch (e) {
-        alert("获取更新失败，请稍后重试");
+        alert("获取更新信息失败，请稍后重试\n" + e);
     }
 };
 
 downloadTo = async function (label) {
     let cacheFile = Zotero.getTempDirectory();
-    var filename = label + ".js";
+    var filename = label;
     cacheFile.append(filename);
     if (cacheFile.exists()) {
         cacheFile.remove(false);
     }
-    var url = `https://gitee.com/l0o0/translators_CN/raw/master/translators/${label}.js`;
+    var url = `https://gitee.com/l0o0/translators_CN/raw/master/translators/${label}`;
     try {
         var resp = await Zotero.HTTP.request("GET", url);
         let encoder = new TextEncoder();
@@ -120,6 +161,12 @@ downloadTo = async function (label) {
         await OS.File.writeAtomic(cacheFile.path, array, {
             tmpPath: cacheFile.path + ".tmp",
         });
+        var desPath = OS.Path.join(
+            Zotero.Prefs.get("dataDir"),
+            "translators",
+            OS.Path.basename(cacheFile.path)
+        );
+        await OS.File.move(cacheFile.path, desPath);
         return true;
     } catch (e) {
         alert(`${label}.js 下载失败,请稍后尝试重新下载\n` + e);
@@ -127,22 +174,28 @@ downloadTo = async function (label) {
     }
 };
 
-moveTo = function(cacheFile) {
-    var translatorDir = OS.Path.join(Zotero.Prefs.get("dataDir"), 'translators');
-    try {
-        await OS.File.move(cacheFile.path, translatorDir);
-        return true;
-    } catch(e) {
-        alert("文件复制失败");
-        return false;
+updateIcon = async function (label, status) {
+    var button = document.getElementById(label + "5button");
+    if (status) {
+        button.setAttribute("image", "chrome://jasminum/skin/accept.png");
+        var current = document.getElementById(label + "2");
+        var currentLastUpdate = await getLastUpdateFromFile(label);
+        // Zotero.debug("---------------" + currentLastUpdate);
+        current.setAttribute("label", currentLastUpdate);
+    } else {
+        button.setAttribute("image", "chrome://jasminum/skin/exclamation.png");
     }
 };
 
-updateIcon = function(label, status) {
-    var button = document.getElementById(label + '5');
+updateTranslator = async function (label) {
+    var status = await downloadTo(label);
     if (status) {
-        button.setAttribute("image", "chrome://jasminum/skin/accept.png");
-    } else {
-        button.setAttribute("image", "chrome://jasminum/skin/information.png");
+        updateIcon(label, status);
     }
-}
+};
+
+updateAll = async function () {
+    var data = await getUpdates();
+    Object.keys(data).forEach(async (label) => await updateTranslator(label));
+    alert("更新完毕");
+};
