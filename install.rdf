@@ -10,6 +10,7 @@
     <em:iconURL>chrome://jasminum/skin/icon.png</em:iconURL>
     <em:multiprocessCompatible>true</em:multiprocessCompatible>
     <em:optionsURL>chrome://jasminum/content/preferences.xul</em:optionsURL>
+    <em:updateURL>https://raw.githubusercontent.com/l0o0/jasminum/master/update.rdf</em:updateURL>
     <em:creator>Xingzhong Lin</em:creator>
 
     <em:targetApplication>
