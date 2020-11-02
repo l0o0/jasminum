@@ -193,31 +193,37 @@ Zotero.Jasminum = {
         var patent = Zotero.Prefs.get("jasminum.namepatent");
         var patentArr = patent.split("_");
         var prefix = filename.substr(0, filename.length - 4);
+        var prefix = prefix.replace(/\.ashx$/g, ""); // 删除末尾.ashx字符
         var author = "";
         var title = "";
-        // Remove year string
-        if (patent.includes("{%y}")) {
-            patentArr.splice(patentArr.indexOf("{%y}"), 1);
-            prefix = prefix.replace(/[0-9]{4}[\._]/g, "");
-        }
-        var prefixArr = prefix.replace(/^_|_$/g, "").split("_");
-        console.log(patentArr);
-        console.log(prefixArr);
-        if (patentArr.includes("{%g}")) {
-            var authorIdx = patentArr.indexOf("{%g}");
-            var authorIdx = authorIdx === 0 ? 0 : prefixArr.length - 1;
-            console.log(authorIdx);
-            author = prefixArr[authorIdx];
-            prefixArr.splice(authorIdx, 1);
-            var missIndex = prefixArr.indexOf("省略");
-            if (missIndex > 0) {
-                prefixArr.splice(missIndex - 1, 3); // Delete before and after 省略
+        if (prefix.includes("_")) {
+            // 有下划线
+            // Remove year string
+            if (patent.includes("{%y}")) {
+                patentArr.splice(patentArr.indexOf("{%y}"), 1);
+                prefix = prefix.replace(/[0-9]{4}[\._]/g, "");
             }
-            title = prefixArr.join(" ");
+            var prefixArr = prefix.replace(/^_|_$/g, "").split("_");
+            console.log(patentArr);
+            console.log(prefixArr);
+            if (patentArr.includes("{%g}")) {
+                var authorIdx = patentArr.indexOf("{%g}");
+                var authorIdx = authorIdx === 0 ? 0 : prefixArr.length - 1;
+                console.log(authorIdx);
+                author = prefixArr[authorIdx];
+                prefixArr.splice(authorIdx, 1);
+                var missIndex = prefixArr.indexOf("省略");
+                if (missIndex > 0) {
+                    prefixArr.splice(missIndex - 1, 3); // Delete before and after 省略
+                }
+                title = prefixArr.join(" ");
+            } else {
+                title = prefixArr.join(" ");
+            }
         } else {
-            title = prefixArr.join(" ");
+            // 无下划线直接把文件名认为title
+            title = prefix;
         }
-
         return {
             author: author.replace(",", ""),
             keyword: title,
