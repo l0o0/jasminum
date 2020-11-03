@@ -414,8 +414,8 @@ Zotero.Jasminum = {
             body: postData,
         });
         // Zotero.debug(resp.responseText);
-        var targetRow = Zotero.Jasminum.getSearchItems(resp.responseText);
-        return targetRow;
+        var targetRows = Zotero.Jasminum.getSearchItems(resp.responseText);
+        return targetRows;
     },
 
     getSearchItems: function (resptext) {
@@ -426,12 +426,12 @@ Zotero.Jasminum = {
             "table.result-table-list > tbody > tr"
         );
         Zotero.debug("**Jasminum 搜索结果：" + rows.length);
-        var targetRow;
+        var targetRows = [];
         if (!rows.length) {
             Zotero.debug("**Jasminum No items found.");
             return null;
         } else if (rows.length == 1) {
-            targetRow = rows[0];
+            targetRows.push[rows[0]];
         } else {
             // Get the right item from search result.
             var rowIndicators = {};
@@ -444,31 +444,54 @@ Zotero.Jasminum = {
             // Zotero.debug(targetIndicator);
             // No item selected, return null
             if (!targetIndicator) return null;
-            targetRow = rows[Object.keys(targetIndicator)[0]];
+            Object.keys(targetIndicator).forEach(function (i) {
+                targetRows.push(rows[i]);
+            });
         }
         // Zotero.debug(targetRow.textContent);
-        return targetRow;
+        return targetRows;
     },
 
-    getRefworks: async function (targetRow) {
+    getRefworks: async function (targetRows) {
         Zotero.debug("**Jasminum start get ref");
-        if (targetRow == null) {
+        if (targetRows == null) {
             return new Error("No items returned from the CNKI");
         }
-        var targetUrl = targetRow
-            .getElementsByClassName("fz14")[0]
-            .getAttribute("href");
-        var targetID = Zotero.Jasminum.getIDFromUrl(targetUrl);
-        Zotero.debug(targetID);
-        // Get reference data from CNKI by ID.
-        var postData =
-            "filename=" +
-            targetID.filename +
-            "&displaymode=Refworks&orderparam=0&ordertype=desc" +
-            "&selectfield=&dbname=" +
-            targetID.dbname +
-            "&random=0.008818957206744082";
-
+        var targetUrls = [],
+            targetIDs = [];
+        targetRows.forEach(function (r) {
+            var url = r.getElementsByClassName("fz14")[0].getAttribute("href");
+            targetIDs.push(Zotero.Jasminum.getIDFromUrl(url));
+        });
+        Zotero.debug(targetIDs);
+        // Get reference data from CNKI by IDs.
+        // var postData =
+        //     "filename=" +
+        //     targetID.filename +
+        //     "&displaymode=Refworks&orderparam=0&ordertype=desc" +
+        //     "&selectfield=&dbname=" +
+        //     targetID.dbname +
+        //     "&random=0.008818957206744082";
+        var postData = "filename=";
+        // filename=CPFDLAST2020!ZGXD202011001016!1!14%2CCPFDLAST2020!ZKBD202011001034!2!14&displaymode=Refworks&orderparam=0&ordertype=desc&selectfield=&random=0.9317799522629542
+        for (let idx = 0; idx < targetIDs.length; idx++) {
+            postData =
+                postData +
+                targetIDs[idx].dbname +
+                "!" +
+                targetIDs[idx].filename +
+                "!" +
+                (idx + 1) +
+                "!8%2C";
+            targetUrls.push(
+                `https://kns.cnki.net/KCMS/detail/detail.aspx?dbcode=${targetIDs[idx].dbcode}&dbname=${targetIDs[idx].dbname}&filename=${targetIDs[idx].filename}&v=`
+            );
+        }
+        postData = postData.replace(/%2C$/g, "");
+        postData =
+            postData +
+            "&displaymode=Refworks&orderparam=0&ordertype=desc&selectfield=&random=0.9317799522629542";
+        Zotero.debug(postData);
         var url = "https://kns8.cnki.net/kns/manage/ShowExport";
         if (!Zotero.Jasminum.RefCookieSandbox) {
             Zotero.Jasminum.setRefCookieSandbox();
@@ -481,6 +504,7 @@ Zotero.Jasminum = {
         var data = resp.responseText
             .replace("<ul class='literature-list'><li>", "")
             .replace("<br></li></ul>", "")
+            .replace("</li><li>", "") // divide results
             .replace(/<br>|\r/g, "\n")
             .replace(/vo (\d+)\n/, "VO $1\n") // Divide VO and IS to different line
             .replace(/\n+/g, "\n")
@@ -499,9 +523,8 @@ Zotero.Jasminum = {
                 return tag + " " + authors.join("\n" + tag + " ");
             })
             .trim();
-        targetUrl = `https://kns.cnki.net/KCMS/detail/detail.aspx?dbcode=${targetID.dbcode}&dbname=${targetID.dbname}&filename=${targetID.filename}&v=`;
         Zotero.debug(data.split("\n"));
-        return [data, targetUrl];
+        return [data, targetUrls];
     },
 
     promiseTranslate: async function (translate, libraryID) {
@@ -520,104 +543,116 @@ Zotero.Jasminum = {
             saveAttachments: false,
         });
         if (newItems.length) {
-            Zotero.debug(newItems[0]);
+            Zotero.debug(newItems);
             Zotero.debug("** Jasminum translate end.");
-            return newItems[0];
+            return newItems;
         }
         throw new Error("No items found");
     },
 
-    fixItem: async function (newItem, targetUrl) {
+    fixItem: async function (newItems, targetUrls) {
         var creators;
         // 学位论文，导师 -> contributor
-        if (newItem.getNotes()) {
-            if (Zotero.ItemTypes.getName(newItem.itemTypeID) == "thesis") {
-                creators = newItem.getCreators();
-                var note = Zotero.Items.get(newItem.getNotes()[0])
-                    .getNote()
-                    .split(/<br\s?\/>/);
-                // Zotero.debug(note);
-                for (let line of note) {
-                    if (line.startsWith("A3")) {
-                        var creator = {
-                            firstName: "",
-                            lastName: line.replace("A3 ", ""),
-                            creatorType: "contributor",
-                            fieldMode: true,
-                        };
-                        creators.push(creator);
+        for (let idx = 0; idx < newItems.length; idx++) {
+            var newItem = newItems[idx];
+            if (newItem.getNotes()) {
+                if (Zotero.ItemTypes.getName(newItem.itemTypeID) == "thesis") {
+                    creators = newItem.getCreators();
+                    var note = Zotero.Items.get(newItem.getNotes()[0])
+                        .getNote()
+                        .split(/<br\s?\/>/);
+                    // Zotero.debug(note);
+                    for (let line of note) {
+                        if (line.startsWith("A3")) {
+                            var creator = {
+                                firstName: "",
+                                lastName: line.replace("A3 ", ""),
+                                creatorType: "contributor",
+                                fieldMode: true,
+                            };
+                            creators.push(creator);
+                        }
                     }
+                    newItem.setCreators(creators);
+                }
+                Zotero.Items.erase(newItem.getNotes());
+            }
+            // 是否处理中文姓名
+            if (Zotero.Prefs.get("jasminum.zhnamesplit")) {
+                creators = newItem.getCreators();
+                for (var i = 0; i < creators.length; i++) {
+                    var creator = creators[i];
+                    if (creator.firstName) continue;
+
+                    var lastSpace = creator.lastName.lastIndexOf(" ");
+                    if (
+                        creator.lastName.search(/[A-Za-z]/) !== -1 &&
+                        lastSpace !== -1
+                    ) {
+                        // western name. split on last space
+                        creator.firstName = creator.lastName.substr(
+                            0,
+                            lastSpace
+                        );
+                        creator.lastName = creator.lastName.substr(
+                            lastSpace + 1
+                        );
+                    } else {
+                        // Chinese name. first character is last name, the rest are first name
+                        creator.firstName = creator.lastName.substr(1);
+                        creator.lastName = creator.lastName.charAt(0);
+                    }
+                    creators[i] = creator;
                 }
                 newItem.setCreators(creators);
             }
-            Zotero.Items.erase(newItem.getNotes());
-        }
-        // 是否处理中文姓名
-        if (Zotero.Prefs.get("jasminum.zhnamesplit")) {
-            creators = newItem.getCreators();
-            for (var i = 0; i < creators.length; i++) {
-                var creator = creators[i];
-                if (creator.firstName) continue;
-
-                var lastSpace = creator.lastName.lastIndexOf(" ");
-                if (
-                    creator.lastName.search(/[A-Za-z]/) !== -1 &&
-                    lastSpace !== -1
-                ) {
-                    // western name. split on last space
-                    creator.firstName = creator.lastName.substr(0, lastSpace);
-                    creator.lastName = creator.lastName.substr(lastSpace + 1);
-                } else {
-                    // Chinese name. first character is last name, the rest are first name
-                    creator.firstName = creator.lastName.substr(1);
-                    creator.lastName = creator.lastName.charAt(0);
+            // Clean up abstract
+            if (newItem.getField("abstractNote")) {
+                newItem.setField(
+                    "abstractNote",
+                    newItem
+                        .getField("abstractNote")
+                        .replace(/\s*[\r\n]\s*/g, "\n")
+                        .replace(/&lt;.*?&gt;/g, "")
+                );
+            }
+            // Keep full abstract text.
+            if (newItem.getField("abstractNote").endsWith("...")) {
+                Zotero.debug("** Jasminum get full abstract text.");
+                var resp = await Zotero.HTTP.request("GET", targetUrls[idx]);
+                var parser = new DOMParser();
+                var html = parser.parseFromString(
+                    resp.responseText,
+                    "text/html"
+                );
+                var abs = html.querySelector("#ChDivSummary");
+                Zotero.debug("** Jasminum abs " + abs.innerText);
+                if (abs.innerText) {
+                    newItem.setField("abstractNote", abs.innerText.trim());
                 }
-                creators[i] = creator;
             }
-            newItem.setCreators(creators);
-        }
-        // Clean up abstract
-        if (newItem.getField("abstractNote")) {
-            newItem.setField(
-                "abstractNote",
-                newItem
-                    .getField("abstractNote")
-                    .replace(/\s*[\r\n]\s*/g, "\n")
-                    .replace(/&lt;.*?&gt;/g, "")
-            );
-        }
-        // Keep full abstract text.
-        if (newItem.getField("abstractNote").endsWith("...")) {
-            Zotero.debug("** Jasminum get full abstract text.");
-            var resp = await Zotero.HTTP.request("GET", targetUrl);
-            var parser = new DOMParser();
-            var html = parser.parseFromString(resp.responseText, "text/html");
-            var abs = html.querySelector("#ChDivSummary");
-            Zotero.debug("** Jasminum abs " + abs.innerText);
-            if (abs.innerText) {
-                newItem.setField("abstractNote", abs.innerText.trim());
+            // Remove wront CN field.
+            newItem.setField("callNumber", "");
+            newItem.setField("libraryCatalog", "CNKI");
+            newItem.setField("url", targetUrls[idx]);
+            // Keep tags according global config.
+            if (Zotero.Prefs.get("automaticTags") === false) {
+                newItem.tags = [];
             }
-        }
-        // Remove wront CN field.
-        newItem.setField("callNumber", "");
-        newItem.setField("libraryCatalog", "CNKI");
-        newItem.setField("url", targetUrl);
-        // Keep tags according global config.
-        if (Zotero.Prefs.get("automaticTags") === false) {
-            newItem.tags = [];
-        }
-        // Change tag type
-        var tags = newItem.getTags();
-        // Zotero.debug('** Jasminum tags length: ' + tags.length);
-        if (tags.length > 0) {
-            var newTags = [];
-            for (let tag of tags) {
-                tag.type = 1;
-                newTags.push(tag);
+            // Change tag type
+            var tags = newItem.getTags();
+            // Zotero.debug('** Jasminum tags length: ' + tags.length);
+            if (tags.length > 0) {
+                var newTags = [];
+                for (let tag of tags) {
+                    tag.type = 1;
+                    newTags.push(tag);
+                }
+                newItem.setTags(newTags);
             }
-            newItem.setTags(newTags);
+            newItems[idx] = newItem;
         }
-        return newItem;
+        return newItems;
     },
 
     updateItems: async function (items) {
@@ -628,51 +663,62 @@ Zotero.Jasminum = {
         if (!Zotero.Jasminum.checkItem(item)) return; // TODO Need notify
         var fileData = Zotero.Jasminum.splitFilename(item.getFilename());
         Zotero.debug(fileData);
-        var targetRow = await Zotero.Jasminum.search(fileData);
-        if (targetRow) {
-            Zotero.debug("targetRow");
-            Zotero.debug(targetRow.textContent);
-            var [data, targetUrl] = await Zotero.Jasminum.getRefworks(
-                targetRow
+        var targetRows = await Zotero.Jasminum.search(fileData);
+        // 有查询结果返回
+        if (targetRows && targetRows.length > 0) {
+            var [data, targetUrls] = await Zotero.Jasminum.getRefworks(
+                targetRows
             );
             var translate = new Zotero.Translate.Import();
             translate.setTranslator("1a3506da-a303-4b0a-a1cd-f216e6138d86");
             translate.setString(data);
-            var newItem = await Zotero.Jasminum.promiseTranslate(
+            var newItems = await Zotero.Jasminum.promiseTranslate(
                 translate,
                 libraryID
             );
-            Zotero.debug(newItem);
-            newItem = await Zotero.Jasminum.fixItem(newItem, targetUrl);
+            Zotero.debug(newItems);
+            newItems = await Zotero.Jasminum.fixItem(newItems, targetUrls);
             Zotero.debug("** Jasminum DB trans ...");
             if (itemCollections.length) {
                 for (let collectionID of itemCollections) {
-                    newItem.addToCollection(collectionID);
+                    newItems.forEach(function (item) {
+                        item.addToCollection(collectionID);
+                    });
                 }
             }
-
-            // Put old item as a child of the new item
-            item.parentID = newItem.id;
-            // Use Zotfile to rename file
-            if (
-                Zotero.Prefs.get("jasminum.rename") &&
-                typeof Zotero.ZotFile != "undefined"
-            ) {
-                Zotero.ZotFile.renameSelectedAttachments();
+            // 只有单个返回结果
+            if (newItems.length == 1) {
+                var newItem = newItems[0];
+                // Put old item as a child of the new item
+                item.parentID = newItem.id;
+                // Use Zotfile to rename file
+                if (
+                    Zotero.Prefs.get("jasminum.rename") &&
+                    typeof Zotero.ZotFile != "undefined"
+                ) {
+                    Zotero.ZotFile.renameSelectedAttachments();
+                }
+                if (
+                    Zotero.Prefs.get("jasminum.autobookmark") &&
+                    Zotero.Jasminum.checkItemPDF(item)
+                ) {
+                    await Zotero.Jasminum.addBookmarkItem(item);
+                }
+                await item.saveTx();
+                await newItem.saveTx();
+            } else {
+                // 有多个返回结果，将文件与新条目关联，用于用户后续手动选择
+                newItems.forEach(function (newItem) {
+                    item.addRelatedItem(newItem);
+                });
+                await item.saveTx();
             }
-            if (
-                Zotero.Prefs.get("jasminum.autobookmark") &&
-                Zotero.Jasminum.checkItemPDF(item)
-            ) {
-                await Zotero.Jasminum.addBookmarkItem(item);
-            }
-            await item.saveTx();
-            await newItem.saveTx();
             if (items.length) {
                 Zotero.Jasminum.updateItems(items);
             }
             Zotero.debug("** Jasminum finished.");
         } else {
+            // 没有查询结果
             alert(
                 `No result found!\n作者：${fileData.author}\n篇名：${fileData.keyword}\n请检查设置中的文件名模板是否与实际实际情况相符`
             );
