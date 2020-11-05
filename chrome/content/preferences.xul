@@ -70,7 +70,7 @@
                             <button label="&jasminum.refresh.label;" tooltiptext="&jasminum.refreshInfo.label;" oncommand="initTranslatorPanel();"/>
                             <button label="&jasminum.updateall.label;" tooltiptext="&jasminum.updateallInfo.label;" oncommand="updateAll();"/>
                             <label value="更新之后还需要在浏览器Zotero Connector中更新翻译器信息"/>
-                            <label class="zotero-text-link" value="如何在浏览器中更新翻译器" href=""/>
+                            <label class="zotero-text-link" value="如何在浏览器中更新翻译器" href="https://www.bilibili.com/video/BV1F54y1k73n/"/>
                         </hbox>
                     </tabpanel>
                     <tabpanel id="zotero-prefpane-translators-tab" orient="vertical">
