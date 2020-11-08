@@ -233,15 +233,14 @@ Zotero.Jasminum = {
     // Cookie for search
     setCookieSandbox: function () {
         var cookieData =
-            "Ecp_ClientId=5191230153502598871; cnkiUserKey=ee10ba99-62af" +
-            "-5b83-d845-2b5c7b5c6d1a; _pk_ref=%5B%22%22%2C%22%22%2C15978" +
-            "01224%2C%22https%3A%2F%2Fwww.cnki.net%2F%22%5D; Ecp_IpLogin" +
-            "Fail=200819115.236.162.162; ASP.NET_SessionId=m5y1r25x4ycq4" +
-            "f3o5r3uboow; SID_kns8=kns8011103; CurrSortField=%e5%8f%91%e" +
-            "8%a1%a8%e6%97%b6%e9%97%b4%2f(%e5%8f%91%e8%a1%a8%e6%97%b6%e9" +
-            "%97%b4%2c%27TIME%27); CurrSortFieldType=desc";
+            "Ecp_ClientId=1200104193103044969; RsPerPage=20; " +
+            "cnkiUserKey=60c42f4d-35a2-6d3f-6efc-ad01eaffd4c3; " +
+            "_pk_ref=%5B%22%22%2C%22%22%2C1604497317%2C%22https%3A%2F%2Fcnki.net%2F%22%5D; " +
+            "ASP.NET_SessionId=zcw1abnl5vitqcliiq5almmj; " +
+            "SID_kns8=123121; " +
+            "Ecp_IpLoginFail=20110839.182.10.65";
         var userAgent = Zotero.Jasminum.userAgent;
-        var url = "https://kns8.cnki.net/nindex/";
+        var url = "https://cnki.net/";
         var sandbox = new Zotero.CookieSandbox("", url, cookieData, userAgent);
         Zotero.Jasminum.CookieSandbox = sandbox;
     },
@@ -249,15 +248,18 @@ Zotero.Jasminum = {
     // Cookie for getting Refworks data
     setRefCookieSandbox: function () {
         var cookieData =
-            "Ecp_ClientId=2200704084100797650; cnkiUserKey=0beb3437-b013" +
-            "-ce59-6565-4ce9c4550bc1; ASPSESSIONIDCQRBDBSR=GAIDHDJABKDAJ" +
-            "DDKJJENBAEE; SID_kns8=kns8011101; _pk_ses=*; Ecp_IpLoginFai" +
-            "l=200823117.147.16.141; ASP.NET_SessionId=ttclajbrobwpog5wz" +
-            "0y5nom4; CurrSortField=%e5%8f%91%e8%a1%a8%e6%97%b6%e9%97%b4" +
-            "%2f(%e5%8f%91%e8%a1%a8%e6%97%b6%e9%97%b4%2c%27TIME%27); Cur" +
-            "rSortFieldType=desc";
+            "Ecp_ClientId=1200104193103044969; RsPerPage=20; " +
+            "cnkiUserKey=60c42f4d-35a2-6d3f-6efc-ad01eaffd4c3; " +
+            "ASP.NET_SessionId=zcw1abnl5vitqcliiq5almmj; " +
+            "SID_kns8=123121; Ecp_IpLoginFail=20110839.182.10.65; " +
+            "SID_recommendapi=125144; CurrSortFieldType=desc; " +
+            "SID_kns=025123117; " +
+            "CurrSortField=%e5%8f%91%e8%a1%a8%e6%97%b6%e9%97%b4%2f(%e5%8f%91%e8%a1%a8%e6%97%b6%e9%97%b4%2c%27TIME%27); " +
+            "SID_kcms=124117; " +
+            "_pk_ref=%5B%22%22%2C%22%22%2C1604847086%2C%22https%3A%2F%2Fcnki.net%2F%22%5D; " +
+            "_pk_ses=*";
         var userAgent = Zotero.Jasminum.userAgent;
-        var url = "https://kns8.cnki.net/nindex/";
+        var url = "https://cnki.net/";
         var sandbox = new Zotero.CookieSandbox("", url, cookieData, userAgent);
         Zotero.Jasminum.RefCookieSandbox = sandbox;
     },
@@ -354,11 +356,10 @@ Zotero.Jasminum = {
         var postData =
             "IsSearch=true&QueryJson=" +
             encodeURIComponent(JSON.stringify(queryJson)) +
-            "&PageName=AdvSearch&HandlerId=0&DBCode=SCDB" +
+            "&PageName=DefaultResult&DBCode=SCDB" +
             "&KuaKuCodes=CJFQ%2CCCND%2CCIPD%2CCDMD%2CCYFD%2CBDZK%2CSCOD%2CCISD%2CSNAD%2CCCJD%2CGXDB_SECTION%2CCJFN" +
             "&CurPage=1&RecordsCntPerPage=20&CurDisplayMode=listmode" +
-            "&CurrSortField=%25e5%258f%2591%25e8%25a1%25a8%25e6%2597%25b6%25e9%2597%25b4%252f(%25e5%258f%2591%25e8%25a1%25a8%25e6%2597%25b6%25e9%2597%25b4%252c%2527TIME%2527)" +
-            "&CurrSortFieldType=desc&IsSortSearch=false&IsSentenceSearch=false";
+            "&CurrSortField=&CurrSortFieldType=desc&IsSentenceSearch=false&Subject=";
         return postData;
     },
 
@@ -396,14 +397,21 @@ Zotero.Jasminum = {
         Zotero.debug("**Jasminum start search");
         var postData = Zotero.Jasminum.createPostData(fileData);
         var requestHeaders = {
-            Host: "kns8.cnki.net",
-            Connection: "keep-alive",
+            "Accept": "text/html, */*; q=0.01",
+            "Accept-Encoding": "gzip, deflate, br",
+            "Accept-Language": "zh-CN,zh;q=0.9,en;q=0.8,zh-TW;q=0.7",
+            "Connection": "keep-alive",
+            "Content-Length": "2085",
             "Content-Type": "application/x-www-form-urlencoded; charset=UTF-8",
-            Origin: "https://kns8.cnki.net",
-            "X-Requested-With": "XMLHttpRequest",
-            Referer: "https://kns8.cnki.net/kns/AdvSearch?dbcode=CJFQ",
+            "Host": "kns.cnki.net",
+            "Origin": "https://kns.cnki.net",
+            "Referer": "https://kns.cnki.net/kns8/AdvSearch?dbprefix=SCDB&&crossDbcodes=CJFQ%2CCDMD%2CCIPD%2CCCND%2CCISD%2CSNAD%2CBDZK%2CCJFN%2CCCJD",
+            "Sec-Fetch-Dest": "empty",
+            "Sec-Fetch-Mode": "cors",
+            "Sec-Fetch-Site": "same-origin",
+            "X-Requested-With": "XMLHttpRequest"
         };
-        var postUrl = "https://kns8.cnki.net/kns/Brief/GetGridTableHtml";
+        var postUrl = "https://kns.cnki.net/KNS8/Brief/GetGridTableHtml";
         if (!Zotero.Jasminum.CookieSandbox) {
             Zotero.Jasminum.setCookieSandbox();
         }
@@ -431,7 +439,8 @@ Zotero.Jasminum = {
             Zotero.debug("**Jasminum No items found.");
             return null;
         } else if (rows.length == 1) {
-            targetRows.push[rows[0]];
+            targetRows.push(rows[0]);
+            Zotero.debug(rows[0].textContent.split(/\s+/).join(" "));
         } else {
             // Get the right item from search result.
             var rowIndicators = {};
@@ -492,7 +501,7 @@ Zotero.Jasminum = {
             postData +
             "&displaymode=Refworks&orderparam=0&ordertype=desc&selectfield=&random=0.9317799522629542";
         Zotero.debug(postData);
-        var url = "https://kns8.cnki.net/kns/manage/ShowExport";
+        var url = "https://kns.cnki.net/KNS8/manage/ShowExport";
         if (!Zotero.Jasminum.RefCookieSandbox) {
             Zotero.Jasminum.setRefCookieSandbox();
         }
