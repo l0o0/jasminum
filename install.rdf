@@ -28,6 +28,13 @@
         <em:maxVersion>45.*</em:maxVersion>
       </Description>
     </em:targetApplication>
+    <em:targetApplication>
+      <Description>
+        <em:id>juris-m@juris-m.github.io</em:id>
+        <em:minVersion>4.*</em:minVersion>
+        <em:maxVersion>45.*</em:maxVersion>
+      </Description>
+    </em:targetApplication>
 
     <em:localized>
       <Description>
