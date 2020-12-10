@@ -636,7 +636,9 @@ Zotero.Jasminum = {
             }
             // Remove wront CN field.
             newItem.setField("callNumber", "");
-            newItem.setField("libraryCatalog", "CNKI");
+            if (Zotero.ItemTypes.getName(newItem.itemTypeID) != "patent") {
+                newItem.setField("libraryCatalog", "CNKI");
+            }
             newItem.setField("url", targetUrls[idx]);
             // Keep tags according global config.
             if (Zotero.Prefs.get("automaticTags") === false) {
