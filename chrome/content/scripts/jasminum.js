@@ -26,8 +26,10 @@ Zotero.Jasminum = {
     initPref: function () {
         if (Zotero.Prefs.get("jasminum.pdftkpath") === undefined) {
             var pdftkpath = "C:\\Program Files (x86)\\PDFtk Server\\bin";
-            if (Zotero.isMac || Zotero.isLinux) {
+            if (Zotero.isLinux) {
                 pdftkpath = "/usr/bin";
+            } else if (Zotero.isMac) {
+                pdftkpath = "/opt/pdflabs/pdftk/bin";
             }
             Zotero.Prefs.set("jasminum.pdftkpath", pdftkpath);
         }
