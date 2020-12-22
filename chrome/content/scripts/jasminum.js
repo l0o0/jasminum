@@ -642,7 +642,7 @@ Zotero.Jasminum = {
             newItem.setField("url", targetUrls[idx]);
             // Keep tags according global config.
             if (Zotero.Prefs.get("automaticTags") === false) {
-                newItem.tags = [];
+                newItem.setTags([]);
             }
             // Change tag type
             var tags = newItem.getTags();
