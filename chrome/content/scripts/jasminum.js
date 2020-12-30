@@ -994,7 +994,8 @@ Zotero.Jasminum = {
                 if (
                     // English Name pass
                     creator.lastName.search(/[A-Za-z]/) !== -1 ||
-                    creator.firstName.search(/[A-Za-z]/) !== -1 
+                    creator.firstName.search(/[A-Za-z]/) !== -1 ||
+                    creator.firstName // 如果有名就不拆分了
                 ) 	{
                    		var EnglishName = creator.lastName;										
 						var temp = EnglishName.split(/[\n\s+,]/g);
