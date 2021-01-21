@@ -457,26 +457,29 @@ Zotero.Jasminum = {
         return targetRows;
     },
 
+    // Get CNKI citations from targetRow
+    getCitation: function(targetRow) {
+        // Citation in web page or search table row
+        var cite_page = Zotero.Utilities.xpath(targetRow, "//em[text()= '被引频次']/parent::span/text()");
+        var cite_search = targetRow.getElementsByClassName("quote")[0].innerText.trim();
+        return cite_page[0] ? cite_page.length > 0 : cite_search;
+    },
+
+    // Get refwork data from search target rows
     getRefworks: async function (targetRows) {
         Zotero.debug("**Jasminum start get ref");
         if (targetRows == null) {
             return new Error("No items returned from the CNKI");
         }
-        var targetUrls = [],
+        var targetData = {targetUrls:[], citations:[]}, // url, citation
             targetIDs = [];
         targetRows.forEach(function (r) {
             var url = r.getElementsByClassName("fz14")[0].getAttribute("href");
+            var cite = Zotero.Jasminum.getCitation(r);
             targetIDs.push(Zotero.Jasminum.getIDFromUrl(url));
+            targetData.citations.push(cite);
         });
         Zotero.debug(targetIDs);
-        // Get reference data from CNKI by IDs.
-        // var postData =
-        //     "filename=" +
-        //     targetID.filename +
-        //     "&displaymode=Refworks&orderparam=0&ordertype=desc" +
-        //     "&selectfield=&dbname=" +
-        //     targetID.dbname +
-        //     "&random=0.008818957206744082";
         var postData = "filename=";
         // filename=CPFDLAST2020!ZGXD202011001016!1!14%2CCPFDLAST2020!ZKBD202011001034!2!14&displaymode=Refworks&orderparam=0&ordertype=desc&selectfield=&random=0.9317799522629542
         for (let idx = 0; idx < targetIDs.length; idx++) {
@@ -488,7 +491,7 @@ Zotero.Jasminum = {
                 "!" +
                 (idx + 1) +
                 "!8%2C";
-            targetUrls.push(
+            targetData.targetUrls.push(
                 `https://kns.cnki.net/KCMS/detail/detail.aspx?dbcode=${targetIDs[idx].dbcode}&dbname=${targetIDs[idx].dbname}&filename=${targetIDs[idx].filename}&v=`
             );
         }
@@ -529,7 +532,7 @@ Zotero.Jasminum = {
             })
             .trim();
         Zotero.debug(data.split("\n"));
-        return [data, targetUrls];
+        return [data, targetData];
     },
 
     promiseTranslate: async function (translate, libraryID) {
@@ -555,7 +558,7 @@ Zotero.Jasminum = {
         throw new Error("No items found");
     },
 
-    fixItem: async function (newItems, targetUrls) {
+    fixItem: async function (newItems, targetData) {
         var creators;
         // 学位论文，导师 -> contributor
         for (let idx = 0; idx < newItems.length; idx++) {
@@ -624,7 +627,7 @@ Zotero.Jasminum = {
             // Keep full abstract text.
             if (newItem.getField("abstractNote").endsWith("...")) {
                 Zotero.debug("** Jasminum get full abstract text.");
-                var resp = await Zotero.HTTP.request("GET", targetUrls[idx]);
+                var resp = await Zotero.HTTP.request("GET", targetData.targetUrls[idx]);
                 var parser = new DOMParser();
                 var html = parser.parseFromString(
                     resp.responseText,
@@ -641,7 +644,14 @@ Zotero.Jasminum = {
             if (Zotero.ItemTypes.getName(newItem.itemTypeID) != "patent") {
                 newItem.setField("libraryCatalog", "CNKI");
             }
-            newItem.setField("url", targetUrls[idx]);
+            newItem.setField("url", targetData.targetUrls[idx]);
+            if (targetData.citations[idx]) {  // Add citation
+                var m = new Date();
+                var dateString = m.getUTCFullYear() + "-" +
+                    ("0" + (m.getUTCMonth()+1)).slice(-2) + "-" +
+                    ("0" + m.getUTCDate()).slice(-2);
+                newItem.setField("extra", `${targetData.citations[idx]} citations (CNKI) [${dateString}]`);
+            }
             // Keep tags according global config.
             if (Zotero.Prefs.get("automaticTags") === false) {
                 newItem.setTags([]);
@@ -673,7 +683,7 @@ Zotero.Jasminum = {
         var targetRows = await Zotero.Jasminum.search(fileData);
         // 有查询结果返回
         if (targetRows && targetRows.length > 0) {
-            var [data, targetUrls] = await Zotero.Jasminum.getRefworks(
+            var [data, targetData] = await Zotero.Jasminum.getRefworks(
                 targetRows
             );
             var translate = new Zotero.Translate.Import();
@@ -684,7 +694,7 @@ Zotero.Jasminum = {
                 libraryID
             );
             Zotero.debug(newItems);
-            newItems = await Zotero.Jasminum.fixItem(newItems, targetUrls);
+            newItems = await Zotero.Jasminum.fixItem(newItems, targetData);
             Zotero.debug("** Jasminum DB trans ...");
             if (itemCollections.length) {
                 for (let collectionID of itemCollections) {
@@ -819,7 +829,7 @@ Zotero.Jasminum = {
         if (
             // 匹配知网 URL
             parentItem.getField("url") &&
-            parentItem.getField("url").match(/^https?:\/\/([^/]+\.)?cnki\.net/)
+            parentItem.getField("url").match(/^https?:\/\/kns\.cnki\.net/) // Except nxgp.cnki.net
         ) {
             Zotero.debug("** Jasminum item url exists");
             itemUrl = parentItem.getField("url");
@@ -831,11 +841,12 @@ Zotero.Jasminum = {
                     parentItem.getCreator(0).lastName +
                     parentItem.getCreator(0).firstName,
             };
-            var targetRow = await Zotero.Jasminum.search(fileData);
-            if (!targetRow) {
+            var targetRows = await Zotero.Jasminum.search(fileData);
+            if (targetRows.length === 0) {
                 return null;
             }
-            itemUrl = targetRow.querySelector("a.fz14").getAttribute("href");
+            // Frist row in search table is selected.
+            itemUrl = targetRows[0].querySelector("a.fz14").getAttribute("href");
             itemUrl = "https://kns.cnki.net/KCMS" + itemUrl.slice(4);
             // 获取文献链接URL -> 获取章节目录URL
         }
