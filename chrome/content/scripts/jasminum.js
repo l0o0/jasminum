@@ -560,7 +560,7 @@ Zotero.Jasminum = {
 
     fixItem: async function (newItems, targetData) {
         var creators;
-        // 学位论文，导师 -> contributor
+        // 学位论文Thesis，导师 -> contributor
         for (let idx = 0; idx < newItems.length; idx++) {
             var newItem = newItems[idx];
             if (newItem.getNotes()) {
@@ -585,7 +585,7 @@ Zotero.Jasminum = {
                 }
                 Zotero.Items.erase(newItem.getNotes());
             }
-            // 是否处理中文姓名
+            // 是否处理中文姓名. For Chinese name
             if (Zotero.Prefs.get("jasminum.zhnamesplit")) {
                 creators = newItem.getCreators();
                 for (var i = 0; i < creators.length; i++) {
@@ -624,21 +624,34 @@ Zotero.Jasminum = {
                         .replace(/&lt;.*?&gt;/g, "")
                 );
             }
-            // Keep full abstract text.
+            // Parse page content.
+            var extraString='';
+            Zotero.debug("** Jasminum get article page.");
+            var resp = await Zotero.HTTP.request("GET", targetData.targetUrls[idx]);
+            var parser = new DOMParser();
+            var html = parser.parseFromString(
+                resp.responseText,
+                "text/html"
+            );
+            // Full abstract note.
             if (newItem.getField("abstractNote").endsWith("...")) {
-                Zotero.debug("** Jasminum get full abstract text.");
-                var resp = await Zotero.HTTP.request("GET", targetData.targetUrls[idx]);
-                var parser = new DOMParser();
-                var html = parser.parseFromString(
-                    resp.responseText,
-                    "text/html"
-                );
                 var abs = html.querySelector("#ChDivSummary");
                 Zotero.debug("** Jasminum abs " + abs.innerText);
                 if (abs.innerText) {
                     newItem.setField("abstractNote", abs.innerText.trim());
                 }
             }
+            // Add DOI
+            var doi = Zotero.Utilities.xpath(html, "//*[contains(text(), 'DOI')]/following-sibling::p");
+            if (doi.length > 0) {
+                newItem.setField("DOI", doi[0].innerText);
+            }
+            // Add Article publisher type.
+            var publisherType = Zotero.Utilities.xpath(html, "//div[@class='top-tip']//a[@class='type']");
+            if (publisherType.length > 0) {
+                extraString += publisherType[0].innerText;
+            }
+
             // Remove wront CN field.
             newItem.setField("callNumber", "");
             if (Zotero.ItemTypes.getName(newItem.itemTypeID) != "patent") {
@@ -650,8 +663,11 @@ Zotero.Jasminum = {
                 var dateString = m.getUTCFullYear() + "-" +
                     ("0" + (m.getUTCMonth()+1)).slice(-2) + "-" +
                     ("0" + m.getUTCDate()).slice(-2);
-                newItem.setField("extra", `${targetData.citations[idx]} citations (CNKI) [${dateString}]`);
+                var citationString = `${targetData.citations[idx]} citations (CNKI) [${dateString}]`;
             }
+            extraString = citationString + '; ' + extraString;
+            newItem.setField("extra", extraString);
+
             // Keep tags according global config.
             if (Zotero.Prefs.get("automaticTags") === false) {
                 newItem.setTags([]);
