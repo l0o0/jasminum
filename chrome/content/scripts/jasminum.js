@@ -92,7 +92,7 @@ Zotero.Jasminum = {
                                 item.parentItem.itemTypeID
                             ) == "thesis" &&
                             item.parentItem.getField("libraryCatalog") ==
-                                "CNKI" &&
+                            "CNKI" &&
                             item.attachmentContentType == "application/pdf"
                         ) {
                             Zotero.debug("***** New PDF item is added");
@@ -458,7 +458,7 @@ Zotero.Jasminum = {
     },
 
     // Get CNKI citations from targetRow
-    getCitation: function(targetRow) {
+    getCitation: function (targetRow) {
         // Citation in web page or search table row
         var cite_page = Zotero.Utilities.xpath(targetRow, "//em[text()= '被引频次']/parent::span/text()");
         var cite_search = targetRow.getElementsByClassName("quote")[0].innerText.trim();
@@ -471,7 +471,7 @@ Zotero.Jasminum = {
         if (targetRows == null) {
             return new Error("No items returned from the CNKI");
         }
-        var targetData = {targetUrls:[], citations:[]}, // url, citation
+        var targetData = { targetUrls: [], citations: [] }, // url, citation
             targetIDs = [];
         targetRows.forEach(function (r) {
             var url = r.getElementsByClassName("fz14")[0].getAttribute("href");
@@ -625,7 +625,7 @@ Zotero.Jasminum = {
                 );
             }
             // Parse page content.
-            var extraString='';
+            var extraString = '';
             Zotero.debug("** Jasminum get article page.");
             var resp = await Zotero.HTTP.request("GET", targetData.targetUrls[idx]);
             var parser = new DOMParser();
@@ -643,13 +643,8 @@ Zotero.Jasminum = {
             }
             // Add DOI
             var doi = Zotero.Utilities.xpath(html, "//*[contains(text(), 'DOI')]/following-sibling::p");
-            if (doi.length > 0) {
+            if ('DOI' in newItem && doi.length > 0) {  // Some items lack DOI field
                 newItem.setField("DOI", doi[0].innerText);
-            }
-            // Add Article publisher type.
-            var publisherType = Zotero.Utilities.xpath(html, "//div[@class='top-tip']//a[@class='type']");
-            if (publisherType.length > 0) {
-                extraString += publisherType[0].innerText;
             }
 
             // Remove wront CN field.
@@ -661,11 +656,22 @@ Zotero.Jasminum = {
             if (targetData.citations[idx]) {  // Add citation
                 var m = new Date();
                 var dateString = m.getUTCFullYear() + "-" +
-                    ("0" + (m.getUTCMonth()+1)).slice(-2) + "-" +
+                    ("0" + (m.getUTCMonth() + 1)).slice(-2) + "-" +
                     ("0" + m.getUTCDate()).slice(-2);
-                var citationString = `${targetData.citations[idx]} citations (CNKI) [${dateString}]`;
+                var citationString = `${targetData.citations[idx]} citations(CNKI)[${dateString}]`;
+                extraString = citationString;
             }
-            extraString = citationString + '; ' + extraString;
+
+            // Add Article publisher type, surrounded by <>. 核心期刊
+            var publisherType = Zotero.Utilities.xpath(html, "//div[@class='top-tip']//a[@class='type']");
+            if (publisherType.length > 0) {
+                extraString = extraString + "<" + publisherType.map(function (ele) {
+                    return ele.innerText
+                }
+                ).join(", ")
+                    + ">";
+            }
+
             newItem.setField("extra", extraString);
 
             // Keep tags according global config.
@@ -822,11 +828,9 @@ Zotero.Jasminum = {
             var page = pageRex[1];
             var bookmark = `BookmarkBegin\nBookmarkTitle: ${title}\nBookmarkLevel: ${level}\nBookmarkPageNumber: ${page}`;
             rows_array.push(bookmark);
-            note += `<li style="padding-top: ${
-                level == 1 ? 4 : 8
-            }px; padding-left: ${
-                12 * (level - 1)
-            }px"><a href="zotero://open-pdf/${lib}_${key}/${page}">${title}</a></li>\n`;
+            note += `<li style="padding-top: ${level == 1 ? 4 : 8
+                }px; padding-left: ${12 * (level - 1)
+                }px"><a href="zotero://open-pdf/${lib}_${key}/${page}">${title}</a></li>\n`;
         }
         note =
             '<p id="title"><strong>Contents</strong></p>\n' +
@@ -928,9 +932,9 @@ Zotero.Jasminum = {
         ];
         Zotero.debug(
             "PDFtk: Running " +
-                pdftk +
-                " " +
-                args.map((arg) => "'" + arg + "'").join(" ")
+            pdftk +
+            " " +
+            args.map((arg) => "'" + arg + "'").join(" ")
         );
         try {
             await Zotero.Utilities.Internal.exec(pdftk, args);
@@ -968,12 +972,12 @@ Zotero.Jasminum = {
         if (!bookmark) {
             alert("No Bookmark found!\n书签信息未找到");
         } else {
-            await Zotero.Jasminum.addBookmark(item, bookmark);
             // Add TOC note
             var noteHTML = item.getNote();
             noteHTML += note;
             item.setNote(noteHTML);
             await item.saveTx();
+            await Zotero.Jasminum.addBookmark(item, bookmark);
         }
     },
 
@@ -1024,25 +1028,25 @@ Zotero.Jasminum = {
                     creator.firstName.search(/[A-Za-z]/) !== -1 ||
                     creator.firstName // 如果有名就不拆分了
                 ) {
-                   	var EnglishName = creator.lastName;										
-					var temp = EnglishName.split(/[\n\s+,]/g);
-					for (var k = 0; k < temp.length; k++) {
-					    if (temp[k] == "") {
-					        // 删除数组中空值
-					        temp.splice(k, 1);				
-					        k--;
-				        }
-					}
-					if(temp.length < 3) {
-					    creator.lastName = temp[0];	
-					    creator.firstName = temp[1];									
-					} else 	{
-					    creator.lastName = temp[0];
-					    creator.firstName = temp[1].concat(" ",temp[2]);										
-					} 					
-					creator.fieldMode = 0;// 0: two-field, 1: one-field (with empty first name)
-					creators[i] = creator;
-				} else {  // For Chinese Name
+                    var EnglishName = creator.lastName;
+                    var temp = EnglishName.split(/[\n\s+,]/g);
+                    for (var k = 0; k < temp.length; k++) {
+                        if (temp[k] == "") {
+                            // 删除数组中空值
+                            temp.splice(k, 1);
+                            k--;
+                        }
+                    }
+                    if (temp.length < 3) {
+                        creator.lastName = temp[0];
+                        creator.firstName = temp[1];
+                    } else {
+                        creator.lastName = temp[0];
+                        creator.firstName = temp[1].concat(" ", temp[2]);
+                    }
+                    creator.fieldMode = 0;// 0: two-field, 1: one-field (with empty first name)
+                    creators[i] = creator;
+                } else {  // For Chinese Name
                     var chineseName = creator.lastName
                         ? creator.lastName
                         : creator.firstName;
@@ -1073,7 +1077,7 @@ Zotero.Jasminum = {
                     creator.firstName = "";
                     creator.fieldMode = 1;// 0: two-field, 1: one-field (with empty first name)
                     creators[i] = creator;
-				} else { // For Chinese Name
+                } else { // For Chinese Name
                     creator.lastName = creator.lastName + creator.firstName;
                     creator.firstName = "";
                     creator.fieldMode = 1;
