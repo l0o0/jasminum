@@ -23,8 +23,8 @@ macos(10.15)用户：
 路径：`/opt/pdflabs/pdftk/`. （该路径默认对外隐藏无法选取）
 选择路径的技巧：`shift+command+G`: 输入：`/opt/pdflabs/pdftk/`，选择`bin`确认
 
-> 官网：https://www.pdflabs.com/tools/pdftk-server/
-> After installation, open a Terminal, type pdftk and press Return. Pdftk will respond by displaying brief usage information. Access pdftk documenation by running man pdftk.
+> 官网：https://www.pdflabs.com/tools/pdftk-server/  
+> <font color="red">After installation, open a Terminal, type pdftk and press Return. Pdftk will respond by displaying brief usage information(注意！安装后请试试这一步，出现使用说明说明安装成功)</font>. Access pdftk documenation by running man pdftk.
 
 > This installer creates a directory on you Mac: /opt/pdflabs/pdftk/. This will contain a bin directory which holds the pdftk program and a docs directory which holds the complete PDFtk manual.
 
