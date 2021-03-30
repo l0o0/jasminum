@@ -388,6 +388,15 @@ Zotero.Jasminum = {
         return { dbname: dbname[1], filename: filename[1], dbcode: dbcode[1] };
     },
 
+    string2HTML: function (text) {
+        // Use DOMParser to parse text to HTML.
+        // This DOMParser is from XPCOM.
+        var parser = Components.classes["@mozilla.org/xmlextras/domparser;1"]
+            .createInstance(Components.interfaces.nsIDOMParser);
+        return parser.parseFromString(text, "text/html");
+    },
+
+
     search: async function (fileData) {
         Zotero.debug("**Jasminum start search");
         var postData = Zotero.Jasminum.createPostData(fileData);
@@ -424,8 +433,7 @@ Zotero.Jasminum = {
 
     getSearchItems: function (resptext) {
         Zotero.debug("**Jasminum get item from search");
-        var parser = new DOMParser();
-        var html = parser.parseFromString(resptext, "text/html");
+        var html = Zotero.Jasminum.string2HTML(resptext);
         var rows = html.querySelectorAll(
             "table.result-table-list > tbody > tr"
         );
@@ -628,11 +636,7 @@ Zotero.Jasminum = {
             var extraString = '';
             Zotero.debug("** Jasminum get article page.");
             var resp = await Zotero.HTTP.request("GET", targetData.targetUrls[idx]);
-            var parser = new DOMParser();
-            var html = parser.parseFromString(
-                resp.responseText,
-                "text/html"
-            );
+            var html = Zotero.Jasminum.string2HTML(resp.responseText);
             // Full abstract note.
             if (newItem.getField("abstractNote").endsWith("...")) {
                 var abs = html.querySelector("#ChDivSummary");
@@ -792,11 +796,7 @@ Zotero.Jasminum = {
 
     getChapterUrl: async function (readerUrl) {
         var reader = await Zotero.HTTP.request("GET", readerUrl);
-        var parser = new DOMParser();
-        var readerHTML = parser.parseFromString(
-            reader.responseText,
-            "text/html"
-        );
+        var readerHTML = Zotero.Jasminum.string2HTML(reader.responseText);
         return (
             "https://kreader.cnki.net/Kreader/" +
             readerHTML.querySelector("iframe").getAttribute("src")
@@ -807,10 +807,8 @@ Zotero.Jasminum = {
         var key = item.key;
         var lib = item.libraryID;
         var chapter = await Zotero.HTTP.request("GET", chapterUrl);
-        var parser = new DOMParser();
-        var chapterHTML = parser.parseFromString(
-            chapter.responseText,
-            "text/html"
+        var chapterHTML = Zotero.Jasminum.string2HTML(
+            chapter.responseText
         );
         var tree = chapterHTML.getElementById("treeDiv");
         var rows = tree.querySelectorAll("tr");
