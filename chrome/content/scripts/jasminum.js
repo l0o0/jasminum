@@ -780,7 +780,7 @@ Zotero.Jasminum = {
         );
     },
 
-    getReaderUrl: async function (itemUrl) {
+    getReaderUrl: function (itemUrl) {
         Zotero.debug("** Jasminum get Reader url.");
         var itemid = Zotero.Jasminum.getIDFromUrl(itemUrl);
         var readerUrl =
@@ -847,7 +847,8 @@ Zotero.Jasminum = {
         if (
             // 匹配知网 URL
             parentItem.getField("url") &&
-            parentItem.getField("url").match(/^https?:\/\/kns\.cnki\.net/) // Except nxgp.cnki.net
+            parentItem.getField("url").match(/^https?:\/\/kns\.cnki\.net/) &&// Except nxgp.cnki.net
+            Zotero.Jasminum.getIDFromUrl(parentItem.getField("url")) // A valid ID
         ) {
             Zotero.debug("** Jasminum item url exists");
             itemUrl = parentItem.getField("url");
@@ -869,7 +870,7 @@ Zotero.Jasminum = {
             // 获取文献链接URL -> 获取章节目录URL
         }
         Zotero.debug("** Jasminum item url: " + itemUrl);
-        itemReaderUrl = await Zotero.Jasminum.getReaderUrl(itemUrl);
+        itemReaderUrl = Zotero.Jasminum.getReaderUrl(itemUrl);
         Zotero.debug("** Jasminum item reader url: " + itemReaderUrl);
         itemChapterUrl = await Zotero.Jasminum.getChapterUrl(itemReaderUrl);
         Zotero.debug("** Jasminum item chapter url: " + itemChapterUrl);
