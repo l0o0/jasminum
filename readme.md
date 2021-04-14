@@ -31,3 +31,13 @@ macos(10.15)用户：
 ## 如何更新翻译器
 
 Jasminum 插件中可以从[Translators_CN](https://github.com/l0o0/translators_CN)中下载最新的翻译器。可以参考[视频](https://www.bilibili.com/video/BV1F54y1k73n/)进行更新。这里注意下，可以跳过前面的下载步骤，参考浏览器更新的说明。
+
+## 常见问题
+1. CAJ/PDF 文件识别失败
+一般按照默认设置是通过文件名来获取文献的标题与作者，在知网上按照标题与作者信息进行搜索。如果信息抓取失败，可以尝试将文件名的作者信息去掉，同时在设置中将文件名模板修改为`{%t}`，此时程序会将文件名识别为标题，并利用该标题在知网上进行模糊搜索，成功率比较高，不过可能会有多个结果
+
+2. 非官方翻译器页面空白
+刚点开该窗口时，页面信息为空白，需要手动点击下方的刷新按钮，拉取最新的翻译器信息
+
+3. 插件冲突
+根据之前反馈的信息，一些冲突的插件可能造成知网元数据拉取失败，书签添加不成功。可能冲突的插件有 [scite-zotero-plugin](https://github.com/scitedotai/scite-zotero-plugin)， [zotero-better-bibtex](https://github.com/retorquere/zotero-better-bibtex). 上述插件最新版本已经解决了冲突，请升级安装
