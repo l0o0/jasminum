@@ -15,7 +15,7 @@
 <!ENTITY jasminum.pdftk.info "添加书签功能依赖于PDFtk server，正确安装并设置好安装目录才能实现书签添加功能，请选择PDFtk可执行文件所在目录">
 <!ENTITY pdftk.path.check.ok "PDFtk Server安装目录检查通过">
 <!ENTITY pdftk.path.check.error "未在该目录下发现pdftk执行程序">
-<!ENTITY jasminum.namepatent.desc "根据文件名抓取知网元数据，文件名格式设置:{&#37;g}=全名，{&#37;t}=标题名，{&#37;y}=年份，以下划线_分隔，不用考虑文件后缀名">
+<!ENTITY jasminum.namepatent.desc "根据文件名抓取知网元数据，文件名格式设置:{&#37;t}=标题，{&#37;a}=作者，{&#37;y}=年份，{&#37;j}=其他（例如来源信息）；分隔符依实情指定，可连续使用多个；不用考虑文件后缀名">
 <!ENTITY jasminum.zhnamesplit.label "抓取题录信息时拆分中文姓，名(包括知网页面抓取)">
 <!ENTITY jasminum.rename.label "拉取知网元数据后调用Zotfile重命名附件(需安装Zotfile)">
 <!ENTITY jasminum.autobookmark.label "从知网添加学位论文时自动添加书签">

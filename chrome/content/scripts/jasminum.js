@@ -186,39 +186,19 @@ Zotero.Jasminum = {
     splitFilename: function (filename) {
         // Make query parameters from filename
         var patent = Zotero.Prefs.get("jasminum.namepatent");
-        var patentArr = patent.split("_");
+        var patentSepArr = patent.split(/{%[^}]+}/);
+        var patentSepRegArr = patentSepArr.map(x => x.replace(/([\[\\\^\$\.\|\?\*\+\(\)])/g,'\\$&'));
+        var patentMainArr = patent.match(/{%[^}]+}/g);
+        var patentMainRegArr = patentMainArr.map(x => x.replace(/.+/,/{%y}/.test(x)?'(\\d+)':'(.+)'));
+        var regStrInterArr = patentSepRegArr.map((_,i)=>[patentSepRegArr[i],patentMainRegArr[i]]);
+        var patentReg = new RegExp([].concat.apply([],regStrInterArr).filter(Boolean).join(''),'g');
         var prefix = filename.substr(0, filename.length - 4);
         var prefix = prefix.replace(/\.ashx$/g, ""); // 删除末尾.ashx字符
-        var author = "";
-        var title = "";
-        if (prefix.includes("_")) {
-            // 有下划线
-            // Remove year string
-            if (patent.includes("{%y}")) {
-                patentArr.splice(patentArr.indexOf("{%y}"), 1);
-                prefix = prefix.replace(/[0-9]{4}[\._]/g, "");
-            }
-            var prefixArr = prefix.replace(/^_|_$/g, "").split("_");
-            console.log(patentArr);
-            console.log(prefixArr);
-            if (patentArr.includes("{%g}")) {
-                var authorIdx = patentArr.indexOf("{%g}");
-                var authorIdx = authorIdx === 0 ? 0 : prefixArr.length - 1;
-                console.log(authorIdx);
-                author = prefixArr[authorIdx];
-                prefixArr.splice(authorIdx, 1);
-                var missIndex = prefixArr.indexOf("省略");
-                if (missIndex > 0) {
-                    prefixArr.splice(missIndex - 1, 3); // Delete before and after 省略
-                }
-                title = prefixArr.join(" ");
-            } else {
-                title = prefixArr.join(" ");
-            }
-        } else {
-            // 无下划线直接把文件名认为title
-            title = prefix;
-        }
+        var prefixMainArr = patentReg.exec(prefix);
+        var titleIdx = patentMainArr.indexOf('{%t}');
+        var authorIdx = patentMainArr.indexOf('{%a}');
+        var title = (titleIdx!=-1)?prefixMainArr[titleIdx+1]:'';
+        var author = (authorIdx!=-1)?prefixMainArr[authorIdx+1].split(/[,，&等]/)[0]:'';
         return {
             author: author.replace(",", ""),
             keyword: title,
