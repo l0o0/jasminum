@@ -15,7 +15,7 @@
 <!ENTITY jasminum.pdftk.info "Jasminum use PDFtk server to add bookmarks. Please install PDFtk server properly and choose folder contains PDFtk server execute file">
 <!ENTITY pdftk.path.check.ok "PDFtk server path is OK.">
 <!ENTITY pdftk.path.check.error "Can't find PDFtk execute file in this folder.">
-<!ENTITY jasminum.namepatent.desc "Filename format:{&#37;g}=Chinese fullname，{&#37;t}=title, {&#37;y}=year, seperate by '_'，ignore file extension">
+<!ENTITY jasminum.namepatent.desc "Filename format:{&#37;t}=title，{&#37;a}=author, {&#37;y}=year,{&#37;j}=other info(such as source), no limit on delimiters，ignore file extension">
 <!ENTITY jasminum.zhnamesplit.label "Split firstname and lastname when get metadata(Including CNKI web translators)">
 <!ENTITY jasminum.rename.label "Use Zotfile to rename attachment(Need Zotfile installed)">
 <!ENTITY jasminum.autobookmark.label "Add bookmark to thesis PDF when adding thesis item from CNKI">
