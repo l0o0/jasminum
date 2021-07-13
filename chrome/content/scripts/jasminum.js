@@ -190,14 +190,18 @@ Zotero.Jasminum = {
         var patentSepRegArr = patentSepArr.map(x => x.replace(/([\[\\\^\$\.\|\?\*\+\(\)])/g, '\\$&'));
         var patentMainArr = patent.match(/{%[^}]+}/g);
         //文件名中的作者姓名字段里不能包含下划线，请使用“&,，”等字符分隔多个作者，或仅使用第一个作者名（加不加“等”都行）。
-        var patentMainRegArr = patentMainArr.map(x => x.replace(/.+/, /{%y}/.test(x) ? '(\\d+)' : (/{%a}/.test(x) ? '([^_]+)' : '(.+)')));
+        var patentMainRegArr = patentMainArr.map(x => x.replace(/.+/, /{%y}/.test(x) ? '(\\d+)' : (/{%g}/.test(x) ? '([^_]+)' : '(.+)')));
         var regStrInterArr = patentSepRegArr.map((_, i) => [patentSepRegArr[i], patentMainRegArr[i]]);
         var patentReg = new RegExp([].concat.apply([], regStrInterArr).filter(Boolean).join(''), 'g');
         var prefix = filename.substr(0, filename.length - 4);
         var prefix = prefix.replace(/\.ashx$/g, ""); // 删除末尾.ashx字符
         var prefixMainArr = patentReg.exec(prefix);
+        // 文件名识别结果为空，跳出警告弹窗
+        if (prefixMainArr === null) {
+            alert("文件名识别出错，请检查文件名识别模板与实际抓取文件名")
+        }
         var titleIdx = patentMainArr.indexOf('{%t}');
-        var authorIdx = patentMainArr.indexOf('{%a}');
+        var authorIdx = patentMainArr.indexOf('{%g}');
         var titleRaw = (titleIdx != -1) ? prefixMainArr[titleIdx + 1] : '';
         var authors = (authorIdx != -1) ? prefixMainArr[authorIdx + 1] : '';
         var authorArr = authors.split(/[,，&]/);
