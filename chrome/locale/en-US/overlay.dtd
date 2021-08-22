@@ -3,6 +3,7 @@
 <!ENTITY jasminum.namehandler.label "Split/Merge CN Name">
 <!ENTITY jasminum.namehandler.split.label "Split Names">
 <!ENTITY jasminum.namehandler.merge.label "Merge Names">
+<!ENTITY jasminum.CNKI.updateCiteCSSCI.label "Update CNKI Cite">
 <!ENTITY jasminum.pdftkpath.label "PDFtk Service Install Folder,contains pdftk.exe or pdftk">
 <!ENTITY jasminum.autoupdate.label "Retrieve CNKI meta data when add Chinese articles">
 <!ENTITY jasminum.chinese "Setting">

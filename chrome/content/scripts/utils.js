@@ -115,10 +115,7 @@ Zotero.Jasminum.Utils = new function () {
             }
             newItem.setField("url", targetData.targetUrls[idx]);
             if (targetData.citations[idx]) {  // Add citation
-                var m = new Date();
-                var dateString = m.getUTCFullYear() + "-" +
-                    ("0" + (m.getUTCMonth() + 1)).slice(-2) + "-" +
-                    ("0" + m.getUTCDate()).slice(-2);
+                var dateString = new Date().toLocaleDateString().replace(/\//g, '-');
                 var citationString = `${targetData.citations[idx]} citations(CNKI)[${dateString}]`;
                 extraString = citationString;
             }

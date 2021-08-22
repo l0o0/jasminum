@@ -333,5 +333,56 @@ Zotero.Jasminum = new function () {
                 atta.saveTx();
             }
         }
-    }
+    };
+
+    /**
+     * Update citation in Zotero item field
+     * 110 citations(CNKI)[2021-08-22]<北大核心, CSCI>
+     * @param {[Zotero.item]}
+     * @return {volid}
+     */
+    this.updateCiteCSSCI = async function (items) {
+        var item = items.shift();
+        let url = item.getField("url");
+        let resp = await Zotero.HTTP.request("GET", url);
+        let html = this.Utils.string2HTML(resp.responseText);
+        let dateString = new Date().toLocaleDateString().replace(/\//g, '-');
+        let cite = this.Scrape.getCitationFromPage(html);
+        let citeString = cite + " citation(CNKI)[" + dateString + "]";
+        let cssci = this.Scrape.getCSSCI(html);
+        let cssciString = "<" + cssci + ">";
+        var extraData = item.getField("extra");
+
+        if (cite) {
+            if (extraData.match(/\d+ citations\s?\(CNKI\)\s?\[\d{4}-\d{1,2}-\d{1,2}\]/)) {
+                extraData = extraData.replace(/\d+ citations\s?\(CNKI\)\s?\[\d{4}-\d{1,2}-\d{1,2}\]/,
+                    citeString);
+            } else {
+                extraData += citeString;
+            }
+        }
+
+        if (cssci) {
+            if (extraData.match(/<.*?>/)) {
+                extraData = extraData.replace(/<.*?>/, cssciString);
+            } else {
+                extraData += cssciString;
+            }
+        }
+        Zotero.debug(cite);
+        Zotero.debug(cssci);
+        Zotero.debug("** Jasminum " + extraData);
+        item.setField("extra", extraData);
+        await item.saveTx();
+
+        if (items.length) {
+            this.updateCiteCSSCI(items);
+        }
+    };
+
+    this.updateCiteCSSCIItems = function () {
+        var items = ZoteroPane.getSelectedItems();
+        this.updateCiteCSSCI(items);
+    };
+
 };

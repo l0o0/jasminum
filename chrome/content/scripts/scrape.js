@@ -304,13 +304,40 @@ Zotero.Jasminum.Scrape = new function () {
 
 
     // Get CNKI citations from targetRow
-    this.getCitation = function (targetRow) {
+    this.getCitationFromSearch = function (targetRow) {
         // Citation in web page or search table row
         var cite_page = Zotero.Utilities.xpath(targetRow, "//em[text()= '被引频次']/parent::span/text()");
         var cite_search = targetRow.getElementsByClassName("quote")[0].innerText.trim();
         return cite_page[0] ? cite_page.length > 0 : cite_search;
     }.bind(Zotero.Jasminum);
 
+    /**
+     * Get Citation number from article page
+     * @param {document} 
+     * @return {string} Citation number
+     */
+    this.getCitationFromPage = function (html) {
+        let citenode = html.querySelector("input#paramcitingtimes");
+        if (citenode) {
+            return citenode.getAttribute('value');
+        } else {
+            return null;
+        }
+    }.bind(Zotero.Jasminum);
+
+    /**
+     * Get Chinese Social Science Citation Information
+     * @param {document}
+     * @return {string} 
+     */
+    this.getCSSCI = function (html) {
+        var cssci = html.querySelectorAll("a.type");
+        if (cssci.length > 0) {
+            return Array.prototype.map.call(cssci, ele => ele.innerText).join(", ");
+        } else {
+            return null;
+        }
+    }
 
     // Get refwork data from search target rows
     this.getRefworks = async function (targetRows) {
@@ -322,7 +349,7 @@ Zotero.Jasminum.Scrape = new function () {
             targetIDs = [];
         targetRows.forEach(function (r) {
             var url = r.getElementsByClassName("fz14")[0].getAttribute("href");
-            var cite = Zotero.Jasminum.Scrape.getCitation(r);
+            var cite = Zotero.Jasminum.Scrape.getCitationFromSearch(r);
             targetIDs.push(Zotero.Jasminum.Scrape.getIDFromUrl(url));
             targetData.citations.push(cite);
         });

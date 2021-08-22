@@ -3,6 +3,7 @@
 <!ENTITY jasminum.namehandler.label "合并/拆分姓名">
 <!ENTITY jasminum.namehandler.split.label "拆分姓名">
 <!ENTITY jasminum.namehandler.merge.label "合并姓名">
+<!ENTITY jasminum.CNKI.updateCiteCSSCI.label "更新知网引用数">
 <!ENTITY jasminum.pdftkpath.label "PDFtk Service 安装路径">
 <!ENTITY jasminum.autoupdate.label "添加中文PDF/CAJ时自动从知网抓取题录">
 <!ENTITY jasminum.chinese "中文插件设置">
