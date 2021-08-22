@@ -2,6 +2,13 @@ Zotero.Jasminum.Scrape = new function () {
     this.splitFilename = function (filename) {
         // Make query parameters from filename
         var patent = Zotero.Prefs.get("jasminum.namepatent");
+        // 当文件名模板为"{%t}_{%g}"，文件名无下划线_时，将文件名认定为标题
+        if (patent === "{%t}_{%g}" && !filename.includes("_")) {
+            return {
+                author: "",
+                keyword: filename.split(".")[0],
+            };
+        }
         var patentSepArr = patent.split(/{%[^}]+}/);
         var patentSepRegArr = patentSepArr.map(x => x.replace(/([\[\\\^\$\.\|\?\*\+\(\)])/g, '\\$&'));
         var patentMainArr = patent.match(/{%[^}]+}/g);
