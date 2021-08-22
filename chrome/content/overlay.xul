@@ -5,8 +5,6 @@
 <overlay id="jasminum" 
     xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul">
 
-    <script type="application/x-javascript" src="chrome://jasminum/content/scripts/jasminum.js"/>
-
     <!-- <popup id="zotero-collectionmenu">
         <menuseparator/>
         <menuitem id="zotero-collectionmenu-jasminum" label="&zotero.jasminum.updateCollection.label;" oncommand="Zotero.Jasminum.updateSelectedEntity()">
@@ -23,13 +21,16 @@
                 <menuitem  label="&jasminum.namehandler.removeDot.label;" oncommand="Zotero.Jasminum.removeDotM();"/>
 			</menupopup>
 		</menu>
-		<menuitem id="zotero-itemmenu-jasminum" 
+		<menuitem id="zotero-itemmenu-jasminum"
             label="&jasminum.update.label;"
             class="menuitem-iconic jasminum-searchCNKI-icon" 
-            oncommand="Zotero.Jasminum.updateSelectedItems();"/>
+            oncommand="Zotero.Jasminum.searchSelectedItems();"/>
 		<menuitem id="zotero-itemmenu-jasminum-bookmark"
             label="&jasminum.addBookmark.label;"
             class="menuitem-iconic jasminum-bookmark-icon" 
-            oncommand="Zotero.Jasminum.addBookmarkItemM();"/>
+            oncommand="Zotero.Jasminum.addBookmarkItem();"/>
 	</menupopup>
+
+    <script src="chrome://zotero/content/include.js"/>
+    <script src="chrome://jasminum/content/scripts/include.js"/>	
 </overlay>

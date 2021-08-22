@@ -2,7 +2,7 @@ initPref = async function () {
     Components.utils.import("resource://gre/modules/osfile.jsm");
     var jasminum_pdftk_path = Zotero.Prefs.get("jasminum.pdftkpath");
     document.getElementById("jasminum-pdftk-path").value = jasminum_pdftk_path;
-    var fileExist = await Zotero.Jasminum.checkPath();
+    var fileExist = await Zotero.Jasminum.Scrape.checkPath();
     pathCheckIcon(fileExist);
     // initTranslatorPanel();
 };
@@ -28,7 +28,7 @@ choosePath = async function () {
     Zotero.debug("** Jasminum " + fp.file.path);
     Zotero.Prefs.set("jasminum.pdftkpath", fp.file.path);
     document.getElementById("jasminum-pdftk-path").value = fp.file.path;
-    var fileExist = await Zotero.Jasminum.checkPath();
+    var fileExist = await Zotero.Jasminum.Scrape.checkPath();
     pathCheckIcon(fileExist);
 };
 
