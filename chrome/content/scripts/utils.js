@@ -22,6 +22,20 @@ Zotero.Jasminum.Utils = new function () {
         throw new Error("No items found");
     }.bind(Zotero.Jasminum);
 
+    /**
+     * 
+     */
+    this.trans2Items = async function (data, libraryID) {
+        var translate = new Zotero.Translate.Import();
+        translate.setTranslator("1a3506da-a303-4b0a-a1cd-f216e6138d86");
+        translate.setString(data);
+        var newItems = await this.Utils.promiseTranslate(
+            translate,
+            libraryID
+        );
+        return newItems;
+    }.bind(Zotero.Jasminum);
+
 
     this.fixItem = async function (newItems, targetData) {
         var creators;

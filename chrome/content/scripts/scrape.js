@@ -100,7 +100,34 @@ Zotero.Jasminum.Scrape = new function () {
         this.RefCookieSandbox = new Zotero.CookieSandbox("", url, cookieData, userAgent);
     }.bind(Zotero.Jasminum);
 
+    /**
+     * Create post data for CNKI reference url
+     * @param {[id]} Array of getIDFromUrl
+     * @return {String} 
+     */
+    this.createRefPostData = function (ids) {
+        var postData = "filename=";
+        // filename=CPFDLAST2020!ZGXD202011001016!1!14%2CCPFDLAST2020!ZKBD202011001034!2!14&displaymode=Refworks&orderparam=0&ordertype=desc&selectfield=&random=0.9317799522629542
+        for (let idx = 0; idx < ids.length; idx++) {
+            postData =
+                postData +
+                ids[idx].dbname +
+                "!" +
+                ids[idx].filename +
+                "!" +
+                (idx + 1) +
+                "!8%2C";
+        }
+        postData = postData.replace(/%2C$/g, "");
+        postData =
+            postData +
+            "&displaymode=Refworks&orderparam=0&ordertype=desc&selectfield=&random=0.9317799522629542";
+        return postData;
+    }.bind(Zotero.Jasminum);
 
+    /**
+     * Create post data for CNKI result
+     */
     this.createPostData = function (fileData) {
         var queryJson = {
             Platform: "",
@@ -337,44 +364,15 @@ Zotero.Jasminum.Scrape = new function () {
         } else {
             return null;
         }
-    }
+    }.bind(Zotero.Jasminum);
 
-    // Get refwork data from search target rows
-    this.getRefworks = async function (targetRows) {
-        Zotero.debug("**Jasminum start get ref");
-        if (targetRows == null) {
-            return new Error("No items returned from the CNKI");
-        }
-        var targetData = { targetUrls: [], citations: [] }, // url, citation
-            targetIDs = [];
-        targetRows.forEach(function (r) {
-            var url = r.getElementsByClassName("fz14")[0].getAttribute("href");
-            var cite = Zotero.Jasminum.Scrape.getCitationFromSearch(r);
-            targetIDs.push(Zotero.Jasminum.Scrape.getIDFromUrl(url));
-            targetData.citations.push(cite);
-        });
-        Zotero.debug(targetIDs);
-        var postData = "filename=";
-        // filename=CPFDLAST2020!ZGXD202011001016!1!14%2CCPFDLAST2020!ZKBD202011001034!2!14&displaymode=Refworks&orderparam=0&ordertype=desc&selectfield=&random=0.9317799522629542
-        for (let idx = 0; idx < targetIDs.length; idx++) {
-            postData =
-                postData +
-                targetIDs[idx].dbname +
-                "!" +
-                targetIDs[idx].filename +
-                "!" +
-                (idx + 1) +
-                "!8%2C";
-            targetData.targetUrls.push(
-                `https://kns.cnki.net/KCMS/detail/detail.aspx?dbcode=${targetIDs[idx].dbcode}&dbname=${targetIDs[idx].dbname}&filename=${targetIDs[idx].filename}&v=`
-            );
-        }
-        postData = postData.replace(/%2C$/g, "");
-        postData =
-            postData +
-            "&displaymode=Refworks&orderparam=0&ordertype=desc&selectfield=&random=0.9317799522629542";
-        Zotero.debug(postData);
-        var url = "https://kns.cnki.net/KNS8/manage/ShowExport";
+    /**
+     * Retrive reference text by post article ids
+     * @param {String} 
+     * @return {String}
+     */
+    this.getRefText = async function (postData) {
+        let url = "https://kns.cnki.net/KNS8/manage/ShowExport";
         if (!this.RefCookieSandbox) {
             this.Scrape.setRefCookieSandbox();
         }
@@ -382,8 +380,7 @@ Zotero.Jasminum.Scrape = new function () {
             cookieSandbox: this.RefCookieSandbox,
             body: postData,
         });
-        Zotero.debug(resp.responseText);
-        var data = resp.responseText
+        return resp.responseText
             .replace("<ul class='literature-list'><li>", "")
             .replace("<br></li></ul>", "")
             .replace("</li><li>", "") // divide results
@@ -405,6 +402,31 @@ Zotero.Jasminum.Scrape = new function () {
                 return tag + " " + authors.join("\n" + tag + " ");
             })
             .trim();
+    }.bind(Zotero.Jasminum);
+
+    // Get refwork data from search target rows
+    this.getRefworks = async function (targetRows) {
+        Zotero.debug("**Jasminum start get ref");
+        if (targetRows == null) {
+            return new Error("No items returned from the CNKI");
+        }
+        var targetData = { targetUrls: [], citations: [] }, // url, citation
+            targetIDs = [];
+        targetRows.forEach(function (r) {
+            var url = r.getElementsByClassName("fz14")[0].getAttribute("href");
+            var cite = Zotero.Jasminum.Scrape.getCitationFromSearch(r);
+            targetIDs.push(Zotero.Jasminum.Scrape.getIDFromUrl(url));
+            targetData.citations.push(cite);
+        });
+        Zotero.debug(targetIDs);
+        for (let idx = 0; idx < targetIDs.length; idx++) {
+            targetData.targetUrls.push(
+                `https://kns.cnki.net/KCMS/detail/detail.aspx?dbcode=${targetIDs[idx].dbcode}&dbname=${targetIDs[idx].dbname}&filename=${targetIDs[idx].filename}&v=`
+            );
+        }
+        postData = this.Scrape.createRefPostData(targetIDs);
+        Zotero.debug(postData);
+        var data = await this.Scrape.getRefText(postData);
         Zotero.debug(data.split("\n"));
         return [data, targetData];
     }.bind(Zotero.Jasminum);

@@ -2,7 +2,7 @@ if (!Zotero.Jasminum) {
     var fileLoader = Components.classes["@mozilla.org/moz/jssubscript-loader;1"]
         .getService(Components.interfaces.mozIJSSubScriptLoader);
     var scripts = ['jasminum', 'ui', 'scrape', 'utils'];
-    scripts.forEach(s => fileLoader.loadSubScript('chrome://jasminum/content/scripts/' + s + '.js'));
+    scripts.forEach(s => fileLoader.loadSubScript('chrome://jasminum/content/scripts/' + s + '.js', {}, "UTF-8"));
 }
 
 

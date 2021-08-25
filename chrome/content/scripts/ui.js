@@ -8,16 +8,19 @@ Zotero.Jasminum.UI = new function () {
             .ZoteroPane;
         var items = pane.getSelectedItems();
         Zotero.debug("**Jasminum selected item length: " + items.length);
-        var showMenu = items.some((item) => this.UI.isCNKIFile(item));
+        // Menu for get CNKI metadata
+        var showMenu = items.some((item) => this.UI.isCNKIFile(item) || this.UI.isCNKIWeb(item));
         pane.document.getElementById(
             "zotero-itemmenu-jasminum"
         ).hidden = !showMenu;
+        // Menu for Chinese name
         var showMenuName = items.some((item) =>
             this.UI.isCNKIName(item)
         );
         pane.document.getElementById(
             "zotero-itemmenu-jasminum-namehandler"
         ).hidden = !showMenuName;
+        // Menu for PDF bookmark
         var showMenuPDF = false;
         if (items.length === 1) {
             showMenuPDF = this.UI.isCNKIPDF(items[0]);
@@ -84,6 +87,15 @@ Zotero.Jasminum.UI = new function () {
             item.parentItem.getField("libraryCatalog") &&
             item.parentItem.getField("libraryCatalog").includes("CNKI") &&
             Zotero.ItemTypes.getName(item.parentItem.itemTypeID) === "thesis"
+        );
+    }.bind(Zotero.Jasminum);
+
+    this.isCNKIWeb = function (item) {
+        return (
+            item.isTopLevelItem() &&
+            item.isRegularItem() &&
+            Zotero.ItemTypes.getName(item.itemTypeID) === "webpage" &&
+            item.getField("title").endsWith("中国知网")
         );
     }.bind(Zotero.Jasminum);
 }

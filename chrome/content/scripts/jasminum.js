@@ -132,70 +132,92 @@ Zotero.Jasminum = new function () {
         var item = items.shift();
         var itemCollections = item.getCollections();
         var libraryID = item.libraryID;
-        if (!this.UI.isCNKIFile(item)) return; // TODO Need notify
-        var fileData = this.Scrape.splitFilename(item.getFilename());
-        Zotero.debug(fileData);
-        var targetRows = await this.Scrape.search(fileData);
-        // 有查询结果返回
-        if (targetRows && targetRows.length > 0) {
-            var [data, targetData] = await this.Scrape.getRefworks(
-                targetRows
-            );
-            var translate = new Zotero.Translate.Import();
-            translate.setTranslator("1a3506da-a303-4b0a-a1cd-f216e6138d86");
-            translate.setString(data);
-            var newItems = await this.Utils.promiseTranslate(
-                translate,
-                libraryID
-            );
-            Zotero.debug(newItems);
+        // Retrive meta data for webpage item
+        if (Zotero.ItemTypes.getName(item.itemTypeID) === "webpage") {
+            Zotero.debug("** Jasminum add webpage.");
+            let articleId = this.Scrape.getIDFromUrl(item.getField("url"));
+            Zotero.debug([articleId]);
+            let postData = this.Scrape.createRefPostData([articleId]);
+            let data = await this.Scrape.getRefText(postData);
+            Zotero.debug(data.split("\n"));
+            var newItems = await this.Utils.trans2Items(data, libraryID);
+            let targetData = {
+                targetUrls: [item.getField("url")],
+                citations: [null]
+            };
             newItems = await this.Utils.fixItem(newItems, targetData);
-            Zotero.debug("** Jasminum DB trans ...");
-            if (itemCollections.length) {
-                for (let collectionID of itemCollections) {
-                    newItems.forEach(function (item) {
-                        item.addToCollection(collectionID);
-                    });
+            // Move notes to newItems
+            if (item.getNotes()) {
+                for (let noteID of item.getNotes()) {
+                    var noteItem = Zotero.Items.get(noteID);
+                    noteItem.parentID = newItems[0].id;
+                    await noteItem.saveTx();
                 }
             }
-            // 只有单个返回结果
-            if (newItems.length == 1) {
-                var newItem = newItems[0];
-                // Put old item as a child of the new item
-                item.parentID = newItem.id;
-                // Use Zotfile to rename file
-                if (
-                    Zotero.Prefs.get("jasminum.rename") &&
-                    typeof Zotero.ZotFile != "undefined"
-                ) {
-                    Zotero.ZotFile.renameSelectedAttachments();
+            // Move item to Trash
+            item.deleted = true;
+            await item.saveTx();
+
+        } else {
+            var fileData = this.Scrape.splitFilename(item.getFilename());
+            Zotero.debug(fileData);
+            var targetRows = await this.Scrape.search(fileData);
+            // 有查询结果返回
+            if (targetRows && targetRows.length > 0) {
+                var [data, targetData] = await this.Scrape.getRefworks(
+                    targetRows
+                );
+                var newItems = await this.Utils.trans2Items(data, libraryID);
+                Zotero.debug(newItems);
+                newItems = await this.Utils.fixItem(newItems, targetData);
+                Zotero.debug("** Jasminum DB trans ...");
+                if (itemCollections.length) {
+                    for (let collectionID of itemCollections) {
+                        newItems.forEach(function (item) {
+                            item.addToCollection(collectionID);
+                        });
+                    }
+                }
+                // 只有单个返回结果
+                if (newItems.length == 1) {
+                    var newItem = newItems[0];
+                    // Put old item as a child of the new item
+                    item.parentID = newItem.id;
+                    // Use Zotfile to rename file
+                    if (
+                        Zotero.Prefs.get("jasminum.rename") &&
+                        typeof Zotero.ZotFile != "undefined"
+                    ) {
+                        Zotero.ZotFile.renameSelectedAttachments();
+                    }
+
+                    await item.saveTx();
+                    await newItem.saveTx();
+                    // Add bookmark after PDF attaching to new item
+                    if (
+                        Zotero.Prefs.get("jasminum.autobookmark") &&
+                        this.UI.isCNKIPDF(item)
+                    ) {
+                        await this.addBookmarkItem(item);
+                    }
+                } else {
+                    // 有多个返回结果，将文件与新条目关联，用于用户后续手动选择
+                    newItems.forEach(function (newItem) {
+                        item.addRelatedItem(newItem);
+                    });
+                    await item.saveTx();
                 }
 
-                await item.saveTx();
-                await newItem.saveTx();
-                // Add bookmark after PDF attaching to new item
-                if (
-                    Zotero.Prefs.get("jasminum.autobookmark") &&
-                    this.UI.isCNKIPDF(item)
-                ) {
-                    await this.addBookmarkItem(item);
-                }
+                Zotero.debug("** Jasminum finished.");
             } else {
-                // 有多个返回结果，将文件与新条目关联，用于用户后续手动选择
-                newItems.forEach(function (newItem) {
-                    item.addRelatedItem(newItem);
-                });
-                await item.saveTx();
+                // 没有查询结果
+                alert(
+                    `No result found!\n作者：${fileData.author}\n篇名：${fileData.keyword}\n请检查设置中的文件名模板是否与实际实际情况相符`
+                );
             }
-            if (items.length) {
-                this.searchItems(items);
-            }
-            Zotero.debug("** Jasminum finished.");
-        } else {
-            // 没有查询结果
-            alert(
-                `No result found!\n作者：${fileData.author}\n篇名：${fileData.keyword}\n请检查设置中的文件名模板是否与实际实际情况相符`
-            );
+        }
+        if (items.length) {
+            this.searchItems(items);
         }
     };
 
