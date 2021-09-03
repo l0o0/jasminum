@@ -2,11 +2,14 @@ Zotero.Jasminum.Scrape = new function () {
     this.splitFilename = function (filename) {
         // Make query parameters from filename
         var patent = Zotero.Prefs.get("jasminum.namepatent");
+        var prefix = filename.substr(0, filename.length - 4);
+        var prefix = prefix.replace(/\.ashx$/g, ""); // 删除末尾.ashx字符
+        prefix = prefix.replace(/^_|_$/g, '');  // 删除前后的下划线
         // 当文件名模板为"{%t}_{%g}"，文件名无下划线_时，将文件名认定为标题
-        if (patent === "{%t}_{%g}" && !filename.includes("_")) {
+        if (patent === "{%t}_{%g}" && !prefix.includes("_")) {
             return {
                 author: "",
-                keyword: filename.split(".")[0],
+                keyword: prefix,
             };
         }
         var patentSepArr = patent.split(/{%[^}]+}/);
@@ -16,8 +19,7 @@ Zotero.Jasminum.Scrape = new function () {
         var patentMainRegArr = patentMainArr.map(x => x.replace(/.+/, /{%y}/.test(x) ? '(\\d+)' : (/{%g}/.test(x) ? '([^_]+)' : '(.+)')));
         var regStrInterArr = patentSepRegArr.map((_, i) => [patentSepRegArr[i], patentMainRegArr[i]]);
         var patentReg = new RegExp([].concat.apply([], regStrInterArr).filter(Boolean).join(''), 'g');
-        var prefix = filename.substr(0, filename.length - 4);
-        var prefix = prefix.replace(/\.ashx$/g, ""); // 删除末尾.ashx字符
+
         var prefixMainArr = patentReg.exec(prefix);
         // 文件名识别结果为空，跳出警告弹窗
         if (prefixMainArr === null) {
@@ -46,20 +48,24 @@ Zotero.Jasminum.Scrape = new function () {
         //不过这只是理论上可能存在的情形，目前还未实际遇到。
 
         var title;
+        // Zotero.debug(titleRaw);
+        // if (/_/.test(titleRaw)) {
 
-        if (/_/.test(titleRaw)) {
+        //     //getLongestText函数，用于拿到字符串数组中的最长字符
+        //     //摘自https://stackoverflow.com/a/59935726
+        //     const getLongestText = (arr) => arr.reduce(
+        //         (savedText, text) => (text.length > savedText.length ? text : savedText),
+        //         '',
+        //     );
+        //     title = getLongestText(titleRaw.split(/_/));
+        // } else {
+        //     title = titleRaw;
+        // }
 
-            //getLongestText函数，用于拿到字符串数组中的最长字符
-            //摘自https://stackoverflow.com/a/59935726
-            const getLongestText = (arr) => arr.reduce(
-                (savedText, text) => (text.length > savedText.length ? text : savedText),
-                '',
-            );
-            title = getLongestText(titleRaw.split(/_/));
-        } else {
-            title = titleRaw;
-        }
-
+        // 去除_省略_ , 多余的 _ 换为空格
+        // 标题中含有空格，查询时会启用模糊模式
+        title = titleRaw.replace("_省略_", ' ');
+        title = title.replace(/_/g, " ")
         return {
             author: author,
             keyword: title,
@@ -129,6 +135,8 @@ Zotero.Jasminum.Scrape = new function () {
      * Create post data for CNKI result
      */
     this.createPostData = function (fileData) {
+        var searchKeyword = fileData.keyword.replace(/ /g, '+');
+        var searchIdx = 1;
         var queryJson = {
             Platform: "",
             DBCode: "SCDB",
@@ -149,43 +157,48 @@ Zotero.Jasminum.Scrape = new function () {
                         Logic: 1,
                         Items: [],
                         ChildItems: [],
-                    },
-                    {
-                        Key: "NaviParam",
-                        Title: "",
-                        Logic: 1,
-                        Items: [
-                            {
-                                Key: "navi",
-                                Title: "",
-                                Logic: 1,
-                                Name: "专题子栏目代码",
-                                Operate: "=",
-                                Value: "",
-                                ExtendType: 13,
-                                ExtendValue: "",
-                                Value2: "",
-                                BlurType: "",
-                            },
-                        ],
-                        ChildItems: [],
-                    },
+                    }
                 ],
             },
         };
         if (fileData.keyword) {
+            // 如果标题中含有空格，增加主题关键词搜索
+            if (fileData.keyword.includes(" ")) {
+                titleChildItem = {
+                    Key: `input[data-tipid=gradetxt-${searchIdx}]`,
+                    Title: "主题",
+                    Logic: 4,
+                    Items: [
+                        {
+                            Key: "",
+                            Title: searchKeyword,
+                            Logic: 0,
+                            Name: "SU",
+                            Operate: "%=",
+                            Value: searchKeyword,
+                            ExtendType: 1,
+                            ExtendValue: "中英文对照",
+                            Value2: ""
+                        }
+                    ],
+                    ChildItems: []
+                };
+                queryJson.QNode.QGroup[0].ChildItems.push(titleChildItem);
+                searchIdx += 1;
+            }
+
             var titleChildItem = {
-                Key: "input[data-tipid=gradetxt-1]",
+                Key: `input[data-tipid=gradetxt-${searchIdx}]`,
                 Title: "篇名",
-                Logic: 0,
+                Logic: 2,
                 Items: [
                     {
                         Key: "",
-                        Title: fileData.keyword,
+                        Title: searchKeyword,
                         Logic: 1,
                         Name: "TI", // 搜索字段代码
                         Operate: fileData.keyword.includes(" ") ? "%" : "=", // =精确匹配, % 模糊匹配
-                        Value: fileData.keyword,
+                        Value: searchKeyword,
                         ExtendType: 1,
                         ExtendValue: "中英文对照",
                         Value2: "",
@@ -194,10 +207,11 @@ Zotero.Jasminum.Scrape = new function () {
                 ChildItems: [],
             };
             queryJson.QNode.QGroup[0].ChildItems.push(titleChildItem);
+            searchIdx += 1;
         }
         if (fileData.author) {
             var authorChildItem = {
-                Key: "input[data-tipid=gradetxt-2]",
+                Key: `input[data-tipid=gradetxt-${searchIdx}]`,
                 Title: "作者",
                 Logic: 1,
                 Items: [
@@ -216,6 +230,7 @@ Zotero.Jasminum.Scrape = new function () {
                 ChildItems: [],
             };
             queryJson.QNode.QGroup[0].ChildItems.push(authorChildItem);
+            searchIdx += 1;
         }
         var postData =
             "IsSearch=true&QueryJson=" +
