@@ -174,4 +174,17 @@ Zotero.Jasminum.Utils = new function () {
             .createInstance(Components.interfaces.nsIDOMParser);
         return parser.parseFromString(text, "text/html");
     }.bind(Zotero.Jasminum);
+
+    // Show Popup message
+    this.showPopup = function (title, body, isError = false, timeout = 5) {
+        var popw = new Zotero.ProgressWindow();
+        if (isError) {
+            popw.changeHeadline("Error", "chrome://zotero/skin/cross.png", `Jasminum: ${title}`);
+        } else {
+            popw.changeHeadline(`Jasminum: ${title}`);
+        }
+        popw.addDescription(body);
+        popw.show();
+        popw.startCloseTimer(timeout * 1000);
+    }.bind(Zotero.Jasminum);
 }

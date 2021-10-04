@@ -211,9 +211,10 @@ Zotero.Jasminum = new function () {
                 Zotero.debug("** Jasminum finished.");
             } else {
                 // 没有查询结果
-                alert(
-                    `No result found!\n作者：${fileData.author}\n篇名：${fileData.keyword}\n请检查设置中的文件名模板是否与实际实际情况相符`
-                );
+                this.Utils.showPopup(
+                    "No results found!",
+                    `作者：${fileData.author}\n篇名：${fileData.keyword}\n请检查设置中的文件名模板是否与实际实际情况相符`,
+                    true)
             }
         }
         if (items.length) {
@@ -226,21 +227,32 @@ Zotero.Jasminum = new function () {
     this.addBookmarkItem = async function () {
         var item = ZoteroPane.getSelectedItems()[0];
         if (!(await this.Scrape.checkPath())) {
-            alert(
-                "Can't find PDFtk Server execute file. Please install PDFtk Server and choose the folder in the Jasminum preference window."
+            this.Utils.showPopup(
+                "PDFtk Server is not installed",
+                "未找到 PDFtk Server 的可执行文件。参考插件设置首选项中的下载地址下载并安装，在首选项中设置对应的可执行文件路径(路径以bin结尾)",
+                true
             );
-            return false;
+            return;
         }
         // Show alert when file is missing
         var attachmentExists = await OS.File.exists(item.getFilePath());
         if (!attachmentExists) {
-            alert("Item Attachment file is missing.");
-            return false;
+            this.Utils.showPopup(
+                "Attachment is missing",
+                "该条目下未找到对应的 PDF 文件",
+                true
+            )
+            return;
         }
         var bookmark, note;
         [bookmark, note] = await this.Scrape.getBookmark(item);
         if (!bookmark) {
-            alert("No Bookmark found!\n书签信息未找到");
+            this.Utils.showPopup(
+                "No Bookmarks found!",
+                "未找到书签信息，请打开该条目知网链接，确认网页左侧是否出现书签章节信息",
+                true
+            )
+            return;
         } else {
             // Add TOC note
             var noteHTML = item.getNote();
@@ -375,7 +387,7 @@ Zotero.Jasminum = new function () {
         let cssciString = "<" + cssci + ">";
         var extraData = item.getField("extra");
 
-        if (cite) {
+        if (cite != null && cite > 0) {
             if (extraData.match(/\d+ citations\s?\(CNKI\)\s?\[\d{4}-\d{1,2}-\d{1,2}\]/)) {
                 extraData = extraData.replace(/\d+ citations\s?\(CNKI\)\s?\[\d{4}-\d{1,2}-\d{1,2}\]/,
                     citeString);
@@ -391,9 +403,12 @@ Zotero.Jasminum = new function () {
                 extraData += cssciString;
             }
         }
-        Zotero.debug(cite);
-        Zotero.debug(cssci);
-        Zotero.debug("** Jasminum " + extraData);
+        this.Utils.showPopup(
+            "期刊、引用抓取完毕",
+            `${item.getField('title')}, ${cite}, ${cssci}`
+        )
+        Zotero.debug("** Jasminum cite number: " + cite);
+        Zotero.debug("** Jasminum cite number: " + cssci);
         item.setField("extra", extraData);
         await item.saveTx();
 

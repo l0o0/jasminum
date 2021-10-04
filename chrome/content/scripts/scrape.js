@@ -23,7 +23,12 @@ Zotero.Jasminum.Scrape = new function () {
         var prefixMainArr = patentReg.exec(prefix);
         // 文件名识别结果为空，跳出警告弹窗
         if (prefixMainArr === null) {
-            alert("文件名识别出错，请检查文件名识别模板与实际抓取文件名");
+            this.Utils.showPopup(
+                "Error in parsing filename",
+                `文件名识别出错，请检查文件名识别模板与实际抓取文件名。文件名: ${filename}，识别模板为: ${patent}`,
+                true
+            )
+            return false;
         }
         var titleIdx = patentMainArr.indexOf('{%t}');
         var authorIdx = patentMainArr.indexOf('{%g}');
@@ -621,7 +626,11 @@ Zotero.Jasminum.Scrape = new function () {
             } catch (e) {
                 Zotero.logError(e);
             }
-            throw new Zotero.Exception.Alert("PDFtk add bookmark failed.");
+            this.Utils.showPopup(
+                "Error in adding bookmark",
+                `PDFtk 添加书签时失败, ${e}`,
+                true
+            )
         }
     }.bind(Zotero.Jasminum);
 
