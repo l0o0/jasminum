@@ -9,33 +9,31 @@ Zotero.Jasminum.UI = new function () {
         var items = pane.getSelectedItems();
         Zotero.debug("**Jasminum selected item length: " + items.length);
         // Menu for get CNKI metadata
-        var showMenu = items.some((item) => this.UI.isCNKIFile(item) || this.UI.isCNKIWeb(item));
-        pane.document.getElementById(
-            "zotero-itemmenu-jasminum"
-        ).hidden = !showMenu;
+        var showSearch = items.some((item) => this.UI.isCNKIFile(item) || this.UI.isCNKIWeb(item));
+        pane.document.getElementById("jasminum-itemmenu-search").hidden = !showSearch;
+
         // Menu for Chinese name
-        var showMenuName = items.some((item) =>
+        var showName = items.some((item) =>
             this.UI.isCNKIName(item)
         );
         pane.document.getElementById(
-            "zotero-itemmenu-jasminum-namehandler"
-        ).hidden = !showMenuName;
+            "jasminum-itemmenu-namehandler"
+        ).hidden = !showName;
         // Menu for PDF bookmark
-        var showMenuPDF = false;
+        var showBookmark = false;
         if (items.length === 1) {
-            showMenuPDF = this.UI.isCNKIPDF(items[0]);
-            Zotero.debug("** Jasminum show menu PDF: " + showMenuPDF);
+            showBookmark = this.UI.isCNKIPDF(items[0]);
             pane.document.getElementById(
-                "zotero-itemmenu-jasminum-bookmark"
-            ).hidden = !showMenuPDF;
+                "jasminum-itemmenu-bookmark"
+            ).hidden = !showBookmark;
         }
-        pane.document.getElementById("id-jasminum-separator").hidden = !(
-            showMenu ||
-            showMenuPDF ||
-            showMenuName
-        );
+
+        let isDisplayMenu = showSearch || showName || showBookmark;
+        pane.document.getElementById("jasminum-separator").hidden = !isDisplayMenu;
+        pane.document.getElementById("jasminum-popup-menu").hidden = !isDisplayMenu;
+
         Zotero.debug(
-            "**Jasminum show menu: " + showMenu + showMenuName + showMenuPDF
+            `**Jasminum show menu: search ${showSearch} name ${showName} boomark ${showBookmark}`
         );
     }.bind(Zotero.Jasminum);
 
