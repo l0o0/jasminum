@@ -19,8 +19,29 @@
 
 **Mac 用户**（感谢[@GuokaiLiu](https://github.com/GuokaiLiu)同学在 [issue](https://github.com/l0o0/jasminum/issues/7#issuecomment-706448964) 中的补充）
 macos(10.15)用户：
-下载：https://www.pdflabs.com/tools/pdftk-the-pdf-toolkit/pdftk_server-2.02-mac_osx-10.11-setup.pkg
-路径：`/opt/pdflabs/pdftk/`. （该路径默认对外隐藏无法选取）
+由于官方未更新PDFtk server最新版本的超链接，通过官网首页下载的PDFtk server至今(2021.10.26)仍不支持部分较新的mac系统，目前推荐通过：https://www.pdflabs.com/tools/pdftk-the-pdf-toolkit/pdftk_server-2.02-mac_osx-10.11-setup.pkg 下载。
+
+PDF server 安装失败（m1用户）的提示如下：
+
+```bash
+[user@hostname ~ ]$ pdftk --version 
+zsh: bad CPU type in executable: pdftk
+[user@hostname ~ ]$ 
+```
+
+PDF server 成功安装的提示如下：
+
+```bash
+[user@ hostname ~ ]$ pdftk --version
+
+pdftk 2.02 a Handy Tool for Manipulating PDF Documents
+Copyright (c) 2003-13 Steward and Lee, LLC - Please Visit: www.pdftk.com
+This is free software; see the source code for copying conditions. There is
+NO warranty, not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+[user@ hostname ~ ]$ 
+```
+
+Zotero配置路径：`/opt/pdflabs/pdftk/`. （该路径默认对外隐藏无法选取）
 选择路径的技巧：`shift+command+G`: 输入：`/opt/pdflabs/pdftk/`，选择`bin`确认
 
 > 官网：https://www.pdflabs.com/tools/pdftk-server/  
