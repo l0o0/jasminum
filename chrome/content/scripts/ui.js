@@ -17,8 +17,9 @@ Zotero.Jasminum.UI = new function () {
             this.UI.isCNKIName(item)
         );
         pane.document.getElementById(
-            "jasminum-itemmenu-namehandler"
-        ).hidden = !showName;
+            "jasminum-popup-menu2"
+        ).hidden = !showName; // 小工具弹出菜单
+        pane.document.getElementById("jasminum-itemmenu-updateCiteCSSCI").hidden = !showName;
         // Menu for PDF bookmark
         var showBookmark = false;
         if (items.length === 1) {
@@ -30,7 +31,7 @@ Zotero.Jasminum.UI = new function () {
 
         let isDisplayMenu = showSearch || showName || showBookmark;
         pane.document.getElementById("jasminum-separator").hidden = !isDisplayMenu;
-        pane.document.getElementById("jasminum-popup-menu").hidden = !isDisplayMenu;
+        pane.document.getElementById("jasminum-popup-menu1").hidden = !isDisplayMenu;
 
         Zotero.debug(
             `**Jasminum show menu: search ${showSearch} name ${showName} boomark ${showBookmark}`
@@ -68,7 +69,7 @@ Zotero.Jasminum.UI = new function () {
      * @return {bool}
      */
     this.isCNKIName = function (item) {
-        return item.isRegularItem() && item.isTopLevelItem();
+        return !item.isAttachment() && item.isRegularItem() && item.isTopLevelItem();
     }.bind(Zotero.Jasminum);
 
     /**

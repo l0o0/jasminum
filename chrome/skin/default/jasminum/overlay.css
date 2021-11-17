@@ -9,3 +9,15 @@
 .jasminum-bookmark-icon {
 	list-style-image: url('chrome://jasminum/skin/bookmark.png');
 }
+
+.jasminum-tools-icon {
+	list-style-image: url('chrome://jasminum/skin/wrench.png');
+}
+
+.jasminum-cssci-icon {
+	list-style-image: url('chrome://jasminum/skin/rosette.png');
+}
+
+.jasminum-default-icon {
+	list-style-image: url('chrome://jasminum/skin/bullet_yellow.png');
+}

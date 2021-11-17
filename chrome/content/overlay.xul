@@ -12,24 +12,45 @@
 
     <menupopup id="zotero-itemmenu">
 		<menuseparator id="jasminum-separator"/>
-		<menu id="jasminum-popup-menu" 
+		<menu id="jasminum-popup-menu1" 
             label="&jasminum.menu.label;" 
-            class="menu-iconic jasminum-name-icon">
+            class="menu-iconic jasminum-tools-icon">
 			<menupopup id="jasminum">
-				<menuitem label="&jasminum.namehandler.split.label;" id="jasminum-itemmenu-namehandler" oncommand="Zotero.Jasminum.splitNameM();"/>
-				<menuitem label="&jasminum.namehandler.merge.label;" id="jasminum-itemmenu-namehandler" oncommand="Zotero.Jasminum.mergeNameM();"/>
-                <menuitem label="&jasminum.namehandler.removeDot.label;" id="jasminum-itemmenu-namehandler" oncommand="Zotero.Jasminum.removeDotM();"/>
-                <menuitem label="&jasminum.CNKI.updateCiteCSSCI.label;" id="jasminum-itemmenu-namehandler" oncommand="Zotero.Jasminum.updateCiteCSSCIItems();"/>
-                <menuitem id="jasminum-itemmenu-search"
+                <menuitem
+                    id="jasminum-itemmenu-search"
                     label="&jasminum.update.label;"
                     class="menuitem-iconic jasminum-searchCNKI-icon" 
                     oncommand="Zotero.Jasminum.searchSelectedItems();"/>
-		        <menuitem id="jasminum-itemmenu-bookmark"
+		        <menuitem
+                    id="jasminum-itemmenu-bookmark"
                     label="&jasminum.addBookmark.label;"
-                    class="menuitem-iconic jasminum-bookmark-icon" 
+                    class="menuitem-iconic jasminum-bookmark-icon"
                     oncommand="Zotero.Jasminum.addBookmarkItem();"/>
+                <menuitem
+                    id="jasminum-itemmenu-updateCiteCSSCI"
+                    label="&jasminum.CNKI.updateCiteCSSCI.label;"
+                    class="menuitem-iconic jasminum-cssci-icon"
+                    oncommand="Zotero.Jasminum.updateCiteCSSCIItems();"/>
 			</menupopup>
 		</menu>
+        <menu id="jasminum-popup-menu2"
+            label="&jasminum.menu.tools.label;"
+            class="menu-iconic jasminum-tools-icon">
+            <menupopup>
+                <menuitem 
+                    label="&jasminum.namehandler.split.label;"
+                    class="menuitem-iconic jasminum-name-icon"
+                    oncommand="Zotero.Jasminum.splitNameM();"/>
+				<menuitem 
+                    label="&jasminum.namehandler.merge.label;"
+                    class="menuitem-iconic jasminum-name-icon"
+                    oncommand="Zotero.Jasminum.mergeNameM();"/>
+                <menuitem 
+                    label="&jasminum.namehandler.removeDot.label;"
+                    class="menuitem-iconic jasminum-default-icon"
+                    oncommand="Zotero.Jasminum.removeDotM();"/>
+            </menupopup>
+        </menu>
 		
 	</menupopup>
 
