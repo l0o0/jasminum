@@ -146,14 +146,16 @@ Zotero.Jasminum = new function () {
                 citations: [null]
             };
             newItems = await this.Utils.fixItem(newItems, targetData);
-            // Move notes to newItems
-            if (item.getNotes()) {
-                for (let noteID of item.getNotes()) {
-                    var noteItem = Zotero.Items.get(noteID);
-                    noteItem.parentID = newItems[0].id;
-                    await noteItem.saveTx();
+            // Move notes and attachments to newItems
+            let childIDs = item.getNotes().concat(item.getAttachments());
+            if (childIDs.length > 0) {
+                for (let childID of childIDs) {
+                    var childItem = Zotero.Items.get(childID);
+                    childItem.parentID = newItems[0].id;
+                    await childItem.saveTx();
                 }
             }
+
             // Move item to Trash
             item.deleted = true;
             await item.saveTx();
@@ -281,7 +283,7 @@ Zotero.Jasminum = new function () {
                 var creator = creators[i];
                 if ( // English Name
                     (creator.lastName.search(/[A-Za-z]/) >= 0 ||
-                    creator.firstName.search(/[A-Za-z]/) >= 0) &&
+                        creator.firstName.search(/[A-Za-z]/) >= 0) &&
                     creator.firstName === ""  // 名为空
                 ) {
                     var EnglishName = creator.lastName;
@@ -313,7 +315,7 @@ Zotero.Jasminum = new function () {
                     creator.lastName.search(/[A-Za-z]/) !== -1 ||
                     creator.lastName.search(/[A-Za-z]/) !== -1
                 ) {
-                    creator.lastName = creator.firstName + " " + creator.lastName;             
+                    creator.lastName = creator.firstName + " " + creator.lastName;
                 } else { // For Chinese Name
                     creator.lastName = creator.lastName + creator.firstName;
                 }
