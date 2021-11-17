@@ -213,7 +213,7 @@ Zotero.Jasminum = new function () {
                 // 没有查询结果
                 this.Utils.showPopup(
                     "No results found!",
-                    `作者：${fileData.author}\n篇名：${fileData.keyword}\n请检查设置中的文件名模板是否与实际实际情况相符`,
+                    `作者：${fileData.author},\n   篇名：${fileData.keyword},\n   请检查设置中的文件名模板是否与实际实际情况相符`,
                     true)
             }
         }
@@ -279,39 +279,23 @@ Zotero.Jasminum = new function () {
             var creators = item.getCreators();
             for (var i = 0; i < creators.length; i++) {
                 var creator = creators[i];
-                if (
-                    // English Name pass
-                    creator.lastName.search(/[A-Za-z]/) !== -1 ||
-                    creator.firstName.search(/[A-Za-z]/) !== -1 ||
-                    creator.firstName // 如果有名就不拆分了
+                if ( // English Name
+                    (creator.lastName.search(/[A-Za-z]/) >= 0 ||
+                    creator.firstName.search(/[A-Za-z]/) >= 0) &&
+                    creator.firstName === ""  // 名为空
                 ) {
                     var EnglishName = creator.lastName;
-                    var temp = EnglishName.split(/[\n\s+,]/g);
-                    for (var k = 0; k < temp.length; k++) {
-                        if (temp[k] == "") {
-                            // 删除数组中空值
-                            temp.splice(k, 1);
-                            k--;
-                        }
-                    }
-                    if (temp.length < 3) {
-                        creator.lastName = temp[0];
-                        creator.firstName = temp[1];
-                    } else {
-                        creator.lastName = temp[0];
-                        creator.firstName = temp[1].concat(" ", temp[2]);
-                    }
-                    creator.fieldMode = 0;// 0: two-field, 1: one-field (with empty first name)
-                    creators[i] = creator;
-                } else {  // For Chinese Name
-                    var chineseName = creator.lastName
-                        ? creator.lastName
-                        : creator.firstName;
+                    var temp = EnglishName.split(/[\n\s+,]/g)
+                        .filter(Boolean); // 过滤空字段
+                    creator.lastName = temp.pop();
+                    creator.firstName = temp.join(" ");
+                } else if (creator.firstName === "") { // For Chinese Name,名为空
+                    var chineseName = creator.lastName || creator.firstName;
                     creator.lastName = chineseName.charAt(0);
                     creator.firstName = chineseName.substr(1);
-                    creator.fieldMode = 0;
-                    creators[i] = creator;
                 }
+                creator.fieldMode = 0;// 0: two-field, 1: one-field (with empty first name)
+                creators[i] = creator;
             }
             if (creators != item.getCreators()) {
                 item.setCreators(creators);
@@ -325,21 +309,17 @@ Zotero.Jasminum = new function () {
             var creators = item.getCreators();
             for (var i = 0; i < creators.length; i++) {
                 var creator = creators[i];
-                if (
-                    // English Name pass
+                if ( // English Name
                     creator.lastName.search(/[A-Za-z]/) !== -1 ||
                     creator.lastName.search(/[A-Za-z]/) !== -1
                 ) {
-                    creator.lastName = creator.lastName + " " + creator.firstName;
-                    creator.firstName = "";
-                    creator.fieldMode = 1;// 0: two-field, 1: one-field (with empty first name)
-                    creators[i] = creator;
+                    creator.lastName = creator.firstName + " " + creator.lastName;             
                 } else { // For Chinese Name
                     creator.lastName = creator.lastName + creator.firstName;
-                    creator.firstName = "";
-                    creator.fieldMode = 1;
-                    creators[i] = creator;
                 }
+                creator.firstName = "";
+                creator.fieldMode = 1;// 0: two-field, 1: one-field (with empty first name)
+                creators[i] = creator;
             }
             if (creators != item.getCreators()) {
                 item.setCreators(creators);
