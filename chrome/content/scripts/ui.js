@@ -57,9 +57,9 @@ Zotero.Jasminum.UI = new function () {
         var filename = item.getFilename();
         // Find Chinese characters in string
         if (escape(filename).indexOf("%u") < 0) return false;
-        // Extension should be CAJ or PDF
-        var ext = filename.substr(filename.length - 3, 3);
-        if (ext != "pdf" && ext != "caj") return false;
+        // Extension should be CAJ , PDF, kdh, nh
+        var ext = filename.match(/\.(\w+)$/, filename)[1];
+        if (!['pdf', 'caj', 'kdh', 'nh'].includes(ext)) return;
         return true;
     }.bind(Zotero.Jasminum);
 
