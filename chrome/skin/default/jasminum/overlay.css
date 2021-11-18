@@ -15,9 +15,13 @@
 }
 
 .jasminum-cssci-icon {
-	list-style-image: url('chrome://jasminum/skin/rosette.png');
+	list-style-image: url('chrome://jasminum/skin/triangular-ruler.png');
 }
 
 .jasminum-default-icon {
 	list-style-image: url('chrome://jasminum/skin/bullet_yellow.png');
+}
+
+.jasminum-zh-icon {
+	list-style-image: url('chrome://jasminum/skin/flag-china.png');
 }

@@ -2,7 +2,7 @@ Zotero.Jasminum.Scrape = new function () {
     this.splitFilename = function (filename) {
         // Make query parameters from filename
         var patent = Zotero.Prefs.get("jasminum.namepatent");
-        var prefix = filename.substr(0, filename.length - 4);
+        var prefix = filename.replace(/\.\w+$/, ''); // 删除文件后缀
         var prefix = prefix.replace(/\.ashx$/g, ""); // 删除末尾.ashx字符
         prefix = prefix.replace(/^_|_$/g, '');  // 删除前后的下划线
         // 当文件名模板为"{%t}_{%g}"，文件名无下划线_时，将文件名认定为标题
@@ -28,7 +28,7 @@ Zotero.Jasminum.Scrape = new function () {
                 `文件名识别出错，请检查文件名识别模板与实际抓取文件名。文件名: ${filename}，识别模板为: ${patent}`,
                 true
             )
-            return false;
+            return;
         }
         var titleIdx = patentMainArr.indexOf('{%t}');
         var authorIdx = patentMainArr.indexOf('{%g}');

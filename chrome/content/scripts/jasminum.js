@@ -59,6 +59,12 @@ Zotero.Jasminum = new function () {
         if (Zotero.Prefs.get("jasminum.autobookmark") === undefined) {
             Zotero.Prefs.set("jasminum.autobookmark", true);
         }
+        if (Zotero.Prefs.get("jasminum.autolanguage") === undefined) {
+            Zotero.Prefs.set("jasminum.autolanguage", false);
+        }
+        if (Zotero.Prefs.get("jasminum.language") === undefined) {
+            Zotero.Prefs.set("jasminum.language", 'zh-CN');
+        }
     };
 
     this.notifierCallback = {
@@ -108,6 +114,17 @@ Zotero.Jasminum = new function () {
                         ) {
                             Zotero.debug("***** New PDF item is added");
                             await Zotero.Jasminum.addBookmarkItem(item);
+                        }
+                    }
+                }
+                // Set default language field
+                if (Zotero.Prefs.get("jasminum.autolanguage")) {
+                    for (let item of addedItems) {
+                        if (
+                            item.getField("language").match(/中文|cn|zh/)
+                        ) {
+                            Zotero.debug("***** Set default language");
+                            await Zotero.Jasminum.setLanguage(item);
                         }
                     }
                 }
@@ -215,7 +232,7 @@ Zotero.Jasminum = new function () {
                 // 没有查询结果
                 this.Utils.showPopup(
                     "No results found!",
-                    `作者：${fileData.author},\n   篇名：${fileData.keyword},\n   请检查设置中的文件名模板是否与实际实际情况相符`,
+                    `作者：${fileData.author},\n   篇名：${fileData.keyword},\n   未查询到结果`,
                     true)
             }
         }
@@ -359,40 +376,49 @@ Zotero.Jasminum = new function () {
      */
     this.updateCiteCSSCI = async function (items) {
         var item = items.shift();
-        let url = item.getField("url");
-        let resp = await Zotero.HTTP.request("GET", url);
-        let html = this.Utils.string2HTML(resp.responseText);
-        let dateString = new Date().toLocaleDateString().replace(/\//g, '-');
-        let cite = this.Scrape.getCitationFromPage(html);
-        let citeString = cite + " citation(CNKI)[" + dateString + "]";
-        let cssci = this.Scrape.getCSSCI(html);
-        let cssciString = "<" + cssci + ">";
-        var extraData = item.getField("extra");
-
-        if (cite != null && cite > 0) {
-            if (extraData.match(/\d+ citations\s?\(CNKI\)\s?\[\d{4}-\d{1,2}-\d{1,2}\]/)) {
-                extraData = extraData.replace(/\d+ citations\s?\(CNKI\)\s?\[\d{4}-\d{1,2}-\d{1,2}\]/,
-                    citeString);
-            } else {
-                extraData += citeString;
+        if (["patent", "webpage"].includes(Zotero.ItemTypes.getName(item.itemTypeID))) {
+            this.Utils.showPopup(
+                "期刊、引用抓取完毕",
+                `${Zotero.ItemTypes.getName(item.itemTypeID)}类型条目不需要抓取`
+            )
+        } else {
+            let url = item.getField("url");
+            let resp = await Zotero.HTTP.request("GET", url);
+            let html = this.Utils.string2HTML(resp.responseText);
+            let dateString = new Date().toLocaleDateString().replace(/\//g, '-');
+            let cite = this.Scrape.getCitationFromPage(html);
+            let citeString = `CNKI citations: ${cite}[${dateString}]`;
+            let cssci = this.Scrape.getCSSCI(html);
+            let cssciString = "Chinese Core Journals: <" + cssci + ">";
+            var extraData = item.getField("extra");
+            // Remove old cite and CSSCI string
+            extraData = extraData.replace(/\d+ citations?\(CNKI\)\[[\d-]{10}\].*\s?/, '');
+            extraData = extraData.replace(/^<.*?>\s?/, "");
+            if (cite != null && cite > 0) {
+                if (extraData.match(/CNKI citations:\s?/)) {
+                    extraData = extraData.replace(/CNKI citations:\s?\d+\[[\d-]{10}\]/,
+                        citeString);
+                } else {
+                    extraData = extraData.trim() + '\n' + citeString;
+                }
             }
-        }
 
-        if (cssci) {
-            if (extraData.match(/<.*?>/)) {
-                extraData = extraData.replace(/<.*?>/, cssciString);
-            } else {
-                extraData += cssciString;
+            if (cssci) {
+                if (extraData.match(/Chinese Core Journals: /)) {
+                    extraData = extraData.replace(/Chinese Core Journals: <.*?>/, cssciString);
+                } else {
+                    extraData = extraData.trim() + '\n' + cssciString;
+                }
             }
+            this.Utils.showPopup(
+                "期刊、引用抓取完毕",
+                `${item.getField('title')}, ${cite}, ${cssci}`
+            )
+            Zotero.debug("** Jasminum cite number: " + cite);
+            Zotero.debug("** Jasminum cite number: " + cssci);
+            item.setField("extra", extraData.trim());
+            await item.saveTx();
         }
-        this.Utils.showPopup(
-            "期刊、引用抓取完毕",
-            `${item.getField('title')}, ${cite}, ${cssci}`
-        )
-        Zotero.debug("** Jasminum cite number: " + cite);
-        Zotero.debug("** Jasminum cite number: " + cssci);
-        item.setField("extra", extraData);
-        await item.saveTx();
 
         if (items.length) {
             this.updateCiteCSSCI(items);
@@ -404,4 +430,21 @@ Zotero.Jasminum = new function () {
         this.updateCiteCSSCI(items);
     };
 
+    /**
+     * Set default language value in item field
+     * @param {[Zotero.item]}
+     * @return {volid}
+     */
+    this.setLanguage = async function (item) {
+        let defaultLanguage = Zotero.Prefs.get("jasminum.language");
+        if (item.getField("language") != defaultLanguage) {
+            item.setField("language", defaultLanguage);
+            await item.saveTx();
+        }
+    };
+
+    this.setLanguageItems = async function () {
+        var items = ZoteroPane.getSelectedItems();
+        for (var item of items) { await this.setLanguage(item) }
+    };
 };

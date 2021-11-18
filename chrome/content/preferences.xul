@@ -15,6 +15,8 @@
                 <preference id="pref-jasminum.rename" name="extensions.zotero.jasminum.rename" type="bool"/>
                 <preference id="pref-jasminum.autobookmark" name="extensions.zotero.jasminum.autobookmark" type="bool"/>
                 <preference id="pref-jasminum.zhnamedot" name="extensions.zotero.jasminum.zhnamedot" type="bool"/>
+                <preference id="pref-jasminum.language" name="extensions.zotero.jasminum.language" type="string"/>
+                <preference id="pref-jasminum.autolanguage" name="extensions.zotero.jasminum.autolanguage" type="bool"/>
             </preferences>
             <tabbox>
                 <tabs>
@@ -32,11 +34,31 @@
                                 <checkbox id="jasminum.zhnamesplit" label="&jasminum.zhnamesplit.label;" preference="pref-jasminum.zhnamesplit"/>
                                 <checkbox id="jasminum.rename" label="&jasminum.rename.label;" preference="pref-jasminum.rename"/>
                                 <checkbox id="jasminum.autobookmark" label="&jasminum.autobookmark.label;" preference="pref-jasminum.autobookmark"/>
+                                <hbox>
+                                    <checkbox id="jasminum.autolanguage" label="&jasminum.autolanguage.label;" preference="pref-jasminum.autolanguage"/>
+                                    <label value="&jasminum.language.label;"/>
+                                    <menulist flex="1" editable="true" id="jasminum.language" preference="pref-jasminum.language" maxwidth="100" >
+                                        <menupopup>
+                                            <menuitem label="zh-CN"/>
+                                            <menuitem label="cn"/>
+                                        </menupopup>
+                                    </menulist>
+                                    
+                                </hbox>
                                 <!-- <checkbox id="jasminum.zhnamedot" label="&jasminum.zhnamedot.label;" preference="pref-jasminum.zhnamedot"/> -->
                                 <separator/>
                                 <vbox flex="1">
                                     <description>&jasminum.namepatent.desc;</description>
-                                    <textbox id="jasminum-namepatent" preference="pref-jasminum-namepatent"/>
+                                    <!-- <textbox id="jasminum-namepatent" preference="pref-jasminum-namepatent"/> -->
+                                    <hbox>
+                                        <menulist flex="1" editable="true" id="jasminum-namepatent" preference="pref-jasminum-namepatent">
+                                            <menupopup>
+                                                <menuitem label="{%t}_{%g}" tooltiptext="&jasminum.namepatent.desc.tg;"/>
+                                                <menuitem label="{%t}" tooltiptext="&jasminum.namepatent.desc.t;"/>
+                                            </menupopup>
+                                        </menulist>
+                                        <description>&jasminum.namepatent.desc.info;</description>
+                                    </hbox>
                                 </vbox>
                             </groupbox>
                             <groupbox>
@@ -52,6 +74,7 @@
                         </vbox>
                     </tabpanel>
                     <tabpanel id="zotero-prefpane-translators-tab" orient="vertical">
+                        <description>点击下方刷新按钮更新数据，在刷新窗口中点击对应翻译器的Update按键进行下载</description>
                         <listbox id="translators-listbox" flex="1">
 		                <listhead>
 		                	<listheader label="Translators"/>

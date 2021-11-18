@@ -1,13 +1,16 @@
-<!ENTITY jasminum.update.label "抓取知网元数据…">
-<!ENTITY jasminum.addBookmark.label "添加PDF书签…">
-<!ENTITY jasminum.menu.label "知网助手">
+<!ENTITY jasminum.menu.CNKI.update.label "抓取知网元数据…">
+<!ENTITY jasminum.menu.CNKI.updateCiteCSSCI.label "更新知网引用数">
+<!ENTITY jasminum.menu.CNKI.addBookmark.label "添加PDF书签…">
+<!ENTITY jasminum.menu.CNKI.label "知网助手">
 <!ENTITY jasminum.menu.tools.label "小工具">
-<!ENTITY jasminum.namehandler.label "合并/拆分姓名">
-<!ENTITY jasminum.namehandler.split.label "拆分姓名">
-<!ENTITY jasminum.namehandler.merge.label "合并姓名">
-<!ENTITY jasminum.CNKI.updateCiteCSSCI.label "更新知网引用数">
+<!ENTITY jasminum.menu.tools.namesplit.label "拆分姓名">
+<!ENTITY jasminum.menu.tools.namemerge.label "合并姓名">
+<!ENTITY jasminum.menu.tools.removeDot.label "去除文件名中逗号">
+<!ENTITY jasminum.menu.tools.language.label "设置默认语言">
 <!ENTITY jasminum.pdftkpath.label "PDFtk Service 安装路径">
 <!ENTITY jasminum.autoupdate.label "添加中文PDF/CAJ时自动从知网抓取题录">
+<!ENTITY jasminum.autolanguage.label "中文条目时自动设置语言">
+<!ENTITY jasminum.language.label "默认中文语言(选择或输入): ">
 <!ENTITY jasminum.chinese "中文插件设置">
 <!ENTITY jasminum.translators "非官方维护中文翻译器">
 <!ENTITY jasminum.check "检查">
@@ -18,12 +21,14 @@
 <!ENTITY jasminum.pdftk.info "添加书签功能依赖于PDFtk server，正确安装并设置好安装目录才能实现书签添加功能，请选择PDFtk可执行文件所在目录">
 <!ENTITY pdftk.path.check.ok "PDFtk Server安装目录检查通过">
 <!ENTITY pdftk.path.check.error "未在该目录下发现pdftk执行程序">
-<!ENTITY jasminum.namepatent.desc "根据文件名抓取知网元数据，文件名格式设置:{&#37;t}=标题，{&#37;g}=作者，{&#37;y}=年份，{&#37;j}=其他（例如来源信息）；分隔符依实情指定，可连续使用多个；不用考虑文件后缀名">
+<!ENTITY jasminum.namepatent.desc "根据文件名抓取知网元数据，文件名格式设置:{&#37;t}=标题，{&#37;g}=作者，{&#37;y}=年份，{&#37;j}=其他（例如来源信息）；分隔符依实情指定，可连续使用多个；不用考虑文件后缀名。默认使用{&#37;t}_{&#37;g}，可识别大部分知网下载的文件名格式，包括文件名只包括标题无分隔符号">
+<!ENTITY jasminum.namepatent.desc.tg "「标题_第一作者」格式命名文件，如「无人机多余度航空电子系统设计与应用_杨璐.caj」">
+<!ENTITY jasminum.namepatent.desc.t "「标题」格式命名文件，如「无人机多余度航空电子系统设计与应用.caj」">
+<!ENTITY jasminum.namepatent.desc.info "从下拉菜单中选择对应格式或直接输入">
 <!ENTITY jasminum.zhnamesplit.label "抓取题录信息时拆分中文姓，名(包括知网页面抓取)">
 <!ENTITY jasminum.rename.label "拉取知网元数据后调用Zotfile重命名附件(需安装Zotfile)">
 <!ENTITY jasminum.autobookmark.label "从知网添加学位论文时自动添加书签">
 <!ENTITY jasminum.zhnamedot.label "当拉取知网元数据时去除 Zotfile 重命名文件名中的逗号(, )">
-<!ENTITY jasminum.namehandler.removeDot.label "去除文件名中逗号">
 <!ENTITY jasminum.refresh.label "刷新">
 <!ENTITY jasminum.updateall.label "更新全部">
 <!ENTITY jasminum.updateT.label "更新">

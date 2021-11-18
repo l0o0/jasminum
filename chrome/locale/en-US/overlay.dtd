@@ -1,11 +1,16 @@
-<!ENTITY jasminum.update.label "Retrieving CNKI Metadata…">
-<!ENTITY jasminum.addBookmark.label "Add Bookmark to PDF …">
-<!ENTITY jasminum.namehandler.label "Split/Merge CN Name">
-<!ENTITY jasminum.namehandler.split.label "Split Names">
-<!ENTITY jasminum.namehandler.merge.label "Merge Names">
-<!ENTITY jasminum.CNKI.updateCiteCSSCI.label "Update CNKI Cite">
+<!ENTITY jasminum.menu.CNKI.update.label "Get CNKI Metadata…">
+<!ENTITY jasminum.menu.CNKI.updateCiteCSSCI.label "Update CNKI citation">
+<!ENTITY jasminum.menu.CNKI.addBookmark.label "Add Bookmark to PDF">
+<!ENTITY jasminum.menu.CNKI.label "CNKI">
+<!ENTITY jasminum.menu.tools.label "Tools">
+<!ENTITY jasminum.menu.tools.namesplit.label "Split Names">
+<!ENTITY jasminum.menu.tools.namemerge.label "Merge Names">
+<!ENTITY jasminum.menu.tools.removeDot.label "Remove Dot From Filename">
+<!ENTITY jasminum.menu.tools.language.label "Set Language">
 <!ENTITY jasminum.pdftkpath.label "PDFtk Service Install Folder,contains pdftk.exe or pdftk">
-<!ENTITY jasminum.autoupdate.label "Retrieve CNKI meta data when add Chinese articles">
+<!ENTITY jasminum.autoupdate.label "Retrieve CNKI metadata when adding Chinese articles(pdf/caj)">
+<!ENTITY jasminum.autolanguage.label "Set default language when adding Chinese articles">
+<!ENTITY jasminum.language.label "Default Chinese language(select/input): ">
 <!ENTITY jasminum.chinese "Setting">
 <!ENTITY jasminum.translators "Unofficial Translators Repository">
 <!ENTITY jasminum.check "Check">
@@ -17,11 +22,13 @@
 <!ENTITY pdftk.path.check.ok "PDFtk server path is OK.">
 <!ENTITY pdftk.path.check.error "Can't find PDFtk execute file in this folder.">
 <!ENTITY jasminum.namepatent.desc "Filename format:{&#37;t}=title，{&#37;g}=author, {&#37;y}=year,{&#37;j}=other info(such as source), no limit on delimiters，ignore file extension">
+<!ENTITY jasminum.namepatent.desc.tg "「标题_第一作者」格式命名文件，如「无人机多余度航空电子系统设计与应用_杨璐.caj」">
+<!ENTITY jasminum.namepatent.desc.t "「标题」格式命名文件，如「无人机多余度航空电子系统设计与应用.caj」">
+<!ENTITY jasminum.namepatent.desc.info "从下拉菜单中选择对应格式或直接输入">
 <!ENTITY jasminum.zhnamesplit.label "Split firstname and lastname when get metadata(Including CNKI web translators)">
 <!ENTITY jasminum.rename.label "Use Zotfile to rename attachment(Need Zotfile installed)">
 <!ENTITY jasminum.autobookmark.label "Add bookmark to thesis PDF when adding thesis item from CNKI">
 <!ENTITY jasminum.zhnamedot.label "Remove ', ' between Chinese characters when Zotfile rename attachment file.">
-<!ENTITY jasminum.namehandler.removeDot.label "Remove dot in filename">
 <!ENTITY jasminum.refresh.label "Refresh">
 <!ENTITY jasminum.updateall.label "Update All">
 <!ENTITY jasminum.updateT.label "Update">
