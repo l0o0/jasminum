@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<?xml-stylesheet href="chrome://jasminum/skin/updateMetadata.css" type="text/css"?>
+
+<!DOCTYPE window PUBLIC "-//W3C//DTD XHTML 1.1//EN"
+		"chrome://jasminum/locale/updateMetadata.dtd">
+
+<window xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul"
+		xmlns:html="http://www.w3.org/1999/xhtml"
+		id="jasminum-updateMetadata"
+        title="CNKI Metadata Update"
+		width="800"
+		height="600"
+		style="padding: 10px;"
+        onload="init();">
+	<vbox id="updateBox" flex="1">
+		<listbox>
+            <listhead>
+                <listheader label="Field"/>
+                <listheader label="Old"/>
+                <listheader label="New"/>
+            </listhead>
+            <listcols>
+                <listcol/>
+                <listcol flex="1"/>
+                <listcol flex="1"/>
+            </listcols>
+            <listitem>
+                <listcell id="selected" label="1"/>
+                <listcell label="2"/>
+                <listcell label="3"/>
+            </listitem>
+            <listitem>
+                <listcell label="4"/>
+                <listcell label="5"/>
+                <listcell label="6"/>
+            </listitem>
+            <listitem>
+                <listcell label="7"/>
+                <listcell label="8"/>
+                <listcell label="9"/>
+            </listitem>
+        </listbox>
+        <label value='Click here'/>
+		<hbox>
+            <spacer flex="1"/>
+			<button id="apply-button" label="&jasminum.updateMetadata.apply;"/>
+		</hbox>
+	</vbox>
+    <script src="chrome://zotero/content/include.js"/>
+    <script type="application/javascript" src="chrome://jasminum/content/scripts/updateMetadata.js"/>
+</window>

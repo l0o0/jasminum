@@ -5,31 +5,59 @@
 <overlay id="jasminum" 
     xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul">
 
-    <script type="application/x-javascript" src="chrome://jasminum/content/scripts/jasminum.js"/>
-
     <!-- <popup id="zotero-collectionmenu">
         <menuseparator/>
         <menuitem id="zotero-collectionmenu-jasminum" label="&zotero.jasminum.updateCollection.label;" oncommand="Zotero.Jasminum.updateSelectedEntity()">
     </popup> -->
 
     <menupopup id="zotero-itemmenu">
-		<menuseparator id="id-jasminum-separator"/>
-		<menu id="zotero-itemmenu-jasminum-namehandler" 
-            label="&jasminum.namehandler.label;" 
-            class="menu-iconic jasminum-name-icon">
+		<menuseparator id="jasminum-separator"/>
+		<menu id="jasminum-popup-menu1" 
+            label="&jasminum.menu.CNKI.label;" 
+            class="menu-iconic jasminum-tools-icon">
 			<menupopup id="jasminum">
-				<menuitem  label="&jasminum.namehandler.split.label;" oncommand="Zotero.Jasminum.splitNameM();"/>
-				<menuitem  label="&jasminum.namehandler.merge.label;" oncommand="Zotero.Jasminum.mergeNameM();"/>
-                <menuitem  label="&jasminum.namehandler.removeDot.label;" oncommand="Zotero.Jasminum.removeDotM();"/>
+                <menuitem
+                    id="jasminum-itemmenu-search"
+                    label="&jasminum.menu.CNKI.update.label;"
+                    class="menuitem-iconic jasminum-searchCNKI-icon" 
+                    oncommand="Zotero.Jasminum.searchSelectedItems();"/>
+		        <menuitem
+                    id="jasminum-itemmenu-bookmark"
+                    label="&jasminum.menu.CNKI.addBookmark.label;"
+                    class="menuitem-iconic jasminum-bookmark-icon"
+                    oncommand="Zotero.Jasminum.addBookmarkItem();"/>
+                <menuitem
+                    id="jasminum-itemmenu-updateCiteCSSCI"
+                    label="&jasminum.menu.CNKI.updateCiteCSSCI.label;"
+                    class="menuitem-iconic jasminum-cssci-icon"
+                    oncommand="Zotero.Jasminum.updateCiteCSSCIItems();"/>
 			</menupopup>
 		</menu>
-		<menuitem id="zotero-itemmenu-jasminum" 
-            label="&jasminum.update.label;"
-            class="menuitem-iconic jasminum-searchCNKI-icon" 
-            oncommand="Zotero.Jasminum.updateSelectedItems();"/>
-		<menuitem id="zotero-itemmenu-jasminum-bookmark"
-            label="&jasminum.addBookmark.label;"
-            class="menuitem-iconic jasminum-bookmark-icon" 
-            oncommand="Zotero.Jasminum.addBookmarkItemM();"/>
+        <menu id="jasminum-popup-menu2"
+            label="&jasminum.menu.tools.label;"
+            class="menu-iconic jasminum-tools-icon">
+            <menupopup>
+                <menuitem 
+                    label="&jasminum.menu.tools.namesplit.label;"
+                    class="menuitem-iconic jasminum-name-icon"
+                    oncommand="Zotero.Jasminum.splitNameM();"/>
+				<menuitem 
+                    label="&jasminum.menu.tools.namemerge.label;"
+                    class="menuitem-iconic jasminum-name-icon"
+                    oncommand="Zotero.Jasminum.mergeNameM();"/>
+                <menuitem 
+                    label="&jasminum.menu.tools.removeDot.label;"
+                    class="menuitem-iconic jasminum-default-icon"
+                    oncommand="Zotero.Jasminum.removeDotM();"/>
+                <menuitem 
+                    label="&jasminum.menu.tools.language.label;"
+                    class="menuitem-iconic jasminum-zh-icon"
+                    oncommand="Zotero.Jasminum.setLanguageItems();"/>
+            </menupopup>
+        </menu>
+		
 	</menupopup>
+
+    <script src="chrome://zotero/content/include.js"/>
+    <script src="chrome://jasminum/content/scripts/include.js"/>	
 </overlay>

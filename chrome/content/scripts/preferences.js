@@ -2,7 +2,7 @@ initPref = async function () {
     Components.utils.import("resource://gre/modules/osfile.jsm");
     var jasminum_pdftk_path = Zotero.Prefs.get("jasminum.pdftkpath");
     document.getElementById("jasminum-pdftk-path").value = jasminum_pdftk_path;
-    var fileExist = await Zotero.Jasminum.checkPath();
+    var fileExist = await Zotero.Jasminum.Scrape.checkPath();
     pathCheckIcon(fileExist);
     // initTranslatorPanel();
 };
@@ -28,7 +28,7 @@ choosePath = async function () {
     Zotero.debug("** Jasminum " + fp.file.path);
     Zotero.Prefs.set("jasminum.pdftkpath", fp.file.path);
     document.getElementById("jasminum-pdftk-path").value = fp.file.path;
-    var fileExist = await Zotero.Jasminum.checkPath();
+    var fileExist = await Zotero.Jasminum.Scrape.checkPath();
     pathCheckIcon(fileExist);
 };
 
@@ -142,7 +142,11 @@ getUpdates = async function () {
         var updateJson = JSON.parse(resp.responseText);
         return updateJson;
     } catch (e) {
-        alert("获取更新信息失败，请稍后重试\n" + e);
+        this.Utils.showPopup(
+            "翻译器更新失败",
+            `获取翻译器更新信息失败，请稍后重试，${e}`,
+            true
+        )
     }
 };
 
@@ -169,8 +173,11 @@ downloadTo = async function (label) {
         await OS.File.move(cacheFile.path, desPath);
         return true;
     } catch (e) {
-        alert(`${label}.js 下载失败,请稍后尝试重新下载\n` + e);
-        return false;
+        this.Utils.showPopup(
+            "翻译器下载失败",
+            `${label}.js 下载失败，请稍后重试`,
+            true
+        )
     }
 };
 
@@ -197,5 +204,8 @@ updateTranslator = async function (label) {
 updateAll = async function () {
     var data = await getUpdates();
     Object.keys(data).forEach(async (label) => await updateTranslator(label));
-    alert("更新完毕");
+    this.Utils.showPopup(
+        "更新完成",
+        "所有翻译器已经完成更新"
+    )
 };
