@@ -19,7 +19,10 @@ Zotero.Jasminum.Utils = new function () {
             Zotero.debug("** Jasminum translate end.");
             return newItems;
         }
-        throw new Error("No items found");
+        this.Utils.showPopup(
+            "No results found!",
+            `未查询到结果`,
+            true);
     }.bind(Zotero.Jasminum);
 
     /**

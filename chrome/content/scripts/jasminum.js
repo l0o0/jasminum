@@ -156,7 +156,16 @@ Zotero.Jasminum = new function () {
             Zotero.debug([articleId]);
             let postData = this.Scrape.createRefPostData([articleId]);
             let data = await this.Scrape.getRefText(postData);
-            Zotero.debug(data.split("\n"));
+            // Zotero.debug("** Jasminum webpage data");
+            // Zotero.debug(data);
+            // Some item will be updated after published
+            if (data.length === 0 && articleId.dbname.includes("TEMP")) {
+                articleId.dbname = articleId
+                    .dbname
+                    .replace(/TEMP.*$/, 'LAST' + item.getField("dateAdded").slice(0, 4));
+                postData = this.Scrape.createRefPostData([articleId]);
+                data = await this.Scrape.getRefText(postData);
+            }
             var newItems = await this.Utils.trans2Items(data, libraryID);
             let targetData = {
                 targetUrls: [item.getField("url")],
