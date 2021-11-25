@@ -14,7 +14,7 @@
 		<menuseparator id="jasminum-separator"/>
 		<menu id="jasminum-popup-menu1" 
             label="&jasminum.menu.CNKI.label;" 
-            class="menu-iconic jasminum-tools-icon">
+            class="menu-iconic jasminum-cnki-icon">
 			<menupopup id="jasminum">
                 <menuitem
                     id="jasminum-itemmenu-search"
