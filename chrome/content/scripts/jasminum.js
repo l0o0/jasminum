@@ -387,10 +387,15 @@ Zotero.Jasminum = new function () {
         var item = items.shift();
         if (["patent", "webpage"].includes(Zotero.ItemTypes.getName(item.itemTypeID))) {
             this.Utils.showPopup(
-                "期刊、引用抓取完毕",
+                "条目类型不支持",
                 `${Zotero.ItemTypes.getName(item.itemTypeID)}类型条目不需要抓取`
             )
-        } else {
+        } else if (item.getField("title").search(/[_\u4e00-\u9fa5]/) === -1) {
+            this.Utils.showPopup(
+                "条目类型不支持",
+                `非中文条目`
+            )
+        } else if (item.getField("url")) {
             let url = item.getField("url");
             let resp = await Zotero.HTTP.request("GET", url);
             let html = this.Utils.string2HTML(resp.responseText);
@@ -427,6 +432,11 @@ Zotero.Jasminum = new function () {
             Zotero.debug("** Jasminum cite number: " + cssci);
             item.setField("extra", extraData.trim());
             await item.saveTx();
+        } else {
+            this.Utils.showPopup(
+                "条目抓取失败",
+                "缺失条目 URL 信息"
+            );
         }
 
         if (items.length) {
@@ -456,4 +466,4 @@ Zotero.Jasminum = new function () {
         var items = ZoteroPane.getSelectedItems();
         for (var item of items) { await this.setLanguage(item) }
     };
-};
+}
