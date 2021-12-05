@@ -252,8 +252,10 @@ Zotero.Jasminum = new function () {
 
 
 
-    this.addBookmarkItem = async function () {
-        var item = ZoteroPane.getSelectedItems()[0];
+    this.addBookmarkItem = async function (item) {
+        if (item === undefined) {
+            item = ZoteroPane.getSelectedItems()[0];
+        }
         if (!(await this.Scrape.checkPath())) {
             this.Utils.showPopup(
                 "PDFtk Server is not installed",

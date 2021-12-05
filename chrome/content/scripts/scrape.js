@@ -520,7 +520,12 @@ Zotero.Jasminum.Scrape = new function () {
         var itemUrl = "";
         var itemReaderUrl = "";
         var itemChapterUrl = "";
-        if (
+        if (  // CNKI reader URL exists
+            parentItem.getField("url") &&
+            parentItem.getField("url").includes("Kreader/CatalogView")
+        ) {
+            itemReaderUrl = parentItem.getField("url");
+        } else if (
             // 匹配知网 URL
             parentItem.getField("url") &&
             parentItem.getField("url").match(/^https?:\/\/kns\.cnki\.net/) &&// Except nxgp.cnki.net
@@ -528,6 +533,7 @@ Zotero.Jasminum.Scrape = new function () {
         ) {
             Zotero.debug("** Jasminum item url exists");
             itemUrl = parentItem.getField("url");
+            itemReaderUrl = this.Scrape.getReaderUrl(itemUrl);
         } else {
             Zotero.debug("Jasminum search for item url");
             var fileData = {
@@ -543,10 +549,10 @@ Zotero.Jasminum.Scrape = new function () {
             // Frist row in search table is selected.
             itemUrl = targetRows[0].querySelector("a.fz14").getAttribute("href");
             itemUrl = "https://kns.cnki.net/KCMS" + itemUrl.slice(4);
+            itemReaderUrl = this.Scrape.getReaderUrl(itemUrl);
             // 获取文献链接URL -> 获取章节目录URL
         }
         Zotero.debug("** Jasminum item url: " + itemUrl);
-        itemReaderUrl = this.Scrape.getReaderUrl(itemUrl);
         Zotero.debug("** Jasminum item reader url: " + itemReaderUrl);
         itemChapterUrl = await this.Scrape.getChapterUrl(itemReaderUrl);
         Zotero.debug("** Jasminum item chapter url: " + itemChapterUrl);
@@ -617,7 +623,10 @@ Zotero.Jasminum.Scrape = new function () {
             await OS.File.copy(cachePDF.path, item.getFilePath());
             cacheFile.remove(false);
             cachePDF.remove(false);
-            Zotero.debug("** Jasminum add bookmark complete!");
+            this.Utils.showPopup(
+                "学位论文书签",
+                `${item.getFilename()} 书签添加成功`
+            );
         } catch (e) {
             Zotero.logError(e);
             try {
