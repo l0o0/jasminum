@@ -25,7 +25,7 @@
                     <tab label="&jasminum.about;"/>
                 </tabs>
 
-                <tabpanels id="zotero-prefpane-jasminum" orient="vertical" minheight="380">
+                <tabpanels id="zotero-prefpane-jasminum" orient="vertical" minheight="450">
                     <tabpanel id="zotero-prefpane-chinese-tab">
                         <vbox flex="1">
                             <groupbox>
