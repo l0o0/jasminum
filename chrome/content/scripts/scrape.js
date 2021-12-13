@@ -67,9 +67,9 @@ Zotero.Jasminum.Scrape = new function () {
         //     title = titleRaw;
         // }
 
-        // 去除_省略_ , 多余的 _ 换为空格
+        // 去除_省略_ "...", 多余的 _ 换为空格
         // 标题中含有空格，查询时会启用模糊模式
-        title = titleRaw.replace("_省略_", ' ');
+        title = titleRaw.replace("_省略_", ' ').replace("...", " ");
         title = title.replace(/_/g, " ")
         return {
             author: author,
