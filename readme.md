@@ -20,6 +20,13 @@
 **Mac 用户**（感谢[@GuokaiLiu](https://github.com/GuokaiLiu)同学在 [issue](https://github.com/l0o0/jasminum/issues/7#issuecomment-706448964) 中的补充）
 macos(10.15)用户：
 由于官方未更新PDFtk server最新版本的超链接，通过官网首页下载的PDFtk server至今(2021.10.26)仍不支持部分较新的mac系统，目前推荐通过：https://www.pdflabs.com/tools/pdftk-the-pdf-toolkit/pdftk_server-2.02-mac_osx-10.11-setup.pkg 下载。
+**M1 Mac 用户**（感谢[@simon2413](https://github.com/simon2413)同学在 [issue](https://github.com/l0o0/jasminum/issues/55) 中的说明）
+需要先安装 M1 版本的 homebrew，然后在终端 Terminal 中
+```bash
+brew install pdftk-java
+which pdftk
+```
+第一条命令是安装 pdftk，第二条命令是查看 pdftk 的安装路径。具体路径设置方法参考下文的路径选择。
 
 PDF server 安装失败（m1用户）的提示如下：
 
