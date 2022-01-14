@@ -83,8 +83,6 @@ Zotero.Jasminum.UI = new function () {
             item.isAttachment() &&
             item.attachmentContentType &&
             item.attachmentContentType === "application/pdf" &&
-            item.parentItem.getField("libraryCatalog") &&
-            item.parentItem.getField("libraryCatalog").includes("CNKI") &&
             Zotero.ItemTypes.getName(item.parentItem.itemTypeID) === "thesis"
         );
     }.bind(Zotero.Jasminum);
