@@ -148,6 +148,7 @@ Zotero.Jasminum = new function () {
         if (items.length == 0) return;
         var item = items.shift();
         var itemCollections = item.getCollections();
+        Zotero.debug(itemCollections);
         var libraryID = item.libraryID;
         // Retrive meta data for webpage item
         if (Zotero.ItemTypes.getName(item.itemTypeID) === "webpage") {
@@ -157,21 +158,29 @@ Zotero.Jasminum = new function () {
             let postData = this.Scrape.createRefPostData([articleId]);
             let data = await this.Scrape.getRefText(postData);
             // Zotero.debug("** Jasminum webpage data");
-            // Zotero.debug(data);
+
             // Some item will be updated after published
             if (data.length === 0 && articleId.dbname.includes("TEMP")) {
-                articleId.dbname = articleId
-                    .dbname
-                    .replace(/TEMP.*$/, 'LAST' + item.getField("dateAdded").slice(0, 4));
-                postData = this.Scrape.createRefPostData([articleId]);
-                data = await this.Scrape.getRefText(postData);
+                articleId = await this.Scrape.getIDFromPage(item.getField("url"));
+                Zotero.debug([articleId]);
             }
+            postData = this.Scrape.createRefPostData([articleId]);
+            data = await this.Scrape.getRefText(postData);
             var newItems = await this.Utils.trans2Items(data, libraryID);
             let targetData = {
                 targetUrls: [item.getField("url")],
                 citations: [null]
             };
             newItems = await this.Utils.fixItem(newItems, targetData);
+            // Keep the same collection in newItem.
+            if (itemCollections.length) {
+                for (let collectionID of itemCollections) {
+                    for (let i of newItems) {
+                        i.addToCollection(collectionID);
+                        await i.saveTx();
+                    };
+                }
+            }
             // Move notes and attachments to newItems
             let childIDs = item.getNotes().concat(item.getAttachments());
             if (childIDs.length > 0) {

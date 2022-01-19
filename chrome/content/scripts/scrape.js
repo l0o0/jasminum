@@ -279,6 +279,21 @@ Zotero.Jasminum.Scrape = new function () {
         return { dbname: dbname[1], filename: filename[1], dbcode: dbcode[1] };
     }.bind(Zotero.Jasminum);
 
+    /**
+     * Sometimes CNKI URL contains a temporary dbname, 
+     * you need to find a valid dbname from page.
+     * @param {String} CNKI url string
+     * @return {Object} {dbname: ..., filename: ..., dbcode: ...}
+     */
+    this.getIDFromPage = async function (url) {
+        let pageResp = await Zotero.HTTP.request("GET", url);
+        let page = this.Utils.string2HTML(pageResp.responseText);
+        let dbcode = page.querySelector("input#paramdbcode").value;
+        let filename = page.querySelector("input#paramfilename").value;
+        let dbname = page.querySelector("input#paramdbname").value;
+        return { dbname: dbname, filename: filename, dbcode: dbcode };
+    }.bind(Zotero.Jasminum);
+
 
     this.search = async function (fileData) {
         Zotero.debug("**Jasminum start search");
@@ -406,6 +421,8 @@ Zotero.Jasminum.Scrape = new function () {
             .replace("</li><li>", "") // divide results
             .replace(/<br>|\r/g, "\n")
             .replace(/vo (\d+)\n/, "VO $1\n") // Divide VO and IS to different line
+            .replace(/IS 0(\d+)\n/g, "IS $1\n")  // Remove leading 0
+            .replace(/VO 0(\d+)\n/g, "VO $1\n")
             .replace(/\n+/g, "\n")
             .replace(/\n([A-Z][A-Z1-9]\s)/g, "<br>$1")
             .replace(/\n/g, "")
