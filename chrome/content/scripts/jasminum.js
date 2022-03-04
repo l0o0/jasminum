@@ -412,36 +412,49 @@ Zotero.Jasminum = new function () {
             let html = this.Utils.string2HTML(resp.responseText);
             let dateString = new Date().toLocaleDateString().replace(/\//g, '-');
             let cite = this.Scrape.getCitationFromPage(html);
-            let citeString = `CNKI citations: ${cite}[${dateString}]`;
+            // let citeString = `CNKI citations: ${cite}[${dateString}]`;
+            let citeString = `${cite}[${dateString}]`;
             let cssci = this.Scrape.getCSSCI(html);
-            let cssciString = "Chinese Core Journals: <" + cssci + ">";
+            // let cssciString = "Chinese Core Journals: <" + cssci + ">";
+            let cssciString = "<" + cssci + ">";
             var extraData = item.getField("extra");
             // Remove old cite and CSSCI string
-            extraData = extraData.replace(/\d+ citations?\(CNKI\)\[[\d-]{10}\].*\s?/, '');
+            extraData = extraData.replace(/\d+ citations?\(CNKI\)\[[\d-]{8,10}\].*\s?/, '');
             extraData = extraData.replace(/^<.*?>\s?/, "");
+            extraData = extraData.replace(/Chinese Core Journals: <.*?>/, "")
+            extraData = extraData.replace(/CNKI citations:\s?\d+\[[\d-]{8,10}\]/, '');
+            let extraAdd = "";
             if (cite != null && cite > 0) {
-                if (extraData.match(/CNKI citations:\s?/)) {
-                    extraData = extraData.replace(/CNKI citations:\s?\d+\[[\d-]{10}\]/,
-                        citeString);
-                } else {
-                    extraData = extraData.trim() + '\n' + citeString;
+                // if (extraData.match(/CNKI citations:\s?/)) {
+                //     extraData = extraData.replace(/CNKI citations:\s?\d+\[[\d-]{10}\]/,
+                //         citeString);
+                // } else {
+                //     extraData = extraData.trim() + '\n' + citeString;
+                // }  // 暂时注释，等后期使用新的展示方式
+                if (extraData.match(/👍/)) {  // 先用这简单的展示，便于展示排序
+                    extraData = extraData.replace(/👍\s?\d+\[[\d-]{8,10}\]/, "");
                 }
+                extraAdd = "👍" + citeString;
             }
 
-            if (cssci) {
-                if (extraData.match(/Chinese Core Journals: /)) {
-                    extraData = extraData.replace(/Chinese Core Journals: <.*?>/, cssciString);
-                } else {
-                    extraData = extraData.trim() + '\n' + cssciString;
+            if (cssci) {  // 或者可以参考其他核心期刊数据来源
+                // if (extraData.match(/Chinese Core Journals: /)) {
+                //     extraData = extraData.replace(/Chinese Core Journals: <.*?>/, cssciString);
+                // } else {
+                //     extraData = extraData.trim() + '\n' + cssciString;
+                // }
+                if (extraData.match(/📗/)) {
+                    extraData = extraData.replace(/📗<.*?>/, "");
                 }
+                extraAdd += '📗' + cssciString;
             }
             this.Utils.showPopup(
                 "期刊、引用抓取完毕",
-                `${item.getField('title')}, ${cite}, ${cssci}`
+                `${item.getField('title')}, ${cite}, ${cssci ? cssci : '未查询到核心期刊'}`
             )
             Zotero.debug("** Jasminum cite number: " + cite);
-            Zotero.debug("** Jasminum cite number: " + cssci);
-            item.setField("extra", extraData.trim());
+            Zotero.debug("** Jasminum cssci: " + cssci);
+            item.setField("extra", extraAdd + "\n" + extraData.trim());
             await item.saveTx();
         } else {
             this.Utils.showPopup(
