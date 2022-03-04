@@ -5,7 +5,7 @@
   <Description about="urn:mozilla:install-manifest">
     <em:id>jasminum@linxzh.com</em:id>
     <em:name>Jasminum</em:name>
-    <em:version>0.1.4</em:version>
+    <em:version>0.1.6</em:version>
     <em:type>2</em:type>
     <em:iconURL>chrome://jasminum/skin/icon.png</em:iconURL>
     <em:multiprocessCompatible>true</em:multiprocessCompatible>
