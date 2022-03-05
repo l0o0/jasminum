@@ -395,76 +395,80 @@ Zotero.Jasminum = new function () {
      * @return {volid}
      */
     this.updateCiteCSSCI = async function (items) {
-        var item = items.shift();
-        if (["patent", "webpage"].includes(Zotero.ItemTypes.getName(item.itemTypeID))) {
-            this.Utils.showPopup(
-                "条目类型不支持",
-                `${Zotero.ItemTypes.getName(item.itemTypeID)}类型条目不需要抓取`
-            )
-        } else if (item.getField("title").search(/[_\u4e00-\u9fa5]/) === -1) {
-            this.Utils.showPopup(
-                "条目类型不支持",
-                `非中文条目`
-            )
-        } else if (item.getField("url")) {
-            let url = item.getField("url");
-            let resp = await Zotero.HTTP.request("GET", url);
-            let html = this.Utils.string2HTML(resp.responseText);
-            let dateString = new Date().toLocaleDateString().replace(/\//g, '-');
-            let cite = this.Scrape.getCitationFromPage(html);
-            // let citeString = `CNKI citations: ${cite}[${dateString}]`;
-            let citeString = `${cite}[${dateString}]`;
-            let cssci = this.Scrape.getCSSCI(html);
-            // let cssciString = "Chinese Core Journals: <" + cssci + ">";
-            let cssciString = "<" + cssci + ">";
-            var extraData = item.getField("extra");
-            // Remove old cite and CSSCI string
-            extraData = extraData.replace(/\d+ citations?\(CNKI\)\[[\d-]{8,10}\].*\s?/, '');
-            extraData = extraData.replace(/^<.*?>\s?/, "");
-            extraData = extraData.replace(/Chinese Core Journals: <.*?>/, "")
-            extraData = extraData.replace(/CNKI citations:\s?\d+\[[\d-]{8,10}\]/, '');
-            let extraAdd = "";
-            if (cite != null && cite > 0) {
-                // if (extraData.match(/CNKI citations:\s?/)) {
-                //     extraData = extraData.replace(/CNKI citations:\s?\d+\[[\d-]{10}\]/,
-                //         citeString);
-                // } else {
-                //     extraData = extraData.trim() + '\n' + citeString;
-                // }  // 暂时注释，等后期使用新的展示方式
-                if (extraData.match(/👍/)) {  // 先用这简单的展示，便于展示排序
-                    extraData = extraData.replace(/👍\s?\d+\[[\d-]{8,10}\]/, "");
+        for (let item of items) {
+            if (["patent", "webpage"].includes(Zotero.ItemTypes.getName(item.itemTypeID))) {
+                this.Utils.showPopup(
+                    "条目类型不支持",
+                    `${Zotero.ItemTypes.getName(item.itemTypeID)}类型条目不需要抓取`
+                )
+            } else if (item.getField("title").search(/[_\u4e00-\u9fa5]/) === -1) {
+                this.Utils.showPopup(
+                    "条目类型不支持",
+                    `非中文条目`
+                )
+            } else if (item.getField("url")) {
+                let url = item.getField("url");
+                let resp = await Zotero.HTTP.request("GET", url);
+                let html = this.Utils.string2HTML(resp.responseText);
+                // 检测是否出现知网验证页面,一般网页以nxgp开头的页面，会出现知网验证页面
+                if (html.querySelector("div.verify_wrap")) {
+                    this.Utils.showPopup(
+                        "期刊、引用抓取完毕",
+                        "抓取信息时出现知网验证页面");
+                    continue;
                 }
-                extraAdd = "👍" + citeString;
-            }
-
-            if (cssci) {  // 或者可以参考其他核心期刊数据来源
-                // if (extraData.match(/Chinese Core Journals: /)) {
-                //     extraData = extraData.replace(/Chinese Core Journals: <.*?>/, cssciString);
-                // } else {
-                //     extraData = extraData.trim() + '\n' + cssciString;
-                // }
-                if (extraData.match(/📗/)) {
-                    extraData = extraData.replace(/📗<.*?>/, "");
+                let dateString = new Date().toLocaleDateString().replace(/\//g, '-');
+                let cite = this.Scrape.getCitationFromPage(html);
+                // let citeString = `CNKI citations: ${cite}[${dateString}]`;
+                let citeString = `${cite}[${dateString}]`;
+                let cssci = this.Scrape.getCSSCI(html);
+                // let cssciString = "Chinese Core Journals: <" + cssci + ">";
+                let cssciString = "<" + cssci + ">";
+                var extraData = item.getField("extra");
+                // Remove old cite and CSSCI string
+                extraData = extraData.replace(/\d+ citations?\(CNKI\)\[[\d-]{8,10}\].*\s?/, '');
+                extraData = extraData.replace(/^<.*?>\s?/, "");
+                extraData = extraData.replace(/Chinese Core Journals: <.*?>/, "")
+                extraData = extraData.replace(/CNKI citations:\s?\d+\[[\d-]{8,10}\]/, '');
+                let extraAdd = "";
+                if (cite != null && cite > 0) {
+                    // if (extraData.match(/CNKI citations:\s?/)) {
+                    //     extraData = extraData.replace(/CNKI citations:\s?\d+\[[\d-]{10}\]/,
+                    //         citeString);
+                    // } else {
+                    //     extraData = extraData.trim() + '\n' + citeString;
+                    // }  // 暂时注释，等后期使用新的展示方式
+                    if (extraData.match(/👍/)) {  // 先用这简单的展示，便于展示排序
+                        extraData = extraData.replace(/👍\s?\d+\[[\d-]{8,10}\]/, "");
+                    }
+                    extraAdd = "👍" + citeString;
                 }
-                extraAdd += '📗' + cssciString;
-            }
-            this.Utils.showPopup(
-                "期刊、引用抓取完毕",
-                `${item.getField('title')}, ${cite}, ${cssci ? cssci : '未查询到核心期刊'}`
-            )
-            Zotero.debug("** Jasminum cite number: " + cite);
-            Zotero.debug("** Jasminum cssci: " + cssci);
-            item.setField("extra", extraAdd + "\n" + extraData.trim());
-            await item.saveTx();
-        } else {
-            this.Utils.showPopup(
-                "条目抓取失败",
-                "缺失条目 URL 信息"
-            );
-        }
 
-        if (items.length) {
-            this.updateCiteCSSCI(items);
+                if (cssci) {  // 或者可以参考其他核心期刊数据来源
+                    // if (extraData.match(/Chinese Core Journals: /)) {
+                    //     extraData = extraData.replace(/Chinese Core Journals: <.*?>/, cssciString);
+                    // } else {
+                    //     extraData = extraData.trim() + '\n' + cssciString;
+                    // }
+                    if (extraData.match(/📗/)) {
+                        extraData = extraData.replace(/📗<.*?>/, "");
+                    }
+                    extraAdd += '📗' + cssciString;
+                }
+                this.Utils.showPopup(
+                    "期刊、引用抓取完毕",
+                    `${item.getField('title')}, ${cite}, ${cssci ? cssci : '未查询到核心期刊'}`
+                )
+                Zotero.debug("** Jasminum cite number: " + cite);
+                Zotero.debug("** Jasminum cssci: " + cssci);
+                item.setField("extra", extraAdd + "\n" + extraData.trim());
+                await item.saveTx();
+            } else {
+                this.Utils.showPopup(
+                    "条目抓取失败",
+                    "缺失条目 URL 信息"
+                );
+            }
         }
     };
 
