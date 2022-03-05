@@ -26,7 +26,7 @@ Zotero.Jasminum.Scrape = new function () {
             this.Utils.showPopup(
                 "Error in parsing filename",
                 `文件名识别出错，请检查文件名识别模板与实际抓取文件名。文件名: ${filename}，识别模板为: ${patent}`,
-                true
+                1
             )
             return;
         }
@@ -655,7 +655,7 @@ Zotero.Jasminum.Scrape = new function () {
             this.Utils.showPopup(
                 "Error in adding bookmark",
                 `PDFtk 添加书签时失败, ${e}`,
-                true
+                2
             )
         }
     }.bind(Zotero.Jasminum);

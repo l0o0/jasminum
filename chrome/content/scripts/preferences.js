@@ -145,7 +145,7 @@ getUpdates = async function () {
         this.Utils.showPopup(
             "翻译器更新失败",
             `获取翻译器更新信息失败，请稍后重试，${e}`,
-            true
+            1
         )
     }
 };
@@ -176,7 +176,7 @@ downloadTo = async function (label) {
         this.Utils.showPopup(
             "翻译器下载失败",
             `${label}.js 下载失败，请稍后重试`,
-            true
+            1
         )
     }
 };

@@ -22,7 +22,7 @@ Zotero.Jasminum.Utils = new function () {
         this.Utils.showPopup(
             "No results found!",
             `未查询到结果`,
-            true);
+            1);
     }.bind(Zotero.Jasminum);
 
     /**
@@ -179,12 +179,14 @@ Zotero.Jasminum.Utils = new function () {
     }.bind(Zotero.Jasminum);
 
     // Show Popup message
-    this.showPopup = function (title, body, isError = false, timeout = 5) {
+    this.showPopup = function (title, body, isError = 0, timeout = 5) {
         var popw = new Zotero.ProgressWindow();
-        if (isError) {
-            popw.changeHeadline("Error", "chrome://zotero/skin/cross.png", `Jasminum: ${title}`);
+        if (isError === 2) {
+            popw.changeHeadline("", "chrome://zotero/skin/cross.png", `Jasminum: ${title}`);
+        } else if (isError === 1) {
+            popw.changeHeadline("", "chrome://jasminum/skin/exclamation.png", `Jasminum: ${title}`);
         } else {
-            popw.changeHeadline(`Jasminum: ${title}`);
+            popw.changeHeadline("", "chrome://jasminum/skin/accept.png", `Jasminum: ${title}`);
         }
         popw.addDescription(body);
         popw.show();

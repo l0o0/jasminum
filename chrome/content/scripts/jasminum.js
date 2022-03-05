@@ -251,7 +251,7 @@ Zotero.Jasminum = new function () {
                 this.Utils.showPopup(
                     "No results found!",
                     `作者：${fileData.author},\n   篇名：${fileData.keyword},\n   未查询到结果`,
-                    true)
+                    1)
             }
         }
         if (items.length) {
@@ -269,7 +269,7 @@ Zotero.Jasminum = new function () {
             this.Utils.showPopup(
                 "PDFtk Server is not installed",
                 "未找到 PDFtk Server 的可执行文件。参考插件设置首选项中的下载地址下载并安装，在首选项中设置对应的可执行文件路径(路径以bin结尾)",
-                true
+                1
             );
             return;
         }
@@ -279,7 +279,7 @@ Zotero.Jasminum = new function () {
             this.Utils.showPopup(
                 "Attachment is missing",
                 "该条目下未找到对应的 PDF 文件",
-                true
+                1
             )
             return;
         }
@@ -289,7 +289,7 @@ Zotero.Jasminum = new function () {
             this.Utils.showPopup(
                 "No Bookmarks found!",
                 "未找到书签信息，请打开该条目知网链接，确认网页左侧是否出现书签章节信息",
-                true
+                1
             )
             return;
         } else {
@@ -399,12 +399,14 @@ Zotero.Jasminum = new function () {
             if (["patent", "webpage"].includes(Zotero.ItemTypes.getName(item.itemTypeID))) {
                 this.Utils.showPopup(
                     "条目类型不支持",
-                    `${Zotero.ItemTypes.getName(item.itemTypeID)}类型条目不需要抓取`
+                    `${Zotero.ItemTypes.getName(item.itemTypeID)}类型条目不需要抓取`,
+                    1
                 )
             } else if (item.getField("title").search(/[_\u4e00-\u9fa5]/) === -1) {
                 this.Utils.showPopup(
                     "条目类型不支持",
-                    `非中文条目`
+                    `非中文条目`,
+                    1
                 )
             } else if (item.getField("url")) {
                 let url = item.getField("url");
@@ -413,8 +415,9 @@ Zotero.Jasminum = new function () {
                 // 检测是否出现知网验证页面,一般网页以nxgp开头的页面，会出现知网验证页面
                 if (html.querySelector("div.verify_wrap")) {
                     this.Utils.showPopup(
-                        "期刊、引用抓取完毕",
-                        "抓取信息时出现知网验证页面");
+                        "期刊、引用抓取异常",
+                        "抓取信息时出现知网验证页面",
+                        1);
                     continue;
                 }
                 let dateString = new Date().toLocaleDateString().replace(/\//g, '-');
@@ -457,7 +460,8 @@ Zotero.Jasminum = new function () {
                 }
                 this.Utils.showPopup(
                     "期刊、引用抓取完毕",
-                    `${item.getField('title')}, ${cite}, ${cssci ? cssci : '未查询到核心期刊'}`
+                    `${item.getField('title')}, ${cite}, ${cssci ? cssci : '非核心期刊'}`,
+                    0
                 )
                 Zotero.debug("** Jasminum cite number: " + cite);
                 Zotero.debug("** Jasminum cssci: " + cssci);
@@ -466,7 +470,8 @@ Zotero.Jasminum = new function () {
             } else {
                 this.Utils.showPopup(
                     "条目抓取失败",
-                    "缺失条目 URL 信息"
+                    "缺失条目 URL 信息",
+                    1
                 );
             }
         }
