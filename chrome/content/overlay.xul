@@ -2,7 +2,7 @@
 <?xml-stylesheet href="chrome://jasminum/skin/overlay.css" type="text/css"?>
 <!DOCTYPE overlay SYSTEM "chrome://jasminum/locale/overlay.dtd">
 
-<overlay id="jasminum" 
+<overlay id="jasminum"
     xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul">
 
     <!-- <popup id="zotero-collectionmenu">
@@ -11,17 +11,17 @@
     </popup> -->
 
     <menupopup id="zotero-itemmenu">
-		<menuseparator id="jasminum-separator"/>
-		<menu id="jasminum-popup-menu1" 
-            label="&jasminum.menu.CNKI.label;" 
+        <menuseparator id="jasminum-separator"/>
+        <menu id="jasminum-popup-menu1"
+            label="&jasminum.menu.CNKI.label;"
             class="menu-iconic jasminum-cnki-icon">
-			<menupopup id="jasminum">
+            <menupopup id="jasminum">
                 <menuitem
                     id="jasminum-itemmenu-search"
                     label="&jasminum.menu.CNKI.update.label;"
-                    class="menuitem-iconic jasminum-searchCNKI-icon" 
+                    class="menuitem-iconic jasminum-searchCNKI-icon"
                     oncommand="Zotero.Jasminum.searchSelectedItems();"/>
-		        <menuitem
+                <menuitem
                     id="jasminum-itemmenu-bookmark"
                     label="&jasminum.menu.CNKI.addBookmark.label;"
                     class="menuitem-iconic jasminum-bookmark-icon"
@@ -31,33 +31,38 @@
                     label="&jasminum.menu.CNKI.updateCiteCSSCI.label;"
                     class="menuitem-iconic jasminum-cssci-icon"
                     oncommand="Zotero.Jasminum.updateCiteCSSCIItems();"/>
-			</menupopup>
-		</menu>
+            </menupopup>
+        </menu>
         <menu id="jasminum-popup-menu2"
             label="&jasminum.menu.tools.label;"
             class="menu-iconic jasminum-tools-icon">
             <menupopup>
-                <menuitem 
+                <menuitem
                     label="&jasminum.menu.tools.namesplit.label;"
                     class="menuitem-iconic jasminum-name-icon"
                     oncommand="Zotero.Jasminum.splitNameM();"/>
-				<menuitem 
+                <menuitem
                     label="&jasminum.menu.tools.namemerge.label;"
                     class="menuitem-iconic jasminum-name-icon"
                     oncommand="Zotero.Jasminum.mergeNameM();"/>
-                <menuitem 
+                <menuitem
+                    label="&jasminum.menu.tools.semicolonNamesSplit.label;"
+                    class="menuitem-iconic jasminum-name-icon"
+                    oncommand="Zotero.Jasminum.splitSemicolonNamesN();"
+                    />
+                <menuitem
                     label="&jasminum.menu.tools.removeDot.label;"
                     class="menuitem-iconic jasminum-default-icon"
                     oncommand="Zotero.Jasminum.removeDotM();"/>
-                <menuitem 
+                <menuitem
                     label="&jasminum.menu.tools.language.label;"
                     class="menuitem-iconic jasminum-zh-icon"
                     oncommand="Zotero.Jasminum.setLanguageItems();"/>
             </menupopup>
         </menu>
-		
-	</menupopup>
+
+    </menupopup>
 
     <script src="chrome://zotero/content/include.js"/>
-    <script src="chrome://jasminum/content/scripts/include.js"/>	
+    <script src="chrome://jasminum/content/scripts/include.js"/>
 </overlay>

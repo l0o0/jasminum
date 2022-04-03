@@ -367,6 +367,45 @@ Zotero.Jasminum = new function () {
         }
     };
 
+    this.splitSemicolonNamesN = async function () {
+        var items = ZoteroPane.getSelectedItems();
+        this.splitSemicolonNames(items);
+    }
+
+    /**
+     * 在知网搜索结果列表添加文献时，可能导致该文献的作者名变成类似于 姓名;姓名;姓名 的形式，
+     * 使用此函数将分号分隔的姓名分隔到不同的条目中。
+     */
+    this.splitSemicolonNames = async function (items) {
+        for (let item of items) {
+            const creators = item.getCreators();
+            var newlist = [];
+            for (let creator of creators) {
+                if (
+                    creator.lastName.search(";") &&
+                    creator.firstName === ""
+                ) {
+                    const names = creator.lastName.split(";").filter(s => s !== "");
+                    for (let name of names) {
+                        newlist.push(
+                            {
+                                "firstName": "",
+                                "lastName": name,
+                                "creatorType": "author"
+                            }
+                        );
+                    }
+                } else {
+                    newlist.push(creator);
+                }
+            }
+            if (newlist !== creators) {
+                item.setCreators(newlist);
+                item.saveTx();
+            }
+        }
+    }
+
     this.removeDotM = function () {
         var items = ZoteroPane.getSelectedItems();
         this.removeDot(items);

@@ -5,6 +5,7 @@
 <!ENTITY jasminum.menu.tools.label "Tools">
 <!ENTITY jasminum.menu.tools.namesplit.label "Split Names">
 <!ENTITY jasminum.menu.tools.namemerge.label "Merge Names">
+<!ENTITY jasminum.menu.tools.semicolonNamesSplit.label "Split Semicoloned Names">
 <!ENTITY jasminum.menu.tools.removeDot.label "Remove Dot From Filename">
 <!ENTITY jasminum.menu.tools.language.label "Set Language">
 <!ENTITY jasminum.pdftkpath.label "PDFtk Service Install Folder,contains pdftk.exe or pdftk">
