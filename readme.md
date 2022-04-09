@@ -24,6 +24,8 @@ macos(10.15)用户：
 需要先安装 M1 版本的 homebrew，然后在终端 Terminal 中
 ```bash
 brew install pdftk-java
+# 如果安装失败或使用异常，使用下面这条命令安装
+HOMEBREW_BOTTLE_DOMAIN= brew install pdftk-java
 which pdftk
 ```
 第一条命令是安装 pdftk，第二条命令是查看 pdftk 的安装路径。具体路径设置方法参考下文的路径选择。
