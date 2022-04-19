@@ -5,6 +5,7 @@
 <!ENTITY jasminum.menu.tools.label "小工具">
 <!ENTITY jasminum.menu.tools.namesplit.label "拆分姓名">
 <!ENTITY jasminum.menu.tools.namemerge.label "合并姓名">
+<!ENTITY jasminum.menu.tools.semicolonNamesSplit.label "从分号拆分名字">
 <!ENTITY jasminum.menu.tools.removeDot.label "去除文件名中逗号">
 <!ENTITY jasminum.menu.tools.language.label "设置默认语言">
 <!ENTITY jasminum.pdftkpath.label "PDFtk Service 安装路径">
