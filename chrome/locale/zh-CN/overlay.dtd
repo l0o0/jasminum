@@ -1,5 +1,6 @@
 <!ENTITY jasminum.menu.CNKI.update.label "抓取知网元数据…">
 <!ENTITY jasminum.menu.CNKI.updateCiteCSSCI.label "更新知网引用数">
+<!ENTITY jasminum.menu.CNKI.attachment.label "查找知网附件">
 <!ENTITY jasminum.menu.CNKI.addBookmark.label "添加PDF书签…">
 <!ENTITY jasminum.menu.CNKI.label "知网助手">
 <!ENTITY jasminum.menu.tools.label "小工具">

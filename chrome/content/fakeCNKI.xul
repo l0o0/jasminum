@@ -1,0 +1,22 @@
+<?xml version="1.0"?>
+<?xml-stylesheet href="chrome://global/skin/" type="text/css"?>
+<?xml-stylesheet href="chrome://scaffold/skin/scaffold.css" type="text/css"?>
+<?xml-stylesheet href="chrome://zotero-platform/content/overlay.css" type="text/css"?>
+<?xml-stylesheet href="chrome://zotero-platform-version/content/style.css"?>
+
+<window id="fakeCNKI" width="600" height="600" minheight="600" persist="screenX screenY width height" title="Test"
+    xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul">
+    <script src="chrome://zotero/content/include.js" />
+    <script src="chrome://jasminum/content/scripts/cookie.js" />
+    <vbox flex="1">
+        <hbox align="center">
+            <label control="textbox-tabUrl" value="cnki.net" />
+            <menulist id="browser-url" editable="true" flex="1">
+                <menupopup></menupopup>
+            </menulist>
+            <button label="B2" oncommand="go()" />
+            <button label="B2" oncommand="Zotero.debug(test())" />
+        </hbox>
+        <browser src="about:blank" type="content" flex="1"></browser>
+    </vbox>
+</window>

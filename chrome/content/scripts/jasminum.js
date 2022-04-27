@@ -136,7 +136,7 @@ Zotero.Jasminum = new function () {
     /**
      * For selected CNKI attachments. Retrive keywords from file name.
      * And Search CNKI meta-data by these keywords
-     * @return {volid}
+     * @return {void}
      */
     this.searchSelectedItems = function () {
         Zotero.debug("**Jasminum Updating Selected items");
@@ -431,7 +431,7 @@ Zotero.Jasminum = new function () {
      * Update citation in Zotero item field
      * 110 citations(CNKI)[2021-08-22]<北大核心, CSCI>
      * @param {[Zotero.item]}
-     * @return {volid}
+     * @return {void}
      */
     this.updateCiteCSSCI = async function (items) {
         for (let item of items) {
@@ -524,7 +524,7 @@ Zotero.Jasminum = new function () {
     /**
      * Set default language value in item field
      * @param {[Zotero.item]}
-     * @return {volid}
+     * @return {void}
      */
     this.setLanguage = async function (item) {
         let defaultLanguage = Zotero.Prefs.get("jasminum.language");
@@ -537,5 +537,15 @@ Zotero.Jasminum = new function () {
     this.setLanguageItems = async function () {
         var items = ZoteroPane.getSelectedItems();
         for (var item of items) { await this.setLanguage(item) }
+    };
+
+    /**
+     * Download pdf/caj attachments from CNKI for selected items
+     * @param {[Zotero.item]}
+     * @return {void}
+     */
+    this.getAttachments() = async function () {
+        var items = ZoteroPane.getSelectedItems();
+        for (var item of items) { await this.Scrape.importAttachment(item) }
     };
 }

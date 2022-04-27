@@ -111,6 +111,19 @@ Zotero.Jasminum.Scrape = new function () {
         this.RefCookieSandbox = new Zotero.CookieSandbox("", url, cookieData, userAgent);
     }.bind(Zotero.Jasminum);
 
+
+    /**
+     * Cookies for downloading attachment from CNKI
+     * @param {String}
+     * @return {Zotero.CookieSandbox}
+     */
+    this.setAttachmentCookieSandBox = function () {
+        var cookieData = Zotero.Prefs.get("jasminum.attachmentCookie");
+        var userAgent = this.userAgent;
+        var url = "https://cnki.net/";
+        this.attachmentCookieSandbox = new Zotero.CookieSandbox("", url, cookieData, userAgent);
+    }
+
     /**
      * Create post data for CNKI reference url
      * @param {[id]} Array of getIDFromUrl
@@ -674,5 +687,25 @@ Zotero.Jasminum.Scrape = new function () {
         var fileExist = await OS.File.exists(pdftk);
         Zotero.debug(fileExist);
         return fileExist;
+    }.bind(Zotero.Jasminum);
+
+    /**
+     * Import attachment from CNKI, and added to item.
+     * @param {Zotero.item}
+     * @return {void}
+     */
+    this.importAttachment = async function (item) {
+        var importOptions = {
+            libraryID: item.libraryID,
+            url: pdfUrl,
+            parentItemID: item.id,
+            title: item.getField('title'),
+            fileBaseName: "Full_Text_by_Jasminum",
+            contentType: 'application/pdf',
+            referrer: 'https://kns.cnki.net/kns8/defaultresult/index',
+            cookieSandbox: this.attachmentCookieSandbox,
+        };
+        // return attachment Item
+        var result = await Zotero.Attachments.importFromURL(importOptions)
     }.bind(Zotero.Jasminum);
 }
