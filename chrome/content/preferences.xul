@@ -20,53 +20,74 @@
             </preferences>
             <tabbox>
                 <tabs>
-                    <tab label="&jasminum.chinese;"/>
-                    <tab label="&jasminum.translators;"/>
-                    <tab label="&jasminum.about;"/>
+                    <tab label="&chinese;"/>
+                    <tab label="&translators;"/>
+                    <tab label="&about;"/>
                 </tabs>
 
                 <tabpanels id="zotero-prefpane-jasminum" orient="vertical" minheight="500">
                     <tabpanel id="zotero-prefpane-chinese-tab">
                         <vbox flex="1">
                             <groupbox>
-                                <caption label="&jasminum.chinese.caption;"/>
-                                <checkbox id="jasminum-autoupdate" label="&jasminum.autoupdate.label;" preference="pref-jasminum-autoupdate"/>
-                                <checkbox id="jasminum.zhnamesplit" label="&jasminum.zhnamesplit.label;" preference="pref-jasminum.zhnamesplit"/>
-                                <checkbox id="jasminum.rename" label="&jasminum.rename.label;" preference="pref-jasminum.rename"/>
-                                <checkbox id="jasminum.autobookmark" label="&jasminum.autobookmark.label;" preference="pref-jasminum.autobookmark"/>
+                                <caption label="&chinese.caption;"/>
+                                <checkbox id="jasminum-autoupdate" label="&autoupdate.label;" preference="pref-jasminum-autoupdate"/>
+                                <checkbox id="jasminum.zhnamesplit" label="&zhnamesplit.label;" preference="pref-jasminum.zhnamesplit"/>
+                                <checkbox id="jasminum.rename" label="&rename.label;" preference="pref-jasminum.rename"/>
+                                <checkbox id="jasminum.autobookmark" label="&autobookmark.label;" preference="pref-jasminum.autobookmark"/>
                                 <hbox>
-                                    <checkbox id="jasminum.autolanguage" label="&jasminum.autolanguage.label;" preference="pref-jasminum.autolanguage"/>
-                                    <label value="&jasminum.language.label;"/>
+                                    <checkbox id="jasminum.autolanguage" label="&autolanguage.label;" preference="pref-jasminum.autolanguage"/>
+                                    <label value="&language.label;"/>
                                     <menulist flex="1" editable="true" id="jasminum.language" preference="pref-jasminum.language" maxwidth="100" >
                                         <menupopup>
                                             <menuitem label="zh-CN"/>
                                             <menuitem label="cn"/>
                                         </menupopup>
                                     </menulist>
-                                    
                                 </hbox>
-                                <!-- <checkbox id="jasminum.zhnamedot" label="&jasminum.zhnamedot.label;" preference="pref-jasminum.zhnamedot"/> -->
-                                <separator/>
+                            </groupbox>
+                            <groupbox>
+                                <caption label="&namepatent.caption;"/>
                                 <vbox flex="1">
-                                    <description>&jasminum.namepatent.desc;</description>
-                                    <!-- <textbox id="jasminum-namepatent" preference="pref-jasminum-namepatent"/> -->
                                     <hbox>
-                                        <menulist flex="1" editable="true" id="jasminum-namepatent" preference="pref-jasminum-namepatent">
+                                        <description>&namepatent.desc.info;</description>
+                                        <menulist flex="0.5" editable="true" id="jasminum-namepatent" preference="pref-jasminum-namepatent">
                                             <menupopup>
-                                                <menuitem label="{%t}_{%g}" tooltiptext="&jasminum.namepatent.desc.tg;"/>
-                                                <menuitem label="{%t}" tooltiptext="&jasminum.namepatent.desc.t;"/>
+                                                <menuitem label="{%t}_{%g}" tooltiptext="&namepatent.desc.tg;"/>
+                                                <menuitem label="{%t}" tooltiptext="&namepatent.desc.t;"/>
                                             </menupopup>
                                         </menulist>
-                                        <description>&jasminum.namepatent.desc.info;</description>
+                                        <image src="chrome://jasminum/skin/information.png" tooltiptext="&namepatent.desc;"/>
                                     </hbox>
                                 </vbox>
                             </groupbox>
                             <groupbox>
-                                <caption label="&jasminum.pdftk.caption;"/>
-                                <description>&jasminum.pdftk.info; <label class="zotero-text-link" value="PDFtk Server" href="https://www.pdflabs.com/tools/pdftk-server/"/></description>
+                                <caption label="&attachment.caption;"/>
+                                <vbox flex="1">
+                                    <hbox>
+                                        <description>&attachment.type.info;</description>
+                                        <menulist flex="0.5" id="jasminum-attachment-type" preference="pref-jasminum-attachment-type">
+                                            <menupopup>
+                                                <menuitem label="pdf"/>
+                                                <menuitem label="caj"/>
+                                            </menupopup>
+                                        </menulist>
+                                    </hbox>
+                                    <hbox>
+                                        <description>&attachment.cookie.info;</description>
+                                        <button label="&open.cnki;" oncommand="openCNKI();"/>
+                                    </hbox>
+                                    <hbox>
+                                        <description>&cookie.endtime;</description>
+                                        <label id="cookie_endtime" value=""/>
+                                    </hbox>
+                                </vbox>
+                            </groupbox>
+                            <groupbox>
+                                <caption label="&pdftk.caption;"/>
+                                <description>&pdftk.info; <label class="zotero-text-link" value="PDFtk Server" href="https://www.pdflabs.com/tools/pdftk-server/"/></description>
                                 <hbox style="margin: 0" align="center">
                                     <textbox id="jasminum-pdftk-path" preference="pref-jasminum-pdftkpath" readonly="true" flex="1"/>
-                                    <button label="&jasminum.choose;" oncommand="choosePath();"/>
+                                    <button label="&choose;" oncommand="choosePath();"/>
                                     <image id="path-accept" src="chrome://jasminum/skin/accept.png" tooltiptext="&pdftk.path.check.ok;" hidden="true"/>
                                     <image id="path-error" src="chrome://jasminum/skin/exclamation.png" tooltiptext="&pdftk.path.check.error;" hidden="true"/>
                                 </hbox>
@@ -90,8 +111,8 @@
 		                </listcols>
 	                    </listbox>
                         <hbox style="display: block">
-                            <button label="&jasminum.refresh.label;" tooltiptext="&jasminum.refreshInfo.label;" oncommand="initTranslatorPanel();"/>
-                            <button label="&jasminum.updateall.label;" tooltiptext="&jasminum.updateallInfo.label;" oncommand="updateAll();"/>
+                            <button label="&refresh.label;" tooltiptext="&refreshInfo.label;" oncommand="initTranslatorPanel();"/>
+                            <button label="&updateall.label;" tooltiptext="&updateallInfo.label;" oncommand="updateAll();"/>
                             <label value="更新之后还需要在浏览器Zotero Connector中更新翻译器信息"/>
                             <label class="zotero-text-link" value="如何在浏览器中更新翻译器" href="https://www.bilibili.com/video/BV1F54y1k73n/"/>
                         </hbox>
@@ -110,6 +131,7 @@
                         <hbox>
                             <label value="Translators_CN 项目地址"/><label class="zotero-text-link" value="https://github.com/l0o0/translators_CN" href="https://github.com/l0o0/translators_CN"/>
                         </hbox>
+                        <button label="OPEN" oncommand="window.openDialog('chrome://jasminum/content/updateMetadata.xul', '_blank', 'chrome,modal,centerscreen,resizable=no');"/>
                     </tabpanel>
                 </tabpanels>
             </tabbox>

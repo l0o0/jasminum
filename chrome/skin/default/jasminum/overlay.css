@@ -29,3 +29,7 @@
 .jasminum-zh-icon {
 	list-style-image: url('chrome://jasminum/skin/flag-china.png');
 }
+
+.jasminum-pdf-icon {
+	list-style-image: url('chrome://jasminum/skin/pdf.png');
+}

@@ -22,9 +22,10 @@ function go() {
     );
 }
 
-function test() {
+function updateCookie() {
     let _browser = document.getElementsByTagName('browser')[0];
     let _doc = _browser.contentDocument;
+    Zotero.Prefs.set("jasminum.cnki.attachment.cookie", _doc.cookie);
     return _doc.cookie;
 }
 

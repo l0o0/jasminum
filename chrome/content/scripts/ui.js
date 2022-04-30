@@ -20,6 +20,7 @@ Zotero.Jasminum.UI = new function () {
             "jasminum-popup-menu2"
         ).hidden = !showName; // 小工具弹出菜单
         pane.document.getElementById("jasminum-itemmenu-updateCiteCSSCI").hidden = !showName;
+        pane.document.getElementById("jasminum-itemmenu-attachment").hidden = !showName;
         // Menu for PDF bookmark
         var showBookmark = false;
         if (items.length === 1) {

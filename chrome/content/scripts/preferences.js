@@ -209,3 +209,12 @@ updateAll = async function () {
         "所有翻译器已经完成更新"
     )
 };
+
+openCNKI = function () {
+    Zotero.debug("Open CNKI ...");
+    window.openDialog(
+        "chrome://jasminum/content/fakeCNKI.xul",
+        "_blank",
+        "chrome,modal,centerscreen,resizable=yes"
+    );
+};

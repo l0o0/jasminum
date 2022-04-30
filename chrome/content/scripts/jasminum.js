@@ -544,7 +544,7 @@ Zotero.Jasminum = new function () {
      * @param {[Zotero.item]}
      * @return {void}
      */
-    this.getAttachments() = async function () {
+    this.getAttachments = async function () {
         var items = ZoteroPane.getSelectedItems();
         for (var item of items) { await this.Scrape.importAttachment(item) }
     };
