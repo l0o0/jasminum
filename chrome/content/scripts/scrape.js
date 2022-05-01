@@ -90,7 +90,7 @@ Zotero.Jasminum.Scrape = new function () {
         var userAgent = this.userAgent;
         var url = "https://cnki.net/";
         this.CookieSandbox = new Zotero.CookieSandbox("", url, cookieData, userAgent);
-    }.bind(Zotero.Jasminum);
+    };
 
 
     // Cookie for getting Refworks data
@@ -109,7 +109,7 @@ Zotero.Jasminum.Scrape = new function () {
         var userAgent = this.userAgent;
         var url = "https://cnki.net/";
         this.RefCookieSandbox = new Zotero.CookieSandbox("", url, cookieData, userAgent);
-    }.bind(Zotero.Jasminum);
+    };
 
 
     /**
@@ -118,7 +118,7 @@ Zotero.Jasminum.Scrape = new function () {
      * @return {Zotero.CookieSandbox}
      */
     this.setAttachmentCookieSandBox = function () {
-        var cookieData = Zotero.Prefs.get("jasminum.attachmentCookie");
+        var cookieData = Zotero.Prefs.get("jasminum.cnki.attachment.cookie");
         var userAgent = this.userAgent;
         var url = "https://cnki.net/";
         this.attachmentCookieSandbox = new Zotero.CookieSandbox("", url, cookieData, userAgent);
@@ -126,7 +126,7 @@ Zotero.Jasminum.Scrape = new function () {
 
     /**
      * Create post data for CNKI reference url
-     * @param {[id]} Array of getIDFromUrl
+     * @param {[id]} Array of getIDFromURL
      * @return {String} 
      */
     this.createRefPostData = function (ids) {
@@ -274,7 +274,7 @@ Zotero.Jasminum.Scrape = new function () {
     }.bind(Zotero.Jasminum);
 
 
-    this.getIDFromUrl = function (url) {
+    this.getIDFromURL = function (url) {
         if (!url) return false;
         // add regex for navi.cnki.net
         var dbname = url.match(/[?&](?:db|table)[nN]ame=([^&#]*)/i);
@@ -301,10 +301,23 @@ Zotero.Jasminum.Scrape = new function () {
     this.getIDFromPage = async function (url) {
         let pageResp = await Zotero.HTTP.request("GET", url);
         let page = this.Utils.string2HTML(pageResp.responseText);
+        if (page.title = "知网节超时验证") {
+            Zotero.debug("** Jasminum 知网节超时验证")
+            return;
+        }
         let dbcode = page.querySelector("input#paramdbcode").value;
         let filename = page.querySelector("input#paramfilename").value;
         let dbname = page.querySelector("input#paramdbname").value;
         return { dbname: dbname, filename: filename, dbcode: dbcode };
+    }.bind(Zotero.Jasminum);
+
+    /**
+     * Get CNKI article id
+     * @param {String} url CNKI url string
+     * @return {Object} article id
+     */
+    this.getCNKIID = async function (url) {
+        return await this.Scrape.getIDFromURL(url) || this.Scrape.getIDFromPage(url);
     }.bind(Zotero.Jasminum);
 
 
@@ -328,13 +341,13 @@ Zotero.Jasminum.Scrape = new function () {
             "X-Requested-With": "XMLHttpRequest",
         };
         var postUrl = "https://kns.cnki.net/KNS8/Brief/GetGridTableHtml";
-        if (!this.CookieSandbox) {
+        if (!this.Scrape.CookieSandbox) {
             this.Scrape.setCookieSandbox();
         }
         // Zotero.debug(Zotero.Jasminum.CookieSandbox);
         var resp = await Zotero.HTTP.request("POST", postUrl, {
             headers: requestHeaders,
-            cookieSandbox: this.CookieSandbox,
+            cookieSandbox: this.Scrape.CookieSandbox,
             body: postData,
         });
         // Zotero.debug(resp.responseText);
@@ -421,11 +434,11 @@ Zotero.Jasminum.Scrape = new function () {
      */
     this.getRefText = async function (postData) {
         let url = "https://kns.cnki.net/KNS8/manage/ShowExport";
-        if (!this.RefCookieSandbox) {
+        if (!this.Scrape.RefCookieSandbox) {  // This is may be error
             this.Scrape.setRefCookieSandbox();
         }
         var resp = await Zotero.HTTP.request("POST", url, {
-            cookieSandbox: this.RefCookieSandbox,
+            cookieSandbox: this.Scrape.RefCookieSandbox,
             body: postData,
         });
         return resp.responseText
@@ -465,7 +478,7 @@ Zotero.Jasminum.Scrape = new function () {
         targetRows.forEach(function (r) {
             var url = r.getElementsByClassName("fz14")[0].getAttribute("href");
             var cite = Zotero.Jasminum.Scrape.getCitationFromSearch(r);
-            targetIDs.push(Zotero.Jasminum.Scrape.getIDFromUrl(url));
+            targetIDs.push(Zotero.Jasminum.Scrape.getIDFromURL(url));
             targetData.citations.push(cite);
         });
         Zotero.debug(targetIDs);
@@ -487,7 +500,7 @@ Zotero.Jasminum.Scrape = new function () {
 
     this.getReaderUrl = function (itemUrl) {
         Zotero.debug("** Jasminum get Reader url.");
-        var itemid = this.Scrape.getIDFromUrl(itemUrl);
+        var itemid = this.Scrape.getIDFromURL(itemUrl);
         var readerUrl =
             "https://kreader.cnki.net/Kreader/CatalogViewPage.aspx?dbCode=" +
             itemid.dbcode +
@@ -559,7 +572,7 @@ Zotero.Jasminum.Scrape = new function () {
             // 匹配知网 URL
             parentItem.getField("url") &&
             parentItem.getField("url").match(/^https?:\/\/kns\.cnki\.net/) &&// Except nxgp.cnki.net
-            this.Scrape.getIDFromUrl(parentItem.getField("url")) // A valid ID
+            this.Scrape.getIDFromURL(parentItem.getField("url")) // A valid ID
         ) {
             Zotero.debug("** Jasminum item url exists");
             itemUrl = parentItem.getField("url");
@@ -695,17 +708,82 @@ Zotero.Jasminum.Scrape = new function () {
      * @return {void}
      */
     this.importAttachment = async function (item) {
+        Zotero.debug("** Jasminum import attachment begin");
+        let articleID = await this.Scrape.getCNKIID(item.getField("url"));
+        if (!articleID) { // 从网址获取ID失败，使用查询结果
+            this.Utils.showPopup(
+                "知网下载链接查询失败",
+                `知网超时验证,可能抓取信息时出现验证码`,
+                1);
+            return;
+        }
+        let articleUrl = this.Utils.getURLFromID(articleID, en = true);
+        let attachmentUrl = await this.Scrape.getAttachmentURL(articleUrl)
+        let cookie = Zotero.Prefs.get("jasminum.cnki.attachment.cookie");
+        let attachmentType = Zotero.Prefs.get("jasminum.attachment");
+        if (cookie === undefined) {
+            this.Utils.showPopup(
+                "知网用户数据获取异常",
+                `请先在茉莉花设置 -> 获取知网用户数据 -> 输入知网网址 -> 点击获取按钮`,
+                1);
+            return;
+        }
+        if (attachmentUrl === undefined) {
+            this.Utils.showPopup(
+                "未查询到附件!",
+                `文章：${item.getField("title")}\n   未查询到附件`,
+                1);
+            return;
+        }
+        Zotero.debug("** Jasminum attachment url: " + attachmentUrl);
+        if (!this.Scrape.attachmentCookieSandbox) {
+            this.Scrape.setAttachmentCookieSandBox();
+        }
         var importOptions = {
             libraryID: item.libraryID,
-            url: pdfUrl,
+            url: attachmentUrl,
             parentItemID: item.id,
-            title: item.getField('title'),
+            title: `Full_Text_by_Jasminum.${attachmentType}`,
             fileBaseName: "Full_Text_by_Jasminum",
-            contentType: 'application/pdf',
+            contentType: `application/${attachmentType}`,
             referrer: 'https://kns.cnki.net/kns8/defaultresult/index',
-            cookieSandbox: this.attachmentCookieSandbox,
+            cookieSandbox: this.Scrape.attachmentCookieSandbox,
         };
         // return attachment Item
-        var result = await Zotero.Attachments.importFromURL(importOptions)
+        try {
+            var result = await Zotero.Attachments.importFromURL(importOptions)
+            Zotero.debug(result);
+            this.Utils.showPopup(
+                "下载成功!",
+                `文章：${item.getField("title")}\n 下载成功 `,
+                0);
+        } catch (e) {
+            this.Utils.showPopup(
+                "附件下载失败!",
+                "可能是用户信息失效，没有下载权限或出现验证码，下载的附件是网页",
+                1);
+        }
     }.bind(Zotero.Jasminum);
+
+    /**
+     * Get attachment url from item.
+     * @param {String} article url
+     * @return {string}, attachment url
+    */
+    this.getAttachmentURL = async function (articleUrl) {
+        let resp = await Zotero.HTTP.request("GET", articleUrl);
+        let html = this.Utils.string2HTML(resp.responseText);
+        let attachment;
+        switch (Zotero.Prefs.get("jasminum.attachment")) {
+            case "pdf":
+                attachment = html.getElementById("pdfDown1") || html.getElementById("pdfDown");
+                break;
+            case "caj":
+                attachment = html.getElementById("cajDown");
+                break
+        }
+        if (attachment) {
+            return "https://oversea.cnki.net" + attachment.getAttribute("href").trim();
+        }
+    }.bind(Zotero.Jasminum)
 }

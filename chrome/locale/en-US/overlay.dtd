@@ -1,41 +1,54 @@
-<!ENTITY jasminum.menu.CNKI.update.label "Get CNKI Metadata…">
-<!ENTITY jasminum.menu.CNKI.updateCiteCSSCI.label "Update CNKI citation">
-<!ENTITY jasminum.menu.CNKI.attachment.label "Download Attachment">
-<!ENTITY jasminum.menu.CNKI.addBookmark.label "Add Bookmark to PDF">
-<!ENTITY jasminum.menu.CNKI.label "CNKI">
-<!ENTITY jasminum.menu.tools.label "Tools">
-<!ENTITY jasminum.menu.tools.namesplit.label "Split Names">
-<!ENTITY jasminum.menu.tools.namemerge.label "Merge Names">
-<!ENTITY jasminum.menu.tools.semicolonNamesSplit.label "Split Semicoloned Names">
-<!ENTITY jasminum.menu.tools.removeDot.label "Remove Dot From Filename">
-<!ENTITY jasminum.menu.tools.language.label "Set Language">
-<!ENTITY jasminum.pdftkpath.label "PDFtk Service Install Folder,contains pdftk.exe or pdftk">
-<!ENTITY jasminum.autoupdate.label "Retrieve CNKI metadata when adding Chinese articles(pdf/caj)">
-<!ENTITY jasminum.autolanguage.label "Set default language when adding Chinese articles">
-<!ENTITY jasminum.language.label "Default Chinese language(select/input): ">
-<!ENTITY jasminum.chinese "Setting">
-<!ENTITY jasminum.translators "Unofficial Translators Repository">
-<!ENTITY jasminum.check "Check">
-<!ENTITY jasminum.chinese.caption "CNKI Setting">
-<!ENTITY jasminum.pdftk.caption "PDFtk Server Execute File Path">
-<!ENTITY jasminum.choose "Choose">
+<!ENTITY menu.CNKI.update.label "Get CNKI Metadata…">
+<!ENTITY menu.CNKI.updateCiteCSSCI.label "Update CNKI citation">
+<!ENTITY menu.CNKI.attachment.label "Download Attachment">
+<!ENTITY menu.CNKI.addBookmark.label "Add Bookmark to PDF">
+<!ENTITY menu.CNKI.label "CNKI">
+<!ENTITY menu.tools.label "Tools">
+<!ENTITY menu.tools.namesplit.label "Split Names">
+<!ENTITY menu.tools.namemerge.label "Merge Names">
+<!ENTITY menu.tools.semicolonNamesSplit.label "Split Semicoloned Names">
+<!ENTITY menu.tools.removeDot.label "Remove Dot From Filename">
+<!ENTITY menu.tools.language.label "Set Language">
+<!ENTITY pdftkpath.label "PDFtk Service Install Folder,contains pdftk.exe or pdftk">
+<!ENTITY autoupdate.label "Retrieve CNKI metadata when adding Chinese articles(pdf/caj)">
+<!ENTITY autolanguage.label "Set default language when adding Chinese articles">
+<!ENTITY language.label "Default LANG: ">
+<!ENTITY cnkicite.label "Item field for CSSCI: ">
+<!ENTITY chinese "Setting">
+<!ENTITY translators "Unofficial Translators Repository">
+<!ENTITY check "Check">
+<!ENTITY chinese.caption "CNKI Setting">
+<!ENTITY namepatent.caption "Filename patent Setting">
+<!ENTITY attachment.caption "CNKI Attachment Setting">
+<!ENTITY attachment.type.info "Choose attachment type to download">
+<!ENTITY attachment.cookie.info "Update CNKI user data">
+<!ENTITY open.cnki "Open CNKI">
+<!ENTITY get.cookie "Click to update CNKI user data">
+<!ENTITY cookie.endtime "User data expiration time: ">
+<!ENTITY pdftk.caption "PDFtk Server Execute File Path">
+<!ENTITY choose "Choose">
 <!ENTITY jasminum "Jasminum">
-<!ENTITY jasminum.pdftk.info "Jasminum use PDFtk server to add bookmarks. Please install PDFtk server properly and choose folder contains PDFtk server execute file">
+<!ENTITY pdftk.info "Jasminum use PDFtk server to add bookmarks. Please install PDFtk server properly and choose folder contains PDFtk server execute file">
 <!ENTITY pdftk.path.check.ok "PDFtk server path is OK.">
 <!ENTITY pdftk.path.check.error "Can't find PDFtk execute file in this folder.">
-<!ENTITY jasminum.namepatent.desc "Filename format:{&#37;t}=title，{&#37;g}=author, {&#37;y}=year,{&#37;j}=other info(such as source), no limit on delimiters，ignore file extension">
-<!ENTITY jasminum.namepatent.desc.tg "「标题_第一作者」格式命名文件，如「无人机多余度航空电子系统设计与应用_杨璐.caj」">
-<!ENTITY jasminum.namepatent.desc.t "「标题」格式命名文件，如「无人机多余度航空电子系统设计与应用.caj」">
-<!ENTITY jasminum.namepatent.desc.info "从下拉菜单中选择对应格式或直接输入">
-<!ENTITY jasminum.zhnamesplit.label "Split firstname and lastname when get metadata(Including CNKI web translators)">
-<!ENTITY jasminum.rename.label "Use Zotfile to rename attachment(Need Zotfile installed)">
-<!ENTITY jasminum.autobookmark.label "Add bookmark to thesis PDF when adding thesis item from CNKI">
-<!ENTITY jasminum.zhnamedot.label "Remove ', ' between Chinese characters when Zotfile rename attachment file.">
-<!ENTITY jasminum.refresh.label "Refresh">
-<!ENTITY jasminum.updateall.label "Update All">
-<!ENTITY jasminum.updateT.label "Update">
-<!ENTITY jasminum.refreshInfo.label "Get translator udpate information">
-<!ENTITY jasminum.updateallInfo.label "Update all CN translators(Be careful)">
-<!ENTITY jasminum.init.label "Get Updates">
-<!ENTITY jasminum.initInfo.label "Fetch translator data from Translators CN">
-<!ENTITY jasminum.about "About">
+<!ENTITY namepatent.desc "Filename format:{&#37;t}=title，{&#37;g}=author, {&#37;y}=year,{&#37;j}=other info(such as source), no limit on delimiters，ignore file extension">
+<!ENTITY namepatent.desc.tg "「title_author」file named after title and author，like「无人机多余度航空电子系统设计与应用_杨璐.caj」">
+<!ENTITY namepatent.desc.t "「title」file named after title，like「无人机多余度航空电子系统设计与应用.caj」">
+<!ENTITY namepatent.desc.info "Select name patent or input">
+<!ENTITY zhnamesplit.label "Split firstname and lastname when get metadata(Including CNKI web translators)">
+<!ENTITY rename.label "Use Zotfile to rename attachment(Need Zotfile installed)">
+<!ENTITY autobookmark.label "Add bookmark to thesis PDF when adding thesis item from CNKI">
+<!ENTITY zhnamedot.label "Remove ', ' between Chinese characters when Zotfile rename attachment file.">
+<!ENTITY translator.notiice "Press Update button in the buttom to refresh, click update button to download corresponding translator">
+<!ENTITY refresh.label "Refresh">
+<!ENTITY updateall.label "Update All">
+<!ENTITY updateT.label "Update">
+<!ENTITY refreshInfo.label "Get translator udpate information">
+<!ENTITY updateallInfo.label "Update all CN translators(Be careful)">
+<!ENTITY update.translator "After downloading translator, you need to refresh translators in browser">
+<!ENTITY init.label "Get Updates">
+<!ENTITY initInfo.label "Fetch translator data from Translators CN">
+<!ENTITY about "About">
+<!ENTITY about.desc "First of all, thank you very much for using the Jasmine plugin🌹Due to capacity and time constraints, there will inevitably be some deficiencies. If you have some problems or suggestions, please send feedback to the mailbox: linxzh1989@gmail.com. Finally, everyone is welcome to join the Zotero Chinese plugin QQ Group 913637964.">
+<!ENTITY jasminun.tutorial "Jasminum'stutorial, you can watch">
+<!ENTITY han.tutorial "Mr Han's video">

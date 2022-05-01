@@ -215,6 +215,6 @@ openCNKI = function () {
     window.openDialog(
         "chrome://jasminum/content/fakeCNKI.xul",
         "_blank",
-        "chrome,modal,centerscreen,resizable=yes"
+        "chrome,centerscreen,resizable=yes"
     );
 };

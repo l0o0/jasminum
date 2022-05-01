@@ -16,7 +16,7 @@
                 <menupopup></menupopup>
             </menulist>
             <button label="Go" oncommand="go()" />
-            <button label="&get.cookie;" oncommand="Zotero.debug(updateCookie())" />
+            <button label="&get.cookie;" oncommand="updateCookie(); alert('Update success');" />
         </hbox>
         <browser src="about:blank" type="content" flex="1"></browser>
     </vbox>

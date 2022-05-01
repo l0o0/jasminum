@@ -63,7 +63,13 @@ Zotero.Jasminum = new function () {
             Zotero.Prefs.set("jasminum.autolanguage", false);
         }
         if (Zotero.Prefs.get("jasminum.language") === undefined) {
-            Zotero.Prefs.set("jasminum.language", 'zh-CN');
+            Zotero.Prefs.set("jasminum.language", 'zh_CN');
+        }
+        if (Zotero.Prefs.get("jasminum.attachment") === undefined) {
+            Zotero.Prefs.set("jasminum.attachment", 'pdf');
+        }
+        if (Zotero.Prefs.get("jasminum.citefield") === undefined) {
+            Zotero.Prefs.set("jasminum.citefield", 'extra');
         }
     };
 
@@ -153,7 +159,7 @@ Zotero.Jasminum = new function () {
         // Retrive meta data for webpage item
         if (Zotero.ItemTypes.getName(item.itemTypeID) === "webpage") {
             Zotero.debug("** Jasminum add webpage.");
-            let articleId = this.Scrape.getIDFromUrl(item.getField("url"));
+            let articleId = this.Scrape.getIDFromURL(item.getField("url"));
             Zotero.debug([articleId]);
             let postData = this.Scrape.createRefPostData([articleId]);
             let data = await this.Scrape.getRefText(postData);
@@ -258,7 +264,6 @@ Zotero.Jasminum = new function () {
             this.searchItems(items);
         }
     };
-
 
 
     this.addBookmarkItem = async function (item) {
@@ -466,7 +471,8 @@ Zotero.Jasminum = new function () {
                 let cssci = this.Scrape.getCSSCI(html);
                 // let cssciString = "Chinese Core Journals: <" + cssci + ">";
                 let cssciString = "<" + cssci + ">";
-                var extraData = item.getField("extra");
+                let field = Zotero.Prefs.get("jasminum.citefield");
+                var extraData = item.getField(field);
                 // Remove old cite and CSSCI string
                 extraData = extraData.replace(/\d+ citations?\(CNKI\)\[[\d-]{8,10}\].*\s?/, '');
                 extraData = extraData.replace(/^<.*?>\s?/, "");
@@ -504,7 +510,7 @@ Zotero.Jasminum = new function () {
                 )
                 Zotero.debug("** Jasminum cite number: " + cite);
                 Zotero.debug("** Jasminum cssci: " + cssci);
-                item.setField("extra", extraAdd + "\n" + extraData.trim());
+                item.setField(field, extraAdd + "\n" + extraData.trim());
                 await item.saveTx();
             } else {
                 this.Utils.showPopup(

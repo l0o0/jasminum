@@ -8,15 +8,17 @@
     <prefwindow id="zotero-prefs">
         <prefpane id="zotero-prefpane-jasminum" insertafter="zotero-prefpane-advanced" label="&jasminum;" image="chrome://jasminum/skin/icon.png" onpaneload="initPref();">
             <preferences id="zotero-preferences-jasminum">
-                <preference id="pref-jasminum-pdftkpath" name="extensions.zotero.jasminum.pdftkpath" type="string"/>
-                <preference id="pref-jasminum-autoupdate" name="extensions.zotero.jasminum.autoupdate" type="bool"/>
-                <preference id="pref-jasminum-namepatent" name="extensions.zotero.jasminum.namepatent" type="string"/>
+                <preference id="pref-jasminum.pdftkpath" name="extensions.zotero.jasminum.pdftkpath" type="string"/>
+                <preference id="pref-jasminum.autoupdate" name="extensions.zotero.jasminum.autoupdate" type="bool"/>
+                <preference id="pref-jasminum.namepatent" name="extensions.zotero.jasminum.namepatent" type="string"/>
                 <preference id="pref-jasminum.zhnamesplit" name="extensions.zotero.jasminum.zhnamesplit" type="bool"/>
                 <preference id="pref-jasminum.rename" name="extensions.zotero.jasminum.rename" type="bool"/>
                 <preference id="pref-jasminum.autobookmark" name="extensions.zotero.jasminum.autobookmark" type="bool"/>
                 <preference id="pref-jasminum.zhnamedot" name="extensions.zotero.jasminum.zhnamedot" type="bool"/>
                 <preference id="pref-jasminum.language" name="extensions.zotero.jasminum.language" type="string"/>
                 <preference id="pref-jasminum.autolanguage" name="extensions.zotero.jasminum.autolanguage" type="bool"/>
+                <preference id="pref-jasminum.attachment" name="extensions.zotero.jasminum.attachment" type="string"/>
+                <preference id="pref-jasminum.citefield" name="extensions.zotero.jasminum.citefield" type="string"/>
             </preferences>
             <tabbox>
                 <tabs>
@@ -25,68 +27,76 @@
                     <tab label="&about;"/>
                 </tabs>
 
-                <tabpanels id="zotero-prefpane-jasminum" orient="vertical" minheight="500">
+                <tabpanels id="zotero-prefpane-jasminum" orient="vertical" minheight="600">
                     <tabpanel id="zotero-prefpane-chinese-tab">
                         <vbox flex="1">
                             <groupbox>
                                 <caption label="&chinese.caption;"/>
-                                <checkbox id="jasminum-autoupdate" label="&autoupdate.label;" preference="pref-jasminum-autoupdate"/>
+                                <checkbox id="jasminum.autoupdate" label="&autoupdate.label;" preference="pref-jasminum.autoupdate"/>
                                 <checkbox id="jasminum.zhnamesplit" label="&zhnamesplit.label;" preference="pref-jasminum.zhnamesplit"/>
                                 <checkbox id="jasminum.rename" label="&rename.label;" preference="pref-jasminum.rename"/>
                                 <checkbox id="jasminum.autobookmark" label="&autobookmark.label;" preference="pref-jasminum.autobookmark"/>
-                                <hbox>
+                                <row>
                                     <checkbox id="jasminum.autolanguage" label="&autolanguage.label;" preference="pref-jasminum.autolanguage"/>
-                                    <label value="&language.label;"/>
+                                    <label value="&language.label;" style="padding-top: 6px;"/>
                                     <menulist flex="1" editable="true" id="jasminum.language" preference="pref-jasminum.language" maxwidth="100" >
                                         <menupopup>
-                                            <menuitem label="zh-CN"/>
-                                            <menuitem label="cn"/>
+                                            <menuitem label="zh_CN" value="zh_CN"/>
+                                            <menuitem label="cn" value="cn"/>
                                         </menupopup>
                                     </menulist>
-                                </hbox>
+                                </row>
+                                <row>
+                                    <label value="&cnkicite.label;" style="padding-top: 6px;"/>
+                                    <menulist flex="0.5" editable="true" id="jasminum.citefield" preference="pref-jasminum.citefield">
+                                        <menupopup>
+                                            <menuitem label="extra"/>
+                                        </menupopup>
+                                    </menulist>
+                                </row>
                             </groupbox>
                             <groupbox>
                                 <caption label="&namepatent.caption;"/>
                                 <vbox flex="1">
-                                    <hbox>
+                                    <row>
                                         <description>&namepatent.desc.info;</description>
-                                        <menulist flex="0.5" editable="true" id="jasminum-namepatent" preference="pref-jasminum-namepatent">
+                                        <menulist flex="0.5" editable="true" id="jasminum.namepatent" preference="pref-jasminum.namepatent"> 
                                             <menupopup>
-                                                <menuitem label="{%t}_{%g}" tooltiptext="&namepatent.desc.tg;"/>
-                                                <menuitem label="{%t}" tooltiptext="&namepatent.desc.t;"/>
+                                                <menuitem label="{%t}_{%g}" value="{%t}_{%g}" tooltiptext="&namepatent.desc.tg;"/>
+                                                <menuitem label="{%t}" value="{%t}" tooltiptext="&namepatent.desc.t;"/>
                                             </menupopup>
                                         </menulist>
                                         <image src="chrome://jasminum/skin/information.png" tooltiptext="&namepatent.desc;"/>
-                                    </hbox>
+                                    </row>
                                 </vbox>
                             </groupbox>
                             <groupbox>
                                 <caption label="&attachment.caption;"/>
                                 <vbox flex="1">
-                                    <hbox>
+                                    <row> 
                                         <description>&attachment.type.info;</description>
-                                        <menulist flex="0.5" id="jasminum-attachment-type" preference="pref-jasminum-attachment-type">
+                                        <menulist flex="0.5" id="jasminum.attachment" preference="pref-jasminum.attachment">
                                             <menupopup>
-                                                <menuitem label="pdf"/>
-                                                <menuitem label="caj"/>
+                                                <menuitem label="pdf" value="pdf"/>
+                                                <menuitem label="caj" value="caj"/>
                                             </menupopup>
                                         </menulist>
-                                    </hbox>
+                                    </row>
                                     <hbox>
                                         <description>&attachment.cookie.info;</description>
                                         <button label="&open.cnki;" oncommand="openCNKI();"/>
                                     </hbox>
-                                    <hbox>
+                                    <!-- <hbox>
                                         <description>&cookie.endtime;</description>
                                         <label id="cookie_endtime" value=""/>
-                                    </hbox>
+                                    </hbox> -->
                                 </vbox>
                             </groupbox>
                             <groupbox>
                                 <caption label="&pdftk.caption;"/>
                                 <description>&pdftk.info; <label class="zotero-text-link" value="PDFtk Server" href="https://www.pdflabs.com/tools/pdftk-server/"/></description>
                                 <hbox style="margin: 0" align="center">
-                                    <textbox id="jasminum-pdftk-path" preference="pref-jasminum-pdftkpath" readonly="true" flex="1"/>
+                                    <textbox id="jasminum-pdftk-path" preference="pref-jasminum.pdftkpath" readonly="true" flex="1"/>
                                     <button label="&choose;" oncommand="choosePath();"/>
                                     <image id="path-accept" src="chrome://jasminum/skin/accept.png" tooltiptext="&pdftk.path.check.ok;" hidden="true"/>
                                     <image id="path-error" src="chrome://jasminum/skin/exclamation.png" tooltiptext="&pdftk.path.check.error;" hidden="true"/>
@@ -95,7 +105,7 @@
                         </vbox>
                     </tabpanel>
                     <tabpanel id="zotero-prefpane-translators-tab" orient="vertical">
-                        <description>点击下方刷新按钮更新数据，在刷新窗口中点击对应翻译器的Update按键进行下载</description>
+                        <description>&translator.notiice;</description>
                         <listbox id="translators-listbox" flex="1">
 		                <listhead>
 		                	<listheader label="Translators"/>
@@ -113,25 +123,22 @@
                         <hbox style="display: block">
                             <button label="&refresh.label;" tooltiptext="&refreshInfo.label;" oncommand="initTranslatorPanel();"/>
                             <button label="&updateall.label;" tooltiptext="&updateallInfo.label;" oncommand="updateAll();"/>
-                            <label value="更新之后还需要在浏览器Zotero Connector中更新翻译器信息"/>
+                            <label value="&update.translator;"/>
                             <label class="zotero-text-link" value="如何在浏览器中更新翻译器" href="https://www.bilibili.com/video/BV1F54y1k73n/"/>
                         </hbox>
                     </tabpanel>
                     <tabpanel id="zotero-prefpane-translators-tab" orient="vertical">
-                        <description style="white-space: pre-wrap;">首先非常感谢各位使用茉莉花插件🌹
-因能力和时间限制，难免会有一些不足。如果使用中遇到一些问题或者建议，欢迎发送反馈到邮箱：linxzh1989@gmail.com。
-最后也欢迎大家加入 Zotero中文插件 QQ群 913637964，一起学习交流。
-                        </description>
-                        <description style="white-space: pre-wrap;">Jasminum 的详细使用说明，可以参考
-<label class="zotero-text-link" value="韩敏义老师制作的操作说明" href="https://www.zhihu.com/zvideo/1318136717396799488"/>
-                        </description>
+                        <description style="white-space: pre-wrap;">&about.desc;</description>
+                        <description style="white-space: pre-wrap;">&jasminun.tutorial;<label class="zotero-text-link" value="&han.tutorial;" href="https://www.zhihu.com/zvideo/1318136717396799488"/></description>
                         <hbox>
                             <label value="Jasminum 项目地址:"/><label class="zotero-text-link" value="https://github.com/l0o0/jasminum" href="https://github.com/l0o0/jasminum"/>
                         </hbox>
                         <hbox>
                             <label value="Translators_CN 项目地址"/><label class="zotero-text-link" value="https://github.com/l0o0/translators_CN" href="https://github.com/l0o0/translators_CN"/>
                         </hbox>
-                        <button label="OPEN" oncommand="window.openDialog('chrome://jasminum/content/updateMetadata.xul', '_blank', 'chrome,modal,centerscreen,resizable=no');"/>
+                        <hbox>
+                            <label value="Zotero 常用插件国内下载"/><label class="zotero-text-link" value="https://zotero-chinese.gitee.io/zotero-plugins/#/" href="https://zotero-chinese.gitee.io/zotero-plugins/#/"/>
+                        </hbox>
                     </tabpanel>
                 </tabpanels>
             </tabbox>

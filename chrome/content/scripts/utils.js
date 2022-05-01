@@ -178,6 +178,20 @@ Zotero.Jasminum.Utils = new function () {
         return parser.parseFromString(text, "text/html");
     }.bind(Zotero.Jasminum);
 
+    /**
+     * Get CNKI URL from CNKI article id
+     * @param {Object} CNKI article id
+     * @param {Boolean} true for oversea url
+     * @return {String} CNKI URL
+     */
+    this.getURLFromID = function (id, en = null) {
+        if (en) {
+            return `https://oversea.cnki.net/KCMS/detail/detail.aspx?dbcode=${id.dbcode}&dbname=${id.dbname}&filename=${id.filename}&uniplatform=OVERSEAS_EN&v=uJhTu8ARyQjLVTb37OvEMX33PdTT8h_zaEK0x_NWeHUCzOM1XyJXSzWJWLAp2Wty`;
+        } else {
+            return `https://kns.cnki.net/KCMS/detail/detail.aspx?dbcode=${id.dbcode}&dbname=${id.dbname}&filename=${id.filename}&v=`
+        }
+    }.bind(Zotero.Jasminum);
+
     // Show Popup message
     this.showPopup = function (title, body, isError = 0, timeout = 5) {
         var popw = new Zotero.ProgressWindow();

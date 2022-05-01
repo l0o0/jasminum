@@ -13,6 +13,7 @@
 <!ENTITY autoupdate.label "添加中文PDF/CAJ时自动从知网抓取题录">
 <!ENTITY autolanguage.label "中文条目时自动设置语言">
 <!ENTITY language.label "默认中文语言(选择或输入): ">
+<!ENTITY cnkicite.label "知网引用数存放字段(英文名): ">
 <!ENTITY chinese "中文插件设置">
 <!ENTITY translators "非官方维护中文翻译器">
 <!ENTITY check "检查">
@@ -38,11 +39,16 @@
 <!ENTITY rename.label "拉取知网元数据后调用Zotfile重命名附件(需安装Zotfile)">
 <!ENTITY autobookmark.label "从知网添加学位论文时自动添加书签">
 <!ENTITY zhnamedot.label "当拉取知网元数据时去除 Zotfile 重命名文件名中的逗号(, )">
+<!ENTITY translator.notiice "点击下方刷新按钮更新数据，在刷新窗口中点击对应翻译器的Update按键进行下载">
 <!ENTITY refresh.label "刷新">
 <!ENTITY updateall.label "更新全部">
 <!ENTITY updateT.label "更新">
 <!ENTITY refreshInfo.label "获取TranslatorCN更新信息">
 <!ENTITY updateallInfo.label "更新全部TranslatorsCN(慎点)">
+<!ENTITY update.translator "更新之后还需要在浏览器Zotero Connector中更新翻译器信息">
 <!ENTITY init.label "获取更新信息">
 <!ENTITY initInfo.label "从Translators CN 中获取翻译器信息">
 <!ENTITY about "关于">
+<!ENTITY about.desc "首先非常感谢各位使用茉莉花插件🌹因能力和时间限制，难免会有一些不足。如果使用中遇到一些问题或者建议，欢迎发送反馈到邮箱：linxzh1989@gmail.com。最后也欢迎大家加入 Zotero中文插件 QQ群 913637964，一起学习交流。">
+<!ENTITY jasminun.tutorial "Jasminum 的详细使用说明，可以参考">
+<!ENTITY han.tutorial "韩敏义老师制作的操作说明">
