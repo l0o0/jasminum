@@ -65,6 +65,9 @@ Zotero.Jasminum = new function () {
         if (Zotero.Prefs.get("jasminum.language") === undefined) {
             Zotero.Prefs.set("jasminum.language", 'zh_CN');
         }
+        if (Zotero.Prefs.get("jasminum.foreignlanguage") === undefined) {
+            Zotero.Prefs.set("jasminum.foreignlanguage", 'en_US');
+        }
         if (Zotero.Prefs.get("jasminum.attachment") === undefined) {
             Zotero.Prefs.set("jasminum.attachment", 'pdf');
         }
@@ -534,6 +537,11 @@ Zotero.Jasminum = new function () {
      */
     this.setLanguage = async function (item) {
         let defaultLanguage = Zotero.Prefs.get("jasminum.language");
+        let langRegex = new RegExp("[\u4e00-\u9fa5]")
+        if (Zotero.Prefs.get("jasminum.completelanguage") && !langRegex.test(item.getField("title"))) {
+            // 当勾选了“根据标题设置语言栏”，并且 标题 中不含中文时，设置语言为“默认外文语言”
+            defaultLanguage = Zotero.Prefs.get("jasminum.foreignlanguage");
+        }
         if (item.getField("language") != defaultLanguage) {
             item.setField("language", defaultLanguage);
             await item.saveTx();
