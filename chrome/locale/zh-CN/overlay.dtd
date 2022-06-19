@@ -13,6 +13,8 @@
 <!ENTITY autoupdate.label "添加中文PDF/CAJ时自动从知网抓取题录">
 <!ENTITY autolanguage.label "中文条目时自动设置语言">
 <!ENTITY language.label "默认中文语言(选择或输入): ">
+<!ENTITY completelanguage.label "根据标题内容设置语言栏">
+<!ENTITY foreignlanguage.label "默认外文语言(选择或输入): ">
 <!ENTITY cnkicite.label "知网引用数存放字段(英文名): ">
 <!ENTITY chinese "中文插件设置">
 <!ENTITY translators "非官方维护中文翻译器">
