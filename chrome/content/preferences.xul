@@ -43,7 +43,7 @@
                                     <label value="&language.label;" style="padding-top: 6px;"/>
                                     <menulist flex="1" editable="true" id="jasminum.language" preference="pref-jasminum.language" maxwidth="100" >
                                         <menupopup>
-                                            <menuitem label="zh_CN" value="zh_CN"/>
+                                            <menuitem label="zh-CN" value="zh-CN"/>
                                             <menuitem label="cn" value="cn"/>
                                         </menupopup>
                                     </menulist>
@@ -53,7 +53,7 @@
                                     <label value="&foreignlanguage.label;" style="padding-top: 6px;"/>
                                     <menulist flex="1" editable="true" id="jasminum.foreignlanguage" preference="pref-jasminum.foreignlanguage" maxwidth="100" >
                                         <menupopup>
-                                            <menuitem label="en_US" value="en_US"/>
+                                            <menuitem label="en-US" value="en-US"/>
                                             <menuitem label="en" value="en"/>
                                         </menupopup>
                                     </menulist>

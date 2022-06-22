@@ -63,10 +63,10 @@ Zotero.Jasminum = new function () {
             Zotero.Prefs.set("jasminum.autolanguage", false);
         }
         if (Zotero.Prefs.get("jasminum.language") === undefined) {
-            Zotero.Prefs.set("jasminum.language", 'zh_CN');
+            Zotero.Prefs.set("jasminum.language", 'zh-CN');
         }
         if (Zotero.Prefs.get("jasminum.foreignlanguage") === undefined) {
-            Zotero.Prefs.set("jasminum.foreignlanguage", 'en_US');
+            Zotero.Prefs.set("jasminum.foreignlanguage", 'en-US');
         }
         if (Zotero.Prefs.get("jasminum.attachment") === undefined) {
             Zotero.Prefs.set("jasminum.attachment", 'pdf');
