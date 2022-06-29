@@ -51,22 +51,23 @@ getLastUpdateFromFile = async function (label) {
         Zotero.debug(label + " not exists");
         return "---";
     }
-    var array = await OS.File.read(desPath);
-    var decoder = new TextDecoder();
-    var js = decoder.decode(array).split("\n").slice(0, 20);
-    var lastUpdate = js.filter((line) => line.includes('"lastUpdated": '));
-    var group = lastUpdate[0].match(
-        /(\d{4}\-\d{1,}\-\d{1,}\s\d{1,}:\d{1,}:\d{1,})/g
-    );
-    Zotero.debug("***" + group[0]);
-    return group ? group[0] : "---";
+    try {
+        let source = await Zotero.File.getContentsAsync(desPath);
+        const infoRe = /^\s*{[\S\s]*?}\s*?[\r\n]/;
+        let metaData = JSON.parse(infoRe.exec(source)[0]);
+        return metaData.lastUpdated;
+    } catch (e) {
+        Zotero.debug(e);
+        return "---";
+    }
+
 };
 
 initTranslatorPanel = async function () {
     var listbox = document.getElementById("translators-listbox");
     var count = listbox.childElementCount;
     var data = await getUpdates();
-    // Zotero.debug(data);
+    Zotero.debug(data);
     var listitem, listcell, button;
     if (count == 2) {
         // Create table in panel
@@ -115,6 +116,19 @@ initTranslatorPanel = async function () {
 
             listbox.appendChild(listitem);
         }
+        // Create empty row for Mac to take up the last row space
+        if (Zotero.isMac) {
+            listitem = document.createElement("listitem");
+            listcell = document.createElement("listcell");
+            listitem.appendChild(listcell);
+            listcell = document.createElement("listcell");
+            listitem.appendChild(listcell);
+            listcell = document.createElement("listcell");
+            listitem.appendChild(listcell);
+            listcell = document.createElement("listcell");
+            listitem.appendChild(listcell);
+            listbox.appendChild(listitem);
+        }
     } else {
         // Update lastUpdate time
         for (let label in data) {
@@ -142,7 +156,7 @@ getUpdates = async function () {
         var updateJson = JSON.parse(resp.responseText);
         return updateJson;
     } catch (e) {
-        this.Utils.showPopup(
+        Zotero.Jasminum.Utils.showPopup(
             "翻译器更新失败",
             `获取翻译器更新信息失败，请稍后重试，${e}`,
             1
@@ -171,9 +185,14 @@ downloadTo = async function (label) {
             OS.Path.basename(cacheFile.path)
         );
         await OS.File.move(cacheFile.path, desPath);
+        Zotero.Jasminum.Utils.showPopup(
+            "翻译器下载成功",
+            `${label}.js 下载成功`,
+            0
+        )
         return true;
     } catch (e) {
-        this.Utils.showPopup(
+        Zotero.Jasminum.Utils.showPopup(
             "翻译器下载失败",
             `${label}.js 下载失败，请稍后重试`,
             1
@@ -183,6 +202,10 @@ downloadTo = async function (label) {
 
 updateIcon = async function (label, status) {
     var button = document.getElementById(label + "5button");
+    if (button == null) {
+        Zotero.debug("Update null button");
+        return;
+    }
     if (status) {
         button.setAttribute("image", "chrome://jasminum/skin/accept.png");
         var current = document.getElementById(label + "2");
@@ -204,7 +227,7 @@ updateTranslator = async function (label) {
 updateAll = async function () {
     var data = await getUpdates();
     Object.keys(data).forEach(async (label) => await updateTranslator(label));
-    this.Utils.showPopup(
+    Zotero.Jasminum.Utils.showPopup(
         "更新完成",
         "所有翻译器已经完成更新"
     )
