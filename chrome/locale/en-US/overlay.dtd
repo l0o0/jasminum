@@ -13,6 +13,8 @@
 <!ENTITY autoupdate.label "Retrieve CNKI metadata when adding Chinese articles(pdf/caj)">
 <!ENTITY autolanguage.label "Set default language when adding Chinese articles">
 <!ENTITY language.label "Default LANG: ">
+<!ENTITY completelanguage.label "Set default language by title">
+<!ENTITY foreignlanguage.label "Default Foreign LANG: ">
 <!ENTITY cnkicite.label "Item field for CSSCI: ">
 <!ENTITY chinese "Setting">
 <!ENTITY translators "Unofficial Translators Repository">

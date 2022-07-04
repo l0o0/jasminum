@@ -17,6 +17,8 @@
                 <preference id="pref-jasminum.zhnamedot" name="extensions.zotero.jasminum.zhnamedot" type="bool"/>
                 <preference id="pref-jasminum.language" name="extensions.zotero.jasminum.language" type="string"/>
                 <preference id="pref-jasminum.autolanguage" name="extensions.zotero.jasminum.autolanguage" type="bool"/>
+                <preference id="pref-jasminum.foreignlanguage" name="extensions.zotero.jasminum.foreignlanguage" type="string"/>
+                <preference id="pref-jasminum.completelanguage" name="extensions.zotero.jasminum.completelanguage" type="bool"/>
                 <preference id="pref-jasminum.attachment" name="extensions.zotero.jasminum.attachment" type="string"/>
                 <preference id="pref-jasminum.citefield" name="extensions.zotero.jasminum.citefield" type="string"/>
             </preferences>
@@ -41,8 +43,18 @@
                                     <label value="&language.label;" style="padding-top: 6px;"/>
                                     <menulist flex="1" editable="true" id="jasminum.language" preference="pref-jasminum.language" maxwidth="100" >
                                         <menupopup>
-                                            <menuitem label="zh_CN" value="zh_CN"/>
+                                            <menuitem label="zh-CN" value="zh-CN"/>
                                             <menuitem label="cn" value="cn"/>
+                                        </menupopup>
+                                    </menulist>
+                                </row>
+                                <row>
+                                    <checkbox id="jasminum.completelanguage" label="&completelanguage.label;" preference="pref-jasminum.completelanguage"/>
+                                    <label value="&foreignlanguage.label;" style="padding-top: 6px;"/>
+                                    <menulist flex="1" editable="true" id="jasminum.foreignlanguage" preference="pref-jasminum.foreignlanguage" maxwidth="100" >
+                                        <menupopup>
+                                            <menuitem label="en-US" value="en-US"/>
+                                            <menuitem label="en" value="en"/>
                                         </menupopup>
                                     </menulist>
                                 </row>
