@@ -65,7 +65,7 @@ Zotero.Jasminum = new function () {
         if (Zotero.Prefs.get("jasminum.language") === undefined) {
             Zotero.Prefs.set("jasminum.language", 'zh-CN');
         }
-        if (Zotero.Prefs.get("jasminum.language") === undefined) {
+        if (Zotero.Prefs.get("jasminum.languagelist") === undefined) {
             Zotero.Prefs.set("jasminum.languagelist", 'zh,en');
         }
         if (Zotero.Prefs.get("jasminum.attachment") === undefined) {
