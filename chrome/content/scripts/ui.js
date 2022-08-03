@@ -16,9 +16,10 @@ Zotero.Jasminum.UI = new function () {
         var showName = items.some((item) =>
             this.UI.isCNKIName(item)
         );
-        pane.document.getElementById(
-            "jasminum-popup-menu2"
-        ).hidden = !showName; // 小工具弹出菜单
+        // Keep toolbox always visible
+        // pane.document.getElementById(
+        //     "jasminum-popup-menu2"
+        // ).hidden = !showName; // 小工具弹出菜单
         pane.document.getElementById("jasminum-itemmenu-updateCiteCSSCI").hidden = !showName;
         pane.document.getElementById("jasminum-itemmenu-attachment").hidden = !showName;
         // Menu for PDF bookmark
@@ -31,12 +32,25 @@ Zotero.Jasminum.UI = new function () {
         }
 
         let isDisplayMenu = showSearch || showName || showBookmark;
-        pane.document.getElementById("jasminum-separator").hidden = !isDisplayMenu;
+        // pane.document.getElementById("jasminum-separator").hidden = !isDisplayMenu;
         pane.document.getElementById("jasminum-popup-menu1").hidden = !isDisplayMenu;
 
         Zotero.debug(
             `**Jasminum show menu: search ${showSearch} name ${showName} boomark ${showBookmark}`
         );
+    }.bind(Zotero.Jasminum);
+
+    /**
+     * Show item menu according item type (Collection)
+     * @return {void}
+     */
+    this.displayCollectionMenuitem = function () {
+        var items = this.getItems("collection")
+        var isEmptyItems = (items.length == 0)
+        Zotero.debug(isEmptyItems)
+        ZoteroPane.document.getElementById("jasminum-popup-collection").hidden = isEmptyItems
+        ZoteroPane.document.getElementById("jasminum-separator-collection").hidden = isEmptyItems
+
     }.bind(Zotero.Jasminum);
 
     /**
