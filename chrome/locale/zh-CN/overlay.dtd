@@ -9,12 +9,11 @@
 <!ENTITY menu.tools.semicolonNamesSplit.label "从分号拆分名字">
 <!ENTITY menu.tools.removeDot.label "去除文件名中逗号">
 <!ENTITY menu.tools.language.label "设置默认语言">
+<!ENTITY menu.tools.bacthsetlanguage.label "批量设置语言">
 <!ENTITY pdftkpath.label "PDFtk Service 安装路径">
 <!ENTITY autoupdate.label "添加中文PDF/CAJ时自动从知网抓取题录">
 <!ENTITY autolanguage.label "中文条目时自动设置语言">
 <!ENTITY language.label "默认中文语言(选择或输入): ">
-<!ENTITY completelanguage.label "根据标题内容设置语言栏">
-<!ENTITY foreignlanguage.label "默认外文语言(选择或输入): ">
 <!ENTITY cnkicite.label "知网引用数存放字段(英文名): ">
 <!ENTITY chinese "中文插件设置">
 <!ENTITY translators "非官方维护中文翻译器">
@@ -24,6 +23,8 @@
 <!ENTITY attachment.caption "附件下载设置">
 <!ENTITY attachment.type.info "选择下载附件格式">
 <!ENTITY attachment.cookie.info "获取知网用户数据">
+<!ENTITY toolbox.caption "小工具设置">
+<!ENTITY toolbox.bacthsetlanguage.info "批量设置语言（用,隔开）">
 <!ENTITY open.cnki "打开知网">
 <!ENTITY get.cookie "点击获取用户信息">
 <!ENTITY cookie.endtime "用户信息失效时间: ">

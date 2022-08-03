@@ -33,3 +33,6 @@
 .jasminum-pdf-icon {
 	list-style-image: url('chrome://jasminum/skin/pdf.png');
 }
+.jasminum-language-icon{
+	list-style-image: url('chrome://jasminum/skin/language.png');
+}

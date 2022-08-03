@@ -9,12 +9,11 @@
 <!ENTITY menu.tools.semicolonNamesSplit.label "Split Semicoloned Names">
 <!ENTITY menu.tools.removeDot.label "Remove Dot From Filename">
 <!ENTITY menu.tools.language.label "Set Language">
+<!ENTITY menu.tools.bacthsetlanguage.label "Batch Set Language">
 <!ENTITY pdftkpath.label "PDFtk Service Install Folder,contains pdftk.exe or pdftk">
 <!ENTITY autoupdate.label "Retrieve CNKI metadata when adding Chinese articles(pdf/caj)">
 <!ENTITY autolanguage.label "Set default language when adding Chinese articles">
 <!ENTITY language.label "Default LANG: ">
-<!ENTITY completelanguage.label "Set default language by title">
-<!ENTITY foreignlanguage.label "Default Foreign LANG: ">
 <!ENTITY cnkicite.label "Item field for CSSCI: ">
 <!ENTITY chinese "Setting">
 <!ENTITY translators "Unofficial Translators Repository">
@@ -24,6 +23,8 @@
 <!ENTITY attachment.caption "CNKI Attachment Setting">
 <!ENTITY attachment.type.info "Choose attachment type to download">
 <!ENTITY attachment.cookie.info "Update CNKI user data">
+<!ENTITY toolbox.caption "Toolbox Setting">
+<!ENTITY toolbox.bacthsetlanguage.info "Batch set language (separated by ,)">
 <!ENTITY open.cnki "Open CNKI">
 <!ENTITY get.cookie "Click to update CNKI user data">
 <!ENTITY cookie.endtime "User data expiration time: ">

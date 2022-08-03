@@ -9,6 +9,20 @@
         <menuseparator/>
         <menuitem id="zotero-collectionmenu-jasminum" label="&zotero.jasminum.updateCollection.label;" oncommand="Zotero.Jasminum.updateSelectedEntity()">
     </popup> -->
+    <menupopup id="zotero-collectionmenu">
+        <menuseparator id="jasminum-separator-collection"/>
+        <menu id="jasminum-popup-collection"
+            label="&menu.tools.label;"
+            class="menu-iconic jasminum-tools-icon">
+            <menupopup>
+                <menuitem
+                    label="&menu.tools.bacthsetlanguage.label;"
+                    class="menuitem-iconic jasminum-language-icon"
+                    oncommand="Zotero.Jasminum.bacthSetLanguage('collection');"/>
+            </menupopup>
+        </menu>
+    
+    </menupopup>
 
     <menupopup id="zotero-itemmenu">
         <menuseparator id="jasminum-separator"/>
@@ -63,6 +77,10 @@
                     label="&menu.tools.language.label;"
                     class="menuitem-iconic jasminum-zh-icon"
                     oncommand="Zotero.Jasminum.setLanguageItems();"/>
+                <menuitem
+                    label="&menu.tools.bacthsetlanguage.label;"
+                    class="menuitem-iconic jasminum-language-icon"
+                    oncommand="Zotero.Jasminum.bacthSetLanguage('items');"/>
             </menupopup>
         </menu>
 
