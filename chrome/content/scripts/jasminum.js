@@ -65,8 +65,8 @@ Zotero.Jasminum = new function () {
         if (Zotero.Prefs.get("jasminum.language") === undefined) {
             Zotero.Prefs.set("jasminum.language", 'zh-CN');
         }
-        if (Zotero.Prefs.get("jasminum.foreignlanguage") === undefined) {
-            Zotero.Prefs.set("jasminum.foreignlanguage", 'en-US');
+        if (Zotero.Prefs.get("jasminum.language") === undefined) {
+            Zotero.Prefs.set("jasminum.languagelist", 'zh,en');
         }
         if (Zotero.Prefs.get("jasminum.attachment") === undefined) {
             Zotero.Prefs.set("jasminum.attachment", 'pdf');
@@ -537,11 +537,6 @@ Zotero.Jasminum = new function () {
      */
     this.setLanguage = async function (item) {
         let defaultLanguage = Zotero.Prefs.get("jasminum.language");
-        let langRegex = new RegExp("[\u4e00-\u9fa5]")
-        if (Zotero.Prefs.get("jasminum.completelanguage") && !langRegex.test(item.getField("title"))) {
-            // 当勾选了“根据标题设置语言栏”，并且 标题 中不含中文时，设置语言为“默认外文语言”
-            defaultLanguage = Zotero.Prefs.get("jasminum.foreignlanguage");
-        }
         if (item.getField("language") != defaultLanguage) {
             item.setField("language", defaultLanguage);
             await item.saveTx();
@@ -552,6 +547,44 @@ Zotero.Jasminum = new function () {
         var items = ZoteroPane.getSelectedItems();
         for (var item of items) { await this.setLanguage(item) }
     };
+
+    /**
+     * Batch Set language using npl.js
+     * @param {[Zotero.item]}
+     * @return {void}
+     */
+    this.bacthSetLanguage = async function (type) {
+        let items = this.getItems(type);
+        // 获取常用语言列表
+        let languageStr = Zotero.Prefs.get("jasminum.languagelist").replace(/\s*/g, "")
+        let languageList = languageStr.split(/,|，/g)
+        // 使用 nlp.js 进行识别
+        for (let item of items) {
+            if (!item.isAttachment() && item.isRegularItem() && item.isTopLevelItem()) {
+                let langGuess = this.NLP.guess(item.getField("title"), languageList)[0]["alpha2"];
+                if (langGuess && item.getField("language") != langGuess) {
+                    item.setField("language", langGuess)
+                    await item.saveTx();
+                }
+            }
+        }
+    };
+
+    /**
+     * get items from different type
+     * @param {string}
+     * @return {[Zotero.item]}
+     */
+    this.getItems = function (type = "items") {
+        let items = []
+        if (type === "items") {
+            items = ZoteroPane.getSelectedItems()
+        } else if (type === "collection") {
+            let collection = ZoteroPane.getSelectedCollection();
+            if (collection) items = collection.getChildItems();
+        }
+        return items
+    }
 
     /**
      * Download pdf/caj attachments from CNKI for selected items

@@ -1,7 +1,7 @@
 if (!Zotero.Jasminum) {
     var fileLoader = Components.classes["@mozilla.org/moz/jssubscript-loader;1"]
         .getService(Components.interfaces.mozIJSSubScriptLoader);
-    var scripts = ['jasminum', 'ui', 'scrape', 'utils'];
+    var scripts = ['jasminum', 'ui', 'scrape', 'utils', 'nlp'];
     scripts.forEach(s => fileLoader.loadSubScript('chrome://jasminum/content/scripts/' + s + '.js', {}, "UTF-8"));
 }
 
@@ -16,6 +16,12 @@ window.addEventListener(
             doc.getElementById("zotero-itemmenu").addEventListener(
                 "popupshowing",
                 Zotero.Jasminum.UI.displayMenuitem,
+                false
+            );
+
+            doc.getElementById("zotero-collectionmenu").addEventListener(
+                "popupshowing",
+                Zotero.Jasminum.UI.displayCollectionMenuitem,
                 false
             );
         }
