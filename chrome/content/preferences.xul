@@ -17,6 +17,7 @@
                 <preference id="pref-jasminum.zhnamedot" name="extensions.zotero.jasminum.zhnamedot" type="bool"/>
                 <preference id="pref-jasminum.language" name="extensions.zotero.jasminum.language" type="string"/>
                 <preference id="pref-jasminum.autolanguage" name="extensions.zotero.jasminum.autolanguage" type="bool"/>
+                <preference id="pref-jasminum.ennamesplit" name="extensions.zotero.jasminum.ennamesplit" type="bool"/>''
                 <preference id="pref-jasminum.languagelist" name="extensions.zotero.jasminum.languagelist" type="string"/>
                 <preference id="pref-jasminum.attachment" name="extensions.zotero.jasminum.attachment" type="string"/>
                 <preference id="pref-jasminum.citefield" name="extensions.zotero.jasminum.citefield" type="string"/>
@@ -96,9 +97,11 @@
                             <groupbox>
                                 <caption label="&toolbox.caption;"/>
                                 <vbox flex="1">
+                                    <checkbox id="jasminum.ennamesplit" label="&toolbox.ennamesplit.label;" preference="pref-jasminum.ennamesplit"/>
                                     <row>
                                         <description>&toolbox.bacthsetlanguage.info;</description>
                                         <textbox id="jasminum.languagelist" preference="pref-jasminum.languagelist"/>
+                                        <image src="chrome://jasminum/skin/information.png" tooltiptext="&toolbox.bacthsetlanguage.desc;"/>
                                     </row>
                                 </vbox>
                             </groupbox>
