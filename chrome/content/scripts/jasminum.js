@@ -68,6 +68,9 @@ Zotero.Jasminum = new function () {
         if (Zotero.Prefs.get("jasminum.languagelist") === undefined) {
             Zotero.Prefs.set("jasminum.languagelist", 'zh,en');
         }
+        if (Zotero.Prefs.get("jasminum.ennamesplit") === undefined) {
+            Zotero.Prefs.set("jasminum.ennamesplit", true);
+        }
         if (Zotero.Prefs.get("jasminum.attachment") === undefined) {
             Zotero.Prefs.set("jasminum.attachment", 'pdf');
         }
@@ -322,6 +325,7 @@ Zotero.Jasminum = new function () {
     };
 
     this.splitName = async function (items) {
+        var isSplitEnName = Zotero.Prefs.get("jasminum.ennamesplit")
         for (let item of items) {
             var creators = item.getCreators();
             for (var i = 0; i < creators.length; i++) {
@@ -331,6 +335,8 @@ Zotero.Jasminum = new function () {
                         creator.firstName.search(/[A-Za-z]/) >= 0) &&
                     creator.firstName === ""  // 名为空
                 ) {
+                    // 如果不拆分/合并英文名，则跳过
+                    if (!isSplitEnName) continue
                     var EnglishName = creator.lastName;
                     var temp = EnglishName.split(/[\n\s+,]/g)
                         .filter(Boolean); // 过滤空字段
@@ -352,6 +358,7 @@ Zotero.Jasminum = new function () {
     };
 
     this.mergeName = async function (items) {
+        var isSplitEnName = Zotero.Prefs.get("jasminum.ennamesplit")
         for (let item of items) {
             var creators = item.getCreators();
             for (var i = 0; i < creators.length; i++) {
@@ -360,6 +367,8 @@ Zotero.Jasminum = new function () {
                     creator.lastName.search(/[A-Za-z]/) !== -1 ||
                     creator.lastName.search(/[A-Za-z]/) !== -1
                 ) {
+                    // 如果不拆分/合并英文名，则跳过
+                    if (!isSplitEnName) continue
                     creator.lastName = creator.firstName + " " + creator.lastName;
                 } else { // For Chinese Name
                     creator.lastName = creator.lastName + creator.firstName;
