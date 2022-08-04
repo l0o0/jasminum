@@ -314,13 +314,13 @@ Zotero.Jasminum = new function () {
     };
 
 
-    this.splitNameM = function () {
-        var items = ZoteroPane.getSelectedItems();
+    this.splitNameM = function (type) {
+        var items = this.getItems(type, true);
         this.splitName(items);
     };
 
-    this.mergeNameM = function () {
-        var items = ZoteroPane.getSelectedItems();
+    this.mergeNameM = function (type) {
+        var items = this.getItems(type, true);
         this.mergeName(items);
     };
 
@@ -384,8 +384,8 @@ Zotero.Jasminum = new function () {
         }
     };
 
-    this.splitSemicolonNamesN = async function () {
-        var items = ZoteroPane.getSelectedItems();
+    this.splitSemicolonNamesN = async function (type) {
+        var items = this.getItems(type, true)
         this.splitSemicolonNames(items);
     }
 
@@ -423,8 +423,8 @@ Zotero.Jasminum = new function () {
         }
     }
 
-    this.removeDotM = function () {
-        var items = ZoteroPane.getSelectedItems();
+    this.removeDotM = function (type) {
+        var items = this.getItems(type, true);
         this.removeDot(items);
     };
 
@@ -552,8 +552,8 @@ Zotero.Jasminum = new function () {
         }
     };
 
-    this.setLanguageItems = async function () {
-        var items = ZoteroPane.getSelectedItems();
+    this.setLanguageItems = async function (type) {
+        var items = this.getItems(type, true);
         for (var item of items) { await this.setLanguage(item) }
     };
 
@@ -563,18 +563,16 @@ Zotero.Jasminum = new function () {
      * @return {void}
      */
     this.bacthSetLanguage = async function (type) {
-        let items = this.getItems(type);
+        let items = this.getItems(type, true);
         // 获取常用语言列表
         let languageStr = Zotero.Prefs.get("jasminum.languagelist").replace(/\s*/g, "")
         let languageList = languageStr.split(/,|，/g)
         // 使用 nlp.js 进行识别
         for (let item of items) {
-            if (!item.isAttachment() && item.isRegularItem() && item.isTopLevelItem()) {
-                let langGuess = this.NLP.guess(item.getField("title"), languageList)[0]["alpha2"];
-                if (langGuess && item.getField("language") != langGuess) {
-                    item.setField("language", langGuess)
-                    await item.saveTx();
-                }
+            let langGuess = this.NLP.guess(item.getField("title"), languageList)[0]["alpha2"];
+            if (langGuess && item.getField("language") != langGuess) {
+                item.setField("language", langGuess)
+                await item.saveTx();
             }
         }
     };
@@ -584,7 +582,7 @@ Zotero.Jasminum = new function () {
      * @param {string}
      * @return {[Zotero.item]}
      */
-    this.getItems = function (type = "items") {
+    this.getItems = function (type = "items", regular = false) {
         let items = []
         if (type === "items") {
             items = ZoteroPane.getSelectedItems()
@@ -592,6 +590,9 @@ Zotero.Jasminum = new function () {
             let collection = ZoteroPane.getSelectedCollection();
             if (collection) items = collection.getChildItems();
         }
+        // 只保留元数据条目
+        // 用于解决多选项目时选中附件类条目导致小组件修改错误，使得批量修改中断。
+        if (regular) items = items.filter(item => item.isRegularItem())
         return items
     }
 

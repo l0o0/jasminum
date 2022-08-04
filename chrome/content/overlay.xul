@@ -11,10 +11,31 @@
     </popup> -->
     <menupopup id="zotero-collectionmenu">
         <menuseparator id="jasminum-separator-collection"/>
-        <menu id="jasminum-popup-collection"
+        <menu id="jasminum-popup-collection-menu"
             label="&menu.tools.label;"
             class="menu-iconic jasminum-tools-icon">
             <menupopup>
+                <menuitem
+                    label="&menu.tools.namesplit.label;"
+                    class="menuitem-iconic jasminum-name-icon"
+                    oncommand="Zotero.Jasminum.splitNameM('collection');"/>
+                <menuitem
+                    label="&menu.tools.namemerge.label;"
+                    class="menuitem-iconic jasminum-name-icon"
+                    oncommand="Zotero.Jasminum.mergeNameM('collection');"/>
+                <menuitem
+                    label="&menu.tools.semicolonNamesSplit.label;"
+                    class="menuitem-iconic jasminum-name-icon"
+                    oncommand="Zotero.Jasminum.splitSemicolonNamesN('collection');"
+                    />
+                <menuitem
+                    label="&menu.tools.removeDot.label;"
+                    class="menuitem-iconic jasminum-default-icon"
+                    oncommand="Zotero.Jasminum.removeDotM('collection');"/>
+                <menuitem
+                    label="&menu.tools.language.label;"
+                    class="menuitem-iconic jasminum-zh-icon"
+                    oncommand="Zotero.Jasminum.setLanguageItems('collection');"/>
                 <menuitem
                     label="&menu.tools.bacthsetlanguage.label;"
                     class="menuitem-iconic jasminum-language-icon"
@@ -59,24 +80,24 @@
                 <menuitem
                     label="&menu.tools.namesplit.label;"
                     class="menuitem-iconic jasminum-name-icon"
-                    oncommand="Zotero.Jasminum.splitNameM();"/>
+                    oncommand="Zotero.Jasminum.splitNameM('items');"/>
                 <menuitem
                     label="&menu.tools.namemerge.label;"
                     class="menuitem-iconic jasminum-name-icon"
-                    oncommand="Zotero.Jasminum.mergeNameM();"/>
+                    oncommand="Zotero.Jasminum.mergeNameM('items');"/>
                 <menuitem
                     label="&menu.tools.semicolonNamesSplit.label;"
                     class="menuitem-iconic jasminum-name-icon"
-                    oncommand="Zotero.Jasminum.splitSemicolonNamesN();"
+                    oncommand="Zotero.Jasminum.splitSemicolonNamesN('items');"
                     />
                 <menuitem
                     label="&menu.tools.removeDot.label;"
                     class="menuitem-iconic jasminum-default-icon"
-                    oncommand="Zotero.Jasminum.removeDotM();"/>
+                    oncommand="Zotero.Jasminum.removeDotM('items');"/>
                 <menuitem
                     label="&menu.tools.language.label;"
                     class="menuitem-iconic jasminum-zh-icon"
-                    oncommand="Zotero.Jasminum.setLanguageItems();"/>
+                    oncommand="Zotero.Jasminum.setLanguageItems('items');"/>
                 <menuitem
                     label="&menu.tools.bacthsetlanguage.label;"
                     class="menuitem-iconic jasminum-language-icon"

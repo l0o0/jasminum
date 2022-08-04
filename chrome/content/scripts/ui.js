@@ -45,10 +45,10 @@ Zotero.Jasminum.UI = new function () {
      * @return {void}
      */
     this.displayCollectionMenuitem = function () {
-        var items = this.getItems("collection")
+        var items = this.getItems("collection", true)
         var isEmptyItems = (items.length == 0)
         Zotero.debug(isEmptyItems)
-        ZoteroPane.document.getElementById("jasminum-popup-collection").hidden = isEmptyItems
+        ZoteroPane.document.getElementById("jasminum-popup-collection-menu").hidden = isEmptyItems
         ZoteroPane.document.getElementById("jasminum-separator-collection").hidden = isEmptyItems
 
     }.bind(Zotero.Jasminum);
