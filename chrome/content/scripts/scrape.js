@@ -293,21 +293,31 @@ Zotero.Jasminum.Scrape = new function () {
     }.bind(Zotero.Jasminum);
 
     /**
+     * Get Html content text from given url
+     * @param {String} url 
+     * @returns {String}
+     */
+    this.getHtmlPage = async function (url) {
+        let pageResp = await Zotero.HTTP.request("GET", url);
+        return pageResp.responseText;
+    }
+
+    /**
      * Sometimes CNKI URL contains a temporary dbname, 
      * you need to find a valid dbname from page.
-     * @param {String} CNKI url string
+     * @param {HTMLDocument}
      * @return {Object} {dbname: ..., filename: ..., dbcode: ...}
      */
-    this.getIDFromPage = async function (url) {
-        let pageResp = await Zotero.HTTP.request("GET", url);
-        let page = this.Utils.string2HTML(pageResp.responseText);
-        if (page.title = "知网节超时验证") {
+    this.getIDFromPage = function (page) {
+        Zotero.debug(page.title);
+        if (page.title == "知网节超时验证") {
             Zotero.debug("** Jasminum 知网节超时验证")
             return;
         }
         let dbcode = page.querySelector("input#paramdbcode").value;
         let filename = page.querySelector("input#paramfilename").value;
         let dbname = page.querySelector("input#paramdbname").value;
+        Zotero.debug(`${dbname}, ${dbcode}, ${filename}`);
         return { dbname: dbname, filename: filename, dbcode: dbcode };
     }.bind(Zotero.Jasminum);
 
@@ -317,7 +327,13 @@ Zotero.Jasminum.Scrape = new function () {
      * @return {Object} article id
      */
     this.getCNKIID = async function (url) {
-        return await this.Scrape.getIDFromURL(url) || this.Scrape.getIDFromPage(url);
+        if (this.Scrape.getIDFromURL(url)) {
+            return this.Scrape.getIDFromURL(url);
+        } else {
+            let htmlString = await this.Scrape.getHtmlPage(url);
+            let htmlDocument = this.Utils.string2HTML(htmlString);
+            return this.Scrape.getIDFromPage(htmlDocument);
+        }
     }.bind(Zotero.Jasminum);
 
 
@@ -785,5 +801,32 @@ Zotero.Jasminum.Scrape = new function () {
         if (attachment) {
             return "https://oversea.cnki.net" + attachment.getAttribute("href").trim();
         }
-    }.bind(Zotero.Jasminum)
+    }.bind(Zotero.Jasminum);
+
+    /**
+    ## 知网参考文献抓取
+     */
+
+    /**
+     * Get search parameters from html header
+     * @param {HTMLDocument} HTML Object
+     * @return {String} Value listv in html header
+     */
+    this.getVlistFromPage = function (html) {
+        return html.querySelector("input#listv").value;
+    }.bind(Zotero.Jasminum);
+
+
+    this.getRefIDs = async function (url) {
+        let htmlString = await this.Scrape.getHtmlPage(url);
+        let htmlDocument = this.Utils.string2HTML(htmlString);
+        let listv = this.Scrape.getVlistFromPage(htmlDocument);
+        let cnkiID = this.Scrape.getIDFromPage(htmlDocument);
+        let getUrl = "https://kns.cnki.net/kcms/detail/frame/list.aspx"
+            + `?dbcode=${cnkiID.dbcode}&filename=${cnkiID.filename}&dbname=${cnkiID.dbname}&RefType=1&vl=${listv}`;
+        let referer = url;
+        let host = "kns.cnki.net";
+        let resp = await Zotero.HTTP.request("GET", getUrl, { headers: { Host: host, Referer: referer } });
+        return resp.responseText;
+    }.bind(Zotero.Jasminum);
 }
