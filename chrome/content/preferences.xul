@@ -21,6 +21,8 @@
                 <preference id="pref-jasminum.languagelist" name="extensions.zotero.jasminum.languagelist" type="string"/>
                 <preference id="pref-jasminum.attachment" name="extensions.zotero.jasminum.attachment" type="string"/>
                 <preference id="pref-jasminum.citefield" name="extensions.zotero.jasminum.citefield" type="string"/>
+                <preference id="pref-jasminum.dateformatter" name="extensions.zotero.jasminum.dateformatter" type="string"/>
+                <preference id="pref-jasminum.dateformatterfill" name="extensions.zotero.jasminum.dateformatterfill" type="bool"/>            
             </preferences>
             <tabbox>
                 <tabs>
@@ -102,6 +104,18 @@
                                         <description>&toolbox.bacthsetlanguage.info;</description>
                                         <textbox id="jasminum.languagelist" preference="pref-jasminum.languagelist"/>
                                         <image src="chrome://jasminum/skin/information.png" tooltiptext="&toolbox.bacthsetlanguage.desc;"/>
+                                    </row>
+                                    <row>
+                                        <description>&toolbox.dateformatter.info;</description>
+                                        <menulist flex="1" editable="false" id="jasminum.dateformatter" preference="pref-jasminum.dateformatter" maxwidth="100" >
+                                            <menupopup>
+                                                <menuitem label="ISO" value="ISO" tooltiptext="&toolbox.dateformatter.iso;"/>
+                                                <menuitem label="Short" value="short" tooltiptext="&toolbox.dateformatter.short;"/>
+                                                <menuitem label="Short Reverse" value="shortReverse" tooltiptext="&toolbox.dateformatter.shortreverse;"/>
+                                                <menuitem label="Year Only" value="yearOnly" tooltiptext="&toolbox.dateformatter.yearonly;"/>
+                                            </menupopup>
+                                        </menulist>
+                                        <checkbox id="jasminum.dateformatterfill" label="&toolbox.dateformatterfill;" preference="pref-jasminum.dateformatterfill"/>
                                     </row>
                                 </vbox>
                             </groupbox>

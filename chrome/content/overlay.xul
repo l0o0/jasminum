@@ -40,6 +40,10 @@
                     label="&menu.tools.bacthsetlanguage.label;"
                     class="menuitem-iconic jasminum-language-icon"
                     oncommand="Zotero.Jasminum.bacthSetLanguage('collection');"/>
+                <menuitem
+                    label="&menu.tools.dateformatter.label;"
+                    class="menuitem-iconic jasminum-date-icon"
+                    oncommand="Zotero.Jasminum.dateFormatter('collection');"/>
             </menupopup>
         </menu>
     
@@ -102,6 +106,10 @@
                     label="&menu.tools.bacthsetlanguage.label;"
                     class="menuitem-iconic jasminum-language-icon"
                     oncommand="Zotero.Jasminum.bacthSetLanguage('items');"/>
+                <menuitem
+                    label="&menu.tools.dateformatter.label;"
+                    class="menuitem-iconic jasminum-date-icon"
+                    oncommand="Zotero.Jasminum.dateFormatter('items');"/>
             </menupopup>
         </menu>
 

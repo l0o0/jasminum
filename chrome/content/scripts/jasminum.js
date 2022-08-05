@@ -77,6 +77,12 @@ Zotero.Jasminum = new function () {
         if (Zotero.Prefs.get("jasminum.citefield") === undefined) {
             Zotero.Prefs.set("jasminum.citefield", 'extra');
         }
+        if (Zotero.Prefs.get("jasminum.dateformatter") === undefined) {
+            Zotero.Prefs.set("jasminum.dateformatter", 'ISO');
+        }
+        if (Zotero.Prefs.get("jasminum.dateformatterfill") === undefined) {
+            Zotero.Prefs.set("jasminum.dateformatterfill", 'false');
+        }
     };
 
     this.notifierCallback = {
@@ -576,6 +582,48 @@ Zotero.Jasminum = new function () {
             }
         }
     };
+
+    /**
+     * Uniform date format
+     * Inspired by https://forums.zotero.org/discussion/84444/date-formats
+     * date format https://www.w3schools.com/js/js_date_formats.asp
+     * @param {[Zotero.item]}
+     * @return {void}
+     */
+    this.dateFormatter = async function (type) {
+        let items = this.getItems(type, true)
+        let dateFormat = Zotero.Prefs.get("jasminum.dateformatter")
+        let isFill = Zotero.Prefs.get("jasminum.dateformatterfill")
+        Zotero.debug(isFill)
+        let separator = (dateFormat == "ISO") ? "-" : "/"
+        for (let item of items) {
+            let oldDate = item.getField('date')
+            let dateJSON = Zotero.Date.strToDate(oldDate);
+            let newDate = ""
+            if (dateFormat == "yearOnly") {
+                newDate = dateJSON.year
+            } else {
+                // month 以 0 开始
+                let newMonth = dateJSON.month + 1
+                let newDay = dateJSON.day
+                if (isFill) {
+                    Zotero.debug("补0")
+                    // 当 month，day 小于 10 时，在前补 0 
+                    newMonth = ('0' + newMonth).slice(-2)
+                    newDay = ('0' + dateJSON.day).slice(-2)
+                }
+                let dateList = [dateJSON.year, newMonth, newDay]
+                if (dateFormat == "short") dateList.reverse()
+                // 去除日期数组里 undefined, NaN
+                newDate = dateList.filter(x => Number(x)).join(separator)
+            }
+            if (newDate && newDate != oldDate) {
+                Zotero.debug("不相等")
+                item.setField("date", newDate)
+                await item.saveTx();
+            }
+        }
+    }
 
     /**
      * get items from different type
