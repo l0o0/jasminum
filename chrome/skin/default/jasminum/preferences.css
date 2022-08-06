@@ -1,0 +1,18 @@
+/* 图片按比例缩放 */
+#zotero-prefpane-chinese-tab image {
+  object-fit: contain;
+}
+/* 使整行元素对齐 */
+#zotero-prefpane-chinese-tab label {
+  padding: 0 !important;
+}
+#zotero-prefpane-chinese-tab row {
+  -moz-box-align: center;
+}
+#zotero-prefpane-chinese-tab hbox {
+  -moz-box-align: center;
+}
+/* 修正添加小工具后的位置偏移 */
+#zotero-prefpane-translators-tab {
+  min-height: 510px;
+}

@@ -1,4 +1,5 @@
 <?xml version="1.0"?>
+<?xml-stylesheet href="chrome://jasminum/skin/preferences.css" type="text/css"?>
 <!DOCTYPE window SYSTEM "chrome://jasminum/locale/overlay.dtd">
 
 <overlay id="jasminum-preferences"
@@ -107,7 +108,7 @@
                                     </row>
                                     <row>
                                         <description>&toolbox.dateformatter.info;</description>
-                                        <menulist flex="1" editable="false" id="jasminum.dateformatter" preference="pref-jasminum.dateformatter" maxwidth="100" >
+                                        <menulist flex="1" editable="false" id="jasminum.dateformatter" preference="pref-jasminum.dateformatter" maxwidth="110" >
                                             <menupopup>
                                                 <menuitem label="ISO" value="ISO" tooltiptext="&toolbox.dateformatter.iso;"/>
                                                 <menuitem label="Short" value="short" tooltiptext="&toolbox.dateformatter.short;"/>
