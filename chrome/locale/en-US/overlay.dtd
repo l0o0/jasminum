@@ -26,7 +26,7 @@
 <!ENTITY attachment.cookie.info "Update CNKI user data">
 <!ENTITY toolbox.caption "Toolbox Setting">
 <!ENTITY toolbox.ennamesplit.label "Split/Merge english names">
-<!ENTITY toolbox.bacthsetlanguage.info "Batch set language, multiple language categories separated by ,">
+<!ENTITY toolbox.bacthsetlanguage.info "Batch set language(separated by ',')">
 <!ENTITY toolbox.bacthsetlanguage.desc "The batch language setting is based on nlp.js, which recognizes the title text and fill the language field. Setting common languages can improve accuracy, and filled content should follow the ISO 639-1 standard.">
 <!ENTITY toolbox.dateformatter.info "Date Formatter">
 <!ENTITY toolbox.dateformatter.iso "Year-Month-Day">
