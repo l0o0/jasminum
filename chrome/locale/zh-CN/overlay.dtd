@@ -9,12 +9,12 @@
 <!ENTITY menu.tools.semicolonNamesSplit.label "从分号拆分名字">
 <!ENTITY menu.tools.removeDot.label "去除文件名中逗号">
 <!ENTITY menu.tools.language.label "设置默认语言">
+<!ENTITY menu.tools.bacthsetlanguage.label "批量设置语言">
+<!ENTITY menu.tools.dateformatter.label "统一日期格式">
 <!ENTITY pdftkpath.label "PDFtk Service 安装路径">
 <!ENTITY autoupdate.label "添加中文PDF/CAJ时自动从知网抓取题录">
 <!ENTITY autolanguage.label "中文条目时自动设置语言">
 <!ENTITY language.label "默认中文语言(选择或输入): ">
-<!ENTITY completelanguage.label "根据标题内容设置语言栏">
-<!ENTITY foreignlanguage.label "默认外文语言(选择或输入): ">
 <!ENTITY cnkicite.label "知网引用数存放字段(英文名): ">
 <!ENTITY chinese "中文插件设置">
 <!ENTITY translators "非官方维护中文翻译器">
@@ -24,6 +24,16 @@
 <!ENTITY attachment.caption "附件下载设置">
 <!ENTITY attachment.type.info "选择下载附件格式">
 <!ENTITY attachment.cookie.info "获取知网用户数据">
+<!ENTITY toolbox.caption "小工具设置">
+<!ENTITY toolbox.ennamesplit.label "拆分/合并英文名">
+<!ENTITY toolbox.bacthsetlanguage.info "批量设置语言(用','隔开)">
+<!ENTITY toolbox.bacthsetlanguage.desc "批量设置语言基于nlp.js，通过识别标题文字来填充语言栏。该功能由算法自动识别，不能保证完全正确。设置常用语言，可以提高该语言出现的优先级，填写内容需遵循ISO 639‑1标准。识别结果不会局限于所填写的语言类别，输入框为空表示不做任何限制。'设置默认语言'，仅对选中项目设置一种语言，该语言为 '默认中文语言' 的值。">
+<!ENTITY toolbox.dateformatter.info "统一日期的格式">
+<!ENTITY toolbox.dateformatter.iso "Year-Month-Day">
+<!ENTITY toolbox.dateformatter.short "Day/Month/Year">
+<!ENTITY toolbox.dateformatter.shortreverse "Year/Month/Day">
+<!ENTITY toolbox.dateformatter.yearonly "Year Only 不能再恢复到原有日期">
+<!ENTITY toolbox.dateformatterfill "日期补0">
 <!ENTITY open.cnki "打开知网">
 <!ENTITY get.cookie "点击获取用户信息">
 <!ENTITY cookie.endtime "用户信息失效时间: ">

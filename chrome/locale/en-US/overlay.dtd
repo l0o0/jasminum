@@ -9,12 +9,12 @@
 <!ENTITY menu.tools.semicolonNamesSplit.label "Split Semicoloned Names">
 <!ENTITY menu.tools.removeDot.label "Remove Dot From Filename">
 <!ENTITY menu.tools.language.label "Set Language">
+<!ENTITY menu.tools.bacthsetlanguage.label "Batch Set Language">
+<!ENTITY menu.tools.dateformatter.label "Date Formatter">
 <!ENTITY pdftkpath.label "PDFtk Service Install Folder,contains pdftk.exe or pdftk">
 <!ENTITY autoupdate.label "Retrieve CNKI metadata when adding Chinese articles(pdf/caj)">
 <!ENTITY autolanguage.label "Set default language when adding Chinese articles">
 <!ENTITY language.label "Default LANG: ">
-<!ENTITY completelanguage.label "Set default language by title">
-<!ENTITY foreignlanguage.label "Default Foreign LANG: ">
 <!ENTITY cnkicite.label "Item field for CSSCI: ">
 <!ENTITY chinese "Setting">
 <!ENTITY translators "Unofficial Translators Repository">
@@ -24,6 +24,16 @@
 <!ENTITY attachment.caption "CNKI Attachment Setting">
 <!ENTITY attachment.type.info "Choose attachment type to download">
 <!ENTITY attachment.cookie.info "Update CNKI user data">
+<!ENTITY toolbox.caption "Toolbox Setting">
+<!ENTITY toolbox.ennamesplit.label "Split/Merge english names">
+<!ENTITY toolbox.bacthsetlanguage.info "Batch set language(separated by ',')">
+<!ENTITY toolbox.bacthsetlanguage.desc "The batch language setting is based on nlp.js, which recognizes the title text and fill the language field. Setting common languages can improve accuracy, and filled content should follow the ISO 639-1 standard.">
+<!ENTITY toolbox.dateformatter.info "Date Formatter">
+<!ENTITY toolbox.dateformatter.iso "Year-Month-Day">
+<!ENTITY toolbox.dateformatter.short "Day/Month/Year">
+<!ENTITY toolbox.dateformatter.shortreverse "Year/Month/Day">
+<!ENTITY toolbox.dateformatter.yearonly "Year Only can not be recovered">
+<!ENTITY toolbox.dateformatterfill "fill 0">
 <!ENTITY open.cnki "Open CNKI">
 <!ENTITY get.cookie "Click to update CNKI user data">
 <!ENTITY cookie.endtime "User data expiration time: ">

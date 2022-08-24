@@ -65,14 +65,23 @@ Zotero.Jasminum = new function () {
         if (Zotero.Prefs.get("jasminum.language") === undefined) {
             Zotero.Prefs.set("jasminum.language", 'zh-CN');
         }
-        if (Zotero.Prefs.get("jasminum.foreignlanguage") === undefined) {
-            Zotero.Prefs.set("jasminum.foreignlanguage", 'en-US');
+        if (Zotero.Prefs.get("jasminum.languagelist") === undefined) {
+            Zotero.Prefs.set("jasminum.languagelist", 'zh,en');
+        }
+        if (Zotero.Prefs.get("jasminum.ennamesplit") === undefined) {
+            Zotero.Prefs.set("jasminum.ennamesplit", true);
         }
         if (Zotero.Prefs.get("jasminum.attachment") === undefined) {
             Zotero.Prefs.set("jasminum.attachment", 'pdf');
         }
         if (Zotero.Prefs.get("jasminum.citefield") === undefined) {
             Zotero.Prefs.set("jasminum.citefield", 'extra');
+        }
+        if (Zotero.Prefs.get("jasminum.dateformatter") === undefined) {
+            Zotero.Prefs.set("jasminum.dateformatter", 'ISO');
+        }
+        if (Zotero.Prefs.get("jasminum.dateformatterfill") === undefined) {
+            Zotero.Prefs.set("jasminum.dateformatterfill", 'false');
         }
     };
 
@@ -311,17 +320,18 @@ Zotero.Jasminum = new function () {
     };
 
 
-    this.splitNameM = function () {
-        var items = ZoteroPane.getSelectedItems();
+    this.splitNameM = function (type) {
+        var items = this.getItems(type, true);
         this.splitName(items);
     };
 
-    this.mergeNameM = function () {
-        var items = ZoteroPane.getSelectedItems();
+    this.mergeNameM = function (type) {
+        var items = this.getItems(type, true);
         this.mergeName(items);
     };
 
     this.splitName = async function (items) {
+        var isSplitEnName = Zotero.Prefs.get("jasminum.ennamesplit")
         for (let item of items) {
             var creators = item.getCreators();
             for (var i = 0; i < creators.length; i++) {
@@ -331,6 +341,8 @@ Zotero.Jasminum = new function () {
                         creator.firstName.search(/[A-Za-z]/) >= 0) &&
                     creator.firstName === ""  // 名为空
                 ) {
+                    // 如果不拆分/合并英文名，则跳过
+                    if (!isSplitEnName) continue
                     var EnglishName = creator.lastName;
                     var temp = EnglishName.split(/[\n\s+,]/g)
                         .filter(Boolean); // 过滤空字段
@@ -352,6 +364,7 @@ Zotero.Jasminum = new function () {
     };
 
     this.mergeName = async function (items) {
+        var isSplitEnName = Zotero.Prefs.get("jasminum.ennamesplit")
         for (let item of items) {
             var creators = item.getCreators();
             for (var i = 0; i < creators.length; i++) {
@@ -360,6 +373,8 @@ Zotero.Jasminum = new function () {
                     creator.lastName.search(/[A-Za-z]/) !== -1 ||
                     creator.lastName.search(/[A-Za-z]/) !== -1
                 ) {
+                    // 如果不拆分/合并英文名，则跳过
+                    if (!isSplitEnName) continue
                     creator.lastName = creator.firstName + " " + creator.lastName;
                 } else { // For Chinese Name
                     creator.lastName = creator.lastName + creator.firstName;
@@ -375,8 +390,8 @@ Zotero.Jasminum = new function () {
         }
     };
 
-    this.splitSemicolonNamesN = async function () {
-        var items = ZoteroPane.getSelectedItems();
+    this.splitSemicolonNamesN = async function (type) {
+        var items = this.getItems(type, true)
         this.splitSemicolonNames(items);
     }
 
@@ -414,8 +429,8 @@ Zotero.Jasminum = new function () {
         }
     }
 
-    this.removeDotM = function () {
-        var items = ZoteroPane.getSelectedItems();
+    this.removeDotM = function (type) {
+        var items = this.getItems(type, true);
         this.removeDot(items);
     };
 
@@ -537,21 +552,94 @@ Zotero.Jasminum = new function () {
      */
     this.setLanguage = async function (item) {
         let defaultLanguage = Zotero.Prefs.get("jasminum.language");
-        let langRegex = new RegExp("[\u4e00-\u9fa5]")
-        if (Zotero.Prefs.get("jasminum.completelanguage") && !langRegex.test(item.getField("title"))) {
-            // 当勾选了“根据标题设置语言栏”，并且 标题 中不含中文时，设置语言为“默认外文语言”
-            defaultLanguage = Zotero.Prefs.get("jasminum.foreignlanguage");
-        }
         if (item.getField("language") != defaultLanguage) {
             item.setField("language", defaultLanguage);
             await item.saveTx();
         }
     };
 
-    this.setLanguageItems = async function () {
-        var items = ZoteroPane.getSelectedItems();
+    this.setLanguageItems = async function (type) {
+        var items = this.getItems(type, true);
         for (var item of items) { await this.setLanguage(item) }
     };
+
+    /**
+     * Batch Set language using nlp.js
+     * @param {[Zotero.item]}
+     * @return {void}
+     */
+    this.bacthSetLanguage = async function (type) {
+        let items = this.getItems(type, true);
+        // 获取常用语言列表
+        let languageStr = Zotero.Prefs.get("jasminum.languagelist").replace(/\s*/g, "")
+        let languageList = languageStr.split(/,|，/g)
+        // 使用 nlp.js 进行识别
+        for (let item of items) {
+            let langGuess = this.NLP.guess(item.getField("title"), languageList)[0]["alpha2"];
+            if (langGuess && item.getField("language") != langGuess) {
+                item.setField("language", langGuess)
+                await item.saveTx();
+            }
+        }
+    };
+
+    /**
+     * Uniform date format
+     * Inspired by https://forums.zotero.org/discussion/84444/date-formats
+     * date format https://www.w3schools.com/js/js_date_formats.asp
+     * @param {[Zotero.item]}
+     * @return {void}
+     */
+    this.dateFormatter = async function (type) {
+        let items = this.getItems(type, true)
+        let dateFormat = Zotero.Prefs.get("jasminum.dateformatter")
+        let isFill = Zotero.Prefs.get("jasminum.dateformatterfill")
+        let separator = (dateFormat == "ISO") ? "-" : "/"
+        for (let item of items) {
+            let oldDate = item.getField('date')
+            let dateJSON = Zotero.Date.strToDate(oldDate);
+            let newDate = ""
+            if (dateFormat == "yearOnly") {
+                newDate = dateJSON.year
+            } else {
+                // month 以 0 开始
+                let newMonth = dateJSON.month + 1
+                let newDay = dateJSON.day
+                if (isFill) {
+                    // 当 month，day 小于 10 时，在前补 0 
+                    newMonth = ('0' + newMonth).slice(-2)
+                    newDay = ('0' + dateJSON.day).slice(-2)
+                }
+                let dateList = [dateJSON.year, newMonth, newDay]
+                if (dateFormat == "short") dateList.reverse()
+                // 去除日期数组里 undefined, NaN
+                newDate = dateList.filter(x => Number(x)).join(separator)
+            }
+            if (newDate && newDate != oldDate) {
+                item.setField("date", newDate)
+                await item.saveTx();
+            }
+        }
+    }
+
+    /**
+     * get items from different type
+     * @param {string}
+     * @return {[Zotero.item]}
+     */
+    this.getItems = function (type = "items", regular = false) {
+        let items = []
+        if (type === "items") {
+            items = ZoteroPane.getSelectedItems()
+        } else if (type === "collection") {
+            let collection = ZoteroPane.getSelectedCollection();
+            if (collection) items = collection.getChildItems();
+        }
+        // 只保留元数据条目
+        // 用于解决多选项目时选中附件类条目导致小组件修改错误，使得批量修改中断。
+        if (regular) items = items.filter(item => item.isRegularItem())
+        return items
+    }
 
     /**
      * Download pdf/caj attachments from CNKI for selected items

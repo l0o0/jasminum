@@ -1,4 +1,5 @@
 <?xml version="1.0"?>
+<?xml-stylesheet href="chrome://jasminum/skin/preferences.css" type="text/css"?>
 <!DOCTYPE window SYSTEM "chrome://jasminum/locale/overlay.dtd">
 
 <overlay id="jasminum-preferences"
@@ -17,10 +18,12 @@
                 <preference id="pref-jasminum.zhnamedot" name="extensions.zotero.jasminum.zhnamedot" type="bool"/>
                 <preference id="pref-jasminum.language" name="extensions.zotero.jasminum.language" type="string"/>
                 <preference id="pref-jasminum.autolanguage" name="extensions.zotero.jasminum.autolanguage" type="bool"/>
-                <preference id="pref-jasminum.foreignlanguage" name="extensions.zotero.jasminum.foreignlanguage" type="string"/>
-                <preference id="pref-jasminum.completelanguage" name="extensions.zotero.jasminum.completelanguage" type="bool"/>
+                <preference id="pref-jasminum.ennamesplit" name="extensions.zotero.jasminum.ennamesplit" type="bool"/>''
+                <preference id="pref-jasminum.languagelist" name="extensions.zotero.jasminum.languagelist" type="string"/>
                 <preference id="pref-jasminum.attachment" name="extensions.zotero.jasminum.attachment" type="string"/>
                 <preference id="pref-jasminum.citefield" name="extensions.zotero.jasminum.citefield" type="string"/>
+                <preference id="pref-jasminum.dateformatter" name="extensions.zotero.jasminum.dateformatter" type="string"/>
+                <preference id="pref-jasminum.dateformatterfill" name="extensions.zotero.jasminum.dateformatterfill" type="bool"/>            
             </preferences>
             <tabbox>
                 <tabs>
@@ -44,17 +47,7 @@
                                     <menulist flex="1" editable="true" id="jasminum.language" preference="pref-jasminum.language" maxwidth="100" >
                                         <menupopup>
                                             <menuitem label="zh-CN" value="zh-CN"/>
-                                            <menuitem label="cn" value="cn"/>
-                                        </menupopup>
-                                    </menulist>
-                                </row>
-                                <row>
-                                    <checkbox id="jasminum.completelanguage" label="&completelanguage.label;" preference="pref-jasminum.completelanguage"/>
-                                    <label value="&foreignlanguage.label;" style="padding-top: 6px;"/>
-                                    <menulist flex="1" editable="true" id="jasminum.foreignlanguage" preference="pref-jasminum.foreignlanguage" maxwidth="100" >
-                                        <menupopup>
-                                            <menuitem label="en-US" value="en-US"/>
-                                            <menuitem label="en" value="en"/>
+                                            <menuitem label="zh" value="zh"/>
                                         </menupopup>
                                     </menulist>
                                 </row>
@@ -102,6 +95,29 @@
                                         <description>&cookie.endtime;</description>
                                         <label id="cookie_endtime" value=""/>
                                     </hbox> -->
+                                </vbox>
+                            </groupbox>
+                            <groupbox>
+                                <caption label="&toolbox.caption;"/>
+                                <vbox flex="1">
+                                    <checkbox id="jasminum.ennamesplit" label="&toolbox.ennamesplit.label;" preference="pref-jasminum.ennamesplit"/>
+                                    <row>
+                                        <description>&toolbox.bacthsetlanguage.info;</description>
+                                        <textbox id="jasminum.languagelist" preference="pref-jasminum.languagelist"/>
+                                        <image src="chrome://jasminum/skin/information.png" tooltiptext="&toolbox.bacthsetlanguage.desc;"/>
+                                    </row>
+                                    <row>
+                                        <description>&toolbox.dateformatter.info;</description>
+                                        <menulist flex="1" editable="false" id="jasminum.dateformatter" preference="pref-jasminum.dateformatter" maxwidth="110" >
+                                            <menupopup>
+                                                <menuitem label="ISO" value="ISO" tooltiptext="&toolbox.dateformatter.iso;"/>
+                                                <menuitem label="Short" value="short" tooltiptext="&toolbox.dateformatter.short;"/>
+                                                <menuitem label="Short Reverse" value="shortReverse" tooltiptext="&toolbox.dateformatter.shortreverse;"/>
+                                                <menuitem label="Year Only" value="yearOnly" tooltiptext="&toolbox.dateformatter.yearonly;"/>
+                                            </menupopup>
+                                        </menulist>
+                                        <checkbox id="jasminum.dateformatterfill" label="&toolbox.dateformatterfill;" preference="pref-jasminum.dateformatterfill"/>
+                                    </row>
                                 </vbox>
                             </groupbox>
                             <groupbox>
