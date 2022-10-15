@@ -171,7 +171,8 @@ downloadTo = async function (label) {
     if (cacheFile.exists()) {
         cacheFile.remove(false);
     }
-    var url = `https://gitee.com/l0o0/translators_CN/raw/master/translators/${label}`;
+    // var url = `https://gitee.com/l0o0/translators_CN/raw/master/translators/${label}`;
+    var url = `https://gitcode.net/goonback/translators_CN/-/raw/master/translators/${label}`;
     try {
         var resp = await Zotero.HTTP.request("GET", url);
         let encoder = new TextEncoder();
