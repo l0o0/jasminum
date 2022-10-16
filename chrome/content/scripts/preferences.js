@@ -148,17 +148,18 @@ getUpdates = async function () {
     };
     var headers = { "Content-Type": "application/json" };
     // Maybe need to set max retry in this post request.
-    var resp = await Zotero.HTTP.request("POST", url, {
-        body: JSON.stringify(postData),
-        headers: headers,
-    });
     try {
+        var resp = await Zotero.HTTP.request("POST", url, {
+            body: JSON.stringify(postData),
+            headers: headers,
+            timeout: 10000,  // 超时10s
+        });
         var updateJson = JSON.parse(resp.responseText);
         return updateJson;
     } catch (e) {
         Zotero.Jasminum.Utils.showPopup(
             "翻译器更新失败",
-            `获取翻译器更新信息失败，请稍后重试，${e}`,
+            `获取翻译器更新信息超时，请稍后重试，${e}`,
             1
         )
     }
