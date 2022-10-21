@@ -66,7 +66,7 @@ getLastUpdateFromFile = async function (label) {
 initTranslatorPanel = async function () {
     var listbox = document.getElementById("translators-listbox");
     var count = listbox.childElementCount;
-    var data = await getUpdates();
+    var data = getUpdates();
     Zotero.debug(data);
     var listitem, listcell, button;
     if (count == 2) {
@@ -76,7 +76,7 @@ initTranslatorPanel = async function () {
             listitem = document.createElement("listitem");
             listitem.setAttribute("allowevents", "true");
             listcell = document.createElement("listcell");
-            listcell.setAttribute("label", `${data[label].description}`);
+            listcell.setAttribute("label", `${data[label].label}`);
             listcell.setAttribute("tooltiptext", label);
             listcell.setAttribute("id", label + "1");
             listitem.appendChild(listcell);
@@ -141,27 +141,26 @@ initTranslatorPanel = async function () {
     }
 };
 
-getUpdates = async function () {
-    var url = "https://www.linxingzhong.top/zt";
-    var postData = {
-        key: "zoteroKey",
-    };
-    var headers = { "Content-Type": "application/json" };
-    // Maybe need to set max retry in this post request.
-    try {
-        var resp = await Zotero.HTTP.request("POST", url, {
-            body: JSON.stringify(postData),
-            headers: headers,
-            timeout: 10000,  // 超时10s
-        });
-        var updateJson = JSON.parse(resp.responseText);
-        return updateJson;
-    } catch (e) {
-        Zotero.Jasminum.Utils.showPopup(
-            "翻译器更新失败",
-            `获取翻译器更新信息超时，请稍后重试，${e}`,
-            1
-        )
+getUpdates = function () {
+    let metadataUrl = "https://gitcode.net/goonback/translators_CN/-/raw/master/data/translators.json";
+    let cacheFile = Zotero.getTempDirectory();
+    cacheFile.append("translator.json");
+    var contents;
+    if (cacheFile.exists()) {
+        contents = Zotero.File.getContents(cacheFile, 'utf8');
+        return JSON.parse(contents);
+    } else {
+        try {
+            contents = Zotero.File.getContentsFromURL(metadataUrl);
+            Zotero.File.putContents(cacheFile, contents);
+            return JSON.parse(contents);;
+        } catch (e) {
+            Zotero.Jasminum.Utils.showPopup(
+                "翻译器更新失败",
+                `获取翻译器更新信息超时，请稍后重试，${e}`,
+                1
+            )
+        }
     }
 };
 
@@ -175,28 +174,24 @@ downloadTo = async function (label) {
     // var url = `https://gitee.com/l0o0/translators_CN/raw/master/translators/${label}`;
     var url = `https://gitcode.net/goonback/translators_CN/-/raw/master/translators/${label}`;
     try {
-        var resp = await Zotero.HTTP.request("GET", url);
-        let encoder = new TextEncoder();
-        let array = encoder.encode(resp.responseText);
-        await OS.File.writeAtomic(cacheFile.path, array, {
-            tmpPath: cacheFile.path + ".tmp",
-        });
-        var desPath = OS.Path.join(
+        let contents = await Zotero.File.getContentsFromURL(url);
+        let desPath = OS.Path.join(
             Zotero.Prefs.get("dataDir"),
             "translators",
-            OS.Path.basename(cacheFile.path)
+            label
         );
-        await OS.File.move(cacheFile.path, desPath);
+        let desPathFile = Zotero.File.pathToFile(desPath);
+        Zotero.File.putContents(desPathFile, contents);
         Zotero.Jasminum.Utils.showPopup(
             "翻译器下载成功",
-            `${label}.js 下载成功`,
+            `${label} 下载成功`,
             0
         )
         return true;
     } catch (e) {
         Zotero.Jasminum.Utils.showPopup(
             "翻译器下载失败",
-            `${label}.js 下载失败，请稍后重试`,
+            `${label} 下载失败，请稍后重试`,
             1
         )
     }
