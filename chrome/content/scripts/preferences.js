@@ -117,7 +117,7 @@ initTranslatorPanel = async function (update = true) {
             listbox.appendChild(listitem);
         }
         // Create empty row for Mac to take up the last row space
-        if (Zotero.isMac) {
+        if (Zotero.isMac || Zotero.isLinux) {
             listitem = document.createElement("listitem");
             listcell = document.createElement("listcell");
             listitem.appendChild(listcell);

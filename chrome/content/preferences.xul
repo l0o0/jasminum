@@ -32,8 +32,8 @@
                     <tab label="&about;"/>
                 </tabs>
 
-                <tabpanels id="zotero-prefpane-jasminum" orient="vertical" minheight="540">
-                    <tabpanel id="zotero-prefpane-chinese-tab">
+                <tabpanels id="zotero-prefpane-jasminum">
+                    <tabpanel id="zotero-prefpane-chinese-tab" orient="vertical" minheight="600">
                         <vbox flex="1">
                             <groupbox>
                                 <caption label="&chinese.caption;"/>
@@ -132,7 +132,7 @@
                             </groupbox>
                         </vbox>
                     </tabpanel>
-                    <tabpanel id="zotero-prefpane-translators-tab" orient="vertical">
+                    <tabpanel id="zotero-prefpane-translators-tab" orient="vertical"  minheight="600">
                         <description>&translator.notiice;</description>
                         <listbox id="translators-listbox" flex="1">
 		                <listhead>
