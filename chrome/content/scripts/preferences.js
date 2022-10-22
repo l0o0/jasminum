@@ -4,7 +4,7 @@ initPref = async function () {
     document.getElementById("jasminum-pdftk-path").value = jasminum_pdftk_path;
     var fileExist = await Zotero.Jasminum.Scrape.checkPath();
     pathCheckIcon(fileExist);
-    // initTranslatorPanel();
+    initTranslatorPanel(update = true);
 };
 
 // https://developer.mozilla.org/en-US/docs/Mozilla/Tech/XPCOM/Reference/Interface/nsIFilePicker
@@ -63,10 +63,10 @@ getLastUpdateFromFile = async function (label) {
 
 };
 
-initTranslatorPanel = async function () {
+initTranslatorPanel = async function (update = true) {
     var listbox = document.getElementById("translators-listbox");
     var count = listbox.childElementCount;
-    var data = getUpdates();
+    var data = getUpdates(update);
     Zotero.debug(data);
     var listitem, listcell, button;
     if (count == 2) {
@@ -141,12 +141,12 @@ initTranslatorPanel = async function () {
     }
 };
 
-getUpdates = function () {
+getUpdates = function (update = true) {
     let metadataUrl = "https://gitcode.net/goonback/translators_CN/-/raw/master/data/translators.json";
     let cacheFile = Zotero.getTempDirectory();
     cacheFile.append("translator.json");
     var contents;
-    if (cacheFile.exists()) {
+    if (update == false && cacheFile.exists()) {
         contents = Zotero.File.getContents(cacheFile, 'utf8');
         return JSON.parse(contents);
     } else {
@@ -185,7 +185,8 @@ downloadTo = async function (label) {
         Zotero.Jasminum.Utils.showPopup(
             "翻译器下载成功",
             `${label} 下载成功`,
-            0
+            0,
+            timeout = 3
         )
         return true;
     } catch (e) {

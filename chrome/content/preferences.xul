@@ -149,7 +149,7 @@
 		                </listcols>
 	                    </listbox>
                         <hbox style="display: block">
-                            <button label="&refresh.label;" tooltiptext="&refreshInfo.label;" oncommand="initTranslatorPanel();"/>
+                            <button label="&refresh.label;" tooltiptext="&refreshInfo.label;" oncommand="initTranslatorPanel(update=true);"/>
                             <button label="&updateall.label;" tooltiptext="&updateallInfo.label;" oncommand="updateAll();"/>
                             <label value="&update.translator;"/>
                             <label class="zotero-text-link" value="如何在浏览器中更新翻译器" href="https://www.bilibili.com/video/BV1F54y1k73n/"/>
