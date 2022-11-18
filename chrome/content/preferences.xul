@@ -28,12 +28,13 @@
             <tabbox>
                 <tabs>
                     <tab label="&chinese;"/>
+                    <tab label="&tools;"/>
                     <tab label="&translators;"/>
                     <tab label="&about;"/>
                 </tabs>
 
                 <tabpanels id="zotero-prefpane-jasminum">
-                    <tabpanel id="zotero-prefpane-chinese-tab" orient="vertical" minheight="600">
+                    <tabpanel id="zotero-prefpane-chinese-tab" orient="vertical" minheight="450">
                         <vbox flex="1">
                             <groupbox>
                                 <caption label="&chinese.caption;"/>
@@ -65,7 +66,7 @@
                                 <vbox flex="1">
                                     <row>
                                         <description>&namepatent.desc.info;</description>
-                                        <menulist flex="0.5" editable="true" id="jasminum.namepatent" preference="pref-jasminum.namepatent"> 
+                                        <menulist flex="1" editable="true" id="jasminum.namepatent" preference="pref-jasminum.namepatent"> 
                                             <menupopup>
                                                 <menuitem label="{%t}_{%g}" value="{%t}_{%g}" tooltiptext="&namepatent.desc.tg;"/>
                                                 <menuitem label="{%t}" value="{%t}" tooltiptext="&namepatent.desc.t;"/>
@@ -98,13 +99,29 @@
                                 </vbox>
                             </groupbox>
                             <groupbox>
+                                <caption label="&pdftk.caption;"/>
+                                <description>&pdftk.info; <label class="zotero-text-link" value="PDFtk Server" href="https://www.pdflabs.com/tools/pdftk-server/"/></description>
+                                <hbox style="margin: 0" align="center">
+                                    <textbox id="jasminum-pdftk-path" preference="pref-jasminum.pdftkpath" readonly="true" flex="1"/>
+                                    <button label="&choose;" oncommand="choosePath();"/>
+                                    <image id="path-accept" src="chrome://jasminum/skin/accept.png" tooltiptext="&pdftk.path.check.ok;" hidden="true"/>
+                                    <image id="path-error" src="chrome://jasminum/skin/exclamation.png" tooltiptext="&pdftk.path.check.error;" hidden="true"/>
+                                </hbox>
+                            </groupbox>
+                        </vbox>
+                    </tabpanel>
+                    <tabpanel id="zotero-prefpane-tools-tab" orient="vertical">
+                        <vbox flex="1">
+                            <groupbox>
                                 <caption label="&toolbox.caption;"/>
                                 <vbox flex="1">
                                     <checkbox id="jasminum.ennamesplit" label="&toolbox.ennamesplit.label;" preference="pref-jasminum.ennamesplit"/>
                                     <row>
                                         <description>&toolbox.bacthsetlanguage.info;</description>
                                         <textbox id="jasminum.languagelist" preference="pref-jasminum.languagelist"/>
-                                        <image src="chrome://jasminum/skin/information.png" tooltiptext="&toolbox.bacthsetlanguage.desc;"/>
+                                        <image src="chrome://jasminum/skin/information.png" 
+                                            style="margin-top:5px;margin-bottom:5px"
+                                            tooltiptext="&toolbox.bacthsetlanguage.desc;"/>
                                     </row>
                                     <row>
                                         <description>&toolbox.dateformatter.info;</description>
@@ -120,19 +137,9 @@
                                     </row>
                                 </vbox>
                             </groupbox>
-                            <groupbox>
-                                <caption label="&pdftk.caption;"/>
-                                <description>&pdftk.info; <label class="zotero-text-link" value="PDFtk Server" href="https://www.pdflabs.com/tools/pdftk-server/"/></description>
-                                <hbox style="margin: 0" align="center">
-                                    <textbox id="jasminum-pdftk-path" preference="pref-jasminum.pdftkpath" readonly="true" flex="1"/>
-                                    <button label="&choose;" oncommand="choosePath();"/>
-                                    <image id="path-accept" src="chrome://jasminum/skin/accept.png" tooltiptext="&pdftk.path.check.ok;" hidden="true"/>
-                                    <image id="path-error" src="chrome://jasminum/skin/exclamation.png" tooltiptext="&pdftk.path.check.error;" hidden="true"/>
-                                </hbox>
-                            </groupbox>
                         </vbox>
                     </tabpanel>
-                    <tabpanel id="zotero-prefpane-translators-tab" orient="vertical"  minheight="600">
+                    <tabpanel id="zotero-prefpane-translators-tab" orient="vertical">
                         <description>&translator.notiice;</description>
                         <listbox id="translators-listbox" flex="1">
 		                <listhead>

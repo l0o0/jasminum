@@ -17,6 +17,7 @@
 <!ENTITY language.label "默认中文语言(选择或输入): ">
 <!ENTITY cnkicite.label "知网引用数存放字段(英文名): ">
 <!ENTITY chinese "中文插件设置">
+<!ENTITY tools "小工具">
 <!ENTITY translators "非官方维护中文翻译器">
 <!ENTITY check "检查">
 <!ENTITY chinese.caption "知网参数设置">

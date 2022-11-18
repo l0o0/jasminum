@@ -17,6 +17,7 @@
 <!ENTITY language.label "Default LANG: ">
 <!ENTITY cnkicite.label "Item field for CSSCI: ">
 <!ENTITY chinese "Setting">
+<!ENTITY tools "Tools">
 <!ENTITY translators "Unofficial Translators Repository">
 <!ENTITY check "Check">
 <!ENTITY chinese.caption "CNKI Setting">
