@@ -484,7 +484,7 @@ Zotero.Jasminum.Scrape = new function () {
     }.bind(Zotero.Jasminum);
 
     // Get refwork data from search target rows
-    this.getRefworks = async function (targetRows) {
+    this.getRefworks = async function (targetRows, onlyUrl = false) {
         Zotero.debug("**Jasminum start get ref");
         if (targetRows == null) {
             return new Error("No items returned from the CNKI");
@@ -503,7 +503,10 @@ Zotero.Jasminum.Scrape = new function () {
                 `https://kns.cnki.net/KCMS/detail/detail.aspx?dbcode=${targetIDs[idx].dbcode}&dbname=${targetIDs[idx].dbname}&filename=${targetIDs[idx].filename}&v=`
             );
         }
-        postData = this.Scrape.createRefPostData(targetIDs);
+        if (onlyUrl) {
+            return targetData.targetUrls;
+        }
+        let postData = this.Scrape.createRefPostData(targetIDs);
         Zotero.debug(postData);
         var data = await this.Scrape.getRefText(postData);
         Zotero.debug(data.split("\n"));

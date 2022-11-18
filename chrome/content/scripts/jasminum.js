@@ -457,6 +457,7 @@ Zotero.Jasminum = new function () {
      * @return {void}
      */
     this.updateCiteCSSCI = async function (items) {
+        var html;
         for (let item of items) {
             if (["patent", "webpage"].includes(Zotero.ItemTypes.getName(item.itemTypeID))) {
                 this.Utils.showPopup(
@@ -464,16 +465,18 @@ Zotero.Jasminum = new function () {
                     `${Zotero.ItemTypes.getName(item.itemTypeID)}类型条目不需要抓取`,
                     1
                 )
+                continue;
             } else if (item.getField("title").search(/[_\u4e00-\u9fa5]/) === -1) {
                 this.Utils.showPopup(
                     "条目类型不支持",
                     `非中文条目`,
                     1
                 )
+                continue;
             } else if (item.getField("url")) {
                 let url = item.getField("url");
                 let resp = await Zotero.HTTP.request("GET", url);
-                let html = this.Utils.string2HTML(resp.responseText);
+                html = this.Utils.string2HTML(resp.responseText);
                 // 检测是否出现知网验证页面,一般网页以nxgp开头的页面，会出现知网验证页面
                 if (html.querySelector("div.verify_wrap")) {
                     this.Utils.showPopup(
@@ -481,6 +484,35 @@ Zotero.Jasminum = new function () {
                         "抓取信息时出现知网验证页面",
                         1);
                     continue;
+                }
+                // 特异性网址，
+                if (Zotero.Utilities.xpath(html, "//h2[@id='erro_span']")) {
+                    Zotero.debug("** Jasminum 条目网址有点特殊");
+                    let fileData = {
+                        keyword: item.getField("title"),
+                        author: item.getCreators()[0].lastName + item.getCreators()[0].firstName
+                    };
+                    let targetRows = await this.Scrape.search(fileData);
+                    if (targetRows && targetRows.length > 0) {
+                        let urls = await this.Scrape.getRefworks(
+                            targetRows, onlyUrl = true
+                        );
+                        Zotero.debug("** Jasminum " + urls[0]);
+                        item.setField('url', urls[0]);
+                        item.saveTx();
+                        url = item.getField("url");
+                        resp = await Zotero.HTTP.request("GET", url);
+                        html = this.Utils.string2HTML(resp.responseText);
+                        // 检测是否出现知网验证页面,一般网页以nxgp开头的页面，会出现知网验证页面
+                        if (html.querySelector("div.verify_wrap")) {
+                            this.Utils.showPopup(
+                                "期刊、引用抓取异常",
+                                "抓取信息时出现知网验证页面",
+                                1);
+                            continue;
+                        }
+                    }
+
                 }
                 let dateString = new Date().toLocaleDateString().replace(/\//g, '-');
                 let cite = this.Scrape.getCitationFromPage(html);
