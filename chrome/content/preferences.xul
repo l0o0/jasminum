@@ -17,7 +17,6 @@
                 <preference id="pref-jasminum.autobookmark" name="extensions.zotero.jasminum.autobookmark" type="bool"/>
                 <preference id="pref-jasminum.zhnamedot" name="extensions.zotero.jasminum.zhnamedot" type="bool"/>
                 <preference id="pref-jasminum.language" name="extensions.zotero.jasminum.language" type="string"/>
-                <preference id="pref-jasminum.autolanguage" name="extensions.zotero.jasminum.autolanguage" type="bool"/>
                 <preference id="pref-jasminum.ennamesplit" name="extensions.zotero.jasminum.ennamesplit" type="bool"/>''
                 <preference id="pref-jasminum.languagelist" name="extensions.zotero.jasminum.languagelist" type="string"/>
                 <preference id="pref-jasminum.attachment" name="extensions.zotero.jasminum.attachment" type="string"/>
@@ -42,16 +41,6 @@
                                 <checkbox id="jasminum.zhnamesplit" label="&zhnamesplit.label;" preference="pref-jasminum.zhnamesplit"/>
                                 <checkbox id="jasminum.rename" label="&rename.label;" preference="pref-jasminum.rename"/>
                                 <checkbox id="jasminum.autobookmark" label="&autobookmark.label;" preference="pref-jasminum.autobookmark"/>
-                                <row>
-                                    <checkbox id="jasminum.autolanguage" label="&autolanguage.label;" preference="pref-jasminum.autolanguage"/>
-                                    <label value="&language.label;" style="padding-top: 6px;"/>
-                                    <menulist flex="1" editable="true" id="jasminum.language" preference="pref-jasminum.language" maxwidth="100" >
-                                        <menupopup>
-                                            <menuitem label="zh-CN" value="zh-CN"/>
-                                            <menuitem label="zh" value="zh"/>
-                                        </menupopup>
-                                    </menulist>
-                                </row>
                                 <row>
                                     <label value="&cnkicite.label;" style="padding-top: 6px;"/>
                                     <menulist flex="0.5" editable="true" id="jasminum.citefield" preference="pref-jasminum.citefield">

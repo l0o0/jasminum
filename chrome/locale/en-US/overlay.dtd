@@ -8,7 +8,6 @@
 <!ENTITY menu.tools.namemerge.label "Merge Names">
 <!ENTITY menu.tools.semicolonNamesSplit.label "Split Semicoloned Names">
 <!ENTITY menu.tools.removeDot.label "Remove Dot From Filename">
-<!ENTITY menu.tools.language.label "Set Language">
 <!ENTITY menu.tools.bacthsetlanguage.label "Batch Set Language">
 <!ENTITY menu.tools.dateformatter.label "Date Formatter">
 <!ENTITY pdftkpath.label "PDFtk Service Install Folder,contains pdftk.exe or pdftk">

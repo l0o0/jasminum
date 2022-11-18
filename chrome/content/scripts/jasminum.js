@@ -550,18 +550,18 @@ Zotero.Jasminum = new function () {
      * @param {[Zotero.item]}
      * @return {void}
      */
-    this.setLanguage = async function (item) {
-        let defaultLanguage = Zotero.Prefs.get("jasminum.language");
-        if (item.getField("language") != defaultLanguage) {
-            item.setField("language", defaultLanguage);
-            await item.saveTx();
-        }
-    };
-
-    this.setLanguageItems = async function (type) {
-        var items = this.getItems(type, true);
-        for (var item of items) { await this.setLanguage(item) }
-    };
+    /*     this.setLanguage = async function (item) {
+            let defaultLanguage = Zotero.Prefs.get("jasminum.language");
+            if (item.getField("language") != defaultLanguage) {
+                item.setField("language", defaultLanguage);
+                await item.saveTx();
+            }
+        };
+    
+        this.setLanguageItems = async function (type) {
+            var items = this.getItems(type, true);
+            for (var item of items) { await this.setLanguage(item) }
+        }; */
 
     /**
      * Batch Set language using nlp.js

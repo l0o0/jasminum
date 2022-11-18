@@ -33,10 +33,6 @@
                     class="menuitem-iconic jasminum-default-icon"
                     oncommand="Zotero.Jasminum.removeDotM('collection');"/>
                 <menuitem
-                    label="&menu.tools.language.label;"
-                    class="menuitem-iconic jasminum-zh-icon"
-                    oncommand="Zotero.Jasminum.setLanguageItems('collection');"/>
-                <menuitem
                     label="&menu.tools.bacthsetlanguage.label;"
                     class="menuitem-iconic jasminum-language-icon"
                     oncommand="Zotero.Jasminum.bacthSetLanguage('collection');"/>
@@ -98,10 +94,6 @@
                     label="&menu.tools.removeDot.label;"
                     class="menuitem-iconic jasminum-default-icon"
                     oncommand="Zotero.Jasminum.removeDotM('items');"/>
-                <menuitem
-                    label="&menu.tools.language.label;"
-                    class="menuitem-iconic jasminum-zh-icon"
-                    oncommand="Zotero.Jasminum.setLanguageItems('items');"/>
                 <menuitem
                     label="&menu.tools.bacthsetlanguage.label;"
                     class="menuitem-iconic jasminum-language-icon"

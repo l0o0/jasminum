@@ -8,7 +8,6 @@
 <!ENTITY menu.tools.namemerge.label "合并姓名">
 <!ENTITY menu.tools.semicolonNamesSplit.label "从分号拆分名字">
 <!ENTITY menu.tools.removeDot.label "去除文件名中逗号">
-<!ENTITY menu.tools.language.label "设置默认语言">
 <!ENTITY menu.tools.bacthsetlanguage.label "批量设置语言">
 <!ENTITY menu.tools.dateformatter.label "统一日期格式">
 <!ENTITY pdftkpath.label "PDFtk Service 安装路径">
