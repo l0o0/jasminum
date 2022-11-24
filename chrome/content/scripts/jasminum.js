@@ -336,6 +336,7 @@ Zotero.Jasminum = new function () {
             var creators = item.getCreators();
             for (var i = 0; i < creators.length; i++) {
                 var creator = creators[i];
+                creator.fieldMode = 0;
                 if ( // English Name
                     (creator.lastName.search(/[A-Za-z]/) >= 0 ||
                         creator.firstName.search(/[A-Za-z]/) >= 0) &&
@@ -369,6 +370,7 @@ Zotero.Jasminum = new function () {
             var creators = item.getCreators();
             for (var i = 0; i < creators.length; i++) {
                 var creator = creators[i];
+                creator.fieldMode = 1;
                 if ( // English Name
                     creator.lastName.search(/[A-Za-z]/) !== -1 ||
                     creator.lastName.search(/[A-Za-z]/) !== -1

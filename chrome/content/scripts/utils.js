@@ -72,6 +72,7 @@ Zotero.Jasminum.Utils = new function () {
                 creators = newItem.getCreators();
                 for (var i = 0; i < creators.length; i++) {
                     var creator = creators[i];
+                    creator.fieldMode = 0;
                     if (creator.firstName) continue;
 
                     var lastSpace = creator.lastName.lastIndexOf(" ");
