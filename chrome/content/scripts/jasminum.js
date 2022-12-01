@@ -2,7 +2,7 @@ Zotero.Jasminum = new function () {
     // Default values
     this.userAgent =
         "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/70.0.3538.77 Safari/537.36";
-    this.CNDB = ['CNKI', 'WeiPu', 'Wanfang Data', 'SuperLib'];
+    this.CNDB = ['CNKI', 'WeiPu', 'Wanfang Data', 'SuperLib', '中国知网CNKI', '维普', '万方', '全国图书馆联盟'];
     this.CookieSandbox = null;
     this.RefCookieSandbox = null;
 
