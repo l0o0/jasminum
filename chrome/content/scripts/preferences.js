@@ -2,9 +2,14 @@ initPref = async function () {
     Components.utils.import("resource://gre/modules/osfile.jsm");
     var jasminum_pdftk_path = Zotero.Prefs.get("jasminum.pdftkpath");
     document.getElementById("jasminum-pdftk-path").value = jasminum_pdftk_path;
+    document.getElementById("jasminum.autolanguagefunc").disabled = !Zotero.Prefs.get("jasminum.autolanguage");
     var fileExist = await Zotero.Jasminum.Scrape.checkPath();
     pathCheckIcon(fileExist);
     initTranslatorPanel(update = true);
+
+    document.getElementById("jasminum.autolanguage").addEventListener("CheckboxStateChange", function () {
+        document.getElementById("jasminum.autolanguagefunc").disabled = !this.checked;
+    });
 };
 
 // https://developer.mozilla.org/en-US/docs/Mozilla/Tech/XPCOM/Reference/Interface/nsIFilePicker

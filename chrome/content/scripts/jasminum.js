@@ -44,44 +44,25 @@ Zotero.Jasminum = new function () {
             }
             Zotero.Prefs.set("jasminum.pdftkpath", pdftkpath);
         }
-        if (Zotero.Prefs.get("jasminum.autoupdate") === undefined) {
-            Zotero.Prefs.set("jasminum.autoupdate", false);
-        }
-        if (Zotero.Prefs.get("jasminum.namepatent") === undefined) {
-            Zotero.Prefs.set("jasminum.namepatent", "{%t}_{%g}");
-        }
-        if (Zotero.Prefs.get("jasminum.zhnamesplit") === undefined) {
-            Zotero.Prefs.set("jasminum.zhnamesplit", true);
-        }
-        if (Zotero.Prefs.get("jasminum.rename") === undefined) {
-            Zotero.Prefs.set("jasminum.rename", true);
-        }
-        if (Zotero.Prefs.get("jasminum.autobookmark") === undefined) {
-            Zotero.Prefs.set("jasminum.autobookmark", true);
-        }
-        if (Zotero.Prefs.get("jasminum.autolanguage") === undefined) {
-            Zotero.Prefs.set("jasminum.autolanguage", false);
-        }
-        if (Zotero.Prefs.get("jasminum.language") === undefined) {
-            Zotero.Prefs.set("jasminum.language", 'zh-CN');
-        }
-        if (Zotero.Prefs.get("jasminum.languagelist") === undefined) {
-            Zotero.Prefs.set("jasminum.languagelist", 'zh,en');
-        }
-        if (Zotero.Prefs.get("jasminum.ennamesplit") === undefined) {
-            Zotero.Prefs.set("jasminum.ennamesplit", true);
-        }
-        if (Zotero.Prefs.get("jasminum.attachment") === undefined) {
-            Zotero.Prefs.set("jasminum.attachment", 'pdf');
-        }
-        if (Zotero.Prefs.get("jasminum.citefield") === undefined) {
-            Zotero.Prefs.set("jasminum.citefield", 'extra');
-        }
-        if (Zotero.Prefs.get("jasminum.dateformatter") === undefined) {
-            Zotero.Prefs.set("jasminum.dateformatter", 'ISO');
-        }
-        if (Zotero.Prefs.get("jasminum.dateformatterfill") === undefined) {
-            Zotero.Prefs.set("jasminum.dateformatterfill", 'false');
+        const initPrefs = {
+            "jasminum.autoupdate": false,
+            "jasminum.namepatent": "{%t}_{%g}",
+            "jasminum.zhnamesplit": false,
+            "jasminum.rename": true,
+            "jasminum.autobookmark": true,
+            "jasminum.autolanguage": false,
+            "jasminum.autolanguagefunc": 'Auto',
+            "jasminum.language": 'zh_CN',
+            "jasminum.languagelist": 'zh,en',
+            "jasminum.ennamesplit": true,
+            "jasminum.attachment": 'pdf',
+            "jasminum.citefield": 'extra',
+            "jasminum.dateformatter": 'ISO',
+            "jasminum.dateformatterfill": false
+        };
+
+        for (let pref in initPrefs) {
+            if (Zotero.Prefs.get(pref) === undefined) Zotero.Prefs.set(pref, initPrefs[pref]);
         }
     };
 
@@ -138,11 +119,13 @@ Zotero.Jasminum = new function () {
                 // Set default language field
                 if (Zotero.Prefs.get("jasminum.autolanguage")) {
                     for (let item of addedItems) {
-                        if (
-                            item.getField("language").match(/中文|cn|zh/)
-                        ) {
-                            Zotero.debug("***** Set default language");
-                            await Zotero.Jasminum.setLanguage(item);
+                        switch (Zotero.Prefs.get("jasminum.autolanguagefunc")) {
+                            case "Auto":
+                                await Zotero.Jasminum.bacthSetLanguage(item);
+                                break;
+                            case "Manual":
+                                await Zotero.Jasminum.setLanguage(item);
+                                break;
                         }
                     }
                 }
@@ -584,38 +567,42 @@ Zotero.Jasminum = new function () {
      * @param {[Zotero.item]}
      * @return {void}
      */
-    /*     this.setLanguage = async function (item) {
-            let defaultLanguage = Zotero.Prefs.get("jasminum.language");
-            if (item.getField("language") != defaultLanguage) {
-                item.setField("language", defaultLanguage);
-                await item.saveTx();
-            }
-        };
-    
-        this.setLanguageItems = async function (type) {
-            var items = this.getItems(type, true);
-            for (var item of items) { await this.setLanguage(item) }
-        }; */
+    this.setLanguage = async function (item) {
+        let defaultLanguage = Zotero.Prefs.get("jasminum.language");
+        if (item.getField("language") != defaultLanguage) {
+            item.setField("language", defaultLanguage);
+            await item.saveTx();
+        }
+    };
+
+    this.setLanguageItems = async function (type) {
+        var items = this.getItems(type, true);
+        for (let item of items) { await this.setLanguage(item) }
+    };
 
     /**
      * Batch Set language using nlp.js
      * @param {[Zotero.item]}
      * @return {void}
      */
-    this.bacthSetLanguage = async function (type) {
-        let items = this.getItems(type, true);
+    this.bacthSetLanguage = async function (item) {
         // 获取常用语言列表
-        let languageStr = Zotero.Prefs.get("jasminum.languagelist").replace(/\s*/g, "")
-        let languageList = languageStr.split(/,|，/g)
+        let languageStr = Zotero.Prefs.get("jasminum.languagelist").replace(/\s*/g, "");
+        let languageList = languageStr.split(/,|，/g);
         // 使用 nlp.js 进行识别
-        for (let item of items) {
-            let langGuess = this.NLP.guess(item.getField("title"), languageList)[0]["alpha2"];
-            if (langGuess && item.getField("language") != langGuess) {
-                item.setField("language", langGuess)
-                await item.saveTx();
-            }
+        let langGuess = this.NLP.guess(item.getField("title"), languageList)[0]["alpha2"];
+        if (langGuess && item.getField("language") != langGuess) {
+            item.setField("language", langGuess);
+            await item.saveTx();
         }
     };
+
+    this.bacthSetLanguageItems = async function (type) {
+        let items = this.getItems(type, true);
+        for (let item of items) { await this.bacthSetLanguage(item) }
+    };
+
+
 
     /**
      * Uniform date format
