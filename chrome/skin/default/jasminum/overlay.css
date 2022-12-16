@@ -36,6 +36,9 @@
 .jasminum-language-icon{
 	list-style-image: url('chrome://jasminum/skin/language.png');
 }
+.jasminum-mlanguage-icon{
+	list-style-image: url('chrome://jasminum/skin/flag-china.png');
+}
 .jasminum-date-icon{
 	list-style-image: url('chrome://jasminum/skin/date.png');
 }

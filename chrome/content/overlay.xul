@@ -98,10 +98,14 @@
                     label="&menu.tools.removeDot.label;"
                     class="menuitem-iconic jasminum-default-icon"
                     oncommand="Zotero.Jasminum.removeDotM('items');"/>
+                    <menuitem
+                    label="&menu.tools.manualsetlanguage.label;"
+                    class="menuitem-iconic jasminum-mlanguage-icon"
+                    oncommand="Zotero.Jasminum.setLanguageItems('items');"/>
                 <menuitem
                     label="&menu.tools.bacthsetlanguage.label;"
                     class="menuitem-iconic jasminum-language-icon"
-                    oncommand="Zotero.Jasminum.bacthSetLanguage('items');"/>
+                    oncommand="Zotero.Jasminum.bacthSetLanguageItems('items');"/>
                 <menuitem
                     label="&menu.tools.dateformatter.label;"
                     class="menuitem-iconic jasminum-date-icon"

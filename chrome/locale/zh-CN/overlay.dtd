@@ -8,13 +8,13 @@
 <!ENTITY menu.tools.namemerge.label "合并姓名">
 <!ENTITY menu.tools.semicolonNamesSplit.label "从分号拆分名字">
 <!ENTITY menu.tools.removeDot.label "去除文件名中逗号">
-<!ENTITY menu.tools.bacthsetlanguage.label "智能识别语言">
-<!ENTITY menu.tools.manualsetlanguage.label "手动设置语言">
+<!ENTITY menu.tools.bacthsetlanguage.label "Auto:智能识别语言">
+<!ENTITY menu.tools.manualsetlanguage.label "Manual:手动设置语言">
 <!ENTITY menu.tools.dateformatter.label "统一日期格式">
 <!ENTITY pdftkpath.label "PDFtk Service 安装路径">
 <!ENTITY autoupdate.label "添加中文PDF/CAJ时自动从知网抓取题录">
-<!ENTITY autolanguage.label "中文条目时自动设置语言">
-<!ENTITY language.label "默认中文语言(选择或输入): ">
+<!ENTITY autolanguage.label "自动设置语言(更多设置在小工具栏)">
+<!ENTITY autolanguagefunc.label "语言识别方式(智能/手动): ">
 <!ENTITY cnkicite.label "知网引用数存放字段(英文名): ">
 <!ENTITY chinese "中文插件设置">
 <!ENTITY tools "小工具">
