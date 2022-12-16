@@ -8,7 +8,8 @@
 <!ENTITY menu.tools.namemerge.label "合并姓名">
 <!ENTITY menu.tools.semicolonNamesSplit.label "从分号拆分名字">
 <!ENTITY menu.tools.removeDot.label "去除文件名中逗号">
-<!ENTITY menu.tools.bacthsetlanguage.label "批量设置语言">
+<!ENTITY menu.tools.bacthsetlanguage.label "智能识别语言">
+<!ENTITY menu.tools.manualsetlanguage.label "手动设置语言">
 <!ENTITY menu.tools.dateformatter.label "统一日期格式">
 <!ENTITY pdftkpath.label "PDFtk Service 安装路径">
 <!ENTITY autoupdate.label "添加中文PDF/CAJ时自动从知网抓取题录">
@@ -26,8 +27,10 @@
 <!ENTITY attachment.cookie.info "获取知网用户数据">
 <!ENTITY toolbox.caption "小工具设置">
 <!ENTITY toolbox.ennamesplit.label "拆分/合并英文名">
-<!ENTITY toolbox.bacthsetlanguage.info "批量设置语言(用','隔开)">
-<!ENTITY toolbox.bacthsetlanguage.desc "批量设置语言基于nlp.js，通过识别标题文字来填充语言栏。该功能由算法自动识别，不能保证完全正确。设置常用语言，可以提高该语言出现的优先级，填写内容需遵循ISO 639‑1标准。识别结果不会局限于所填写的语言类别，输入框为空表示不做任何限制。'设置默认语言'，仅对选中项目设置一种语言，该语言为 '默认中文语言' 的值。">
+<!ENTITY toolbox.bacthsetlanguage.info "智能识别语言(用','隔开)">
+<!ENTITY toolbox.bacthsetlanguage.desc "智能识别语言基于nlp.js，通过识别标题文字来填充语言栏。该功能由算法自动识别，不能保证完全正确。设置常用语言，可以提高该语言出现的优先级，填写内容需遵循ISO 639‑1标准。识别结果不会局限于所填写的语言类别，输入框为空表示不做任何限制。'设置默认语言'，仅对选中项目设置一种语言，该语言为 '默认中文语言' 的值。">
+<!ENTITY toolbox.manualsetlanguage.info "手动设置语言">
+<!ENTITY toolbox.manualsetlanguage.desc "使用设置的语言信息填充条目的语言栏">
 <!ENTITY toolbox.dateformatter.info "统一日期的格式">
 <!ENTITY toolbox.dateformatter.iso "Year-Month-Day">
 <!ENTITY toolbox.dateformatter.short "Day/Month/Year">

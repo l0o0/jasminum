@@ -113,6 +113,13 @@
                                             tooltiptext="&toolbox.bacthsetlanguage.desc;"/>
                                     </row>
                                     <row>
+                                        <description>&toolbox.manualsetlanguage.info;</description>
+                                        <textbox id="jasminum.manuallanguagelist" preference="pref-jasminum.manuallanguagelist"/>
+                                        <image src="chrome://jasminum/skin/information.png" 
+                                            style="margin-top:5px;margin-bottom:5px"
+                                            tooltiptext="&toolbox.manualsetlanguage.desc;"/>
+                                    </row>
+                                    <row>
                                         <description>&toolbox.dateformatter.info;</description>
                                         <menulist flex="1" editable="false" id="jasminum.dateformatter" preference="pref-jasminum.dateformatter" maxwidth="110" >
                                             <menupopup>

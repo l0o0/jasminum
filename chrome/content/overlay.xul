@@ -37,6 +37,10 @@
                     class="menuitem-iconic jasminum-language-icon"
                     oncommand="Zotero.Jasminum.bacthSetLanguage('collection');"/>
                 <menuitem
+                    label="&menu.tools.manualsetlanguage.label;"
+                    class="menuitem-iconic jasminum-language-icon"
+                    oncommand="Zotero.Jasminum.manualSetLanguage('collection');"/>
+                <menuitem
                     label="&menu.tools.dateformatter.label;"
                     class="menuitem-iconic jasminum-date-icon"
                     oncommand="Zotero.Jasminum.dateFormatter('collection');"/>
