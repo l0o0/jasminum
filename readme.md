@@ -17,10 +17,17 @@
 
 如果想使用书签添加功能，需要提前安装好 PDFtk server，该书签添加工具有 Windows， Linux 和 Mac，请根据自己的系统下载对应的版本进行安装，并在选项中设置好对应的目录。[PDFtk server 下载链接](https://www.pdflabs.com/tools/pdftk-server/)
 
-**Mac 用户**（感谢[@GuokaiLiu](https://github.com/GuokaiLiu)同学在 [issue](https://github.com/l0o0/jasminum/issues/7#issuecomment-706448964) 中的补充）
-macos(10.15)用户：
+### Mac系统
+感谢各位同学提供的信息   
+[@GuokaiLiu](https://github.com/GuokaiLiu)， [issue](https://github.com/l0o0/jasminum/issues/7#issuecomment-706448964)
+[@tsunho12](https://github.com/tsunho12)， [#135](https://github.com/l0o0/jasminum/issues/135)
+[@simon2413](https://github.com/simon2413)， [#55](https://github.com/l0o0/jasminum/issues/55)
+
+**Intel MacOS(>10.15)**
 由于官方未更新PDFtk server最新版本的超链接，通过官网首页下载的PDFtk server至今(2021.10.26)仍不支持部分较新的mac系统，目前推荐通过：https://www.pdflabs.com/tools/pdftk-the-pdf-toolkit/pdftk_server-2.02-mac_osx-10.11-setup.pkg 下载。
-**M1 Mac 用户**（感谢[@simon2413](https://github.com/simon2413)同学在 [issue](https://github.com/l0o0/jasminum/issues/55) 中的说明）
+
+**M1 Mac**
+
 需要先安装 M1 版本的 homebrew，然后在终端 Terminal 中
 ```bash
 brew install pdftk-java
@@ -50,7 +57,7 @@ NO warranty, not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 [user@ hostname ~ ]$ 
 ```
 
-Zotero配置路径：`/opt/pdflabs/pdftk/`. （该路径默认对外隐藏无法选取）
+Zotero 配置`pdftk`路径：`/opt/pdflabs/pdftk/`或`/usr/local/bin/pdftk` （该路径默认对外隐藏无法选取，不同系统路径也会有差异，具体以`which pdftk`输出的结果为准）。
 选择路径的技巧：`shift+command+G`: 输入：`/opt/pdflabs/pdftk/`，选择`bin`确认
 
 > 官网：https://www.pdflabs.com/tools/pdftk-server/  
