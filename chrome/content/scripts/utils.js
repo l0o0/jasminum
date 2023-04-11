@@ -174,8 +174,9 @@ Zotero.Jasminum.Utils = new function () {
     this.string2HTML = function (text) {
         // Use DOMParser to parse text to HTML.
         // This DOMParser is from XPCOM.
-        var parser = Components.classes["@mozilla.org/xmlextras/domparser;1"]
-            .createInstance(Components.interfaces.nsIDOMParser);
+        /*         var parser = Components.classes["@mozilla.org/xmlextras/domparser;1"]
+                    .createInstance(Components.interfaces.nsIDOMParser); */
+        var parser = new DOMParser();  // Use HTML DOMParser #158
         return parser.parseFromString(text, "text/html");
     }.bind(Zotero.Jasminum);
 
