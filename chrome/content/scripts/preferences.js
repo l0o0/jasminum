@@ -147,7 +147,7 @@ initTranslatorPanel = async function (update = true) {
 };
 
 getUpdates = function (update = true) {
-    let metadataUrl = "https://gitcode.net/goonback/translators_CN/-/raw/master/data/translators.json";
+    let metadataUrl = "https://oss.wwang.de/translators_CN/data/translators.json";
     let cacheFile = Zotero.getTempDirectory();
     cacheFile.append("translator.json");
     var contents;
@@ -177,7 +177,8 @@ downloadTo = async function (label) {
         cacheFile.remove(false);
     }
     // var url = `https://gitee.com/l0o0/translators_CN/raw/master/translators/${label}`;
-    var url = `https://gitcode.net/goonback/translators_CN/-/raw/master/translators/${label}`;
+    // var url = `https://gitcode.net/goonback/translators_CN/-/raw/master/translators/${label}`;
+    let url = `https://oss.wwang.de/translators_CN/translators/${label}`;
     try {
         let contents = await Zotero.File.getContentsFromURL(url);
         let desPath = OS.Path.join(
