@@ -1,3 +1,5 @@
+const translatorUrl = Zotero.Prefs.get("jasminum.translatorurl");
+
 initPref = async function () {
     Components.utils.import("resource://gre/modules/osfile.jsm");
     var jasminum_pdftk_path = Zotero.Prefs.get("jasminum.pdftkpath");
@@ -147,7 +149,7 @@ initTranslatorPanel = async function (update = true) {
 };
 
 getUpdates = function (update = true) {
-    let metadataUrl = "https://oss.wwang.de/translators_CN/data/translators.json";
+    let metadataUrl = translatorUrl + "/data/translators.json";
     let cacheFile = Zotero.getTempDirectory();
     cacheFile.append("translator.json");
     var contents;
@@ -178,7 +180,7 @@ downloadTo = async function (label) {
     }
     // var url = `https://gitee.com/l0o0/translators_CN/raw/master/translators/${label}`;
     // var url = `https://gitcode.net/goonback/translators_CN/-/raw/master/translators/${label}`;
-    let url = `https://oss.wwang.de/translators_CN/translators/${label}`;
+    let url = `${translatorUrl}/${label}`;
     try {
         let contents = await Zotero.File.getContentsFromURL(url);
         let desPath = OS.Path.join(

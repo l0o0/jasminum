@@ -58,7 +58,8 @@ Zotero.Jasminum = new function () {
             "jasminum.attachment": 'pdf',
             "jasminum.citefield": 'extra',
             "jasminum.dateformatter": 'ISO',
-            "jasminum.dateformatterfill": false
+            "jasminum.dateformatterfill": false,
+            "jasminum.translatorurl": "https://oss.wwang.de/translators_CN"
         };
 
         for (let pref in initPrefs) {
