@@ -1,6 +1,8 @@
 import { FilePickerHelper } from "zotero-plugin-toolkit/dist/helpers/filePicker";
 import { setPref } from "../utils/prefs";
 import { config } from "../../package.json";
+import { showPop } from "../utils/window";
+import { getString } from "../utils/locale";
 
 export async function checkPath(pathvalue: string): Promise<void> {
   let pdftk = "";
@@ -11,34 +13,34 @@ export async function checkPath(pathvalue: string): Promise<void> {
   }
   const check = await OS.File.exists(pdftk);
   addon.data
-      .prefs!.window.document.querySelector(
-        "#path-accept"
-      )?.setAttribute("hidden", `${!check}`);
+    .prefs!.window.document.querySelector(
+      "#path-accept"
+    )?.setAttribute("hidden", `${!check}`);
   addon.data
     .prefs!.window.document.querySelector(
       "#path-error"
-  )?.setAttribute("hidden", `${check}`);
+    )?.setAttribute("hidden", `${check}`);
 }
 
 async function getLastUpdateFromFile(filename: string): Promise<string> {
   const desPath = ztoolkit.getGlobal('OS').Path.join(
-      ztoolkit.getGlobal('Zotero').Prefs.get("dataDir") as string,
-      "translators",
-      filename
+    ztoolkit.getGlobal('Zotero').Prefs.get("dataDir") as string,
+    "translators",
+    filename
   );
   Zotero.debug(desPath);
   if (!(await ztoolkit.getGlobal('OS').File.exists(desPath))) {
-      Zotero.debug(filename + " not exists");
-      return "---";
+    Zotero.debug(filename + " not exists");
+    return "---";
   }
   try {
-      const source = await ztoolkit.getGlobal('Zotero').File.getContentsAsync(desPath) as string;
-      const infoRe = /^\s*{[\S\s]*?}\s*?[\r\n]/;
-      const metaData = JSON.parse(infoRe.exec(source)![0]);
-      return metaData.lastUpdated;
+    const source = await ztoolkit.getGlobal('Zotero').File.getContentsAsync(desPath) as string;
+    const infoRe = /^\s*{[\S\s]*?}\s*?[\r\n]/;
+    const metaData = JSON.parse(infoRe.exec(source)![0]);
+    return metaData.lastUpdated;
   } catch (e) {
-      Zotero.debug(e);
-      return "---";
+    Zotero.debug(e);
+    return "---";
   }
 };
 
@@ -47,11 +49,11 @@ async function insertTable(): Promise<void> {
   if (data) {
     ztoolkit.log("get translator data ok");
     (addon.data
-    .prefs!.window.document
-    .querySelector("#jasminum-translator-table-loading")! as any).hidden = true;
+      .prefs!.window.document
+      .querySelector("#jasminum-translator-table-loading")! as any).hidden = true;
     (addon.data
-    .prefs!.window.document
-    .querySelector("#jasminum-translator-table")! as HTMLElement).style['display'] = 'unset';
+      .prefs!.window.document
+      .querySelector("#jasminum-translator-table")! as HTMLElement).style['display'] = 'unset';
   }
   ztoolkit.log(data);
   const tbody = addon.data
@@ -144,7 +146,7 @@ async function downloadTranslator(filename: string): Promise<void> {
   const cacheFile = ztoolkit.getGlobal("Zotero").getTempDirectory();
   cacheFile.append(filename);
   if (cacheFile.exists()) {
-      cacheFile.remove(false);
+    cacheFile.remove(false);
   }
   // var url = `https://gitee.com/l0o0/translators_CN/raw/master/translators/${label}`;
   // var url = `https://gitcode.net/goonback/translators_CN/-/raw/master/translators/${label}`;
@@ -152,36 +154,20 @@ async function downloadTranslator(filename: string): Promise<void> {
   const url = Zotero.Prefs.get("jasminum.translatorurl") + "/" + filename;
   ztoolkit.log(url);
   try {
-      const contents = await ztoolkit.getGlobal("Zotero").File.getContentsFromURL(url);
-      const desPath = OS.Path.join(
-          ztoolkit.getGlobal("Zotero").Prefs.get("dataDir") as string,
-          "translators",
-          filename
-      );
-      const desPathFile = ztoolkit.getGlobal("Zotero").File.pathToFile(desPath) as nsIFile;
-      await ztoolkit.getGlobal("Zotero").File.putContentsAsync(desPathFile, contents);
-      await updateTranslatorImg(filename);
-      ztoolkit.log(`${filename} 下载成功`);
-      new ztoolkit.ProgressWindow(config.addonName, {
-        closeOnClick: true,
-        closeTime: 1500,
-      })
-        .createLine({
-          text: `${filename} 下载成功`,
-          type: "success",
-        })
-        .show();
+    const contents = await ztoolkit.getGlobal("Zotero").File.getContentsFromURL(url);
+    const desPath = OS.Path.join(
+      ztoolkit.getGlobal("Zotero").Prefs.get("dataDir") as string,
+      "translators",
+      filename
+    );
+    const desPathFile = ztoolkit.getGlobal("Zotero").File.pathToFile(desPath) as nsIFile;
+    await ztoolkit.getGlobal("Zotero").File.putContentsAsync(desPathFile, contents);
+    await updateTranslatorImg(filename);
+    ztoolkit.log(`${filename} 下载成功`);
+    showPop(getString("translator-download-success", { args: { filename: filename } }));
   } catch (e) {
     ztoolkit.log(`${filename} 下载失败 ${e}`);
-    new ztoolkit.ProgressWindow(config.addonName, {
-      closeOnClick: true,
-      closeTime: 1500,
-    })
-      .createLine({
-        text: `${filename} 下载失败 ${e}`,
-        type: "fail",
-      })
-      .show();
+    showPop(getString("translator-download-fail", { args: { filename: filename } }), "fail");
   }
 }
 
@@ -189,11 +175,11 @@ export async function registerPrefsScripts(_window: Window) {
   // This function is called when the prefs window is opened
   // See addon/chrome/content/preferences.xul onpaneload
   const data = await updateTranslatorData(true);
-  const rows = Object.keys(data).map((e: any) => {return {name: (data[e] as any).label, "local": "xx", "remote": (data[e] as any).lastUpdated, "download": "点击下载"}});
+  const rows = Object.keys(data).map((e: any) => { return { name: (data[e] as any).label, "local": "xx", "remote": (data[e] as any).lastUpdated, "download": "点击下载" } });
   if (addon.data.prefs) {
     addon.data.prefs.window = _window;
   } else {
-    addon.data.prefs = {window: _window, columns: [], rows: [] }
+    addon.data.prefs = { window: _window, columns: [], rows: [] }
   }
   updatePrefsUI();
   bindPrefEvents();
@@ -226,7 +212,7 @@ function bindPrefEvents() {
       );
     });
 
-    addon.data
+  addon.data
     .prefs!.window.document.querySelector(
       "#jasminum-open-cnki"
     )

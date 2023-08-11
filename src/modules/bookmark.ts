@@ -1,5 +1,7 @@
 import { config } from "../../package.json";
 import { getHTMLDoc } from "../utils/http";
+import { getString } from "../utils/locale";
+import { showPop } from "../utils/window";
 import { searchCNKI } from "./cnki";
 
 async function checkPDFtkPath() {
@@ -25,7 +27,7 @@ async function getCNKIReaderUrl(itemUrl: string) {
   if (nodes.length == 0) {  // No results
     return '';
   }
-  const href = nodes[0].getAttribute("href");
+  const href = nodes[0].getAttribute("href")!;
   
   ztoolkit.log(nodes.length);
   ztoolkit.log(href);
@@ -93,7 +95,7 @@ async function addBookmark(item: Zotero.Item, bookmark: string) {
     cacheFile.initWithPath(newTmp);
     cachePDF.initWithPath(newTmp);
     if (!cacheFile.exists()) {
-      cacheFile.create(Components.interfaces.nsIFile.DIRECTORY_TYPE, 0777);
+      cacheFile.create(Components.interfaces.nsIFile.DIRECTORY_TYPE, 777);
     }
   }
   cacheFile.append("bookmark.txt");
@@ -136,16 +138,7 @@ async function addBookmark(item: Zotero.Item, bookmark: string) {
     await OS.File.copy(cachePDF.path, item.getFilePath() as string);
     cacheFile.remove(false);
     cachePDF.remove(false);
-    new ztoolkit.ProgressWindow(config.addonName, {
-      closeOnClick: true,
-      closeTime: 1500,
-    })
-      .createLine({
-        text: `${item.attachmentFilename} 书签添加成功`,
-        type: "default",
-        progress: 0,
-      })
-      .show();
+    showPop(getString("addbookmark-success", {args: {filename: item.attachmentFilename}}));
   } catch (e: any) {
     // try {
     //   cacheFile.remove(false);
@@ -153,16 +146,7 @@ async function addBookmark(item: Zotero.Item, bookmark: string) {
     // } catch (e: Error) {
     //   Zotero.logError(e);
     // }
-    new ztoolkit.ProgressWindow(config.addonName, {
-      closeOnClick: true,
-      closeTime: 1500,
-    })
-      .createLine({
-        text: `PDFtk 添加书签时失败, ${e}`,
-        type: "default",
-        progress: 0,
-      })
-      .show();
+    showPop(getString("addbookmark-fail", {args: {filename: item.attachmentFilename}}), "fail");
   }
 }
 
@@ -171,31 +155,14 @@ export async function addBookmarkItem(item?: Zotero.Item) {
     item = ZoteroPane.getSelectedItems()[0];
   }
   if (!(await checkPDFtkPath())) {
-    new ztoolkit.ProgressWindow(config.addonName, {
-      closeOnClick: true,
-      closeTime: 1500,
-    })
-      .createLine({
-        text: "未找到 PDFtk Server 的可执行文件。参考插件设置首选项中的下载地址下载并安装，在首选项中设置对应的可执行文件路径(路径以bin结尾)",
-        type: "default",
-        progress: 0,
-      })
-      .show();
+    showPop(getString("pdftk-missing"), "fail");
     return;
   }
   // Show alert when file is missing
   var attachmentExists =
     item.getFilePath() && (await OS.File.exists(item.getFilePath() as string));
   if (!attachmentExists) {
-    new ztoolkit.ProgressWindow(config.addonName, {
-      closeOnClick: true,
-      closeTime: 1500,
-    })
-      .createLine({
-        text: "该条目下未找到对应的 PDF 文件, PDF 文件缺失",
-        type: "default",
-      })
-      .show();
+    showPop(getString("pdf-missing"), "fail");
     return;
   }
   
@@ -225,29 +192,13 @@ export async function addBookmarkItem(item?: Zotero.Item) {
   ztoolkit.log("item chapter url: " + chapterUrl);
 
   if (chapterUrl == '') {
-    new ztoolkit.ProgressWindow(config.addonName, {
-      closeOnClick: true,
-      closeTime: 1500,
-    })
-      .createLine({
-        text: "未找到书签信息，请打开该条目知网链接，分章下载/章节下载查看",
-        type: "default",
-      })
-      .show();
+    showPop(getString("bookmark-missing"), "fail");
     return ;
   }
   
   const bookmarkOut = await getChapterText(chapterUrl, item);
   if (!bookmarkOut.bookmark) {
-    new ztoolkit.ProgressWindow(config.addonName, {
-      closeOnClick: true,
-      closeTime: 1500,
-    })
-      .createLine({
-        text: "未找到书签信息，请打开该条目知网链接，确认网页左侧是否出现书签章节信息",
-        type: "default",
-      })
-      .show();
+    showPop(getString("bookmark-missing"), "fail");
     return;
   } else {
     // Add TOC note

@@ -240,15 +240,7 @@ export function splitFilename(filename: string) {
   const prefixMainArr = patentReg.exec(prefix);
   // 文件名识别结果为空，跳出警告弹窗
   if (prefixMainArr === null) {
-    new ztoolkit.ProgressWindow(config.addonName, {
-      closeOnClick: true,
-      closeTime: 1500,
-    })
-      .createLine({
-        text: `文件名识别出错，请检查文件名识别模板与实际抓取文件名。文件名: ${filename}，识别模板为: ${patent}`,
-        type: "fail",
-      })
-      .show();
+    showPop(getString("filename-parse-fail", { args: { filename: filename, patent: patent } }), "fail");
     return;
   }
   const titleIdx = patentMainArr!.indexOf("{%t}");
@@ -469,15 +461,7 @@ export async function trans2Items(data: string, libraryID: number) {
     );
     return newItems;
   } else {
-    new ztoolkit.ProgressWindow(config.addonName, {
-      closeOnClick: true,
-      closeTime: 1500,
-    })
-      .createLine({
-        text: "知网引文导出结果中未发现可用信息",
-        type: "fail",
-      })
-      .show();
+    showPop(getString("reference-trans-fail"), "fail");
   }
 }
 
@@ -757,30 +741,12 @@ export async function updateCiteCSSCI() {
     if (
       ["patent", "webpage"].includes(Zotero.ItemTypes.getName(item.itemTypeID))
     ) {
-      new ztoolkit.ProgressWindow(config.addonName, {
-        closeOnClick: true,
-        closeTime: 1500,
-      })
-        .createLine({
-          text: `${Zotero.ItemTypes.getName(
-            item.itemTypeID
-          )}类型条目不需要抓取`,
-          type: "fail",
-        })
-        .show();
+      showPop(getString("unmatched-itemtype-fail", { args: { itemType: Zotero.ItemTypes.getName(item.itemTypeID) } }), "fail");
       continue;
     } else if (
       (item.getField("title") as string).search(/[_\u4e00-\u9fa5]/) === -1
     ) {
-      new ztoolkit.ProgressWindow(config.addonName, {
-        closeOnClick: true,
-        closeTime: 1500,
-      })
-        .createLine({
-          text: "非中文条目",
-          type: "fail",
-        })
-        .show();
+      showPop(getString("nonchinese-item"), "fail");
       continue;
     } else if (item.getField("url")) {
       ztoolkit.log(item.getField("url"));
@@ -788,15 +754,7 @@ export async function updateCiteCSSCI() {
       html = await getHTMLDoc(url);
       // 检测是否出现知网验证页面,一般网页以nxgp开头的页面，会出现知网验证页面
       if (html.querySelector("div.verify_wrap")) {
-        new ztoolkit.ProgressWindow(config.addonName, {
-          closeOnClick: true,
-          closeTime: 1500,
-        })
-          .createLine({
-            text: "抓取信息时出现知网验证页面",
-            type: "fail",
-          })
-          .show();
+        showPop(getString("cnki-capatch-warning"), "fail")
         continue;
       }
       // 特异性网址，
@@ -819,15 +777,7 @@ export async function updateCiteCSSCI() {
           html = await getHTMLDoc(url);
           // 检测是否出现知网验证页面,一般网页以nxgp开头的页面，会出现知网验证页面
           if (html.querySelector("div.verify_wrap")) {
-            new ztoolkit.ProgressWindow(config.addonName, {
-              closeOnClick: true,
-              closeTime: 1500,
-            })
-              .createLine({
-                text: "抓取信息时出现知网验证页面",
-                type: "fail",
-              })
-              .show();
+            showPop(getString("cnki-capatch-warning"), "fail");
             continue;
           }
         }
@@ -842,28 +792,10 @@ export async function updateCiteCSSCI() {
         // 或者可以参考其他核心期刊数据来源
         await ztoolkit.ExtraField.setExtraField(item, "CSSCI", cssci);
       }
-      new ztoolkit.ProgressWindow(config.addonName, {
-        closeOnClick: true,
-        closeTime: 1500,
-      })
-        .createLine({
-          text: `${item.getField("title")}, ${cite ? "引用数:" + cite : ""}, ${
-            cssci ? "期刊:" + cssci : "非核心期刊"
-          }`,
-          type: "success",
-        })
-        .show();
+      showPop(getString("cssci-success", {args:{title:item.getField("title"), cite:cite, cssci:cssci}}));
       ztoolkit.log("cite number: ${cite} cssci: ${cssci}");
     } else {
-      new ztoolkit.ProgressWindow(config.addonName, {
-        closeOnClick: true,
-        closeTime: 1500,
-      })
-        .createLine({
-          text: "缺失条目 URL 信息",
-          type: "fail",
-        })
-        .show();
+      showPop(getString("url-missing"), "fail");
     }
   }
 }

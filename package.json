@@ -1,6 +1,6 @@
 {
   "name": "jasminum",
-  "version": "1.0.0",
+  "version": "1.0.0-1",
   "description": "一个简单的 Zotero 中文插件",
   "config": {
     "addonName": "Jasminum",
@@ -8,7 +8,7 @@
     "addonRef": "jasminum",
     "addonInstance": "Jasminum",
     "prefsPrefix": "extensions.zotero.jasminum",
-    "releasepage": "https://github.com/l0o0/jasminum/releases/latest/download/zotero-addon-template.xpi",
+    "releasepage": "https://github.com/l0o0/jasminum/releases/latest/download/jasminum.xpi",
     "updaterdf": "https://raw.githubusercontent.com/l0o0/jasminum/main/update.json"
   },
   "main": "src/index.ts",
