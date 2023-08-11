@@ -1,0 +1,170 @@
+<linkset>
+  <html:link rel="localization" href="__addonRef__-preferences.ftl" />
+  <html:link xmlns:html="http://www.w3.org/1999/xhtml" rel="stylesheet"
+    href="chrome://__addonRef__/content/prefpanel.css" />
+</linkset>
+<vbox id="zotero-prefpane-__addonRef__" onload="Zotero.__addonInstance__.hooks.onPrefsEvent('load', {window})">
+  <groupbox>
+    <label>
+      <html:h2 data-l10n-id="chinese-caption"></html:h2>
+    </label>
+    <checkbox id="zotero-prefpane-jasminum.autoupdate" preference="extensions.zotero.jasminum.autoupdate"
+      data-l10n-id="autoupdate-label" native="true" />
+    <checkbox id="jasminum.zhnamesplit" data-l10n-id="zhnamesplit-label"
+      preference="extensions.zotero.jasminum.zhnamesplit" native="true" />
+    <checkbox id="jasminum.rename" data-l10n-id="rename-label" preference="extensions.zotero.jasminum.rename"
+      native="true" />
+    <checkbox id="jasminum.autobookmark" data-l10n-id="autobookmark-label"
+      preference="extensions.zotero.jasminum.autobookmark" native="true" />
+    <hbox>
+      <checkbox id="jasminum.autolanguage" data-l10n-id="autolanguage-label"
+        preference="extensions.zotero.jasminum.autolanguage" native="true" />
+      <label data-l10n-id="autolanguagefunc-label" />
+      <menulist id="jasminum.autolanguagefunc" preference="extensions.zotero.jasminum.autolanguagefunc" native="true">
+        <menupopup>
+          <menuitem data-l10n-id="autolanguage-auto" value="Auto" />
+          <menuitem data-l10n-id="autolanguage-manual" value="Manual" />
+        </menupopup>
+      </menulist>
+    </hbox>
+
+    <hbox>
+      <label class='jasminum-label' data-l10n-id="cnkicite-label" />
+      <menulist editable="true" id="jasminum.citefield" preference="extensions.zotero.jasminum.citefield" native="true">
+        <menupopup>
+          <menuitem data-l10n-id="cnkicite-field-extra" value="extra" />
+        </menupopup>
+      </menulist>
+    </hbox>
+  </groupbox>
+  <groupbox>
+    <label>
+      <html:h2 data-l10n-id="namepatent-caption"></html:h2>
+    </label>
+    <vbox flex="1">
+      <hbox>
+        <label class='jasminum-label' data-l10n-id="namepatent-desc-info"></label>
+        <menulist editable="true" id="jasminum.namepatent" preference="extensions.zotero.jasminum.namepatent"
+          native="true">
+          <menupopup>
+            <menuitem label="{%t}_{%g}" value="{%t}_{%g}" data-l10n-id="namepatent-desc-tg" />
+            <menuitem label="{%t}" value="{%t}" data-l10n-id="namepatent-desc-t" />
+          </menupopup>
+        </menulist>
+        <image src="chrome://jasminum/content/icons/information.png" style="margin-top: 5px; margin-bottom: 5px"
+          data-l10n-id="namepatent-desc" />
+      </hbox>
+    </vbox>
+  </groupbox>
+  <!-- <groupbox>
+    <label>
+      <html:h2 data-l10n-id="attachment-caption"></html:h2>
+    </label>
+    <vbox>
+      <hbox>
+        <label class="jasminum-label" data-l10n-id="attachment-type-info"></label>
+        <menulist id="jasminum.attachment" preference="extensions.zotero.jasminum.attachmenttype" native="true">
+          <menupopup>
+            <menuitem label="pdf" value="pdf" />
+            <menuitem label="caj" value="caj" />
+          </menupopup>
+        </menulist>
+      </hbox>
+      <hbox>
+        <label class="jasminum-label" data-l10n-id="attachment-cookie-info"></label>
+        <button data-l10n-id="open-cnki" id="jasminum-open-cnki" />
+      </hbox>
+    </vbox>
+  </groupbox> -->
+  <groupbox>
+    <label>
+      <html:h2 data-l10n-id="pdftk-caption"></html:h2>
+    </label>
+    <description data-l10n-id="pdftk-info">
+      <label class="zotero-text-link" value="PDFtk Server" href="https://www.pdflabs.com/tools/pdftk-server/" />
+    </description>
+    <hbox style="display: flex; align-items: center;">
+      <html:input style="flex: 1;" type="text" id="jasminum-pdftk-path"
+        preference="extensions.zotero.jasminum.pdftkpath"></html:input>
+      <button data-l10n-id="choose" id="choose-button" native="true" />
+      <image id="path-accept" src="chrome://jasminum/content/icons/accept.png" data-l10n-id="pdftk-path-check-ok"
+        hidden="true" />
+      <image id="path-error" src="chrome://jasminum/content/icons/exclamation.png" data-l10n-id="pdftk-path-check-error"
+        hidden="true" />
+    </hbox>
+  </groupbox>
+  <groupbox>
+    <label>
+      <html:h2 data-l10n-id="toolbox-caption"></html:h2>
+    </label>
+    <vbox flex="1">
+      <checkbox id="jasminum.ennamesplit" data-l10n-id="toolbox-ennamesplit-label"
+        preference="extensions.zotero.jasminum.ennamesplit" native="true" />
+      <!-- <hbox>
+        <label class="jasminum-label" data-l10n-id="toolbox-bacthsetlanguage-info"></label>
+        <html:input type="text" id="jasminum.languagelist" preference="extensions.zotero.jasminum.languagelist">
+        </html:input>
+        <image src="chrome://jasminum/content/icons/information.png" style="margin-top: 5px; margin-bottom: 5px"
+          data-l10n-id="toolbox-bacthsetlanguage-desc" />
+      </hbox> -->
+      <hbox>
+        <label class="jasminum-label" data-l10n-id="toolbox-manualsetlanguage-info"></label>
+        <menulist flex="0.5" id="jasminum.language" preference="extensions.zotero.jasminum.language" native="true">
+          <menupopup>
+            <menuitem label="zh_CN" value="zh_CN" />
+            <menuitem label="en_US" value="en_US" />
+            <menuitem label="zh-CN" value="zh-CN" />
+            <menuitem label="en-US" value="en-US" />
+          </menupopup>
+        </menulist>
+        <image src="chrome://jasminum/content/icons/information.png" style="margin-top: 5px; margin-bottom: 5px"
+          data-l10n-id="toolbox-manualsetlanguage-desc" />
+      </hbox>
+      <hbox>
+        <label class="jasminum-label" data-l10n-id="toolbox-dateformatter-info"></label>
+        <menulist id="jasminum.dateformatter" preference="extensions.zotero.jasminum.dateformatter" native="true">
+          <menupopup>
+            <menuitem label="ISO" value="ISO" tooltiptext="toolbox.dateformatter.iso;" />
+            <menuitem label="Short" value="short" tooltiptext="toolbox.dateformatter.short;" />
+            <menuitem label="Short Reverse" value="shortReverse" tooltiptext="toolbox.dateformatter.shortreverse;" />
+            <menuitem label="Year Only" value="yearOnly" tooltiptext="toolbox.dateformatter.yearonly;" />
+          </menupopup>
+        </menulist>
+        <checkbox id="jasminum.dateformatterfill" data-l10n-id="toolbox-dateformatterfill"
+          preference="extensions.zotero.jasminum.dateformatterfill" native="true" />
+      </hbox>
+    </vbox>
+  </groupbox>
+  <groupbox>
+    <label>
+      <html:h2 data-l10n-id="translators-caption"></html:h2>
+    </label>
+    <hbox class="virtualized-table-container" flex="1" height="300">
+      <html:div style="height:350px;overflow-y:scroll;">
+        <html:div id="jasminum-translator-table-loading">
+          <html:embed src="chrome://jasminum/content/icons/loading.svg" style="width: 50px;"/>
+          <html:p>loading</html:p>
+        </html:div>
+        <html:table id="jasminum-translator-table">
+          <html:thead id="jasminum-translator-table-header">
+            <html:tr>
+              <html:th data-l10n-id="translator-tab-column1" id="translator-tab-column1"></html:th>
+              <html:th data-l10n-id="translator-tab-column2" id="translator-tab-column2"></html:th>
+              <html:th data-l10n-id="translator-tab-column3" id="translator-tab-column3"></html:th>
+              <html:th data-l10n-id="translator-tab-column4" id="translator-tab-column4"></html:th>
+            </html:tr>
+          </html:thead>
+          <html:tbody id="jasminum-translator-table-tbody">
+            <html:tr>
+
+            </html:tr>
+          </html:tbody>
+        </html:table>
+      </html:div>
+    </hbox>
+  </groupbox>
+</vbox>
+<vbox>
+  <html:label data-l10n-id="addon-info"
+    data-l10n-args='{"time": "__buildTime__","name": "__addonName__","version":"__buildVersion__"}'></html:label>
+</vbox>

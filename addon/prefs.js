@@ -1,0 +1,22 @@
+/* eslint-disable no-undef */
+pref("extensions.zotero.jasminum.test", true);
+pref("__prefsPrefix__.attachmenttype", "pdf");
+pref("__prefsPrefix__.autobookmark", true);
+pref("__prefsPrefix__.autolanguage", true);
+pref("__prefsPrefix__.autolanguagefunc", "Auto");
+pref("__prefsPrefix__.autoupdate", false);
+pref("__prefsPrefix__.citefield", "extra");
+pref("__prefsPrefix__.completelanguage", true);
+pref("__prefsPrefix__.dateformatter", "ISO");
+pref("__prefsPrefix__.dateformatterfill", "false");
+pref("__prefsPrefix__.enable", false);
+pref("__prefsPrefix__.ennamesplit", true);
+pref("__prefsPrefix__.foreignlanguage", "en-US");
+pref("__prefsPrefix__.language", "zh-CN");
+pref("__prefsPrefix__.languagelist", "zh_CN,en_US");
+pref("__prefsPrefix__.namepatent", "{%t}");
+pref("__prefsPrefix__.pdftkpath", "C:\\Program Files (x86)\\PDFtk Server\\bin");
+pref("__prefsPrefix__.rename", false);
+pref("__prefsPrefix__.use-pdflib", true);
+pref("__prefsPrefix__.zhnamesplit", true);
+pref("__prefsPrefix__.translatorurl", "https://oss.wwang.de/translators_CN");

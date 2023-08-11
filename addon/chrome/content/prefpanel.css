@@ -1,0 +1,79 @@
+.jasminum-label {
+    margin-top: 4px;
+}
+
+#jasminum-translator-table-loading {
+  position: relative;
+  top: 40%;
+  left: 50%;
+  width: 50px;
+}
+
+#jasminum-translator-table {
+  table-layout: fixed;
+  width: 100%;
+  display: none;
+}
+
+#jasminum-translator-table-header {
+  border: 1px solid #bdbdbd;
+  height: 12px;
+  top: 0;
+  position: sticky;
+  background: white;
+  text-align: left;
+  z-index:4
+}
+
+#translator-tab-column1 {
+  width: 150px;
+}
+
+#translator-tab-column2 {
+  width: 140px;
+}
+
+#translator-tab-column3 {
+  width: 140px;
+}
+
+#translator-tab-column3 {
+  text-align: center;
+}
+
+.jasminum-tooltip-text {
+	position: absolute;
+	z-index: 2;
+	color: black;
+	background-color: white;
+	border: 1px solid;
+	border-radius: 5px;
+	margin: 10px 0px 10px 10px;
+	padding: 3px;
+}
+
+
+#jasminum-fade {
+  opacity: 0;
+  transition: opacity 0.5s;
+}
+
+#jasminum-delay {
+  opacity: 0;
+  transition: opacity 0.2s;
+  transition-delay: 1s;
+}
+
+.jasminum-hover-text:hover #jasminum-fade { opacity: 1; }
+.jasminum-hover-text:hover #jasminum-delay { opacity: 1; }
+
+
+.jasminum-hover-text {
+  position: relative;
+  display: inline-block;
+}
+
+button.jasminum-translator-button {
+  display: block;
+  margin: auto;
+}
