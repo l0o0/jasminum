@@ -5,7 +5,6 @@ pref("__prefsPrefix__.autobookmark", true);
 pref("__prefsPrefix__.autolanguage", true);
 pref("__prefsPrefix__.autolanguagefunc", "Auto");
 pref("__prefsPrefix__.autoupdate", false);
-pref("__prefsPrefix__.citefield", "extra");
 pref("__prefsPrefix__.completelanguage", true);
 pref("__prefsPrefix__.dateformatter", "ISO");
 pref("__prefsPrefix__.dateformatterfill", "false");

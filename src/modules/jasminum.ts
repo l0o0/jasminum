@@ -334,8 +334,8 @@ export class UIExampleFactory {
   @example
   static async registerExtraColumn() {
     await ztoolkit.ItemTree.register(
-      "引用数",
-      "知网引用数",
+      "cnki-citations",
+      getString("cnkicite-field-label"),
       (
         field: string,
         unformatted: boolean,
@@ -353,8 +353,8 @@ export class UIExampleFactory {
       }
     );
     await ztoolkit.ItemTree.register(
-      "期刊",
-      "知网核心期刊",
+      "cnki-journal-type",
+      getString("cssci-field-label"),
       (
         field: string,
         unformatted: boolean,

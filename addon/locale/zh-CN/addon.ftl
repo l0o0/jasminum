@@ -1,14 +1,4 @@
-startup-begin = 插件加载中
-startup-finish = 插件已就绪
-menuitem-label = 插件模板: 帮助工具样例
-menupopup-label = 插件模板: 弹出菜单
-menuitem-submenulabel = 插件模板：子菜单
-menuitem-filemenulabel = 插件模板: 文件菜单
 prefs-title = 茉莉花
-prefs-table-title = 标题
-prefs-table-detail = 详情
-tabpanel-lib-tab-label = 库标签
-tabpanel-reader-tab-label = 阅读器标签
 pdftk-picker-header = 选择pdftk可执行文件
 translator-download = 该转换器可下载
 translator-updated = 该转换器已更新
@@ -25,3 +15,16 @@ menu-tools-removeDot-label = 去除文件名中逗号
 menu-tools-bacthsetlanguage-label = Auto:智能识别语言
 menu-tools-manualsetlanguage-label = Manual:手动设置语言
 menu-tools-dateformatter-label = 统一日期格式
+# 自定义栏
+cnkicite-field-label = 知网引用数
+cssci-field-label = 期刊等级
+# 弹窗信息
+cnkimetadata-success = 抓取知网元数据成功
+cnkimetadata-fail = 抓取知网元数据失败, 作者: { $author } ,标题： { $title }
+cnki-capatch-warning = 知网网页出现验证码
+filename-parse-fail = 文件名识别出错，请检查文件名识别模板与实际抓取文件名。文件名: { $filename }，识别模板为:  { $patent }
+reference-trans-fail = 知网引文导出结果中未发现可用信息
+unmatched-itemtype-fail = { $itemType } 类型条目不需要抓取
+nonchinese-item = 非中文条目
+cssci-success = { $title }, 引用数: { $cite }, 期刊类型: { $cssci }
+url-missing = 缺失条目 URL 信息

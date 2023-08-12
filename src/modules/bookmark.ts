@@ -13,7 +13,7 @@ async function checkPDFtkPath() {
     pdftk = OS.Path.join(pdftkpath, "pdftk");
   }
   ztoolkit.log(pdftk);
-  var fileExist = await OS.File.exists(pdftk);
+  const fileExist = await OS.File.exists(pdftk);
   return fileExist;
 }
 
@@ -53,9 +53,9 @@ async function getChapterText(
     "div.main-content > div.list-main > ul.ls-chapters > li"
   );
   ztoolkit.log(rows.length);
-  let rows_array = [];
+  const rows_array = [];
   let note = "";
-  for (let row of rows) {
+  for (const row of rows) {
     ztoolkit.log(row.textContent!.trim());
     const level =
       parseInt(row.getAttribute("class")?.split("-")[1] as string) + 1; // Source level from 0
@@ -88,7 +88,7 @@ async function addBookmark(item: Zotero.Item, bookmark: string) {
   // PDFtk will throw errors when args contains Chinese character
   // So create a tmp folder.
   if (Zotero.isWin) {
-    var newTmp = OS.Path.join(cacheFile.path.slice(0, 3), "tmp");
+    const newTmp = OS.Path.join(cacheFile.path.slice(0, 3), "tmp");
     Zotero.debug("** Jasminum new tmp path " + newTmp);
     cacheFile = Zotero.getTempDirectory();
     cachePDF = Zotero.getTempDirectory();
@@ -108,19 +108,19 @@ async function addBookmark(item: Zotero.Item, bookmark: string) {
     cachePDF.remove(false);
   }
 
-  let encoder = new TextEncoder();
-  let array = encoder.encode(bookmark);
+  const encoder = new TextEncoder();
+  const array = encoder.encode(bookmark);
   await OS.File.writeAtomic(cacheFile.path, array, {
     tmpPath: cacheFile.path + ".tmp",
   });
-  var pdftk = Zotero.Prefs.get("jasminum.pdftkpath") as string;
+  let pdftk = Zotero.Prefs.get("jasminum.pdftkpath") as string;
   if (Zotero.isWin) {
     pdftk = OS.Path.join(pdftk, "pdftk.exe");
   } else {
     pdftk = OS.Path.join(pdftk, "pdftk");
   }
   Zotero.debug("** Jasminum pdftk path: " + pdftk);
-  var args: string[] = [
+  const args: string[] = [
     item.getFilePath() as string,
     "update_info_utf8",
     cacheFile.path,
@@ -159,7 +159,7 @@ export async function addBookmarkItem(item?: Zotero.Item) {
     return;
   }
   // Show alert when file is missing
-  var attachmentExists =
+  const attachmentExists =
     item.getFilePath() && (await OS.File.exists(item.getFilePath() as string));
   if (!attachmentExists) {
     showPop(getString("pdf-missing"), "fail");

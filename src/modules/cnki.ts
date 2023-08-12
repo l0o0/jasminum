@@ -792,7 +792,7 @@ export async function updateCiteCSSCI() {
         // 或者可以参考其他核心期刊数据来源
         await ztoolkit.ExtraField.setExtraField(item, "CSSCI", cssci);
       }
-      showPop(getString("cssci-success", {args:{title:item.getField("title"), cite:cite, cssci:cssci}}));
+      showPop(getString("cssci-success", {args:{title:item.getField("title"), cite:cite ? cite : '', cssci:cssci ? cssci : ''}}));
       ztoolkit.log("cite number: ${cite} cssci: ${cssci}");
     } else {
       showPop(getString("url-missing"), "fail");
