@@ -4,6 +4,7 @@
   "version": "__buildVersion__",
   "description": "__description__",
   "author": "__author__",
+  "homepage_url": "https://github.com/l0o0/jasminum#readme",
   "icons": {
     "48": "chrome/content/icons/icon@0.5x.png",
     "96": "chrome/content/icons/icon.png"

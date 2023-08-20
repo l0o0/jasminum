@@ -1,5 +1,4 @@
 /* eslint-disable no-undef */
-pref("extensions.zotero.jasminum.test", true);
 pref("__prefsPrefix__.attachmenttype", "pdf");
 pref("__prefsPrefix__.autobookmark", true);
 pref("__prefsPrefix__.autolanguage", true);
