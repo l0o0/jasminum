@@ -110,8 +110,8 @@ async function insertTable(): Promise<void> {
 }
 
 async function updateTranslatorData(refresh = true): Promise<any> {
-  const translatorUrl = Zotero.Prefs.get("jasminum.translatorurl");
-  const url = translatorUrl + "/data/translators.json";
+  const baseUrl = Zotero.Prefs.get("jasminum.translatorurl") ? Zotero.Prefs.get("jasminum.translatorurl") : "https://oss.wwang.de/translators_CN";
+  const url = baseUrl + "/data/translators.json";
   const cacheFile = ztoolkit.getGlobal("Zotero").getTempDirectory();
   cacheFile.append("translator.json");
   let contents;
@@ -150,8 +150,9 @@ async function downloadTranslator(filename: string): Promise<void> {
   }
   // var url = `https://gitee.com/l0o0/translators_CN/raw/master/translators/${label}`;
   // var url = `https://gitcode.net/goonback/translators_CN/-/raw/master/translators/${label}`;
-  // let url = `https://oss.wwang.de/translators_CN/translators/${label}`;
-  const url = Zotero.Prefs.get("jasminum.translatorurl") + "/" + filename;
+  // let url = `https://oss.wwang.de/translators_CN/${label}`;
+  const baseUrl = Zotero.Prefs.get("jasminum.translatorurl") ? Zotero.Prefs.get("jasminum.translatorurl") : "https://oss.wwang.de/translators_CN";
+  const url = baseUrl + "/" + filename;
   ztoolkit.log(url);
   try {
     const contents = await ztoolkit.getGlobal("Zotero").File.getContentsFromURL(url);

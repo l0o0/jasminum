@@ -7,6 +7,7 @@ import { config } from "../package.json";
 import { getString, initLocale } from "./utils/locale";
 import { registerPrefsScripts } from "./modules/preferenceScript";
 import { displayMenuitem } from "../src/modules/ui";
+import { showPop } from "./utils/window";
 
 async function onStartup() {
   await Promise.all([
@@ -19,6 +20,23 @@ async function onStartup() {
     "default",
     `chrome://${config.addonRef}/content/icons/icon.png`
   );
+
+  const popupWin = new ztoolkit.ProgressWindow(config.addonName, {
+    closeOnClick: true,
+    closeTime: -1,
+  })
+    .createLine({
+      text: "startup-begin",
+      type: "default",
+      progress: 0,
+    })
+    .show();
+
+  popupWin.changeLine({
+      progress: 30,
+      text: `[30%] startup-begin`,
+    });
+  
 
   BasicExampleFactory.registerPrefs();
 
@@ -48,6 +66,9 @@ async function onStartup() {
       displayMenuitem,
       false
     );
+
+  // Migrate Prefs from Zotero 6 to 7
+  migratePrefs();
 }
 
 function onShutdown(): void {
@@ -76,6 +97,25 @@ async function onNotify(
   ) {
     const items = Zotero.Items.get(ids as number[]);
     BasicExampleFactory.itemAddedNotifier(items);
+  }
+}
+
+
+// Run this when addon is first run
+// Keep preferences startswith extensions.zotero.jasminum
+function migratePrefs() {
+  ztoolkit.log("start to migrate");
+  if ( Zotero.Prefs.get("jasminum.firstrun") != false ) {
+    const extensionBranch = Services.prefs.getBranch("extensions");
+    const prefs = extensionBranch.getChildList("", {});
+    const jasminmPrefs = prefs.filter((p: string) => p.includes(".jasminum."))
+    const shortJasminumPrefs = jasminmPrefs.filter( (p: string) => p.startsWith(".jasminum."));
+    shortJasminumPrefs.array.forEach((ele: string) => {
+      ztoolkit.log("extensions" + ele);
+      Zotero.Prefs.clear("extensions" + ele, true);
+      showPop("extensions" + ele);
+    });
+    Zotero.Prefs.set("jasminum.firstrun", false);
   }
 }
 
