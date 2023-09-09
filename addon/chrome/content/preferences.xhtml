@@ -8,19 +8,19 @@
     <label>
       <html:h2 data-l10n-id="chinese-caption"></html:h2>
     </label>
-    <checkbox id="zotero-prefpane-jasminum.autoupdate" preference="extensions.zotero.jasminum.autoupdate"
+    <checkbox id="zotero-prefpane-jasminum.autoupdate" preference="__prefsPrefix__.autoupdate"
       data-l10n-id="autoupdate-label" native="true" />
     <checkbox id="jasminum.zhnamesplit" data-l10n-id="zhnamesplit-label"
-      preference="extensions.zotero.jasminum.zhnamesplit" native="true" />
-    <checkbox id="jasminum.rename" data-l10n-id="rename-label" preference="extensions.zotero.jasminum.rename"
+      preference="__prefsPrefix__.zhnamesplit" native="true" />
+    <checkbox id="jasminum.rename" data-l10n-id="rename-label" preference="__prefsPrefix__.rename"
       native="true" />
     <checkbox id="jasminum.autobookmark" data-l10n-id="autobookmark-label"
-      preference="extensions.zotero.jasminum.autobookmark" native="true" />
+      preference="__prefsPrefix__.autobookmark" native="true" />
     <hbox>
       <checkbox id="jasminum.autolanguage" data-l10n-id="autolanguage-label"
-        preference="extensions.zotero.jasminum.autolanguage" native="true" />
+        preference="__prefsPrefix__.autolanguage" native="true" />
       <label data-l10n-id="autolanguagefunc-label" />
-      <menulist id="jasminum.autolanguagefunc" preference="extensions.zotero.jasminum.autolanguagefunc" native="true">
+      <menulist id="jasminum.autolanguagefunc" preference="__prefsPrefix__.autolanguagefunc" native="true">
         <menupopup>
           <menuitem data-l10n-id="autolanguage-auto" value="Auto" />
           <menuitem data-l10n-id="autolanguage-manual" value="Manual" />
@@ -35,7 +35,7 @@
     <vbox flex="1">
       <hbox>
         <label class='jasminum-label' data-l10n-id="namepatent-desc-info"></label>
-        <menulist editable="true" id="jasminum.namepatent" preference="extensions.zotero.jasminum.namepatent"
+        <menulist editable="true" id="jasminum.namepatent" preference="__prefsPrefix__.namepatent"
           native="true">
           <menupopup>
             <menuitem label="{%t}_{%g}" value="{%t}_{%g}" data-l10n-id="namepatent-desc-tg" />
@@ -54,7 +54,7 @@
     <vbox>
       <hbox>
         <label class="jasminum-label" data-l10n-id="attachment-type-info"></label>
-        <menulist id="jasminum.attachment" preference="extensions.zotero.jasminum.attachmenttype" native="true">
+        <menulist id="jasminum.attachment" preference="__prefsPrefix__.attachmenttype" native="true">
           <menupopup>
             <menuitem label="pdf" value="pdf" />
             <menuitem label="caj" value="caj" />
@@ -76,7 +76,7 @@
     </description>
     <hbox style="display: flex; align-items: center;">
       <html:input style="flex: 1;" type="text" id="jasminum-pdftk-path"
-        preference="extensions.zotero.jasminum.pdftkpath"></html:input>
+        preference="__prefsPrefix__.pdftkpath"></html:input>
       <button data-l10n-id="choose" id="choose-button" native="true" />
       <image id="path-accept" src="chrome://jasminum/content/icons/accept.png" data-l10n-id="pdftk-path-check-ok"
         hidden="true" />
@@ -90,17 +90,17 @@
     </label>
     <vbox flex="1">
       <checkbox id="jasminum.ennamesplit" data-l10n-id="toolbox-ennamesplit-label"
-        preference="extensions.zotero.jasminum.ennamesplit" native="true" />
+        preference="__prefsPrefix__.ennamesplit" native="true" />
       <!-- <hbox>
         <label class="jasminum-label" data-l10n-id="toolbox-bacthsetlanguage-info"></label>
-        <html:input type="text" id="jasminum.languagelist" preference="extensions.zotero.jasminum.languagelist">
+        <html:input type="text" id="jasminum.languagelist" preference="__prefsPrefix__.languagelist">
         </html:input>
         <image src="chrome://jasminum/content/icons/information.png" style="margin-top: 5px; margin-bottom: 5px"
           data-l10n-id="toolbox-bacthsetlanguage-desc" />
       </hbox> -->
       <hbox>
         <label class="jasminum-label" data-l10n-id="toolbox-manualsetlanguage-info"></label>
-        <menulist flex="0.5" id="jasminum.language" preference="extensions.zotero.jasminum.language" native="true">
+        <menulist flex="0.5" id="jasminum.language" preference="__prefsPrefix__.language" native="true">
           <menupopup>
             <menuitem label="zh-CN" value="zh-CN" />
             <menuitem label="en-US" value="en-US" />
@@ -111,7 +111,7 @@
       </hbox>
       <hbox>
         <label class="jasminum-label" data-l10n-id="toolbox-dateformatter-info"></label>
-        <menulist id="jasminum.dateformatter" preference="extensions.zotero.jasminum.dateformatter" native="true">
+        <menulist id="jasminum.dateformatter" preference="__prefsPrefix__.dateformatter" native="true">
           <menupopup>
             <menuitem label="ISO" value="ISO" tooltiptext="toolbox.dateformatter.iso;" />
             <menuitem label="Short" value="short" tooltiptext="toolbox.dateformatter.short;" />
@@ -120,7 +120,7 @@
           </menupopup>
         </menulist>
         <checkbox id="jasminum.dateformatterfill" data-l10n-id="toolbox-dateformatterfill"
-          preference="extensions.zotero.jasminum.dateformatterfill" native="true" />
+          preference="__prefsPrefix__.dateformatterfill" native="true" />
       </hbox>
     </vbox>
   </groupbox>
@@ -150,6 +150,9 @@
           </html:tbody>
         </html:table>
       </html:div>
+    </hbox>
+    <hbox>
+      <button data-l10n-id="updateall-label" id="download-all-translators" native="true" flex="0.5"/>
     </hbox>
   </groupbox>
 </vbox>

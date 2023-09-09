@@ -27,4 +27,6 @@ reference-trans-fail = 知网引文导出结果中未发现可用信息
 unmatched-itemtype-fail = { $itemType } 类型条目不需要抓取
 nonchinese-item = 非中文条目
 cssci-success = { $title }, 引用数: { $cite }, 期刊类型: { $cssci }
-url-missing = 缺失条目 URL 信息
+url-missing = 缺失条目 URL
+translator-download-success = { $filename }转换器下载成功
+translator-download-fail = { $filename }转换器下载失败

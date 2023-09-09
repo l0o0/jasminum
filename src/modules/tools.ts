@@ -1,9 +1,10 @@
+import { getPref } from "../utils/prefs";
 import { getItems } from "../utils/tools";
 // import { guess } from "./nlp";
 
 // Functions used in menu
 export async function concatName(items: Zotero.Item[]) {
-    const isSplitEnName = Zotero.Prefs.get("jasminum.ennamesplit");
+    const isSplitEnName = getPref("ennamesplit");
     for (const item of items) {
         const creators = item.getCreators();
         for (let i = 0; i < creators.length; i++) {
@@ -38,7 +39,7 @@ export async function concatNameMenu(type: "items" | "collection") {
 }
 
 export async function splitName(items: Zotero.Item[]) {
-    const isSplitEnName = Zotero.Prefs.get("jasminum.ennamesplit");
+    const isSplitEnName = getPref("ennamesplit");
     for (const item of items) {
         const creators = item.getCreators();
         for (let i = 0; i < creators.length; i++) {

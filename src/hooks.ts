@@ -8,6 +8,7 @@ import { getString, initLocale } from "./utils/locale";
 import { registerPrefsScripts } from "./modules/preferenceScript";
 import { displayMenuitem } from "../src/modules/ui";
 import { showPop } from "./utils/window";
+import { clearPref, getPref, setPref } from "./utils/prefs";
 
 async function onStartup() {
   await Promise.all([
@@ -19,24 +20,7 @@ async function onStartup() {
   ztoolkit.ProgressWindow.setIconURI(
     "default",
     `chrome://${config.addonRef}/content/icons/icon.png`
-  );
-
-  const popupWin = new ztoolkit.ProgressWindow(config.addonName, {
-    closeOnClick: true,
-    closeTime: -1,
-  })
-    .createLine({
-      text: "startup-begin",
-      type: "default",
-      progress: 0,
-    })
-    .show();
-
-  popupWin.changeLine({
-      progress: 30,
-      text: `[30%] startup-begin`,
-    });
-  
+  );  
 
   BasicExampleFactory.registerPrefs();
 
@@ -102,20 +86,24 @@ async function onNotify(
 
 
 // Run this when addon is first run
-// Keep preferences startswith extensions.zotero.jasminum
+// Keep preferences startswith extensions.jasminum
 function migratePrefs() {
   ztoolkit.log("start to migrate");
-  if ( Zotero.Prefs.get("jasminum.firstrun") != false ) {
+  if ( getPref("firstrun") != false ) {
     const extensionBranch = Services.prefs.getBranch("extensions");
     const prefs = extensionBranch.getChildList("", {});
-    const jasminmPrefs = prefs.filter((p: string) => p.includes(".jasminum."))
-    const shortJasminumPrefs = jasminmPrefs.filter( (p: string) => p.startsWith(".jasminum."));
-    shortJasminumPrefs.array.forEach((ele: string) => {
+    const jasminmPrefs = prefs.filter((p: string) => p.includes(".zotero.jasminum."))
+    jasminmPrefs.forEach((ele: string) => {
       ztoolkit.log("extensions" + ele);
-      Zotero.Prefs.clear("extensions" + ele, true);
-      showPop("extensions" + ele);
+      const longPrefName = ele.replace(/^\.zotero\./, '');
+      const shortPrefName = longPrefName.split(".")[1];
+      const prefValue = Zotero.Prefs.get(longPrefName);
+      if (prefValue != undefined && getPref(shortPrefName) == undefined) {
+        setPref(shortPrefName, prefValue);
+        Zotero.Prefs.clear(longPrefName);
+      }
     });
-    Zotero.Prefs.set("jasminum.firstrun", false);
+    setPref("firstrun", false);
   }
 }
 

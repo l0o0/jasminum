@@ -1,10 +1,10 @@
 import { FilePickerHelper } from "zotero-plugin-toolkit/dist/helpers/filePicker";
-import { setPref } from "../utils/prefs";
-import { config } from "../../package.json";
+import { getPref, setPref } from "../utils/prefs";
 import { showPop } from "../utils/window";
 import { getString } from "../utils/locale";
 
 export async function checkPath(pathvalue: string): Promise<void> {
+  if (!pathvalue) return;
   let pdftk = "";
   if (ztoolkit.getGlobal('Zotero').isWin) {
     pdftk = OS.Path.join(pathvalue, "pdftk.exe");
@@ -45,7 +45,10 @@ async function getLastUpdateFromFile(filename: string): Promise<string> {
 };
 
 async function insertTable(): Promise<void> {
+  ztoolkit.log("********** insert Table");
   const data = await updateTranslatorData(true);
+  ztoolkit.log("********** insert Table");
+  ztoolkit.log(data);
   if (data) {
     ztoolkit.log("get translator data ok");
     (addon.data
@@ -110,7 +113,7 @@ async function insertTable(): Promise<void> {
 }
 
 async function updateTranslatorData(refresh = true): Promise<any> {
-  const baseUrl = Zotero.Prefs.get("jasminum.translatorurl") ? Zotero.Prefs.get("jasminum.translatorurl") : "https://oss.wwang.de/translators_CN";
+  const baseUrl = getPref("translatorurl") ? getPref("translatorurl") : "https://oss.wwang.de/translators_CN";
   const url = baseUrl + "/data/translators.json";
   const cacheFile = ztoolkit.getGlobal("Zotero").getTempDirectory();
   cacheFile.append("translator.json");
@@ -151,12 +154,12 @@ async function downloadTranslator(filename: string): Promise<void> {
   // var url = `https://gitee.com/l0o0/translators_CN/raw/master/translators/${label}`;
   // var url = `https://gitcode.net/goonback/translators_CN/-/raw/master/translators/${label}`;
   // let url = `https://oss.wwang.de/translators_CN/${label}`;
-  const baseUrl = Zotero.Prefs.get("jasminum.translatorurl") ? Zotero.Prefs.get("jasminum.translatorurl") : "https://oss.wwang.de/translators_CN";
+  const baseUrl = getPref("translatorurl") ? getPref("translatorurl") : "https://oss.wwang.de/translators_CN";
   const url = baseUrl + "/" + filename;
   ztoolkit.log(url);
   try {
     const contents = await ztoolkit.getGlobal("Zotero").File.getContentsFromURL(url);
-    const desPath = OS.Path.join(
+    const desPath = PathUtils.join(
       ztoolkit.getGlobal("Zotero").Prefs.get("dataDir") as string,
       "translators",
       filename
@@ -172,15 +175,19 @@ async function downloadTranslator(filename: string): Promise<void> {
   }
 }
 
+
+export async function downloadAll() {
+  const data = await updateTranslatorData(false);
+  Object.keys(data).forEach(async (label) => await downloadTranslator(label));
+}
+
 export async function registerPrefsScripts(_window: Window) {
   // This function is called when the prefs window is opened
   // See addon/chrome/content/preferences.xul onpaneload
-  const data = await updateTranslatorData(true);
-  const rows = Object.keys(data).map((e: any) => { return { name: (data[e] as any).label, "local": "xx", "remote": (data[e] as any).lastUpdated, "download": "点击下载" } });
-  if (addon.data.prefs) {
-    addon.data.prefs.window = _window;
+  if (!addon.data.prefs) {
+    addon.data.prefs = { window: _window}
   } else {
-    addon.data.prefs = { window: _window, columns: [], rows: [] }
+    addon.data.prefs.window = _window;
   }
   updatePrefsUI();
   bindPrefEvents();
@@ -190,13 +197,17 @@ async function updatePrefsUI() {
   // You can initialize some UI elements on prefs window
   // with addon.data.prefs.window.document
   // Or bind some events to the elements
+  ztoolkit.log("***** update UI");
   const renderLock = ztoolkit.getGlobal("Zotero").Promise.defer();
+  
   if (addon.data.prefs?.window == undefined) return;
-
+  ztoolkit.log("************* 111");
   // Update pdftk check icon
   await checkPath(ztoolkit.getGlobal("Zotero").Prefs.get("jasminum.pdftkpath") as string);
+  ztoolkit.log("************* 111");
   // Update translator table
   await insertTable();
+  ztoolkit.log("************* 111");
   await renderLock.promise;
   ztoolkit.log("Preference table rendered!");
 }
@@ -245,5 +256,14 @@ function bindPrefEvents() {
         setPref("pdftkpath", f);
         await checkPath(f);
       }
+    });
+
+  addon.data
+    .prefs!.window.document.querySelector(
+      "#download-all-translators"
+    )
+    ?.addEventListener("click", async (e) => {
+      ztoolkit.log("download all translators");
+      await downloadAll();
     });
 }

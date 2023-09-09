@@ -1,5 +1,6 @@
 import { config } from "../../package.json";
 import { getString } from "../utils/locale";
+import { getPref } from "../utils/prefs";
 import { addBookmarkItem } from "./bookmark";
 import {
   searchCNKIMetadata,
@@ -72,20 +73,20 @@ export class BasicExampleFactory {
   @example
   static itemAddedNotifier(addedItems: Zotero.Item[]) {
     let items: Zotero.Item[];
-    if (Zotero.Prefs.get("jasminum.autoupdate")) {
+    if (getPref("autoupdate")) {
       items = addedItems.filter((i) => isCNKIFile(i));
       ztoolkit.log(`add ${items.length} items`);
       searchCNKIMetadata(items);
     }
     // Split or merge name
-    if (!Zotero.Prefs.get("jasminum.zhnamesplit")) {
+    if (!getPref("zhnamesplit")) {
       items = addedItems.filter((i) =>
         addon.data.CNDB.includes(i.getField("libraryCatalog") as string)
       );
       concatName(items);
     }
     // Add bookmark after new PDF is attached.
-    if (Zotero.Prefs.get("jasminum.autobookmark")) {
+    if (getPref("autobookmark")) {
       addedItems.forEach((i) => {
         const parentItem = i.parentItem;
         if (
@@ -99,7 +100,7 @@ export class BasicExampleFactory {
       });
     }
     // Set default language field
-    if (Zotero.Prefs.get("jasminum.autolanguage")) {
+    if (getPref("autolanguage")) {
       items = addedItems.filter((i) => i.isRegularItem());
       manualSetLanguage(items);
     }
