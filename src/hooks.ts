@@ -4,7 +4,7 @@ import {
   UIExampleFactory,
 } from "./modules/jasminum";
 import { config } from "../package.json";
-import { getString, initLocale } from "./utils/locale";
+import { initLocale } from "./utils/locale";
 import { registerPrefsScripts } from "./modules/preferenceScript";
 import { displayMenuitem } from "../src/modules/ui";
 
