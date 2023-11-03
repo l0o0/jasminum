@@ -99,11 +99,11 @@ export class BasicExampleFactory {
         }
       });
     }
-    // Set default language field
-    if (getPref("autolanguage")) {
-      items = addedItems.filter((i) => i.isRegularItem());
-      manualSetLanguage(items);
-    }
+    // // Set default language field
+    // if (getPref("autolanguage")) {
+    //   items = addedItems.filter((i) => i.isRegularItem());
+    //   manualSetLanguage(items);
+    // }
   }
 
   @example
