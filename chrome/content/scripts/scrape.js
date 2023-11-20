@@ -340,33 +340,33 @@ Zotero.Jasminum.Scrape = new function () {
     this.search = async function (fileData) {
         Zotero.debug("**Jasminum start search");
         var postData = this.Scrape.createPostData(fileData);
-        var requestHeaders = {
-            Accept: "text/html, */*; q=0.01",
-            "Accept-Encoding": "gzip, deflate, br",
-            "Accept-Language": "zh-CN,zh;q=0.9,en;q=0.8,zh-TW;q=0.7",
-            Connection: "keep-alive",
-            "Content-Length": "2085",
-            "Content-Type": "application/x-www-form-urlencoded; charset=UTF-8",
+        let requestHeaders = {
             Host: "kns.cnki.net",
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:109.0) Gecko/20100101 Firefox/119.0",
+            Accept: "text/html, */*; q=0.01",
+            "Accept-Language": "zh-CN,en-US;q=0.7,en;q=0.3",
+            "Accept-Encoding": "gzip, deflate, br",
+            "Content-Type": "application/x-www-form-urlencoded; charset=UTF-8",
+            "X-Requested-With": "XMLHttpRequest",
+            "Content-Length": postData.length,
             Origin: "https://kns.cnki.net",
-            Referer:
-                "https://kns.cnki.net/kns8/AdvSearch?dbprefix=SCDB&&crossDbcodes=CJFQ%2CCDMD%2CCIPD%2CCCND%2CCISD%2CSNAD%2CBDZK%2CCJFN%2CCCJD",
+            Connection: "keep-alive",
+            Referer: `https://kns.cnki.net/kns/search?dbcode=SCDB&kw=${encodeURI(fileData.title)}&korder=SU&crossdbcodes=CJFQ,CDFD,CMFD,CPFD,IPFD,CCND,CISD,SNAD,BDZK,CCJD,CJRF,CJFN`,
             "Sec-Fetch-Dest": "empty",
             "Sec-Fetch-Mode": "cors",
-            "Sec-Fetch-Site": "same-origin",
-            "X-Requested-With": "XMLHttpRequest",
-        };
-        var postUrl = "https://kns.cnki.net/KNS8/Brief/GetGridTableHtml";
-        if (!this.Scrape.CookieSandbox) {
-            this.Scrape.setCookieSandbox();
+            "Sec-Fetch-Site": "same-origin"
         }
+        var postUrl = "https://kns.cnki.net/kns/brief/grid";
+        // if (!this.Scrape.CookieSandbox) {
+        //     this.Scrape.setCookieSandbox();
+        // }
         // Zotero.debug(Zotero.Jasminum.CookieSandbox);
         var resp = await Zotero.HTTP.request("POST", postUrl, {
             headers: requestHeaders,
-            cookieSandbox: this.Scrape.CookieSandbox,
+            // cookieSandbox: this.Scrape.CookieSandbox,
             body: postData,
         });
-        // Zotero.debug(resp.responseText);
+        Zotero.debug(resp.responseText);
         var targetRows = this.Scrape.getItemFromSearch(resp.responseText);
         return targetRows;
     }.bind(Zotero.Jasminum);
