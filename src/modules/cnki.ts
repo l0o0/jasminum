@@ -141,47 +141,29 @@ function createSearchPostData(fileData: any) {
       ChildItems: [],
     };
 
-    const ti = {
-      Key: "",
-      Title: "",
-      Logic: 0,
-      Items: [
-        {
-          Key: "",
-          Title: "篇名",
-          Logic: 0,
-          Field: "TI",
-          Operator: "DEFAULT",
-          Value: fileData.keyword,
-          Value2: "",
-        },
-      ],
-      ChildItems: [],
-    };
-
     queryJson.QNode.QGroup[0].ChildItems.push(au);
-    queryJson.QNode.QGroup[0].ChildItems.push(ti);
-  } else {
-    // 只有标题时，采用主题词搜索
-    const su = {
-      Key: "",
-      Title: "",
-      Logic: 0,
-      Items: [
-        {
-          Key: "",
-          Title: "主题",
-          Logic: 0,
-          Field: "SU",
-          Operator: "TOPRANK",
-          Value: fileData.keyword,
-          Value2: "",
-        },
-      ],
-      ChildItems: [],
-    };
-    queryJson.QNode.QGroup[0].ChildItems.push(su);
   }
+  // 必要标题，不然搜个啥。标题全按主题词搜索，虽然模糊，可是适用范围大
+  // 所谓模糊搜索就是将特殊符号去掉，所以字段放到主题词中
+  // TODO: 新增模糊搜索选项
+  const su = {
+    Key: "",
+    Title: "",
+    Logic: 0,
+    Items: [
+      {
+        Key: "",
+        Title: "主题",
+        Logic: 0,
+        Field: "SU",
+        Operator: "TOPRANK",
+        Value: fileData.keyword,
+        Value2: "",
+      },
+    ],
+    ChildItems: [],
+  };
+  queryJson.QNode.QGroup[0].ChildItems.push(su);
   ztoolkit.log(queryJson);
   const tailing =
     "&DbCode=SCDB&pageNum=1&pageSize=20&sortField=PT&sortType=desc&boolSearch=true&boolSortSearch=false&version=kns7&CurDisplayMode=listmode&productStr=CJZK,CDFD,CMFD,CPFD,IPFD,CCND,BDZK,CPVD&sentenceSearch=false&aside=空";
