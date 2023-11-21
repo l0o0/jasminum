@@ -1,7 +1,6 @@
 import { config } from "../../package.json";
 import { getHTMLDoc, getHTMLText, string2HTML } from "../utils/http";
 import { getString } from "../utils/locale";
-import { getPref } from "../utils/prefs";
 import { getItems, isCNKIPDF } from "../utils/tools";
 import { showPop } from "../utils/window";
 import { addBookmarkItem } from "./bookmark";
@@ -22,6 +21,19 @@ export function getIDFromURL(url: string): CNKIID | boolean {
   )
     return false;
   return { dbname: dbname[1], filename: filename[1], dbcode: dbcode[1] };
+}
+
+export function getIDFromSearchRow(row: Element): CNKIID | boolean {
+  const input = row.querySelector("td.seq input");
+  const values = input?.getAttribute("value")?.split("!");
+  const dbname = input?.getAttribute("tb");
+  if (!values || values.length != 3) return false;
+  const dbcode = values[0];
+  const filename = values[1];
+
+  if (!dbname || !filename || !dbcode) return false;
+
+  return { dbname: dbname, filename: filename, dbcode: dbcode };
 }
 
 /**
@@ -71,17 +83,11 @@ export async function getCNKIID(
  * @param ids
  * @returns
  */
-function createRefPostData(ids: CNKIID[]) {
+function createRefPostData(id: CNKIID) {
   // filename=CPFDLAST2020!ZGXD202011001016!1!14%2CCPFDLAST2020!ZKBD202011001034!2!14&displaymode=Refworks&orderparam=0&ordertype=desc&selectfield=&random=0.9317799522629542
-  const postData =
-    ids
-      .reduce(
-        (a, b, c) => a + b.dbname + "!" + b.filename + "!" + (c + 1) + "!8%2C",
-        "filename="
-      )
-      .replace(/%2C$/g, "") +
-    "&displaymode=Refworks&orderparam=0&ordertype=desc&selectfield=&random=0.9317799522629542";
-  return postData;
+  // New multiple: FileName=CAPJ!XDTQ20231110001!1!0%2Ckd9kqNkOM8Xyu_MccKCQ5AM1UHjV0uMR_icN4IXwgicZ_CtYnuxduewAwhD5Qh2GSo4NZ_c4MLfuFbIiSMX1OrzIQ1G0iNFSWKuVwMIdPIM!%2Ckd9kqNkOM8Xyu_MccKCQ5AM1UHjV0uMR_icN4IXwgiecAKpOFogNWlYApDrbdtLwkhlBN69wm54APwSt_M517LzIQ1G0iNFSWKuVwMIdPIM!&DisplayMode=Refworks&OrderParam=0&OrderType=desc&SelectField=&PageIndex=1&PageSize=20&language=CHS&uniplatform=NZKPT&random=0.9986425284493061
+  // New single: FileName=CCNDTEMP!ZJSB20231108A060!1!0&DisplayMode=Refworks&OrderParam=0&OrderType=desc&SelectField=&PageIndex=1&PageSize=20&language=&uniplatform=NZKPT&random=0.30585230060685187
+  return `FileName=${id.dbname}!${id.filename}!1!0&DisplayMode=Refworks&OrderParam=0&OrderType=desc&SelectField=&PageIndex=1&PageSize=20&language=&uniplatform=NZKPT&random=0.30585230060685187`;
 }
 
 /**
@@ -90,111 +96,96 @@ function createRefPostData(ids: CNKIID[]) {
  * @returns
  */
 function createSearchPostData(fileData: any) {
-  const searchKeyword = fileData.keyword.replace(/ /g, "+");
-  let searchIdx = 1;
-  const queryJson = {
+  const queryJson: any = {
     Platform: "",
+    Resource: "CROSSDB",
     DBCode: "SCDB",
-    KuaKuCode:
-      "CJFQ,CDMD,CIPD,CCND,CYFD,SCOD,CISD,SNAD,BDZK,GXDB_SECTION,CJFN,CCJD",
+    KuaKuCode: "CJZK,CDFD,CMFD,CPFD,IPFD,CCND,BDZK,CPVD",
     QNode: {
       QGroup: [
         {
           Key: "Subject",
           Title: "",
-          Logic: 4,
+          Logic: 0,
           Items: [],
-          ChildItems: [],
+          ChildItems: [], // fill up here
         },
         {
           Key: "ControlGroup",
           Title: "",
-          Logic: 1,
+          Logic: 0,
           Items: [],
           ChildItems: [],
         },
       ],
     },
+    ExScope: "1",
+    SearchType: "0",
   };
-  if (fileData.keyword) {
-    // 如果标题中含有空格，增加主题关键词搜索
-    if (fileData.keyword.includes(" ")) {
-      const titleChildItem = {
-        Key: `input[data-tipid=gradetxt-${searchIdx}]`,
-        Title: "主题",
-        Logic: 4,
-        Items: [
-          {
-            Key: "",
-            Title: searchKeyword,
-            Logic: 0,
-            Name: "SU",
-            Operate: "%=",
-            Value: searchKeyword,
-            ExtendType: 1,
-            ExtendValue: "中英文对照",
-            Value2: "",
-          },
-        ],
-        ChildItems: [],
-      };
-      queryJson.QNode.QGroup[0].ChildItems.push(titleChildItem as never);
-      searchIdx += 1;
-    }
-
-    const titleChildItem = {
-      Key: `input[data-tipid=gradetxt-${searchIdx}]`,
-      Title: "篇名",
-      Logic: 2,
-      Items: [
-        {
-          Key: "",
-          Title: searchKeyword,
-          Logic: 1,
-          Name: "TI", // 搜索字段代码
-          Operate: fileData.keyword.includes(" ") ? "%" : "=", // =精确匹配, % 模糊匹配
-          Value: searchKeyword,
-          ExtendType: 1,
-          ExtendValue: "中英文对照",
-          Value2: "",
-        },
-      ],
-      ChildItems: [],
-    };
-    queryJson.QNode.QGroup[0].ChildItems.push(titleChildItem as never);
-    searchIdx += 1;
-  }
   if (fileData.author) {
-    const authorChildItem = {
-      Key: `input[data-tipid=gradetxt-${searchIdx}]`,
-      Title: "作者",
-      Logic: 1,
+    const au = {
+      Key: "",
+      Title: "",
+      Logic: 0,
       Items: [
         {
           Key: "",
-          Title: fileData.author,
-          Logic: 1,
-          Name: "AU",
-          Operate: "=",
+          Title: "作者",
+          Logic: 0,
+          Field: "AU",
+          Operator: "DEFAULT",
           Value: fileData.author,
-          ExtendType: 1,
-          ExtendValue: "中英文对照",
           Value2: "",
         },
       ],
       ChildItems: [],
     };
-    queryJson.QNode.QGroup[0].ChildItems.push(authorChildItem as never);
-    searchIdx += 1;
+
+    const ti = {
+      Key: "",
+      Title: "",
+      Logic: 0,
+      Items: [
+        {
+          Key: "",
+          Title: "篇名",
+          Logic: 0,
+          Field: "TI",
+          Operator: "DEFAULT",
+          Value: fileData.keyword,
+          Value2: "",
+        },
+      ],
+      ChildItems: [],
+    };
+
+    queryJson.QNode.QGroup[0].ChildItems.push(au);
+    queryJson.QNode.QGroup[0].ChildItems.push(ti);
+  } else {
+    // 只有标题时，采用主题词搜索
+    const su = {
+      Key: "",
+      Title: "",
+      Logic: 0,
+      Items: [
+        {
+          Key: "",
+          Title: "主题",
+          Logic: 0,
+          Field: "SU",
+          Operator: "TOPRANK",
+          Value: fileData.keyword,
+          Value2: "",
+        },
+      ],
+      ChildItems: [],
+    };
+    queryJson.QNode.QGroup[0].ChildItems.push(su);
   }
-  const postData =
-    "IsSearch=true&QueryJson=" +
-    encodeURIComponent(JSON.stringify(queryJson)) +
-    "&PageName=DefaultResult&DBCode=SCDB" +
-    "&KuaKuCodes=CJFQ%2CCCND%2CCIPD%2CCDMD%2CCYFD%2CBDZK%2CSCOD%2CCISD%2CSNAD%2CCCJD%2CGXDB_SECTION%2CCJFN" +
-    "&CurPage=1&RecordsCntPerPage=20&CurDisplayMode=listmode" +
-    "&CurrSortField=&CurrSortFieldType=desc&IsSentenceSearch=false&Subject=";
-  return postData;
+  ztoolkit.log(queryJson);
+  const tailing =
+    "&DbCode=SCDB&pageNum=1&pageSize=20&sortField=PT&sortType=desc&boolSearch=true&boolSortSearch=false&version=kns7&CurDisplayMode=listmode&productStr=CJZK,CDFD,CMFD,CPFD,IPFD,CCND,BDZK,CPVD&sentenceSearch=false&aside=空";
+  return encodeURI(`QueryJson=${JSON.stringify(queryJson)}` + tailing);
 }
 
 export function splitFilename(filename: string) {
@@ -241,7 +232,12 @@ export function splitFilename(filename: string) {
   const prefixMainArr = patentReg.exec(prefix);
   // 文件名识别结果为空，跳出警告弹窗
   if (prefixMainArr === null) {
-    showPop(getString("filename-parse-fail", { args: { filename: filename, patent: patent } }), "fail");
+    showPop(
+      getString("filename-parse-fail", {
+        args: { filename: filename, patent: patent },
+      }),
+      "fail"
+    );
     return;
   }
   const titleIdx = patentMainArr!.indexOf("{%t}");
@@ -348,27 +344,28 @@ function fixCNKIUrl(url: string): string {
 export async function searchCNKI(fileData: any): Promise<CNKIRow[]> {
   ztoolkit.log(`Begain to search CNKI ${fileData.keyword} ${fileData.author}`);
   const postData = createSearchPostData(fileData);
+  ztoolkit.log(postData);
+  // const postData = `QueryJson=%7B%22Platform%22%3A%22%22%2C%22Resource%22%3A%22CROSSDB%22%2C%22DBCode%22%3A%22SCDB%22%2C%22KuaKuCode%22%3A%22CJZK%2CCJFN%2CCDFD%2CCMFD%2CCPFD%2CIPFD%2CCCND%2CBDZK%2CCISD%2CSNAD%2CCCJD%2CCPVD%22%2C%22QNode%22%3A%7B%22QGroup%22%3A%5B%7B%22Key%22%3A%22Subject%22%2C%22Title%22%3A%22%22%2C%22Logic%22%3A0%2C%22Items%22%3A%5B%7B%22Field%22%3A%22SU%22%2C%22Value%22%3A%22%E5%9F%BA%E6%9C%AC%E5%8E%9F%E7%90%86%22%2C%22Operator%22%3A0%2C%22Logic%22%3A0%7D%5D%2C%22ChildItems%22%3A%5B%5D%7D%5D%7D%2C%22ExScope%22%3A1%2C%22SearchType%22%3A%220%22%7D&DbCode=SCDB&pageNum=1&pageSize=20&sortType=desc&boolSearch=true&version=kns7&productStr=CJZK%2CCJFN%2CCDFD%2CCMFD%2CCPFD%2CIPFD%2CCCND%2CBDZK%2CCISD%2CSNAD%2CCCJD%2CCPVD&sentenceSearch=false&aside=%E4%B8%BB%E9%A2%98%3A%E5%9F%BA%E6%9C%AC%E5%8E%9F%E7%90%86`;
   const requestHeaders = {
-    Accept: "text/html, */*; q=0.01",
-    "Accept-Encoding": "gzip, deflate, br",
-    "Accept-Language": "zh-CN,zh;q=0.9,en;q=0.8,zh-TW;q=0.7",
-    Connection: "keep-alive",
-    "Content-Length": postData.length,
-    "Content-Type": "application/x-www-form-urlencoded; charset=UTF-8",
     Host: "kns.cnki.net",
-    Origin: "https://kns.cnki.net",
-    Referer:
-      "https://kns.cnki.net/kns8/AdvSearch?dbprefix=SCDB&&crossDbcodes=CJFQ%2CCDMD%2CCIPD%2CCCND%2CCISD%2CSNAD%2CBDZK%2CCJFN%2CCCJD",
-    "Sec-Fetch-Dest": "empty",
-    "Sec-Fetch-Mode": "cors",
-    "Sec-Fetch-Site": "same-origin",
+    "User-Agent":
+      "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:109.0) Gecko/20100101 Firefox/119.0",
+    Accept: "text/html, */*; q=0.01",
+    "Accept-Language": "zh-CN,en-US;q=0.7,en;q=0.3",
+    "Accept-Encoding": "gzip, deflate, br",
+    "Content-Type": "application/x-www-form-urlencoded; charset=UTF-8",
     "X-Requested-With": "XMLHttpRequest",
+    "Content-Length": postData.length,
+    Origin: "https://kns.cnki.net",
+    Connection: "keep-alive",
+    Referer: `https://kns.cnki.net/kns/search?dbcode=SCDB&kw=${encodeURI(
+      fileData.title
+    )}&korder=SU&crossdbcodes=CJFQ,CDFD,CMFD,CPFD,IPFD,CCND,CISD,SNAD,BDZK,CCJD,CJRF,CJFN`,
   };
-  const postUrl = "https://kns.cnki.net/KNS8/Brief/GetGridTableHtml";
+  const postUrl = "https://kns.cnki.net/kns/brief/grid";
   // Zotero.debug(Zotero.Jasminum.CookieSandbox);
   const resp = await Zotero.HTTP.request("POST", postUrl, {
     headers: requestHeaders,
-    cookieSandbox: addon.data.cookiebox.searchCookieBox,
     body: postData,
   });
   // Zotero.debug(resp.responseText);
@@ -391,7 +388,8 @@ export async function searchCNKI(fileData: any): Promise<CNKIRow[]> {
       const citation = (
         rows[idx].querySelector("td.quote")! as HTMLElement
       ).innerText!.trim();
-      const id = getIDFromURL(href) as CNKIID;
+      const id = (getIDFromURL(href) ||
+        getIDFromSearchRow(rows[idx])) as CNKIID;
       targetRows.push({
         url: href,
         id: id,
@@ -406,14 +404,27 @@ export async function searchCNKI(fileData: any): Promise<CNKIRow[]> {
 }
 
 // Get refwork text data from search target rows
-export async function getRefworksText(targetIDs: CNKIID[]): Promise<string> {
+export async function getRefworksText(targetID: CNKIID): Promise<string> {
   // let targetIDs: CNKIID[] = resultRows.reduce((p:CNKIID[], c) => {p.push(c.id); return p}, []);
-  const postData = createRefPostData(targetIDs);
+  const postData = createRefPostData(targetID);
+  const headers = {
+    "Content-Type": "application/x-www-form-urlencoded",
+    Host: "kns.cnki.net",
+    "User-Agent":
+      "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:109.0) Gecko/20100101 Firefox/119.0",
+    Accept: "text/plain, */*; q=0.01",
+    "Accept-Language": "zh-CN,en-US;q=0.7,en;q=0.3",
+    "Accept-Encoding": "gzip, deflate, br",
+    "Content-Length": postData.length,
+    Origin: "https://kns.cnki.net",
+    Connection: "keep-alive",
+    Referer: `https://kns.cnki.net/dm/manage/export.html?filename=${targetID.dbname}!${targetID.filename}!1!0&displaymode=NEW&uniplatform=NZKPT`,
+  };
   Zotero.debug(postData);
-  const url = "https://kns.cnki.net/KNS8/manage/ShowExport";
+  const url = "https://kns.cnki.net/dm/api/ShowExport";
   const resp = await Zotero.HTTP.request("POST", url, {
-    cookieSandbox: addon.data.cookiebox.refCookieBox,
     body: postData,
+    headers: headers,
   });
   return resp.responseText
     .replace("<ul class='literature-list'><li>", "")
@@ -501,7 +512,7 @@ export async function fixItem(newItems: Zotero.Item[], targetData: any) {
       Zotero.Items.erase(newItem.getNotes());
     }
     // 是否处理中文姓名. For Chinese name
-    if (getPref("zhnamesplit")) {
+    if (Zotero.Prefs.get("jasminum.zhnamesplit")) {
       creators = newItem.getCreators() as MyCreator[];
       for (let i = 0; i < creators.length; i++) {
         const creator = creators[i];
@@ -614,7 +625,7 @@ export async function searchCNKIMetadata(items: Zotero.Item[]) {
         item.getField("url") as string
       )) as CNKIID;
       Zotero.debug([articleId]);
-      const data = await getRefworksText([articleId]);
+      const data = await getRefworksText(articleId);
       // Zotero.debug("** Jasminum webpage data");
 
       let newItems = await trans2Items(data, libraryID);
@@ -652,7 +663,8 @@ export async function searchCNKIMetadata(items: Zotero.Item[]) {
       ztoolkit.log(targetRows);
       // 有查询结果返回
       if (targetRows.length > 0) {
-        const ids = targetRows.map((r) => r.id);
+        // const ids = targetRows.map((r) => r.id);
+        const id = targetRows[0].id;
         const targetData = targetRows.reduce(
           (p: any, c) => {
             p.targetUrls.push(c.url);
@@ -661,7 +673,7 @@ export async function searchCNKIMetadata(items: Zotero.Item[]) {
           },
           { targetUrls: [], citations: [] }
         );
-        const data = await getRefworksText(ids);
+        const data = await getRefworksText(id);
         let newItems = await trans2Items(data, libraryID);
         newItems = await fixItem(newItems, targetData);
         Zotero.debug("** Jasminum DB trans ...");
@@ -679,7 +691,7 @@ export async function searchCNKIMetadata(items: Zotero.Item[]) {
           item.parentID = newItem.id;
           // Use Zotfile to rename file
           if (
-            getPref("rename") &&
+            Zotero.Prefs.get("jasminum.rename") &&
             typeof Zotero.ZotFile != "undefined"
           ) {
             Zotero.ZotFile.renameSelectedAttachments();
@@ -688,7 +700,7 @@ export async function searchCNKIMetadata(items: Zotero.Item[]) {
           await item.saveTx();
           await newItem.saveTx();
           // Add bookmark after PDF attaching to new item
-          if (getPref("autobookmark") && isCNKIPDF(item)) {
+          if (Zotero.Prefs.get("jasminum.autobookmark") && isCNKIPDF(item)) {
             await addBookmarkItem(item);
           }
         } else {
@@ -702,7 +714,7 @@ export async function searchCNKIMetadata(items: Zotero.Item[]) {
         // 没有查询结果
         showPop(
           getString("cnkimetadata-fail", {
-            args: { author: fileData!.author, title: fileData!.keyword }
+            args: { author: fileData!.author, title: fileData!.keyword },
           }),
           "fail"
         );
@@ -742,7 +754,12 @@ export async function updateCiteCSSCI() {
     if (
       ["patent", "webpage"].includes(Zotero.ItemTypes.getName(item.itemTypeID))
     ) {
-      showPop(getString("unmatched-itemtype-fail", { args: { itemType: Zotero.ItemTypes.getName(item.itemTypeID) } }), "fail");
+      showPop(
+        getString("unmatched-itemtype-fail", {
+          args: { itemType: Zotero.ItemTypes.getName(item.itemTypeID) },
+        }),
+        "fail"
+      );
       continue;
     } else if (
       (item.getField("title") as string).search(/[_\u4e00-\u9fa5]/) === -1
@@ -755,7 +772,7 @@ export async function updateCiteCSSCI() {
       html = await getHTMLDoc(url);
       // 检测是否出现知网验证页面,一般网页以nxgp开头的页面，会出现知网验证页面
       if (html.querySelector("div.verify_wrap")) {
-        showPop(getString("cnki-capatch-warning"), "fail")
+        showPop(getString("cnki-capatch-warning"), "fail");
         continue;
       }
       // 特异性网址，
@@ -770,7 +787,7 @@ export async function updateCiteCSSCI() {
         const targetRows = await searchCNKI(fileData);
         if (targetRows && targetRows.length > 0) {
           const cnkiid = getIDFromURL(targetRows[0].url) as CNKIID;
-          const urls = await getRefworksText([cnkiid]);
+          const urls = await getRefworksText(cnkiid);
           Zotero.debug("** Jasminum " + urls[0]);
           // item.setField('url', urls[0]);
           // item.saveTx();
@@ -793,7 +810,15 @@ export async function updateCiteCSSCI() {
         // 或者可以参考其他核心期刊数据来源
         await ztoolkit.ExtraField.setExtraField(item, "CSSCI", cssci);
       }
-      showPop(getString("cssci-success", {args:{title:item.getField("title"), cite:cite ? cite : '', cssci:cssci ? cssci : ''}}));
+      showPop(
+        getString("cssci-success", {
+          args: {
+            title: item.getField("title"),
+            cite: cite ? cite : "",
+            cssci: cssci ? cssci : "",
+          },
+        })
+      );
       ztoolkit.log("cite number: ${cite} cssci: ${cssci}");
     } else {
       showPop(getString("url-missing"), "fail");
