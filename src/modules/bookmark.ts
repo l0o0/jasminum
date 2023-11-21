@@ -1,11 +1,12 @@
 import { config } from "../../package.json";
 import { getHTMLDoc } from "../utils/http";
 import { getString } from "../utils/locale";
+import { getPref } from "../utils/prefs";
 import { showPop } from "../utils/window";
 import { searchCNKI } from "./cnki";
 
 async function checkPDFtkPath() {
-  const pdftkpath = Zotero.Prefs.get("jasminum.pdftkpath") as string;
+  const pdftkpath = getPref("pdftkpath") as string;
   let pdftk = "";
   if (Zotero.isWin) {
     pdftk = OS.Path.join(pdftkpath, "pdftk.exe");
@@ -113,7 +114,7 @@ async function addBookmark(item: Zotero.Item, bookmark: string) {
   await OS.File.writeAtomic(cacheFile.path, array, {
     tmpPath: cacheFile.path + ".tmp",
   });
-  let pdftk = Zotero.Prefs.get("jasminum.pdftkpath") as string;
+  let pdftk = getPref("pdftkpath") as string;
   if (Zotero.isWin) {
     pdftk = OS.Path.join(pdftk, "pdftk.exe");
   } else {

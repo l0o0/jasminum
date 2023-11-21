@@ -1,3 +1,5 @@
+import { getPref } from "./prefs";
+
 export class MyCookieSandbox {
   public searchCookieBox: any;
   public attachmentCookieBox: any;
@@ -23,7 +25,7 @@ export class MyCookieSandbox {
   }
 
   setAttachmentCookieBox() {
-      const cookieData = Zotero.Prefs.get("jasminum.cnki.attachment.cookie") as string;
+      const cookieData = getPref("cnkiAttachmentCookie") as string;
       return new Zotero.CookieSandbox(null, this.baseUrl, cookieData, this.userAgent);
   }
 

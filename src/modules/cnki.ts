@@ -1,6 +1,7 @@
 import { config } from "../../package.json";
 import { getHTMLDoc, getHTMLText, string2HTML } from "../utils/http";
 import { getString } from "../utils/locale";
+import { getPref } from "../utils/prefs";
 import { getItems, isCNKIPDF } from "../utils/tools";
 import { showPop } from "../utils/window";
 import { addBookmarkItem } from "./bookmark";
@@ -500,7 +501,7 @@ export async function fixItem(newItems: Zotero.Item[], targetData: any) {
       Zotero.Items.erase(newItem.getNotes());
     }
     // 是否处理中文姓名. For Chinese name
-    if (Zotero.Prefs.get("jasminum.zhnamesplit")) {
+    if (getPref("zhnamesplit")) {
       creators = newItem.getCreators() as MyCreator[];
       for (let i = 0; i < creators.length; i++) {
         const creator = creators[i];
@@ -678,7 +679,7 @@ export async function searchCNKIMetadata(items: Zotero.Item[]) {
           item.parentID = newItem.id;
           // Use Zotfile to rename file
           if (
-            Zotero.Prefs.get("jasminum.rename") &&
+            getPref("rename") &&
             typeof Zotero.ZotFile != "undefined"
           ) {
             Zotero.ZotFile.renameSelectedAttachments();
@@ -687,7 +688,7 @@ export async function searchCNKIMetadata(items: Zotero.Item[]) {
           await item.saveTx();
           await newItem.saveTx();
           // Add bookmark after PDF attaching to new item
-          if (Zotero.Prefs.get("jasminum.autobookmark") && isCNKIPDF(item)) {
+          if (getPref("autobookmark") && isCNKIPDF(item)) {
             await addBookmarkItem(item);
           }
         } else {

@@ -67,7 +67,6 @@ translator-tab-column1 = 名称
 translator-tab-column2 = 本地更新时间
 translator-tab-column3 = 最新更新时间
 translator-tab-column4 = 操作
-refresh-label = 刷新
 updateall-label = 更新全部
 refreshInfo-label = 获取TranslatorCN更新信息
 # update-translator = 更新之后还需要在浏览器Zotero Connector中更新转换器信息
