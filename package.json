@@ -1,6 +1,6 @@
 {
   "name": "jasminum",
-  "version": "1.0.0-8",
+  "version": "1.0.0-9",
   "description": "一个简单的 Zotero 中文插件",
   "config": {
     "addonName": "Jasminum",
