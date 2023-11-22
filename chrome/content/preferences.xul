@@ -188,7 +188,10 @@
                             <label value="Translators_CN 项目地址"/><label class="zotero-text-link" value="https://github.com/l0o0/translators_CN" href="https://github.com/l0o0/translators_CN"/>
                         </hbox>
                         <hbox>
-                            <label value="Zotero 常用插件国内下载"/><label class="zotero-text-link" value="https://zotero-chinese.gitee.io/zotero-plugins/#/" href="https://zotero-chinese.gitee.io/zotero-plugins/#/"/>
+                            <label value="Zotero 中文社区"/><label class="zotero-text-link" value="https://zotero-chinese.com/" href="https://zotero-chinese.com/"/>
+                        </hbox>
+                        <hbox>
+                            <label value='Jasminum 0.2.8'/>
                         </hbox>
                     </tabpanel>
                 </tabpanels>
