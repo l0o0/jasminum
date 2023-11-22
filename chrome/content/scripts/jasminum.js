@@ -157,8 +157,7 @@ Zotero.Jasminum = new function () {
             Zotero.debug("** Jasminum add webpage.");
             let articleId = this.Scrape.getIDFromURL(item.getField("url"));
             Zotero.debug([articleId]);
-            let postData = this.Scrape.createRefPostData([articleId]);
-            let data = await this.Scrape.getRefText(postData);
+            let data = await this.Scrape.getRefText([articleId]);
             // Zotero.debug("** Jasminum webpage data");
 
             // Some item will be updated after published
@@ -166,8 +165,7 @@ Zotero.Jasminum = new function () {
                 articleId = await this.Scrape.getIDFromPage(item.getField("url"));
                 Zotero.debug([articleId]);
             }
-            postData = this.Scrape.createRefPostData([articleId]);
-            data = await this.Scrape.getRefText(postData);
+            data = await this.Scrape.getRefText([articleId]);
             var newItems = await this.Utils.trans2Items(data, libraryID);
             let targetData = {
                 targetUrls: [item.getField("url")],
@@ -198,7 +196,7 @@ Zotero.Jasminum = new function () {
             await item.saveTx();
 
         } else {
-            var fileData = this.Scrape.splitFilename(item.getFilename());
+            var fileData = this.Scrape.splitFilename(item.attachmentFilename);
             Zotero.debug(fileData);
             var targetRows = await this.Scrape.search(fileData);
             // 有查询结果返回

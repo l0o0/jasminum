@@ -130,22 +130,9 @@ Zotero.Jasminum.Scrape = new function () {
      * @return {String} 
      */
     this.createRefPostData = function (ids) {
-        var postData = "filename=";
-        // filename=CPFDLAST2020!ZGXD202011001016!1!14%2CCPFDLAST2020!ZKBD202011001034!2!14&displaymode=Refworks&orderparam=0&ordertype=desc&selectfield=&random=0.9317799522629542
-        for (let idx = 0; idx < ids.length; idx++) {
-            postData =
-                postData +
-                ids[idx].dbname +
-                "!" +
-                ids[idx].filename +
-                "!" +
-                (idx + 1) +
-                "!8%2C";
-        }
-        postData = postData.replace(/%2C$/g, "");
-        postData =
-            postData +
-            "&displaymode=Refworks&orderparam=0&ordertype=desc&selectfield=&random=0.9317799522629542";
+        // FileName=CAPJ!TNGZ20231120001!1!0%2CCJFQ!CCSS202311038!1!0&DisplayMode=Refworks&OrderParam=0&OrderType=desc&SelectField=&PageIndex=1&PageSize=20&language=&uniplatform=&random=0.8587002074972324
+        var args = ids.map((id) => `${id.dbcode}!${id.filename}!1!0`).join("%2C");
+        var postData = "FileName=" + args + "&DisplayMode=Refworks&OrderParam=0&OrderType=desc&SelectField=&PageIndex=1&PageSize=20&language=&uniplatform=&random=0.8587002074972324";
         return postData;
     }.bind(Zotero.Jasminum);
 
@@ -153,111 +140,77 @@ Zotero.Jasminum.Scrape = new function () {
      * Create post data for CNKI result
      */
     this.createPostData = function (fileData) {
-        var searchKeyword = fileData.keyword.replace(/ /g, '+');
-        var searchIdx = 1;
         var queryJson = {
             Platform: "",
+            Resource: "CROSSDB",
             DBCode: "SCDB",
-            KuaKuCode:
-                "CJFQ,CDMD,CIPD,CCND,CYFD,SCOD,CISD,SNAD,BDZK,GXDB_SECTION,CJFN,CCJD",
+            KuaKuCode: "CJZK,CDFD,CMFD,CPFD,IPFD,CCND,BDZK,CPVD",
             QNode: {
                 QGroup: [
                     {
                         Key: "Subject",
                         Title: "",
-                        Logic: 4,
+                        Logic: 0,
                         Items: [],
-                        ChildItems: [],
+                        ChildItems: [], // fill up here
                     },
                     {
                         Key: "ControlGroup",
                         Title: "",
-                        Logic: 1,
+                        Logic: 0,
                         Items: [],
                         ChildItems: [],
-                    }
+                    },
                 ],
             },
+            ExScope: "1",
+            SearchType: "0",
         };
-        if (fileData.keyword) {
-            // 如果标题中含有空格，增加主题关键词搜索
-            if (fileData.keyword.includes(" ")) {
-                titleChildItem = {
-                    Key: `input[data-tipid=gradetxt-${searchIdx}]`,
-                    Title: "主题",
-                    Logic: 4,
-                    Items: [
-                        {
-                            Key: "",
-                            Title: searchKeyword,
-                            Logic: 0,
-                            Name: "SU",
-                            Operate: "%=",
-                            Value: searchKeyword,
-                            ExtendType: 1,
-                            ExtendValue: "中英文对照",
-                            Value2: ""
-                        }
-                    ],
-                    ChildItems: []
-                };
-                queryJson.QNode.QGroup[0].ChildItems.push(titleChildItem);
-                searchIdx += 1;
-            }
-
-            var titleChildItem = {
-                Key: `input[data-tipid=gradetxt-${searchIdx}]`,
-                Title: "篇名",
-                Logic: 2,
-                Items: [
-                    {
-                        Key: "",
-                        Title: searchKeyword,
-                        Logic: 1,
-                        Name: "TI", // 搜索字段代码
-                        Operate: fileData.keyword.includes(" ") ? "%" : "=", // =精确匹配, % 模糊匹配
-                        Value: searchKeyword,
-                        ExtendType: 1,
-                        ExtendValue: "中英文对照",
-                        Value2: "",
-                    },
-                ],
-                ChildItems: [],
-            };
-            queryJson.QNode.QGroup[0].ChildItems.push(titleChildItem);
-            searchIdx += 1;
-        }
         if (fileData.author) {
-            var authorChildItem = {
-                Key: `input[data-tipid=gradetxt-${searchIdx}]`,
-                Title: "作者",
-                Logic: 1,
+            var au = {
+                Key: "",
+                Title: "",
+                Logic: 0,
                 Items: [
                     {
                         Key: "",
-                        Title: fileData.author,
-                        Logic: 1,
-                        Name: "AU",
-                        Operate: "=",
+                        Title: "作者",
+                        Logic: 0,
+                        Field: "AU",
+                        Operator: "DEFAULT",
                         Value: fileData.author,
-                        ExtendType: 1,
-                        ExtendValue: "中英文对照",
                         Value2: "",
                     },
                 ],
                 ChildItems: [],
             };
-            queryJson.QNode.QGroup[0].ChildItems.push(authorChildItem);
-            searchIdx += 1;
+            queryJson.QNode.QGroup[0].ChildItems.push(au);
         }
-        var postData =
-            "IsSearch=true&QueryJson=" +
-            encodeURIComponent(JSON.stringify(queryJson)) +
-            "&PageName=DefaultResult&DBCode=SCDB" +
-            "&KuaKuCodes=CJFQ%2CCCND%2CCIPD%2CCDMD%2CCYFD%2CBDZK%2CSCOD%2CCISD%2CSNAD%2CCCJD%2CGXDB_SECTION%2CCJFN" +
-            "&CurPage=1&RecordsCntPerPage=20&CurDisplayMode=listmode" +
-            "&CurrSortField=&CurrSortFieldType=desc&IsSentenceSearch=false&Subject=";
-        return postData;
+        // 必要标题，不然搜个啥。标题全按主题词搜索，虽然模糊，可是适用范围大
+        // 所谓模糊搜索就是将特殊符号去掉，所以字段放到主题词中
+        // TODO: 新增模糊搜索选项
+        var su = {
+            Key: "",
+            Title: "",
+            Logic: 0,
+            Items: [
+                {
+                    Key: "",
+                    Title: "主题",
+                    Logic: 0,
+                    Field: "SU",
+                    Operator: "TOPRANK",
+                    Value: fileData.keyword,
+                    Value2: "",
+                },
+            ],
+            ChildItems: [],
+        };
+        queryJson.QNode.QGroup[0].ChildItems.push(su);
+        // Zotero.debug(queryJson);
+        var tailing =
+            "&DbCode=SCDB&pageNum=1&pageSize=20&sortField=PT&sortType=desc&boolSearch=true&boolSortSearch=false&version=kns7&CurDisplayMode=listmode&productStr=CJZK,CDFD,CMFD,CPFD,IPFD,CCND,BDZK,CPVD&sentenceSearch=false&aside=空";
+        return encodeURI(`QueryJson=${JSON.stringify(queryJson)}` + tailing);
     }.bind(Zotero.Jasminum);
 
 
@@ -291,6 +244,18 @@ Zotero.Jasminum.Scrape = new function () {
             return false;
         return { dbname: dbname[1], filename: filename[1], dbcode: dbcode[1] };
     }.bind(Zotero.Jasminum);
+
+
+    this.getIDFromSearchRow = function (row) {
+        var input = row.querySelector("td.seq input");
+        var values = input.getAttribute("value").split("!");
+        var dbname = input.getAttribute("tb");
+        if (!values || values.length != 3) return false;
+        const dbcode = values[0];
+        const filename = values[1];
+        if (!dbname || !filename || !dbcode) return false;
+        return { dbname: dbname, filename: filename, dbcode: dbcode };
+    }
 
     /**
      * Get Html content text from given url
@@ -342,7 +307,8 @@ Zotero.Jasminum.Scrape = new function () {
         var postData = this.Scrape.createPostData(fileData);
         let requestHeaders = {
             Host: "kns.cnki.net",
-            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:109.0) Gecko/20100101 Firefox/119.0",
+            "User-Agent":
+                "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:109.0) Gecko/20100101 Firefox/119.0",
             Accept: "text/html, */*; q=0.01",
             "Accept-Language": "zh-CN,en-US;q=0.7,en;q=0.3",
             "Accept-Encoding": "gzip, deflate, br",
@@ -351,22 +317,16 @@ Zotero.Jasminum.Scrape = new function () {
             "Content-Length": postData.length,
             Origin: "https://kns.cnki.net",
             Connection: "keep-alive",
-            Referer: `https://kns.cnki.net/kns/search?dbcode=SCDB&kw=${encodeURI(fileData.title)}&korder=SU&crossdbcodes=CJFQ,CDFD,CMFD,CPFD,IPFD,CCND,CISD,SNAD,BDZK,CCJD,CJRF,CJFN`,
-            "Sec-Fetch-Dest": "empty",
-            "Sec-Fetch-Mode": "cors",
-            "Sec-Fetch-Site": "same-origin"
+            Referer: `https://kns.cnki.net/kns/search?dbcode=SCDB&kw=${encodeURI(
+                fileData.title
+            )}&korder=SU&crossdbcodes=CJFQ,CDFD,CMFD,CPFD,IPFD,CCND,CISD,SNAD,BDZK,CCJD,CJRF,CJFN`,
         }
         var postUrl = "https://kns.cnki.net/kns/brief/grid";
-        // if (!this.Scrape.CookieSandbox) {
-        //     this.Scrape.setCookieSandbox();
-        // }
-        // Zotero.debug(Zotero.Jasminum.CookieSandbox);
         var resp = await Zotero.HTTP.request("POST", postUrl, {
             headers: requestHeaders,
-            // cookieSandbox: this.Scrape.CookieSandbox,
             body: postData,
         });
-        Zotero.debug(resp.responseText);
+        // Zotero.debug(resp.responseText);
         var targetRows = this.Scrape.getItemFromSearch(resp.responseText);
         return targetRows;
     }.bind(Zotero.Jasminum);
@@ -448,13 +408,28 @@ Zotero.Jasminum.Scrape = new function () {
      * @param {String} 
      * @return {String}
      */
-    this.getRefText = async function (postData) {
-        let url = "https://kns.cnki.net/KNS8/manage/ShowExport";
-        if (!this.Scrape.RefCookieSandbox) {  // This is may be error
-            this.Scrape.setRefCookieSandbox();
-        }
+    this.getRefText = async function (targetIDs) {
+        let postData = this.Scrape.createRefPostData(targetIDs);
+        Zotero.debug(postData);
+        let url = "https://kns.cnki.net/dm/api/ShowExport";
+        // if (!this.Scrape.RefCookieSandbox) {  // This is may be error
+        //     this.Scrape.setRefCookieSandbox();
+        // }
+        var headers = {
+            "Content-Type": "application/x-www-form-urlencoded",
+            Host: "kns.cnki.net",
+            "User-Agent":
+                "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:109.0) Gecko/20100101 Firefox/119.0",
+            Accept: "text/plain, */*; q=0.01",
+            "Accept-Language": "zh-CN,en-US;q=0.7,en;q=0.3",
+            "Accept-Encoding": "gzip, deflate, br",
+            "Content-Length": postData.length,
+            Origin: "https://kns.cnki.net",
+            Connection: "keep-alive",
+            Referer: `https://kns.cnki.net/dm/manage/export.html?filename=${targetIDs[0].dbname}!${targetIDs[0].filename}!1!0&displaymode=NEW&uniplatform=NZKPT`,
+        };
         var resp = await Zotero.HTTP.request("POST", url, {
-            cookieSandbox: this.Scrape.RefCookieSandbox,
+            headers: headers,
             body: postData,
         });
         return resp.responseText
@@ -494,21 +469,17 @@ Zotero.Jasminum.Scrape = new function () {
         targetRows.forEach(function (r) {
             var url = r.getElementsByClassName("fz14")[0].getAttribute("href");
             var cite = Zotero.Jasminum.Scrape.getCitationFromSearch(r);
-            targetIDs.push(Zotero.Jasminum.Scrape.getIDFromURL(url));
+            var id = Zotero.Jasminum.Scrape.getIDFromSearchRow(r);
+            targetIDs.push(id);
             targetData.citations.push(cite);
+            targetData.targetUrls.push(url);
         });
         Zotero.debug(targetIDs);
-        for (let idx = 0; idx < targetIDs.length; idx++) {
-            targetData.targetUrls.push(
-                `https://kns.cnki.net/KCMS/detail/detail.aspx?dbcode=${targetIDs[idx].dbcode}&dbname=${targetIDs[idx].dbname}&filename=${targetIDs[idx].filename}&v=`
-            );
-        }
         if (onlyUrl) {
             return targetData.targetUrls;
         }
-        let postData = this.Scrape.createRefPostData(targetIDs);
-        Zotero.debug(postData);
-        var data = await this.Scrape.getRefText(postData);
+
+        var data = await this.Scrape.getRefText(targetIDs);
         Zotero.debug(data.split("\n"));
         return [data, targetData];
     }.bind(Zotero.Jasminum);
