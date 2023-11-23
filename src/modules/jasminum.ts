@@ -240,45 +240,47 @@ export class UIExampleFactory {
   @example
   static registerRightClickMenuPopup() {
     const iconBaseUrl = `chrome://${config.addonRef}/content/icons/`;
-    ztoolkit.Menu.register(
-      "item",
-      {
-        tag: "menu",
-        id: "jasminum-popup-menu-cnki",
-        label: getString("menu-CNKI-label"),
-        icon: iconBaseUrl + "cnki.png",
-        children: [
-          {
-            tag: "menuitem",
-            id: "jasminum-itemmenu-searchCNKI",
-            label: getString("menu-CNKI-update-label"),
-            commandListener: (ev) => searchCNKIMetadataMenu("items"),
-            icon: iconBaseUrl + "searchCNKI.png",
-          },
-          {
-            tag: "menuitem",
-            id: "jasminum-itemmenu-updateCiteCSSCI",
-            label: getString("menu-CNKI-updateCiteCSSCI-label"),
-            commandListener: (ev) => updateCiteCSSCI(),
-            icon: iconBaseUrl + "cssci.png",
-          },
-          // {
-          //   tag: "menuitem",
-          //   id: "jasminum-itemmenu-attachment",
-          //   label: getString("menu-CNKI-attachment-label"),
-          //   oncommand: "alert('menu.CNKI.attachment.label')",
-          //   icon: iconBaseUrl + "pdf.png",
-          // },
-          {
-            tag: "menuitem",
-            id: "jasminum-itemmenu-bookmark",
-            label: getString("menu-CNKI-addBookmark-label"),
-            commandListener: (ev) => addBookmarkItem(),
-            icon: iconBaseUrl + "bookmark.png",
-          },
-        ],
-      },
-    );
+    ztoolkit.Menu.register("item", {
+      tag: "menuseparator",
+      id: "jasminum-menu-sep",
+    });
+
+    ztoolkit.Menu.register("item", {
+      tag: "menu",
+      id: "jasminum-popup-menu-cnki",
+      label: getString("menu-CNKI-label"),
+      icon: iconBaseUrl + "cnki.png",
+      children: [
+        {
+          tag: "menuitem",
+          id: "jasminum-itemmenu-searchCNKI",
+          label: getString("menu-CNKI-update-label"),
+          commandListener: (ev) => searchCNKIMetadataMenu("items"),
+          icon: iconBaseUrl + "searchCNKI.png",
+        },
+        {
+          tag: "menuitem",
+          id: "jasminum-itemmenu-updateCiteCSSCI",
+          label: getString("menu-CNKI-updateCiteCSSCI-label"),
+          commandListener: (ev) => updateCiteCSSCI(),
+          icon: iconBaseUrl + "cssci.png",
+        },
+        // {
+        //   tag: "menuitem",
+        //   id: "jasminum-itemmenu-attachment",
+        //   label: getString("menu-CNKI-attachment-label"),
+        //   oncommand: "alert('menu.CNKI.attachment.label')",
+        //   icon: iconBaseUrl + "pdf.png",
+        // },
+        {
+          tag: "menuitem",
+          id: "jasminum-itemmenu-bookmark",
+          label: getString("menu-CNKI-addBookmark-label"),
+          commandListener: (ev) => addBookmarkItem(),
+          icon: iconBaseUrl + "bookmark.png",
+        },
+      ],
+    });
 
     ztoolkit.Menu.register("item", {
       tag: "menu",

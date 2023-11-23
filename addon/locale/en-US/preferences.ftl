@@ -69,6 +69,7 @@ translator-tab-column3 = Latest updatetime
 translator-tab-column4 = Download
 refresh-label = Update
 updateall-label = Update all
+refresh-label = Refresh
 refreshInfo-label = Update translators_CN data
 # update-translator = 更新之后还需要在浏览器Zotero Connector中更新转换器信息
 about = About

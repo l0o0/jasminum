@@ -1,5 +1,5 @@
 .jasminum-label {
-    margin-top: 4px;
+  margin-top: 4px;
 }
 
 #jasminum-translator-table-loading {
@@ -22,11 +22,11 @@
   position: sticky;
   background: white;
   text-align: left;
-  z-index:4
+  z-index: 4;
 }
 
 #translator-tab-column1 {
-  width: 150px;
+  width: 185px;
 }
 
 #translator-tab-column2 {
@@ -42,16 +42,15 @@
 }
 
 .jasminum-tooltip-text {
-	position: absolute;
-	z-index: 2;
-	color: black;
-	background-color: white;
-	border: 1px solid;
-	border-radius: 5px;
-	margin: 10px 0px 10px 10px;
-	padding: 3px;
+  position: absolute;
+  z-index: 2;
+  color: black;
+  background-color: white;
+  border: 1px solid;
+  border-radius: 5px;
+  margin: 10px 0px 10px 10px;
+  padding: 3px;
 }
-
 
 #jasminum-fade {
   opacity: 0;
@@ -64,9 +63,12 @@
   transition-delay: 1s;
 }
 
-.jasminum-hover-text:hover #jasminum-fade { opacity: 1; }
-.jasminum-hover-text:hover #jasminum-delay { opacity: 1; }
-
+.jasminum-hover-text:hover #jasminum-fade {
+  opacity: 1;
+}
+.jasminum-hover-text:hover #jasminum-delay {
+  opacity: 1;
+}
 
 .jasminum-hover-text {
   position: relative;

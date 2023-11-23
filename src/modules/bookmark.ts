@@ -25,11 +25,12 @@ async function getCNKIReaderUrl(itemUrl: string) {
     htmldoc,
     "//a[@id='cajDown' and (contains(text(), '章节下载') or contains(text(), '分章下载'))]"
   );
-  if (nodes.length == 0) {  // No results
-    return '';
+  if (nodes.length == 0) {
+    // No results
+    return "";
   }
   const href = nodes[0].getAttribute("href")!;
-  
+
   ztoolkit.log(nodes.length);
   ztoolkit.log(href);
   if (href.startsWith("..")) {
@@ -79,7 +80,6 @@ async function getChapterText(
     "</ul>";
   return { bookmark: rows_array.join("\n"), note: note };
 }
-
 
 async function addBookmark(item: Zotero.Item, bookmark: string) {
   Zotero.debug("** Jasminum add bookmark begin");
@@ -139,7 +139,11 @@ async function addBookmark(item: Zotero.Item, bookmark: string) {
     await OS.File.copy(cachePDF.path, item.getFilePath() as string);
     cacheFile.remove(false);
     cachePDF.remove(false);
-    showPop(getString("addbookmark-success", {args: {filename: item.attachmentFilename}}));
+    showPop(
+      getString("addbookmark-success", {
+        args: { filename: item.attachmentFilename },
+      })
+    );
   } catch (e: any) {
     // try {
     //   cacheFile.remove(false);
@@ -147,7 +151,12 @@ async function addBookmark(item: Zotero.Item, bookmark: string) {
     // } catch (e: Error) {
     //   Zotero.logError(e);
     // }
-    showPop(getString("addbookmark-fail", {args: {filename: item.attachmentFilename}}), "fail");
+    showPop(
+      getString("addbookmark-fail", {
+        args: { filename: item.attachmentFilename },
+      }),
+      "fail"
+    );
   }
 }
 
@@ -166,16 +175,17 @@ export async function addBookmarkItem(item?: Zotero.Item) {
     showPop(getString("pdf-missing"), "fail");
     return;
   }
-  
+
   const parentItem = item.parentItem!;
   let parentItemUrl = parentItem.getField("url") as string;
   let chapterUrl = "";
-  if ((!parentItemUrl) || (!parentItemUrl.startsWith("https://kns.cnki.net"))) {
+  if (!parentItemUrl || !parentItemUrl.startsWith("https://kns.cnki.net")) {
     Zotero.debug("Jasminum search for item url");
     const fileData = {
       keyword: parentItem.getField("title"),
       author:
-        parentItem.getCreator(0).lastName! + parentItem.getCreator(0).firstName,
+        parentItem.getCreators()[0].lastName! +
+        parentItem.getCreators()[0].firstName,
     };
     const targetRows = await searchCNKI(fileData);
     ztoolkit.log(targetRows[0].url);
@@ -192,11 +202,11 @@ export async function addBookmarkItem(item?: Zotero.Item) {
   ztoolkit.log("item url: " + parentItemUrl);
   ztoolkit.log("item chapter url: " + chapterUrl);
 
-  if (chapterUrl == '') {
+  if (chapterUrl == "") {
     showPop(getString("bookmark-missing"), "fail");
-    return ;
+    return;
   }
-  
+
   const bookmarkOut = await getChapterText(chapterUrl, item);
   if (!bookmarkOut.bookmark) {
     showPop(getString("bookmark-missing"), "fail");
