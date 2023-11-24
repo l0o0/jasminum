@@ -1,8 +1,4 @@
-import {
-  BasicExampleFactory,
-  KeyExampleFactory,
-  UIExampleFactory,
-} from "./modules/jasminum";
+import { BasicExampleFactory, UIExampleFactory } from "./modules/jasminum";
 import { config } from "../package.json";
 import { initLocale } from "./utils/locale";
 import { registerPrefsScripts } from "./modules/preferenceScript";
@@ -20,7 +16,7 @@ async function onStartup() {
   ztoolkit.ProgressWindow.setIconURI(
     "default",
     `chrome://${config.addonRef}/content/icons/icon.png`
-  );  
+  );
 
   BasicExampleFactory.registerPrefs();
 
@@ -45,11 +41,7 @@ async function onStartup() {
   ztoolkit
     .getGlobal("ZoteroPane")
     .document.getElementById("zotero-itemmenu")!
-    .addEventListener(
-      "popupshowing", 
-      displayMenuitem,
-      false
-    );
+    .addEventListener("popupshowing", displayMenuitem, false);
 
   // Migrate Prefs from Zotero 6 to 7
   migratePrefs();
@@ -75,27 +67,25 @@ async function onNotify(
 ) {
   // You can add your code to the corresponding notify type
   ztoolkit.log("notify", event, type, ids, extraData);
-  if (
-    event == "add" &&
-    type == "item"
-  ) {
+  if (event == "add" && type == "item") {
     const items = Zotero.Items.get(ids as number[]);
     BasicExampleFactory.itemAddedNotifier(items);
   }
 }
 
-
 // Run this when addon is first run
 // Keep preferences startswith extensions.jasminum
 function migratePrefs() {
   ztoolkit.log("start to migrate");
-  if ( getPref("firstrun") != false ) {
+  if (getPref("firstrun") != false) {
     const extensionBranch = Services.prefs.getBranch("extensions");
     const prefs = extensionBranch.getChildList("", {});
-    const jasminmPrefs = prefs.filter((p: string) => p.includes(".zotero.jasminum."))
+    const jasminmPrefs = prefs.filter((p: string) =>
+      p.includes(".zotero.jasminum.")
+    );
     jasminmPrefs.forEach((ele: string) => {
       ztoolkit.log("extensions" + ele);
-      const longPrefName = ele.replace(/^\.zotero\./, '');
+      const longPrefName = ele.replace(/^\.zotero\./, "");
       const shortPrefName = longPrefName.split(".")[1];
       const prefValue = Zotero.Prefs.get(longPrefName);
       if (prefValue != undefined && getPref(shortPrefName) == undefined) {
@@ -123,22 +113,21 @@ async function onPrefsEvent(type: string, data: { [key: string]: any }) {
   }
 }
 
-function onShortcuts(type: string) {
-  switch (type) {
-    case "larger":
-      KeyExampleFactory.exampleShortcutLargerCallback();
-      break;
-    case "smaller":
-      KeyExampleFactory.exampleShortcutSmallerCallback();
-      break;
-    case "confliction":
-      KeyExampleFactory.exampleShortcutConflictingCallback();
-      break;
-    default:
-      break;
-  }
-}
-
+// function onShortcuts(type: string) {
+//   switch (type) {
+//     case "larger":
+//       KeyExampleFactory.exampleShortcutLargerCallback();
+//       break;
+//     case "smaller":
+//       KeyExampleFactory.exampleShortcutSmallerCallback();
+//       break;
+//     case "confliction":
+//       KeyExampleFactory.exampleShortcutConflictingCallback();
+//       break;
+//     default:
+//       break;
+//   }
+// }
 
 // Add your hooks here. For element click, etc.
 // Keep in mind hooks only do dispatch. Don't add code that does real jobs in hooks.
@@ -149,5 +138,5 @@ export default {
   onShutdown,
   onNotify,
   onPrefsEvent,
-  onShortcuts,
+  // onShortcuts,
 };
