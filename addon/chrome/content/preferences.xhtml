@@ -60,25 +60,43 @@
           class="jasminum-label"
           data-l10n-id="namepatent-desc-info"
         ></label>
-        <menulist
-          editable="true"
-          id="jasminum.namepatent"
-          preference="__prefsPrefix__.namepatent"
-          native="true"
-        >
-          <menupopup>
-            <menuitem
-              label="{%t}_{%g}"
-              value="{%t}_{%g}"
-              data-l10n-id="namepatent-desc-tg"
-            />
-            <menuitem
-              label="{%t}"
-              value="{%t}"
-              data-l10n-id="namepatent-desc-t"
-            />
-          </menupopup>
-        </menulist>
+
+        <html:div class="editable_div" style="position: relative">
+          <menulist
+            id="jasminum-namepatent"
+            class="editable_menupopup"
+            preference="__prefsPrefix__.namepatent"
+            native="true"
+            style="width: 148px"
+          >
+            <menupopup>
+              <menuitem
+                label="{%t}_{%g}"
+                value="{%t}_{%g}"
+                data-l10n-id="namepatent-desc-tg"
+              />
+              <menuitem
+                label="{%t}"
+                value="{%t}"
+                data-l10n-id="namepatent-desc-t"
+              />
+            </menupopup>
+          </menulist>
+          <html:input
+            type="text"
+            class="editable_menupopup_input"
+            id="namepatent-input"
+            preference="__prefsPrefix__.namepatent"
+            style="
+              position: absolute;
+              top: 0px;
+              left: 0px;
+              border: 0px;
+              height: 19.5px;
+            "
+          ></html:input>
+        </html:div>
+
         <image
           src="chrome://jasminum/content/icons/information.png"
           style="margin-top: 5px; margin-bottom: 5px"
@@ -163,17 +181,32 @@
           class="jasminum-label"
           data-l10n-id="toolbox-manualsetlanguage-info"
         ></label>
-        <menulist
-          flex="0.5"
-          id="jasminum.language"
-          preference="__prefsPrefix__.language"
-          native="true"
-        >
-          <menupopup>
-            <menuitem label="zh-CN" value="zh-CN" />
-            <menuitem label="en-US" value="en-US" />
-          </menupopup>
-        </menulist>
+        <html:div class="editable_div" style="position: relative">
+          <menulist
+            flex="0.5"
+            id="jasminum-language"
+            preference="__prefsPrefix__.language"
+            native="true"
+            style="width: 148px"
+          >
+            <menupopup>
+              <menuitem label="zh-CN" value="zh-CN" />
+              <menuitem label="en-US" value="en-US" />
+            </menupopup>
+          </menulist>
+          <html:input
+            type="text"
+            id="jasminum-language-input"
+            preference="__prefsPrefix__.language"
+            style="
+              position: absolute;
+              top: 0px;
+              left: 0px;
+              border: 0px;
+              height: 19.5px;
+            "
+          ></html:input>
+        </html:div>
         <image
           src="chrome://jasminum/content/icons/information.png"
           style="margin-top: 5px; margin-bottom: 5px"

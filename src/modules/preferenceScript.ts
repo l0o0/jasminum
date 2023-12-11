@@ -124,8 +124,11 @@ async function getTranslatorData(refresh = true): Promise<any> {
     ? getPref("translatorurl")
     : "https://oss.wwang.de/translators_CN";
   const url = baseUrl + "/data/translators.json";
+  // TODO
+  // 有可能临时目录不存在，导致转换器信息保存异常
   const cacheFile = ztoolkit.getGlobal("Zotero").getTempDirectory();
   cacheFile.append("translator.json");
+  ztoolkit.log(cacheFile.path);
   let contents;
   if (refresh == false && cacheFile.exists()) {
     contents = await ztoolkit
