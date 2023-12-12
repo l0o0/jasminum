@@ -7,11 +7,12 @@ export async function checkPath(pathvalue: string): Promise<void> {
   if (!pathvalue) return;
   let pdftk = "";
   if (ztoolkit.getGlobal("Zotero").isWin) {
-    pdftk = OS.Path.join(pathvalue, "pdftk.exe");
+    pdftk = PathUtils.join(pathvalue, "pdftk.exe");
   } else {
-    pdftk = OS.Path.join(pathvalue, "pdftk");
+    pdftk = PathUtils.join(pathvalue, "pdftk");
   }
-  const check = await OS.File.exists(pdftk);
+  const check = await IOUtils.exists(pdftk);
+  ztoolkit.log(check);
   addon.data
     .prefs!.window.document.querySelector("#path-accept")
     ?.setAttribute("hidden", `${!check}`);
@@ -21,13 +22,13 @@ export async function checkPath(pathvalue: string): Promise<void> {
 }
 
 async function getLastUpdateFromFile(filename: string): Promise<string> {
-  const desPath = ztoolkit
-    .getGlobal("OS")
-    .Path.join(
+  const desPath = PathUtils.join(
+    PathUtils.join(
       ztoolkit.getGlobal("Zotero").Prefs.get("dataDir") as string,
       "translators",
       filename
-    );
+    )
+  );
   Zotero.debug(desPath);
   if (!(await ztoolkit.getGlobal("OS").File.exists(desPath))) {
     Zotero.debug(filename + " not exists");
@@ -238,14 +239,12 @@ async function updatePrefsUI() {
   // You can initialize some UI elements on prefs window
   // with addon.data.prefs.window.document
   // Or bind some events to the elements
+  if (addon.data.prefs?.window == undefined) return;
+
   ztoolkit.log("***** update UI");
   const renderLock = ztoolkit.getGlobal("Zotero").Promise.defer();
-
-  if (addon.data.prefs?.window == undefined) return;
   // Update pdftk check icon
-  await checkPath(
-    ztoolkit.getGlobal("Zotero").Prefs.get("jasminum.pdftkpath") as string
-  );
+  await checkPath(getPref("pdftkpath") as string);
   // Update translator table
   await insertTable(true, true);
   await renderLock.promise;
