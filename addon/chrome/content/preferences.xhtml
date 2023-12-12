@@ -52,7 +52,7 @@
   </groupbox>
   <groupbox>
     <label>
-      <html:h2 data-l10n-id="namepatent-caption"></html:h2>
+      <html:h2 data-l10n-id="pdf-match-caption"></html:h2>
     </label>
     <vbox flex="1">
       <hbox>
@@ -61,7 +61,7 @@
           data-l10n-id="namepatent-desc-info"
         ></label>
 
-        <html:div class="editable_div" style="position: relative">
+        <html:div style="position: relative">
           <menulist
             id="jasminum-namepatent"
             class="editable_menupopup"
@@ -96,11 +96,29 @@
             "
           ></html:input>
         </html:div>
-
         <image
           src="chrome://jasminum/content/icons/information.png"
           style="margin-top: 5px; margin-bottom: 5px"
           data-l10n-id="namepatent-desc"
+        />
+      </hbox>
+      <hbox class="inputbox">
+        <label class="jasminum-label" data-l10n-id="pdf-match-folder"></label>
+        <html:input
+          type="text"
+          id="jasminum-pdf-match-path"
+          preference="__prefsPrefix__.pdfmatchfolder"
+          class="auto_width"
+        ></html:input>
+        <button
+          data-l10n-id="choose"
+          id="choose-pdf-match-button"
+          native="true"
+        />
+        <image
+          src="chrome://jasminum/content/icons/information.png"
+          style="margin-top: 5px; margin-bottom: 5px"
+          data-l10n-id="pdf-match-folder-desc"
         />
       </hbox>
     </vbox>
@@ -136,12 +154,12 @@
         href="https://www.pdflabs.com/tools/pdftk-server/"
       />
     </description>
-    <hbox style="display: flex; align-items: center">
+    <hbox class="inputbox">
       <html:input
-        style="flex: 1"
         type="text"
         id="jasminum-pdftk-path"
         preference="__prefsPrefix__.pdftkpath"
+        class="auto_width"
       ></html:input>
       <button data-l10n-id="choose" id="choose-button" native="true" />
       <image

@@ -300,4 +300,16 @@ function bindPrefEvents() {
       ztoolkit.log("refresh translators");
       await refreshTable();
     });
+
+  addon.data
+    .prefs!.window.document.querySelector("#choose-pdf-match-button")
+    ?.addEventListener("click", async (e) => {
+      const f = await new FilePickerHelper(
+        `${Zotero.getString("pdf-match-folder-header")}`,
+        "folder"
+      ).open();
+      if (f) {
+        setPref("pdfmatchfolder", f);
+      }
+    });
 }
