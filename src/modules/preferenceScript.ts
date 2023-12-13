@@ -6,19 +6,25 @@ import { getString } from "../utils/locale";
 export async function checkPath(pathvalue: string): Promise<void> {
   if (!pathvalue) return;
   let pdftk = "";
-  if (ztoolkit.getGlobal("Zotero").isWin) {
-    pdftk = PathUtils.join(pathvalue, "pdftk.exe");
-  } else {
-    pdftk = PathUtils.join(pathvalue, "pdftk");
+  let checkResult = false;
+  try {
+    if (ztoolkit.getGlobal("Zotero").isWin) {
+      pdftk = PathUtils.join(pathvalue, "pdftk.exe");
+    } else {
+      pdftk = PathUtils.join(pathvalue, "pdftk");
+    }
+    checkResult = await IOUtils.exists(pdftk);
+  } catch (e) {
+    ztoolkit.log("pdftk check error");
+    ztoolkit.log(e);
   }
-  const check = await IOUtils.exists(pdftk);
-  ztoolkit.log(check);
+  ztoolkit.log(checkResult);
   addon.data
     .prefs!.window.document.querySelector("#path-accept")
-    ?.setAttribute("hidden", `${!check}`);
+    ?.setAttribute("hidden", `${!checkResult}`);
   addon.data
     .prefs!.window.document.querySelector("#path-error")
-    ?.setAttribute("hidden", `${check}`);
+    ?.setAttribute("hidden", `${checkResult}`);
 }
 
 async function getLastUpdateFromFile(filename: string): Promise<string> {
@@ -125,9 +131,13 @@ async function getTranslatorData(refresh = true): Promise<any> {
     ? getPref("translatorurl")
     : "https://oss.wwang.de/translators_CN";
   const url = baseUrl + "/data/translators.json";
-  // TODO
-  // 有可能临时目录不存在，导致转换器信息保存异常
   const cacheFile = ztoolkit.getGlobal("Zotero").getTempDirectory();
+  if (!cacheFile.exists()) {
+    // Sometimes the temp folder is missing
+    await ztoolkit
+      .getGlobal("Zotero")
+      .File.createDirectoryIfMissingAsync(cacheFile.path);
+  }
   cacheFile.append("translator.json");
   ztoolkit.log(cacheFile.path);
   let contents;
@@ -253,15 +263,6 @@ async function updatePrefsUI() {
 
 function bindPrefEvents() {
   addon.data
-    .prefs!.window.document.querySelector("#jasminum-pdftk-path")
-    ?.addEventListener("change", (e) => {
-      ztoolkit.log(e);
-      addon.data.prefs!.window.alert(
-        `Successfully changed to ${(e.target as HTMLInputElement).value}!`
-      );
-    });
-
-  addon.data
     .prefs!.window.document.querySelector("#jasminum-open-cnki")
     ?.addEventListener("click", (e) => {
       ztoolkit.log(e);
@@ -271,6 +272,12 @@ function bindPrefEvents() {
   addon.data
     .prefs!.window.document.querySelector("#jasminum-pdftk-path")
     ?.addEventListener("change", async (e) => {
+      await checkPath((e.target as HTMLInputElement).value);
+    });
+
+  addon.data
+    .prefs!.window.document.querySelector("#jasminum-pdftk-path-menu")
+    ?.addEventListener("command", async (e) => {
       await checkPath((e.target as HTMLInputElement).value);
     });
 

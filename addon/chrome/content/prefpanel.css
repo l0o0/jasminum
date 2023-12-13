@@ -88,3 +88,11 @@ hbox.inputbox {
 input.auto_width {
   flex: 2;
 }
+
+input.stacked_input {
+  position: absolute;
+  top: 0px;
+  left: 0px;
+  border: 0px;
+  height: 19.5px;
+}

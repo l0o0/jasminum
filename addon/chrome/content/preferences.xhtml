@@ -64,7 +64,6 @@
         <html:div style="position: relative">
           <menulist
             id="jasminum-namepatent"
-            class="editable_menupopup"
             preference="__prefsPrefix__.namepatent"
             native="true"
             style="width: 148px"
@@ -83,17 +82,10 @@
             </menupopup>
           </menulist>
           <html:input
+            class="stacked_input"
             type="text"
-            class="editable_menupopup_input"
             id="namepatent-input"
             preference="__prefsPrefix__.namepatent"
-            style="
-              position: absolute;
-              top: 0px;
-              left: 0px;
-              border: 0px;
-              height: 19.5px;
-            "
           ></html:input>
         </html:div>
         <image
@@ -147,19 +139,49 @@
     <label>
       <html:h2 data-l10n-id="pdftk-caption"></html:h2>
     </label>
-    <description data-l10n-id="pdftk-info">
+    <description>
+      <label class="jasminum-label" data-l10n-id="pdftk-info"></label>
       <label
-        class="zotero-text-link"
-        value="PDFtk Server"
+        class="zotero-text-link jasminum-label"
+        is="zotero-text-link"
+        data-l10n-id="download-pdftk"
         href="https://www.pdflabs.com/tools/pdftk-server/"
       />
     </description>
     <hbox class="inputbox">
+      <menulist
+        id="jasminum-pdftk-path-menu"
+        preference="__prefsPrefix__.pdftkpath"
+        native="true"
+      >
+        <menupopup>
+          <menuitem
+            label="Windows Default"
+            value="C:\Program Files (x86)\PDFtk Server\bin"
+            tooltiptext="C:\Program Files (x86)\PDFtk Server\bin"
+          />
+          <menuitem
+            label="Linux Default"
+            value="/usr/bin"
+            tooltiptext="/usr/bin"
+          />
+          <menuitem
+            label="MacOS Default 1"
+            value="/opt/pdflabs/pdftk"
+            tooltiptext="/opt/pdflabs/pdftk"
+          />
+          <menuitem
+            label="MacOS Default 2"
+            value="/usr/local/bin/pdftk"
+            tooltiptext="/usr/local/bin/pdftk"
+          />
+        </menupopup>
+      </menulist>
       <html:input
+        class="auto_width"
         type="text"
         id="jasminum-pdftk-path"
         preference="__prefsPrefix__.pdftkpath"
-        class="auto_width"
       ></html:input>
       <button data-l10n-id="choose" id="choose-button" native="true" />
       <image
@@ -199,7 +221,7 @@
           class="jasminum-label"
           data-l10n-id="toolbox-manualsetlanguage-info"
         ></label>
-        <html:div class="editable_div" style="position: relative">
+        <html:div style="position: relative">
           <menulist
             flex="0.5"
             id="jasminum-language"
@@ -213,16 +235,10 @@
             </menupopup>
           </menulist>
           <html:input
+            class="stacked_input"
             type="text"
             id="jasminum-language-input"
             preference="__prefsPrefix__.language"
-            style="
-              position: absolute;
-              top: 0px;
-              left: 0px;
-              border: 0px;
-              height: 19.5px;
-            "
           ></html:input>
         </html:div>
         <image

@@ -115,11 +115,11 @@ function initPrefs() {
       .slice(0, 3)
       .concat("Downloads")
       .join("/");
-    pdftkpath = "";
+    pdftkpath = "/opt/pdflabs/pdftk";
   } else {
-    Zotero.Profile.dir.path
+    downloadsPath = Zotero.Profile.dir.path
       .split("/")
-      .slice(0, 2)
+      .slice(0, 3)
       .concat("Downloads")
       .join("/");
     pdftkpath = "/usr/bin";
