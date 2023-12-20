@@ -4,33 +4,33 @@ import { getItems } from "../utils/tools";
 
 // Functions used in menu
 export async function concatName(items: Zotero.Item[]) {
-    const isSplitEnName = getPref("ennamesplit");
-    for (const item of items) {
-        const creators = item.getCreators();
-        for (let i = 0; i < creators.length; i++) {
-            const creator = creators[i];
-            creator.fieldMode = 1;
-            if (
-                // English Name
-                creator.lastName!.search(/[A-Za-z]/) !== -1 ||
-                creator.lastName!.search(/[A-Za-z]/) !== -1
-            ) {
-                // 如果不拆分/合并英文名，则跳过
-                if (!isSplitEnName) continue;
-                creator.lastName = creator.firstName + " " + creator.lastName;
-            } else {
-                // For Chinese Name
-                creator.lastName = creator.lastName! + creator.firstName;
-            }
-            creator.firstName = "";
-            creator.fieldMode = 1; // 0: two-field, 1: one-field (with empty first name)
-            creators[i] = creator;
-        }
-        if (creators != item.getCreators()) {
-            item.setCreators(creators);
-            await item.saveTx();
-        }
+  const isSplitEnName = getPref("ennamesplit");
+  for (const item of items) {
+    const creators = item.getCreators();
+    for (let i = 0; i < creators.length; i++) {
+      const creator = creators[i];
+      creator.fieldMode = 1;
+      if (
+        // English Name
+        creator.lastName!.search(/[A-Za-z]/) !== -1 ||
+        creator.lastName!.search(/[A-Za-z]/) !== -1
+      ) {
+        // 如果不拆分/合并英文名，则跳过
+        if (!isSplitEnName) continue;
+        creator.lastName = creator.firstName + " " + creator.lastName;
+      } else {
+        // For Chinese Name
+        creator.lastName = creator.lastName! + creator.firstName;
+      }
+      creator.firstName = "";
+      creator.fieldMode = 1; // 0: two-field, 1: one-field (with empty first name)
+      creators[i] = creator;
     }
+    if (creators != item.getCreators()) {
+      item.setCreators(creators);
+      await item.saveTx();
+    }
+  }
 }
 
 export async function concatNameMenu(type: "items" | "collection") {
@@ -39,38 +39,38 @@ export async function concatNameMenu(type: "items" | "collection") {
 }
 
 export async function splitName(items: Zotero.Item[]) {
-    const isSplitEnName = getPref("ennamesplit");
-    for (const item of items) {
-        const creators = item.getCreators();
-        for (let i = 0; i < creators.length; i++) {
-            const creator = creators[i];
-            creator.fieldMode = 0;
-            if (
-                // English Name
-                (creator.lastName!.search(/[A-Za-z]/) >= 0 ||
-                    creator.firstName!.search(/[A-Za-z]/) >= 0) &&
-                creator.firstName === "" // 名为空
-            ) {
-                // 如果不拆分/合并英文名，则跳过
-                if (!isSplitEnName) continue;
-                const EnglishName = creator.lastName;
-                const temp = EnglishName!.split(/[\n\s+,]/g).filter(Boolean); // 过滤空字段
-                creator.lastName = temp.pop();
-                creator.firstName = temp.join(" ");
-            } else if (creator.firstName === "") {
-                // For Chinese Name,名为空
-                const chineseName = creator.lastName || creator.firstName;
-                creator.lastName = chineseName.charAt(0);
-                creator.firstName = chineseName.substr(1);
-            }
-            creator.fieldMode = 0; // 0: two-field, 1: one-field (with empty first name)
-            creators[i] = creator;
-        }
-        if (creators != item.getCreators()) {
-            item.setCreators(creators);
-            await item.saveTx();
-        }
+  const isSplitEnName = getPref("ennamesplit");
+  for (const item of items) {
+    const creators = item.getCreators();
+    for (let i = 0; i < creators.length; i++) {
+      const creator = creators[i];
+      creator.fieldMode = 0;
+      if (
+        // English Name
+        (creator.lastName!.search(/[A-Za-z]/) >= 0 ||
+          creator.firstName!.search(/[A-Za-z]/) >= 0) &&
+        creator.firstName === "" // 名为空
+      ) {
+        // 如果不拆分/合并英文名，则跳过
+        if (!isSplitEnName) continue;
+        const EnglishName = creator.lastName;
+        const temp = EnglishName!.split(/[\n\s+,]/g).filter(Boolean); // 过滤空字段
+        creator.lastName = temp.pop();
+        creator.firstName = temp.join(" ");
+      } else if (creator.firstName === "") {
+        // For Chinese Name,名为空
+        const chineseName = creator.lastName || creator.firstName;
+        creator.lastName = chineseName.charAt(0);
+        creator.firstName = chineseName.substr(1);
+      }
+      creator.fieldMode = 0; // 0: two-field, 1: one-field (with empty first name)
+      creators[i] = creator;
     }
+    if (creators != item.getCreators()) {
+      item.setCreators(creators);
+      await item.saveTx();
+    }
+  }
 }
 
 export async function splitNameMenu(type: "items" | "collection") {
@@ -83,31 +83,31 @@ export async function splitNameMenu(type: "items" | "collection") {
  * 使用此函数将分号分隔的姓名分隔到不同的条目中。
  */
 export async function splitSemicolonNames(type: string) {
-    const items = getItems(type);
-    for (const item of items) {
-        const creators = item.getCreators();
-        const newlist = [];
-        for (const creator of creators) {
-            if (creator.lastName!.search(";") && creator.firstName === "") {
-                const names = creator
-                    .lastName!.split(";")
-                    .filter((s) => s !== "");
-                for (const name of names) {
-                    newlist.push({
-                        firstName: "",
-                        lastName: name,
-                        creatorType: "author",
-                    });
-                }
-            } else {
-                newlist.push(creator);
-            }
+  const items = getItems(type);
+  for (const item of items) {
+    const creators = item.getCreators();
+    const newlist = [];
+    for (const creator of creators) {
+      if (creator.lastName!.search(";") && creator.firstName === "") {
+        const names = creator
+          .lastName!.split(";")
+          .filter((s) => s !== "");
+        for (const name of names) {
+          newlist.push({
+            firstName: "",
+            lastName: name,
+            creatorType: "author",
+          });
         }
-        if (newlist !== creators) {
-            item.setCreators(newlist);
-            await item.saveTx();
-        }
+      } else {
+        newlist.push(creator);
+      }
     }
+    if (newlist !== creators) {
+      item.setCreators(newlist);
+      await item.saveTx();
+    }
+  }
 }
 
 /**
@@ -136,16 +136,16 @@ export async function splitSemicolonNames(type: string) {
  * @return {void}
  */
 export async function manualSetLanguage(items: Zotero.Item[]) {
-    const defaultLanguage = Zotero.Prefs.get("jasminum.language") as string;
-    for (const item of items) {
-        if (item.getField("language") != defaultLanguage) {
-            item.setField("language", defaultLanguage);
-            await item.saveTx();
-        }
+  const defaultLanguage = getPref("language") as string;
+  for (const item of items) {
+    if (item.getField("language") != defaultLanguage) {
+      item.setField("language", defaultLanguage);
+      await item.saveTx();
     }
+  }
 }
 
-export async function manualSetLanguageMenu(type: "items"|"collection") {
+export async function manualSetLanguageMenu(type: "items" | "collection") {
   const items = getItems(type);
   await manualSetLanguage(items);
 }
