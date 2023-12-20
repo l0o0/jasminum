@@ -5,13 +5,19 @@ import { getString } from "../utils/locale";
 
 export async function checkPath(pathvalue: string): Promise<void> {
   if (!pathvalue) return;
-  let pdftk = "";
-  if (ztoolkit.getGlobal("Zotero").isWin) {
-    pdftk = PathUtils.join(pathvalue, "pdftk.exe");
-  } else {
-    pdftk = PathUtils.join(pathvalue, "pdftk");
+  let check = false;
+  try {
+    let pdftk = "";
+    if (ztoolkit.getGlobal("Zotero").isWin) {
+      pdftk = PathUtils.join(pathvalue, "pdftk.exe");
+    } else {
+      pdftk = PathUtils.join(pathvalue, "pdftk");
+    }
+    check = await IOUtils.exists(pdftk);
+  } catch (e) {
+    ztoolkit.log(e.name);
+    check = false;
   }
-  const check = await IOUtils.exists(pdftk);
   ztoolkit.log(check);
   addon.data
     .prefs!.window.document.querySelector("#path-accept")
@@ -189,9 +195,9 @@ async function downloadTranslator(filename: string): Promise<void> {
     const contents = await ztoolkit
       .getGlobal("Zotero")
       .File.getContentsFromURL(url);
-    const desPath = PathUtils.join(
+    const desPath = PathUtils.join(PathUtils.join(
       ztoolkit.getGlobal("Zotero").Prefs.get("dataDir") as string,
-      "translators",
+      "translators"),
       filename
     );
     const desPathFile = ztoolkit
