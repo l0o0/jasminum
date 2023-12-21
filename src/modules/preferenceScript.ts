@@ -1,30 +1,30 @@
 import { FilePickerHelper } from "zotero-plugin-toolkit/dist/helpers/filePicker";
-import { getPref, setPref } from "../utils/prefs";
+import { clearPref, getPref, setPref } from "../utils/prefs";
 import { showPop } from "../utils/window";
 import { getString } from "../utils/locale";
 
 export async function checkPath(pathvalue: string): Promise<void> {
   if (!pathvalue) return;
-  let check = false;
+  let pdftk = "";
+  let checkResult = false;
   try {
-    let pdftk = "";
     if (ztoolkit.getGlobal("Zotero").isWin) {
       pdftk = PathUtils.join(pathvalue, "pdftk.exe");
     } else {
       pdftk = PathUtils.join(pathvalue, "pdftk");
     }
-    check = await IOUtils.exists(pdftk);
+    checkResult = await IOUtils.exists(pdftk);
   } catch (e) {
-    ztoolkit.log(e.name);
-    check = false;
+    ztoolkit.log("pdftk check error");
+    ztoolkit.log(e);
   }
-  ztoolkit.log(check);
+  ztoolkit.log(checkResult);
   addon.data
     .prefs!.window.document.querySelector("#path-accept")
-    ?.setAttribute("hidden", `${!check}`);
+    ?.setAttribute("hidden", `${!checkResult}`);
   addon.data
     .prefs!.window.document.querySelector("#path-error")
-    ?.setAttribute("hidden", `${check}`);
+    ?.setAttribute("hidden", `${checkResult}`);
 }
 
 async function getLastUpdateFromFile(filename: string): Promise<string> {
@@ -131,9 +131,14 @@ async function getTranslatorData(refresh = true): Promise<any> {
     ? getPref("translatorurl")
     : "https://oss.wwang.de/translators_CN";
   const url = baseUrl + "/data/translators.json";
-  // TODO
-  // 有可能临时目录不存在，导致转换器信息保存异常
+
   const cacheFile = ztoolkit.getGlobal("Zotero").getTempDirectory();
+  if (!cacheFile.exists()) {
+    // Sometimes the temp folder is missing
+    await ztoolkit
+      .getGlobal("Zotero")
+      .File.createDirectoryIfMissingAsync(cacheFile.path);
+  }
   cacheFile.append("translator.json");
   ztoolkit.log(cacheFile.path);
   let contents;
@@ -195,9 +200,11 @@ async function downloadTranslator(filename: string): Promise<void> {
     const contents = await ztoolkit
       .getGlobal("Zotero")
       .File.getContentsFromURL(url);
-    const desPath = PathUtils.join(PathUtils.join(
-      ztoolkit.getGlobal("Zotero").Prefs.get("dataDir") as string,
-      "translators"),
+    const desPath = PathUtils.join(
+      PathUtils.join(
+        ztoolkit.getGlobal("Zotero").Prefs.get("dataDir") as string,
+        "translators"
+      ),
       filename
     );
     const desPathFile = ztoolkit
@@ -229,6 +236,41 @@ export async function refreshTable() {
   await insertTable(false, true);
 }
 
+function updateNamePatentMenu(e: Event) {
+  const menuValue = (e.target as HTMLInputElement).value;
+  const inputField = addon.data.prefs!.window.document.querySelector(
+    "#namepatent-input"
+  ) as HTMLInputElement;
+  if (menuValue) {
+    // 选中候选选项
+    setPref("namepatent", menuValue);
+  } else {
+    // inputField.value = "";
+    clearPref("namepatent");
+    inputField.focus();
+  }
+}
+
+function updateNamePatentInput(e: Event) {
+  const valueChoices = ["{%t}_{%g}", "{%t}"];
+  const inputValue = (e.target as HTMLInputElement).value;
+  const menu = addon.data.prefs!.window.document.querySelector(
+    "#namepatent-custom-menu"
+  );
+  if (!valueChoices.includes(inputValue)) {
+    menu?.setAttribute("checked", "true");
+  }
+}
+
+function checkInputMenu() {
+  const patentValue = getPref("namepatent") as string;
+  const patentChoices: any = { "{%t}_{%g}": 0, "{%t}": 1 };
+  const menulistPatent = addon.data.prefs!.window.document.querySelector(
+    "#jasminum-namepatent"
+  ) as any;
+  menulistPatent.selectedIndex = patentChoices[patentValue] || 3;
+}
+
 export async function registerPrefsScripts(_window: Window) {
   // This function is called when the prefs window is opened
   // See addon/chrome/content/preferences.xul onpaneload
@@ -249,6 +291,7 @@ async function updatePrefsUI() {
 
   ztoolkit.log("***** update UI");
   const renderLock = ztoolkit.getGlobal("Zotero").Promise.defer();
+  checkInputMenu();
   // Update pdftk check icon
   await checkPath(getPref("pdftkpath") as string);
   // Update translator table
@@ -259,15 +302,6 @@ async function updatePrefsUI() {
 
 function bindPrefEvents() {
   addon.data
-    .prefs!.window.document.querySelector("#jasminum-pdftk-path")
-    ?.addEventListener("change", (e) => {
-      ztoolkit.log(e);
-      addon.data.prefs!.window.alert(
-        `Successfully changed to ${(e.target as HTMLInputElement).value}!`
-      );
-    });
-
-  addon.data
     .prefs!.window.document.querySelector("#jasminum-open-cnki")
     ?.addEventListener("click", (e) => {
       ztoolkit.log(e);
@@ -277,6 +311,12 @@ function bindPrefEvents() {
   addon.data
     .prefs!.window.document.querySelector("#jasminum-pdftk-path")
     ?.addEventListener("change", async (e) => {
+      await checkPath((e.target as HTMLInputElement).value);
+    });
+
+  addon.data
+    .prefs!.window.document.querySelector("#jasminum-pdftk-path-menu")
+    ?.addEventListener("command", async (e) => {
       await checkPath((e.target as HTMLInputElement).value);
     });
 
@@ -306,4 +346,24 @@ function bindPrefEvents() {
       ztoolkit.log("refresh translators");
       await refreshTable();
     });
+
+  addon.data
+    .prefs!.window.document.querySelector("#choose-pdf-match-button")
+    ?.addEventListener("click", async (e) => {
+      const f = await new FilePickerHelper(
+        `${Zotero.getString("pdf-match-folder-header")}`,
+        "folder"
+      ).open();
+      if (f) {
+        setPref("pdfmatchfolder", f);
+      }
+    });
+
+  addon.data
+    .prefs!.window.document.querySelector("#jasminum-namepatent")
+    ?.addEventListener("command", updateNamePatentMenu);
+
+  addon.data
+    .prefs!.window.document.querySelector("#jasminum-namepatent")
+    ?.addEventListener("input", updateNamePatentInput);
 }

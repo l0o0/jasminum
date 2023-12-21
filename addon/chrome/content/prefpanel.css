@@ -79,3 +79,12 @@ button.jasminum-translator-button {
   display: block;
   margin: auto;
 }
+
+hbox.inputbox {
+  display: flex;
+  align-items: center;
+}
+
+input.auto_width {
+  flex: 2;
+}

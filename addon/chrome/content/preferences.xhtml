@@ -55,48 +55,29 @@
       <html:h2 data-l10n-id="namepatent-caption"></html:h2>
     </label>
     <vbox flex="1">
-      <hbox>
-        <label
-          class="jasminum-label"
-          data-l10n-id="namepatent-desc-info"
-        ></label>
-
-        <html:div class="editable_div" style="position: relative">
-          <menulist
-            id="jasminum-namepatent"
-            class="editable_menupopup"
-            preference="__prefsPrefix__.namepatent"
-            native="true"
-            style="width: 148px"
-          >
-            <menupopup>
-              <menuitem
-                label="{%t}_{%g}"
-                value="{%t}_{%g}"
-                data-l10n-id="namepatent-desc-tg"
-              />
-              <menuitem
-                label="{%t}"
-                value="{%t}"
-                data-l10n-id="namepatent-desc-t"
-              />
-            </menupopup>
-          </menulist>
-          <html:input
-            type="text"
-            class="editable_menupopup_input"
-            id="namepatent-input"
-            preference="__prefsPrefix__.namepatent"
-            style="
-              position: absolute;
-              top: 0px;
-              left: 0px;
-              border: 0px;
-              height: 19.5px;
-            "
-          ></html:input>
-        </html:div>
-
+      <label class="jasminum-label" data-l10n-id="namepatent-desc-info"></label>
+      <hbox flex="1">
+        <menulist
+          id="jasminum-namepatent"
+          class="editable_menupopup"
+          native="true"
+        >
+          <menupopup>
+            <menuitem value="{%t}_{%g}" data-l10n-id="namepatent-desc-tg" />
+            <menuitem value="{%t}" data-l10n-id="namepatent-desc-t" />
+            <menuseparator></menuseparator>
+            <menuitem
+              id="namepatent-custom-menu"
+              data-l10n-id="namepatent-custom"
+            />
+          </menupopup>
+        </menulist>
+        <html:input
+          type="text"
+          class="auto_width"
+          id="namepatent-input"
+          preference="__prefsPrefix__.namepatent"
+        ></html:input>
         <image
           src="chrome://jasminum/content/icons/information.png"
           style="margin-top: 5px; margin-bottom: 5px"
@@ -129,14 +110,40 @@
     <label>
       <html:h2 data-l10n-id="pdftk-caption"></html:h2>
     </label>
-    <description data-l10n-id="pdftk-info">
-      <label
-        class="zotero-text-link"
-        value="PDFtk Server"
-        href="https://www.pdflabs.com/tools/pdftk-server/"
-      />
+    <description>
+      <label class="jasminum-label" data-l10n-id="pdftk-info"></label>
+      <label class="jasminum-label" data-l10n-id="pdftk-info"></label>
     </description>
-    <hbox style="display: flex; align-items: center">
+
+    <hbox>
+      <menulist
+        id="jasminum-pdftk-path-menu"
+        preference="__prefsPrefix__.pdftkpath"
+        native="true"
+      >
+        <menupopup>
+          <menuitem
+            label="Windows Default"
+            value="C:\Program Files (x86)\PDFtk Server\bin"
+            tooltiptext="C:\Program Files (x86)\PDFtk Server\bin"
+          />
+          <menuitem
+            label="Linux Default"
+            value="/usr/bin"
+            tooltiptext="/usr/bin"
+          />
+          <menuitem
+            label="MacOS Default 1"
+            value="/opt/pdflabs/pdftk"
+            tooltiptext="/opt/pdflabs/pdftk"
+          />
+          <menuitem
+            label="MacOS Default 2"
+            value="/usr/local/bin/pdftk"
+            tooltiptext="/usr/local/bin/pdftk"
+          />
+        </menupopup>
+      </menulist>
       <html:input
         style="flex: 1"
         type="text"

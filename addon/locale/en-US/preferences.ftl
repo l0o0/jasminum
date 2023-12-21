@@ -67,7 +67,6 @@ translator-tab-column1 = Name
 translator-tab-column2 = Local updatetime
 translator-tab-column3 = Latest updatetime
 translator-tab-column4 = Download
-refresh-label = Update
 updateall-label = Update all
 refresh-label = Refresh
 refreshInfo-label = Update translators_CN data

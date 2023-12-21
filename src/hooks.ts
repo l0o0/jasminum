@@ -45,6 +45,7 @@ async function onStartup() {
 
   // Migrate Prefs from Zotero 6 to 7
   migratePrefs();
+  initPrefs();
 }
 
 function onShutdown(): void {
@@ -95,6 +96,41 @@ function migratePrefs() {
     });
     setPref("firstrun", false);
   }
+}
+
+// Initialize platform specific preferences
+function initPrefs() {
+  let downloadsPath: string;
+  let pdftkpath: string;
+  if (Zotero.isWin) {
+    downloadsPath = Zotero.Profile.dir
+      .split("\\")
+      .slice(0, 3)
+      .concat("Downloads")
+      .join("\\");
+    pdftkpath = "C:\\Program Files (x86)\\PDFtk Server\\bin";
+  } else if (Zotero.isMac) {
+    downloadsPath = Zotero.Profile.dir
+      .split("/")
+      .slice(0, 3)
+      .concat("Downloads")
+      .join("/");
+    pdftkpath = "/opt/pdflabs/pdftk";
+  } else {
+    downloadsPath = Zotero.Profile.dir.path
+      .split("/")
+      .slice(0, 3)
+      .concat("Downloads")
+      .join("/");
+    pdftkpath = "/usr/bin";
+  }
+
+  getPref("pdfmatchfolder")
+    ? ztoolkit.log("pdfmatchfolder pref exists")
+    : setPref("pdfmatchfolder", downloadsPath);
+  getPref("pdftkpath")
+    ? ztoolkit.log("pdftkpath pref exists")
+    : setPref("pdftkpath", pdftkpath);
 }
 
 /**

@@ -236,7 +236,7 @@ export function splitFilename(filename: string) {
 
     author =
       author.endsWith("等") && author.length > 2
-        ? author.substr(0, author.length - 1)
+        ? author.substring(0, author.length - 1)
         : author;
   }
 
@@ -505,11 +505,11 @@ export async function fixItem(newItems: Zotero.Item[], targetData: any) {
         const lastSpace = creator.lastName.lastIndexOf(" ");
         if (creator.lastName.search(/[A-Za-z]/) !== -1 && lastSpace !== -1) {
           // western name. split on last space
-          creator.firstName = creator.lastName.substr(0, lastSpace);
-          creator.lastName = creator.lastName.substr(lastSpace + 1);
+          creator.firstName = creator.lastName.substring(0, lastSpace);
+          creator.lastName = creator.lastName.substring(lastSpace + 1);
         } else {
           // Chinese name. first character is last name, the rest are first name
-          creator.firstName = creator.lastName.substr(1);
+          creator.firstName = creator.lastName.substring(1);
           creator.lastName = creator.lastName.charAt(0);
         }
         creators[i] = creator;
@@ -674,10 +674,7 @@ export async function searchCNKIMetadata(items: Zotero.Item[]) {
           // Put old item as a child of the new item
           item.parentID = newItem.id;
           // Use Zotfile to rename file
-          if (
-            getPref("rename") &&
-            typeof Zotero.ZotFile != "undefined"
-          ) {
+          if (getPref("rename") && typeof Zotero.ZotFile != "undefined") {
             Zotero.ZotFile.renameSelectedAttachments();
           }
 
