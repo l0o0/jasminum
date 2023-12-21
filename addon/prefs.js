@@ -13,7 +13,6 @@ pref("__prefsPrefix__.foreignlanguage", "en-US");
 pref("__prefsPrefix__.language", "zh-CN");
 pref("__prefsPrefix__.languagelist", "zh-CN,en-US");
 pref("__prefsPrefix__.namepatent", "{%t}");
-pref("__prefsPrefix__.pdftkpath", "C:\\Program Files (x86)\\PDFtk Server\\bin");
 pref("__prefsPrefix__.rename", false);
 pref("__prefsPrefix__.use-pdflib", true);
 pref("__prefsPrefix__.zhnamesplit", true);

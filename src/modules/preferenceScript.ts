@@ -239,36 +239,68 @@ export async function refreshTable() {
 function updateNamePatentMenu(e: Event) {
   const menuValue = (e.target as HTMLInputElement).value;
   const inputField = addon.data.prefs!.window.document.querySelector(
-    "#namepatent-input"
+    "#jasminum-namepatent-input"
   ) as HTMLInputElement;
   if (menuValue) {
     // 选中候选选项
     setPref("namepatent", menuValue);
   } else {
     // inputField.value = "";
-    clearPref("namepatent");
     inputField.focus();
   }
 }
 
 function updateNamePatentInput(e: Event) {
-  const valueChoices = ["{%t}_{%g}", "{%t}"];
-  const inputValue = (e.target as HTMLInputElement).value;
-  const menu = addon.data.prefs!.window.document.querySelector(
-    "#namepatent-custom-menu"
-  );
-  if (!valueChoices.includes(inputValue)) {
-    menu?.setAttribute("checked", "true");
+  // const valueChoices = ["{%t}_{%g}", "{%t}"];
+  // const inputValue = (e.target as HTMLInputElement).value;
+  // ztoolkit.log(inputValue);
+  // ztoolkit.log("change");
+  // 可能这里有bug。Mac中事件修改了selectedIndex值，不能马上更新，切换窗口后才能更新菜单项
+  (addon.data.prefs!.window.document.querySelector(
+    "#jasminum-namepatent-menulist"
+  ) as any).selectedIndex = 3;
+}
+
+function updatePDFtkMenu(e: Event) {
+  const menuValue = (e.target as HTMLInputElement).value;
+  const inputField = addon.data.prefs!.window.document.querySelector(
+    "#jasminum-pdftk-path-input"
+  ) as HTMLInputElement;
+  if (menuValue) {
+    // 选中候选选项
+    setPref("pdftkpath", menuValue);
+  } else {
+    inputField.value = "";
+    inputField.focus();
   }
 }
 
-function checkInputMenu() {
-  const patentValue = getPref("namepatent") as string;
-  const patentChoices: any = { "{%t}_{%g}": 0, "{%t}": 1 };
-  const menulistPatent = addon.data.prefs!.window.document.querySelector(
-    "#jasminum-namepatent"
+function updatePDFtkInput(e: Event) {
+  // const valueChoices = ["{%t}_{%g}", "{%t}"];
+  // const inputValue = (e.target as HTMLInputElement).value;
+  const menulist = addon.data.prefs!.window.document.querySelector(
+    "#jasminum-pdftk-path-menulist"
   ) as any;
-  menulistPatent.selectedIndex = patentChoices[patentValue] || 3;
+  menulist.selectedIndex = 5;
+}
+
+// Display the right menu when open pref window
+function checkInputMenu() {
+  const patentChoices: any = { "{%t}_{%g}": 0, "{%t}": 1 };
+  const pdftkChoices: any = {
+    "C:\\Program Files (x86)\\PDFtk Server\\bin": 0,
+    "/usr/bin": 1,
+    "/opt/pdflabs/pdftk": 2,
+    "/usr/local/bin/pdftk": 3
+  };
+  const menulistPatent = addon.data.prefs!.window.document.querySelector(
+    "#jasminum-namepatent-menulist"
+  ) as any;
+  const menulistPDFtk = addon.data.prefs!.window.document.querySelector(
+    "#jasminum-pdftk-path-menulist"
+  ) as any;
+  menulistPatent.selectedIndex = patentChoices[getPref("namepatent") as string] || 3;
+  menulistPDFtk.selectedIndex = pdftkChoices[getPref("pdftkpath") as string] || 5;
 }
 
 export async function registerPrefsScripts(_window: Window) {
@@ -309,14 +341,16 @@ function bindPrefEvents() {
     });
 
   addon.data
-    .prefs!.window.document.querySelector("#jasminum-pdftk-path")
+    .prefs!.window.document.querySelector("#jasminum-pdftk-path-input")
     ?.addEventListener("change", async (e) => {
+      updatePDFtkInput(e);
       await checkPath((e.target as HTMLInputElement).value);
     });
 
   addon.data
-    .prefs!.window.document.querySelector("#jasminum-pdftk-path-menu")
+    .prefs!.window.document.querySelector("#jasminum-pdftk-path-menulist")
     ?.addEventListener("command", async (e) => {
+      updatePDFtkMenu(e);
       await checkPath((e.target as HTMLInputElement).value);
     });
 
@@ -360,10 +394,10 @@ function bindPrefEvents() {
     });
 
   addon.data
-    .prefs!.window.document.querySelector("#jasminum-namepatent")
+    .prefs!.window.document.querySelector("#jasminum-namepatent-menulist")
     ?.addEventListener("command", updateNamePatentMenu);
 
   addon.data
-    .prefs!.window.document.querySelector("#jasminum-namepatent")
-    ?.addEventListener("input", updateNamePatentInput);
+    .prefs!.window.document.querySelector("#jasminum-namepatent-input")
+    ?.addEventListener("change", updateNamePatentInput);
 }
