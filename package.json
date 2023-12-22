@@ -9,7 +9,7 @@
     "addonInstance": "Jasminum",
     "prefsPrefix": "extensions.jasminum",
     "releasepage": "https://github.com/l0o0/jasminum/releases/latest/download/jasminum.xpi",
-    "updaterdf": "https://raw.githubusercontent.com/l0o0/jasminum/main/update.json"
+    "updaterdf": "https://raw.githubusercontent.com/l0o0/jasminum/z7/update.json"
   },
   "main": "src/index.ts",
   "scripts": {
