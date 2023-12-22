@@ -3,6 +3,17 @@ import { clearPref, getPref, setPref } from "../utils/prefs";
 import { showPop } from "../utils/window";
 import { getString } from "../utils/locale";
 
+const Choices: any = {
+  namepatent: { "{%t}_{%g}": 1, "{%t}": 2 },
+  pdftkpath: {
+    "C:\\Program Files (x86)\\PDFtk Server\\bin": 1,
+    "/usr/bin": 2,
+    "/opt/pdflabs/pdftk": 3,
+    "/usr/local/bin/pdftk": 4,
+  },
+  language: { "zh-CN": 1, "en-US": 2 },
+};
+
 export async function checkPath(pathvalue: string): Promise<void> {
   if (!pathvalue) return;
   let pdftk = "";
@@ -236,71 +247,42 @@ export async function refreshTable() {
   await insertTable(false, true);
 }
 
-function updateNamePatentMenu(e: Event) {
+function updateMenu(e: Event, prefName: string) {
   const menuValue = (e.target as HTMLInputElement).value;
   const inputField = addon.data.prefs!.window.document.querySelector(
-    "#jasminum-namepatent-input"
+    `#jasminum0${prefName}-input`
   ) as HTMLInputElement;
   if (menuValue) {
     // 选中候选选项
-    setPref("namepatent", menuValue);
-  } else {
-    // inputField.value = "";
-    inputField.focus();
-  }
-}
-
-function updateNamePatentInput(e: Event) {
-  // const valueChoices = ["{%t}_{%g}", "{%t}"];
-  // const inputValue = (e.target as HTMLInputElement).value;
-  // ztoolkit.log(inputValue);
-  // ztoolkit.log("change");
-  // 可能这里有bug。Mac中事件修改了selectedIndex值，不能马上更新，切换窗口后才能更新菜单项
-  (addon.data.prefs!.window.document.querySelector(
-    "#jasminum-namepatent-menulist"
-  ) as any).selectedIndex = 3;
-}
-
-function updatePDFtkMenu(e: Event) {
-  const menuValue = (e.target as HTMLInputElement).value;
-  const inputField = addon.data.prefs!.window.document.querySelector(
-    "#jasminum-pdftk-path-input"
-  ) as HTMLInputElement;
-  if (menuValue) {
-    // 选中候选选项
-    setPref("pdftkpath", menuValue);
+    setPref(prefName, menuValue);
   } else {
     inputField.value = "";
     inputField.focus();
   }
 }
 
-function updatePDFtkInput(e: Event) {
-  // const valueChoices = ["{%t}_{%g}", "{%t}"];
-  // const inputValue = (e.target as HTMLInputElement).value;
+function updateMenuListIndex(id: string, value: string) {
+  ztoolkit.log(id);
+  ztoolkit.log(Choices);
   const menulist = addon.data.prefs!.window.document.querySelector(
-    "#jasminum-pdftk-path-menulist"
+    `#jasminum-${id}-menulist`
   ) as any;
-  menulist.selectedIndex = 5;
+  // 注意此处的index计算，Choices 是从1开始，避免0被判断为false
+  const index = (Choices[id][value] || Object.keys(Choices[id]).length + 2) - 1;
+  menulist.selectedIndex = index;
+}
+
+function updateInput(e: Event, id: string) {
+  const inputValue = (e.target as HTMLInputElement).value;
+  updateMenuListIndex(id, inputValue);
 }
 
 // Display the right menu when open pref window
 function checkInputMenu() {
-  const patentChoices: any = { "{%t}_{%g}": 0, "{%t}": 1 };
-  const pdftkChoices: any = {
-    "C:\\Program Files (x86)\\PDFtk Server\\bin": 0,
-    "/usr/bin": 1,
-    "/opt/pdflabs/pdftk": 2,
-    "/usr/local/bin/pdftk": 3
-  };
-  const menulistPatent = addon.data.prefs!.window.document.querySelector(
-    "#jasminum-namepatent-menulist"
-  ) as any;
-  const menulistPDFtk = addon.data.prefs!.window.document.querySelector(
-    "#jasminum-pdftk-path-menulist"
-  ) as any;
-  menulistPatent.selectedIndex = patentChoices[getPref("namepatent") as string] || 3;
-  menulistPDFtk.selectedIndex = pdftkChoices[getPref("pdftkpath") as string] || 5;
+  const prefs = ["namepatent", "pdftkpath", "language"];
+  for (const p of prefs) {
+    updateMenuListIndex(p, getPref(p) as string);
+  }
 }
 
 export async function registerPrefsScripts(_window: Window) {
@@ -336,21 +318,18 @@ function bindPrefEvents() {
   addon.data
     .prefs!.window.document.querySelector("#jasminum-open-cnki")
     ?.addEventListener("click", (e) => {
-      ztoolkit.log(e);
       addon.data.prefs!.window.alert(`open CNKI`);
     });
 
   addon.data
-    .prefs!.window.document.querySelector("#jasminum-pdftk-path-input")
+    .prefs!.window.document.querySelector("#jasminum-pdftkpath-input")
     ?.addEventListener("change", async (e) => {
-      updatePDFtkInput(e);
       await checkPath((e.target as HTMLInputElement).value);
     });
 
   addon.data
-    .prefs!.window.document.querySelector("#jasminum-pdftk-path-menulist")
+    .prefs!.window.document.querySelector("#jasminum-pdftkpath-menulist")
     ?.addEventListener("command", async (e) => {
-      updatePDFtkMenu(e);
       await checkPath((e.target as HTMLInputElement).value);
     });
 
@@ -393,11 +372,15 @@ function bindPrefEvents() {
       }
     });
 
-  addon.data
-    .prefs!.window.document.querySelector("#jasminum-namepatent-menulist")
-    ?.addEventListener("command", updateNamePatentMenu);
+  // 可编辑的下拉及输入选项
+  const special_input = Object.keys(Choices);
+  for (const id of special_input) {
+    addon.data
+      .prefs!.window.document.querySelector(`#jasminum-${id}-input`)
+      ?.addEventListener("input", (e) => updateInput(e, id));
 
-  addon.data
-    .prefs!.window.document.querySelector("#jasminum-namepatent-input")
-    ?.addEventListener("change", updateNamePatentInput);
+    addon.data
+      .prefs!.window.document.querySelector(`#jasminum-${id}-menulist`)
+      ?.addEventListener("command", (e) => updateMenu(e, id));
+  }
 }
