@@ -1,6 +1,6 @@
 prefs-title = 茉莉花
 pdftk-picker-header = 选择pdftk可执行文件
-pdf-match-folder-header = 选择附件下载目录
+pdf-match-folder-header = 选择附件下载匹配目录
 translator-download = 该转换器可下载
 translator-updated = 该转换器已更新
 menu-CNKI-label = 知网助手

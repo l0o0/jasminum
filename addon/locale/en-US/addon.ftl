@@ -1,5 +1,6 @@
 prefs-title = Jasminum
 pdftk-picker-header = Select pdftk execute file
+pdf-match-folder-header = Choose folder for matching attachments
 translator-download = translator downloaded
 translator-updated = translator updated
 menu-CNKI-label = CNKI
@@ -28,3 +29,5 @@ unmatched-itemtype-fail = { $itemType } item is not a target item
 nonchinese-item = Not a Chinese item
 cssci-success = { $title }, Citations: { $cite }, Journal type: { $cssci }
 url-missing = Missing URL
+translator-download-success = { $filename } translators downloaded
+translator-download-fail = { $filename } translators download failed
