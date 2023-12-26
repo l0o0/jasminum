@@ -189,6 +189,7 @@ downloadTo = async function (label) {
             label
         );
         let desPathFile = Zotero.File.pathToFile(desPath);
+        if (desPathFile.exists()) desPathFile.permissions = 438;
         Zotero.File.putContents(desPathFile, contents);
         Zotero.Jasminum.Utils.showPopup(
             "翻译器下载成功",
