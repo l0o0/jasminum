@@ -87,12 +87,14 @@ function migratePrefs() {
     jasminmPrefs.forEach((ele: string) => {
       ztoolkit.log("extensions" + ele);
       const longPrefName = ele.replace(/^\.zotero\./, "");
-      const shortPrefName = longPrefName.split(".")[1];
+      const shortPrefName = longPrefName.replace(/^jasminum\./, "");
+      ztoolkit.log(longPrefName, shortPrefName);
       const prefValue = Zotero.Prefs.get(longPrefName);
       if (prefValue != undefined && getPref(shortPrefName) == undefined) {
+        ztoolkit.log(`Migrate from ${longPrefName} -> ${shortPrefName}`);
         setPref(shortPrefName, prefValue);
-        Zotero.Prefs.clear(longPrefName);
       }
+      Zotero.Prefs.clear(longPrefName);
     });
     setPref("firstrun", false);
   }
