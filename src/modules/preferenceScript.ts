@@ -194,11 +194,6 @@ async function updateTranslatorImg(filename: string): Promise<void> {
 }
 
 async function downloadTranslator(filename: string): Promise<void> {
-  const cacheFile = ztoolkit.getGlobal("Zotero").getTempDirectory();
-  cacheFile.append(filename);
-  if (cacheFile.exists()) {
-    cacheFile.remove(false);
-  }
   // var url = `https://gitee.com/l0o0/translators_CN/raw/master/translators/${label}`;
   // var url = `https://gitcode.net/goonback/translators_CN/-/raw/master/translators/${label}`;
   // let url = `https://oss.wwang.de/translators_CN/${label}`;
@@ -218,12 +213,7 @@ async function downloadTranslator(filename: string): Promise<void> {
       ),
       filename
     );
-    const desPathFile = ztoolkit
-      .getGlobal("Zotero")
-      .File.pathToFile(desPath) as nsIFile;
-    await ztoolkit
-      .getGlobal("Zotero")
-      .File.putContentsAsync(desPathFile, contents);
+    await IOUtils.writeUTF8(desPath, contents);
     await updateTranslatorImg(filename);
     ztoolkit.log(`${filename} 下载成功`);
     showPop(
