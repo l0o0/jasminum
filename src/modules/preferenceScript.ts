@@ -240,13 +240,12 @@ export async function refreshTable() {
 function updateMenu(e: Event, prefName: string) {
   const menuValue = (e.target as HTMLInputElement).value;
   const inputField = addon.data.prefs!.window.document.querySelector(
-    `#jasminum0${prefName}-input`
+    `#jasminum-${prefName}-input`
   ) as HTMLInputElement;
   if (menuValue) {
     // 选中候选选项
     setPref(prefName, menuValue);
   } else {
-    inputField.value = "";
     inputField.focus();
   }
 }
