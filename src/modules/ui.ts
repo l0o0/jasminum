@@ -9,10 +9,9 @@ export function displayMenuitem() {
   const items = pane.getSelectedItems();
   ztoolkit.log("**Jasminum selected item length: " + items.length);
   // Menu for get CNKI metadata
-  const showSearch = items.some(
-    (item) => isCNKIFile(item) || isCNKIWeb(item)
-  );
-  pane.document.getElementById("jasminum-itemmenu-searchCNKI")!.hidden = !showSearch;
+  const showSearch = items.some((item) => isCNKIFile(item) || isCNKIWeb(item));
+  pane.document.getElementById("jasminum-itemmenu-searchCNKI")!.hidden =
+    !showSearch;
 
   // Menu for Chinese name
   const showName = items.some((item) => isCNKIName(item));
@@ -34,13 +33,15 @@ export function displayMenuitem() {
 
   const isDisplayMenu = showSearch || showName || showBookmark;
   // pane.document.getElementById("jasminum-separator").hidden = !isDisplayMenu;
-  pane.document.getElementById("jasminum-popup-menu-cnki")!.hidden = !isDisplayMenu;
+  pane.document.getElementById("jasminum-popup-menu-cnki")!.hidden =
+    !isDisplayMenu;
 
-  const showTools = items.some( i => i.isRegularItem());
-  pane.document.getElementById("jasminum-popup-menu-tools")!.hidden = !showTools;
+  const showTools = items.some((i) => i.isRegularItem());
+  pane.document.getElementById("jasminum-popup-menu-tools")!.hidden =
+    !showTools;
 
   ztoolkit.log(
-    `show menu: search ${showSearch} name ${showName} boomark ${showBookmark}`
+    `show menu: search ${showSearch} name ${showName} boomark ${showBookmark}`,
   );
 }
 
@@ -48,7 +49,7 @@ export function displayMenuitem() {
  * Show item menu according item type (Collection)
  * @return {void}
  */
-function displayCollectionMenuitem () {
+function displayCollectionMenuitem() {
   const items = getItems("collection", true);
   const isEmptyItems = items.length == 0;
   ztoolkit.log(isEmptyItems);
@@ -64,7 +65,7 @@ function displayCollectionMenuitem () {
  * @param {Zotero.item}
  * @return {bool}
  */
-export function isCNKIFile (item : Zotero.Item): boolean {
+export function isCNKIFile(item: Zotero.Item): boolean {
   // Return true, when item is OK for update cnki data.
   if (!item.isAttachment() || item.isRegularItem() || !item.isTopLevelItem()) {
     return false;
@@ -84,7 +85,7 @@ export function isCNKIFile (item : Zotero.Item): boolean {
  * @param {Zotero.item}
  * @return {bool}
  */
-export function isCNKIName (item : Zotero.Item): boolean {
+export function isCNKIName(item: Zotero.Item): boolean {
   return !item.isAttachment() && item.isRegularItem() && item.isTopLevelItem();
 }
 
@@ -93,21 +94,21 @@ export function isCNKIName (item : Zotero.Item): boolean {
  * @param {Zotero.item}
  * @return {bool}
  */
-export function isCNKIPDF (item : Zotero.Item): boolean {
-  return (
-    !item.isTopLevelItem() &&
+export function isCNKIPDF(item: Zotero.Item): boolean {
+  return !item.isTopLevelItem() &&
     item.isAttachment() &&
     item.attachmentContentType &&
     item.attachmentContentType === "application/pdf" &&
     Zotero.ItemTypes.getName(item.parentItem!.itemTypeID) === "thesis"
-  ) ? true : false;
+    ? true
+    : false;
 }
 
-export function isCNKIWeb (item : Zotero.Item): boolean {
-  return (
-    item.isTopLevelItem() &&
+export function isCNKIWeb(item: Zotero.Item): boolean {
+  return item.isTopLevelItem() &&
     item.isRegularItem() &&
     Zotero.ItemTypes.getName(item.itemTypeID) === "webpage" &&
     (item.getField("title") as string).endsWith("中国知网")
-  ) ? true : false;
-};
+    ? true
+    : false;
+}

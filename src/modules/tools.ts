@@ -89,9 +89,7 @@ export async function splitSemicolonNames(type: string) {
     const newlist = [];
     for (const creator of creators) {
       if (creator.lastName!.search(";") && creator.firstName === "") {
-        const names = creator
-          .lastName!.split(";")
-          .filter((s) => s !== "");
+        const names = creator.lastName!.split(";").filter((s) => s !== "");
         for (const name of names) {
           newlist.push({
             firstName: "",

@@ -43,8 +43,8 @@ async function getLastUpdateFromFile(filename: string): Promise<string> {
     PathUtils.join(
       ztoolkit.getGlobal("Zotero").Prefs.get("dataDir") as string,
       "translators",
-      filename
-    )
+      filename,
+    ),
   );
   Zotero.debug(desPath);
   if (!(await ztoolkit.getGlobal("OS").File.exists(desPath))) {
@@ -68,19 +68,19 @@ async function insertTable(firstInit = true, refresh = false): Promise<void> {
   ztoolkit.log("********** insert Table");
   const data = await getTranslatorData(refresh);
   const tbody = addon.data.prefs!.window.document.querySelector(
-    "#jasminum-translator-table-tbody"
+    "#jasminum-translator-table-tbody",
   );
   ztoolkit.log(data);
   if (data && firstInit) {
     ztoolkit.log("get translator data ok");
     (
       addon.data.prefs!.window.document.querySelector(
-        "#jasminum-translator-table-loading"
+        "#jasminum-translator-table-loading",
       )! as any
     ).hidden = true;
     (
       addon.data.prefs!.window.document.querySelector(
-        "#jasminum-translator-table"
+        "#jasminum-translator-table",
       )! as HTMLElement
     ).style["display"] = "unset";
   } else if (data && refresh) {
@@ -179,12 +179,12 @@ async function updateTranslatorImg(filename: string): Promise<void> {
   const idprefix = filename.replace(/\s/g, "_");
   const localUpdate = await getLastUpdateFromFile(filename);
   const lastUpate = addon.data.prefs?.window.document.getElementById(
-    `${idprefix}_3`
+    `${idprefix}_3`,
   )!.textContent;
   if (localUpdate == lastUpate) {
     (
       addon.data.prefs?.window.document.getElementById(
-        `${idprefix}_2`
+        `${idprefix}_2`,
       ) as HTMLElement
     ).textContent = localUpdate;
     addon.data.prefs?.window.document
@@ -209,21 +209,23 @@ async function downloadTranslator(filename: string): Promise<void> {
     const desPath = PathUtils.join(
       PathUtils.join(
         ztoolkit.getGlobal("Zotero").Prefs.get("dataDir") as string,
-        "translators"
+        "translators",
       ),
-      filename
+      filename,
     );
     await IOUtils.writeUTF8(desPath, contents);
     await updateTranslatorImg(filename);
     ztoolkit.log(`${filename} 下载成功`);
     showPop(
-      getString("translator-download-success", { args: { filename: filename } })
+      getString("translator-download-success", {
+        args: { filename: filename },
+      }),
     );
   } catch (e) {
     ztoolkit.log(`${filename} 下载失败 ${e}`);
     showPop(
       getString("translator-download-fail", { args: { filename: filename } }),
-      "fail"
+      "fail",
     );
   }
 }
@@ -240,7 +242,7 @@ export async function refreshTable() {
 function updateMenu(e: Event, prefName: string) {
   const menuValue = (e.target as HTMLInputElement).value;
   const inputField = addon.data.prefs!.window.document.querySelector(
-    `#jasminum-${prefName}-input`
+    `#jasminum-${prefName}-input`,
   ) as HTMLInputElement;
   if (menuValue) {
     // 选中候选选项
@@ -254,7 +256,7 @@ function updateMenuListIndex(id: string, value: string) {
   ztoolkit.log(id);
   ztoolkit.log(Choices);
   const menulist = addon.data.prefs!.window.document.querySelector(
-    `#jasminum-${id}-menulist`
+    `#jasminum-${id}-menulist`,
   ) as any;
   // 注意此处的index计算，Choices 是从1开始，避免0被判断为false
   const index = (Choices[id][value] || Object.keys(Choices[id]).length + 2) - 1;
@@ -327,7 +329,7 @@ function bindPrefEvents() {
     ?.addEventListener("click", async (e) => {
       const f = await new FilePickerHelper(
         `${Zotero.getString("pdftk-picker-header")}`,
-        "folder"
+        "folder",
       ).open();
       if (f) {
         setPref("pdftkpath", f);
@@ -354,7 +356,7 @@ function bindPrefEvents() {
     ?.addEventListener("click", async (e) => {
       const f = await new FilePickerHelper(
         `${Zotero.getString("pdf-match-folder-header")}`,
-        "folder"
+        "folder",
       ).open();
       if (f) {
         setPref("pdfmatchfolder", f);
