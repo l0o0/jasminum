@@ -21,7 +21,6 @@ async function checkPDFtkPath() {
 async function getCNKIReaderUrl(itemUrl: string) {
   ztoolkit.log("parsing chapter page");
   const htmldoc = await getHTMLDoc(itemUrl);
-  // @ts-ignore namespace 是可选参数
   const nodes = Zotero.Utilities.xpath(
     htmldoc,
     "//a[@id='cajDown' and (contains(text(), '章节下载') or contains(text(), '分章下载'))]",

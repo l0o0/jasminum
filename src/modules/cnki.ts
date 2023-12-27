@@ -536,7 +536,6 @@ export async function fixItem(newItems: Zotero.Item[], targetData: any) {
       }
     }
     // Add DOI
-    // @ts-ignore namespace 是可选参数
     const doi = Zotero.Utilities.xpath(
       html,
       "//*[contains(text(), 'DOI')]/following-sibling::p",
@@ -560,7 +559,6 @@ export async function fixItem(newItems: Zotero.Item[], targetData: any) {
     }
 
     // Add Article publisher type, surrounded by <>. 核心期刊
-    // @ts-ignore namespace 是可选参数
     const publisherType = Zotero.Utilities.xpath(
       html,
       "//div[@class='top-tip']//a[@class='type']",
@@ -759,7 +757,6 @@ export async function updateCiteCSSCI() {
         continue;
       }
       // 特异性网址，
-      // @ts-ignore namespace 是可选参数
       const warnnode = Zotero.Utilities.xpath(html, "//h2[@id='erro_span']");
       if (warnnode.length > 0) {
         Zotero.debug("** Jasminum 条目网址有点特殊");
