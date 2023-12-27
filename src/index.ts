@@ -23,6 +23,4 @@ if (!basicTool.getGlobal("Zotero")[config.addonInstance]) {
   ztoolkit.basicOptions.debug.disableDebugBridgePassword =
     addon.data.env === "development";
   Zotero[config.addonInstance] = addon;
-  // Trigger addon hook for initialization
-  addon.hooks.onStartup();
 }

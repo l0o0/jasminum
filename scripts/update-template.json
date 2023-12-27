@@ -1,0 +1,26 @@
+{
+  "addons": {
+    "__addonID__": {
+      "updates": [
+        {
+          "version": "0.2.8",
+          "update_link": "https://github.com/l0o0/jasminum/releases/download/v0.2.8/jasminum-v0.2.8.xpi",
+          "applications": {
+            "gecko": {
+              "strict_min_version": "60.0"
+            }
+          }
+        },
+        {
+          "version": "__buildVersion__",
+          "update_link": "__updateLink__",
+          "applications": {
+            "zotero": {
+              "strict_min_version": "6.999"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

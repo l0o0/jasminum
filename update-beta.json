@@ -1,0 +1,26 @@
+{
+  "addons": {
+    "jasminum@linxzh.com": {
+      "updates": [
+        {
+          "version": "0.2.8",
+          "update_link": "https://github.com/l0o0/jasminum/releases/download/v0.2.8/jasminum-v0.2.8.xpi",
+          "applications": {
+            "gecko": {
+              "strict_min_version": "60.0"
+            }
+          }
+        },
+        {
+          "version": "1.0.0-14",
+          "update_link": "https://github.com/l0o0/jasminum/releases//download/v1.0.0-14/jasminum.xpi",
+          "applications": {
+            "zotero": {
+              "strict_min_version": "6.999"
+            }
+          }
+        }
+      ]
+    }
+  }
+}
