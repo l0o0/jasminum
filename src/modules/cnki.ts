@@ -189,7 +189,7 @@ export function splitFilename(filename: string) {
   }
   const patentSepArr: string[] = patent.split(/{%[^}]+}/);
   const patentSepRegArr: string[] = patentSepArr.map((x) =>
-    x.replace(/([\[\\\^\$\.\|\?\*\+\(\)])/g, "\\$&"),
+    x.replace(/([[\\^$.|?*+()])/g, "\\$&"),
   );
   const patentMainArr: string[] | null = patent.match(/{%[^}]+}/g);
   //文件名中的作者姓名字段里不能包含下划线，请使用“&,，”等字符分隔多个作者，或仅使用第一个作者名（加不加“等”都行）。
