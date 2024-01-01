@@ -1,43 +1,20 @@
 <linkset>
   <html:link rel="localization" href="__addonRef__-preferences.ftl" />
-  <html:link
-    xmlns:html="http://www.w3.org/1999/xhtml"
-    rel="stylesheet"
-    href="chrome://__addonRef__/content/prefpanel.css"
-  />
+  <html:link xmlns:html="http://www.w3.org/1999/xhtml" rel="stylesheet"
+    href="chrome://__addonRef__/content/prefpanel.css" />
 </linkset>
-<vbox
-  id="zotero-prefpane-__addonRef__"
-  onload="Zotero.__addonInstance__.hooks.onPrefsEvent('load', {window})"
->
+<vbox id="zotero-prefpane-__addonRef__" onload="Zotero.__addonInstance__.hooks.onPrefsEvent('load', {window})">
   <groupbox>
     <label>
       <html:h2 data-l10n-id="chinese-caption"></html:h2>
     </label>
-    <checkbox
-      id="zotero-prefpane-jasminum.autoupdate"
-      preference="__prefsPrefix__.autoupdate"
-      data-l10n-id="autoupdate-label"
-      native="true"
-    />
-    <checkbox
-      id="jasminum.zhnamesplit"
-      data-l10n-id="zhnamesplit-label"
-      preference="__prefsPrefix__.zhnamesplit"
-      native="true"
-    />
-    <checkbox
-      id="jasminum.rename"
-      data-l10n-id="rename-label"
-      preference="__prefsPrefix__.rename"
-      native="true"
-    />
-    <checkbox
-      id="jasminum.autobookmark"
-      data-l10n-id="autobookmark-label"
-      preference="__prefsPrefix__.autobookmark"
-      native="true"
-    />
+    <checkbox id="zotero-prefpane-jasminum.autoupdate" preference="__prefsPrefix__.autoupdate"
+      data-l10n-id="autoupdate-label" native="true" />
+    <checkbox id="jasminum.zhnamesplit" data-l10n-id="zhnamesplit-label" preference="__prefsPrefix__.zhnamesplit"
+      native="true" />
+    <checkbox id="jasminum.rename" data-l10n-id="rename-label" preference="__prefsPrefix__.rename" native="true" />
+    <checkbox id="jasminum.autobookmark" data-l10n-id="autobookmark-label" preference="__prefsPrefix__.autobookmark"
+      native="true" />
     <!-- <hbox>
       <checkbox id="jasminum.autolanguage" data-l10n-id="autolanguage-label"
         preference="__prefsPrefix__.autolanguage" native="true" />
@@ -52,7 +29,7 @@
   </groupbox>
   <groupbox>
     <label>
-      <html:h2 data-l10n-id="namepatent-caption"></html:h2>
+      <html:h2 data-l10n-id="attachment-caption"></html:h2>
     </label>
     <vbox flex="1">
       <label class="jasminum-label" data-l10n-id="namepatent-desc-info"></label>
@@ -65,18 +42,20 @@
             <menuitem data-l10n-id="namepatent-custom" />
           </menupopup>
         </menulist>
-        <html:input
-          type="text"
-          class="auto_width"
-          id="jasminum-namepatent-input"
-          preference="__prefsPrefix__.namepatent"
-        >
+        <html:input type="text" class="auto_width" id="jasminum-namepatent-input"
+          preference="__prefsPrefix__.namepatent">
         </html:input>
-        <image
-          src="chrome://jasminum/content/icons/information.png"
-          style="margin-top: 5px; margin-bottom: 5px"
-          data-l10n-id="namepatent-desc"
-        />
+        <image src="chrome://jasminum/content/icons/information.png" style="margin-top: 5px; margin-bottom: 5px"
+          data-l10n-id="namepatent-desc" />
+      </hbox>
+      <hbox flex="2" class="inputbox">
+        <label class="jasminum-label" data-l10n-id="attachment-folder"></label>
+        <html:input type="text" class="auto_width" id="jasminum-pdfmatchfolder-input"
+          preference="__prefsPrefix__.pdfmatchfolder">
+        </html:input>
+        <button data-l10n-id="choose" id="pdfmatchfolder-choose-button" native="true" />
+        <image src="chrome://jasminum/content/icons/information.png" style="margin-top: 5px; margin-bottom: 5px"
+          data-l10n-id="pdfmatchfolder-desc" />
       </hbox>
     </vbox>
   </groupbox>
@@ -111,50 +90,22 @@
     <hbox flex="2" class="inputbox">
       <menulist id="jasminum-pdftkpath-menulist" native="true">
         <menupopup>
-          <menuitem
-            label="Windows Default"
-            value="C:\Program Files (x86)\PDFtk Server\bin"
-            tooltiptext="C:\Program Files (x86)\PDFtk Server\bin"
-          />
-          <menuitem
-            label="Linux Default"
-            value="/usr/bin"
-            tooltiptext="/usr/bin"
-          />
-          <menuitem
-            label="MacOS Default 1"
-            value="/opt/pdflabs/pdftk"
-            tooltiptext="/opt/pdflabs/pdftk"
-          />
-          <menuitem
-            label="MacOS Default 2"
-            value="/usr/local/bin/pdftk"
-            tooltiptext="/usr/local/bin/pdftk"
-          />
+          <menuitem label="Windows Default" value="C:\Program Files (x86)\PDFtk Server\bin"
+            tooltiptext="C:\Program Files (x86)\PDFtk Server\bin" />
+          <menuitem label="Linux Default" value="/usr/bin" tooltiptext="/usr/bin" />
+          <menuitem label="MacOS Default 1" value="/opt/pdflabs/pdftk" tooltiptext="/opt/pdflabs/pdftk" />
+          <menuitem label="MacOS Default 2" value="/usr/local/bin/pdftk" tooltiptext="/usr/local/bin/pdftk" />
           <menuseparator></menuseparator>
           <menuitem data-l10n-id="namepatent-custom" />
         </menupopup>
       </menulist>
-      <html:input
-        style="flex: 2"
-        type="text"
-        id="jasminum-pdftkpath-input"
-        preference="__prefsPrefix__.pdftkpath"
-      >
+      <html:input style="flex: 2" type="text" id="jasminum-pdftkpath-input" preference="__prefsPrefix__.pdftkpath">
       </html:input>
       <button data-l10n-id="choose" id="choose-button" native="true" />
-      <image
-        id="path-accept"
-        src="chrome://jasminum/content/icons/accept.png"
-        data-l10n-id="pdftk-path-check-ok"
-        hidden="true"
-      />
-      <image
-        id="path-error"
-        src="chrome://jasminum/content/icons/exclamation.png"
-        data-l10n-id="pdftk-path-check-error"
-        hidden="true"
-      />
+      <image id="path-accept" src="chrome://jasminum/content/icons/accept.png" data-l10n-id="pdftk-path-check-ok"
+        hidden="true" />
+      <image id="path-error" src="chrome://jasminum/content/icons/exclamation.png" data-l10n-id="pdftk-path-check-error"
+        hidden="true" />
     </hbox>
   </groupbox>
   <groupbox>
@@ -162,12 +113,8 @@
       <html:h2 data-l10n-id="toolbox-caption"></html:h2>
     </label>
     <vbox flex="1">
-      <checkbox
-        id="jasminum.ennamesplit"
-        data-l10n-id="toolbox-ennamesplit-label"
-        preference="__prefsPrefix__.ennamesplit"
-        native="true"
-      />
+      <checkbox id="jasminum.ennamesplit" data-l10n-id="toolbox-ennamesplit-label"
+        preference="__prefsPrefix__.ennamesplit" native="true" />
       <!-- <hbox>
         <label class="jasminum-label" data-l10n-id="toolbox-bacthsetlanguage-info"></label>
         <html:input type="text" id="jasminum.languagelist" preference="__prefsPrefix__.languagelist">
@@ -176,10 +123,7 @@
           data-l10n-id="toolbox-bacthsetlanguage-desc" />
       </hbox> -->
       <hbox class="inputbox">
-        <label
-          class="jasminum-label"
-          data-l10n-id="toolbox-manualsetlanguage-info"
-        ></label>
+        <label class="jasminum-label" data-l10n-id="toolbox-manualsetlanguage-info"></label>
         <menulist flex="0.5" id="jasminum-language-menulist" native="true">
           <menupopup>
             <menuitem label="中文(zh-CN)" value="zh-CN" />
@@ -188,56 +132,22 @@
             <menuitem data-l10n-id="namepatent-custom" />
           </menupopup>
         </menulist>
-        <html:input
-          type="text"
-          id="jasminum-language-input"
-          preference="__prefsPrefix__.language"
-        ></html:input>
-        <image
-          src="chrome://jasminum/content/icons/information.png"
-          style="margin-top: 5px; margin-bottom: 5px"
-          data-l10n-id="toolbox-manualsetlanguage-desc"
-        />
+        <html:input type="text" id="jasminum-language-input" preference="__prefsPrefix__.language"></html:input>
+        <image src="chrome://jasminum/content/icons/information.png" style="margin-top: 5px; margin-bottom: 5px"
+          data-l10n-id="toolbox-manualsetlanguage-desc" />
       </hbox>
       <hbox>
-        <label
-          class="jasminum-label"
-          data-l10n-id="toolbox-dateformatter-info"
-        ></label>
-        <menulist
-          id="jasminum.dateformatter"
-          preference="__prefsPrefix__.dateformatter"
-          native="true"
-        >
+        <label class="jasminum-label" data-l10n-id="toolbox-dateformatter-info"></label>
+        <menulist id="jasminum.dateformatter" preference="__prefsPrefix__.dateformatter" native="true">
           <menupopup>
-            <menuitem
-              label="ISO"
-              value="ISO"
-              tooltiptext="toolbox.dateformatter.iso;"
-            />
-            <menuitem
-              label="Short"
-              value="short"
-              tooltiptext="toolbox.dateformatter.short;"
-            />
-            <menuitem
-              label="Short Reverse"
-              value="shortReverse"
-              tooltiptext="toolbox.dateformatter.shortreverse;"
-            />
-            <menuitem
-              label="Year Only"
-              value="yearOnly"
-              tooltiptext="toolbox.dateformatter.yearonly;"
-            />
+            <menuitem label="ISO" value="ISO" tooltiptext="toolbox.dateformatter.iso;" />
+            <menuitem label="Short" value="short" tooltiptext="toolbox.dateformatter.short;" />
+            <menuitem label="Short Reverse" value="shortReverse" tooltiptext="toolbox.dateformatter.shortreverse;" />
+            <menuitem label="Year Only" value="yearOnly" tooltiptext="toolbox.dateformatter.yearonly;" />
           </menupopup>
         </menulist>
-        <checkbox
-          id="jasminum.dateformatterfill"
-          data-l10n-id="toolbox-dateformatterfill"
-          preference="__prefsPrefix__.dateformatterfill"
-          native="true"
-        />
+        <checkbox id="jasminum.dateformatterfill" data-l10n-id="toolbox-dateformatterfill"
+          preference="__prefsPrefix__.dateformatterfill" native="true" />
       </hbox>
     </vbox>
   </groupbox>
@@ -248,31 +158,16 @@
     <hbox class="virtualized-table-container" flex="1" height="300">
       <html:div style="height: 350px; overflow-y: scroll">
         <html:div id="jasminum-translator-table-loading">
-          <html:embed
-            src="chrome://jasminum/content/icons/loading.svg"
-            style="width: 50px"
-          />
+          <html:embed src="chrome://jasminum/content/icons/loading.svg" style="width: 50px" />
           <html:p>loading</html:p>
         </html:div>
         <html:table id="jasminum-translator-table">
           <html:thead id="jasminum-translator-table-header">
             <html:tr>
-              <html:th
-                data-l10n-id="translator-tab-column1"
-                id="translator-tab-column1"
-              ></html:th>
-              <html:th
-                data-l10n-id="translator-tab-column2"
-                id="translator-tab-column2"
-              ></html:th>
-              <html:th
-                data-l10n-id="translator-tab-column3"
-                id="translator-tab-column3"
-              ></html:th>
-              <html:th
-                data-l10n-id="translator-tab-column4"
-                id="translator-tab-column4"
-              ></html:th>
+              <html:th data-l10n-id="translator-tab-column1" id="translator-tab-column1"></html:th>
+              <html:th data-l10n-id="translator-tab-column2" id="translator-tab-column2"></html:th>
+              <html:th data-l10n-id="translator-tab-column3" id="translator-tab-column3"></html:th>
+              <html:th data-l10n-id="translator-tab-column4" id="translator-tab-column4"></html:th>
             </html:tr>
           </html:thead>
           <html:tbody id="jasminum-translator-table-tbody">
@@ -282,24 +177,12 @@
       </html:div>
     </hbox>
     <hbox>
-      <button
-        data-l10n-id="updateall-label"
-        id="download-all-translators"
-        native="true"
-        flex="0.5"
-      />
-      <button
-        data-l10n-id="refresh-label"
-        id="refresh-translators"
-        native="true"
-        flex="0.5"
-      />
+      <button data-l10n-id="updateall-label" id="download-all-translators" native="true" flex="0.5" />
+      <button data-l10n-id="refresh-label" id="refresh-translators" native="true" flex="0.5" />
     </hbox>
   </groupbox>
 </vbox>
 <vbox>
-  <html:label
-    data-l10n-id="addon-info"
-    data-l10n-args='{"time": "__buildTime__","name": "__addonName__","version":"__buildVersion__"}'
-  ></html:label>
+  <html:label data-l10n-id="addon-info"
+    data-l10n-args='{"time": "__buildTime__","name": "__addonName__","version":"__buildVersion__"}'></html:label>
 </vbox>
