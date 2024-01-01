@@ -20,7 +20,7 @@ import { isCNKIFile } from "./ui";
 function example(
   target: any,
   propertyKey: string | symbol,
-  descriptor: PropertyDescriptor
+  descriptor: PropertyDescriptor,
 ) {
   const original = descriptor.value;
   descriptor.value = function (...args: any) {
@@ -43,7 +43,7 @@ export class BasicExampleFactory {
         event: string,
         type: string,
         ids: number[] | string[],
-        extraData: { [key: string]: any }
+        extraData: { [key: string]: any },
       ) => {
         if (!addon?.data.alive) {
           this.unregisterNotifier(notifierID);
@@ -66,7 +66,7 @@ export class BasicExampleFactory {
       (e: Event) => {
         this.unregisterNotifier(notifierID);
       },
-      false
+      false,
     );
   }
 
@@ -81,7 +81,7 @@ export class BasicExampleFactory {
     // Split or merge name
     if (!getPref("zhnamesplit")) {
       items = addedItems.filter((i) =>
-        addon.data.CNDB.includes(i.getField("libraryCatalog") as string)
+        addon.data.CNDB.includes(i.getField("libraryCatalog") as string),
       );
       concatName(items);
     }
@@ -343,17 +343,17 @@ export class UIExampleFactory {
         field: string,
         unformatted: boolean,
         includeBaseMapped: boolean,
-        item: Zotero.Item
+        item: Zotero.Item,
       ) => {
         const cite = ztoolkit.ExtraField.getExtraField(
           item,
-          "CNKICite"
+          "CNKICite",
         ) as string;
         return cite ? cite : "";
       },
       {
         iconPath: `chrome://${config.addonRef}/content/icons/cssci.png`,
-      }
+      },
     );
     await ztoolkit.ItemTree.register(
       "cnki-journal-type",
@@ -362,14 +362,14 @@ export class UIExampleFactory {
         field: string,
         unformatted: boolean,
         includeBaseMapped: boolean,
-        item: Zotero.Item
+        item: Zotero.Item,
       ) => {
         const sci = ztoolkit.ExtraField.getExtraField(item, "CSSCI") as string;
         return sci ? sci : "";
       },
       {
         iconPath: `chrome://${config.addonRef}/content/icons/cssci.png`,
-      }
+      },
     );
   }
 }

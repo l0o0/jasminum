@@ -7,23 +7,16 @@
     {
       "type": "node",
       "request": "launch",
-      "name": "StartDev",
+      "name": "Start",
       "runtimeExecutable": "npm",
-      "runtimeArgs": ["run", "start-watch"]
+      "runtimeArgs": ["run", "start"]
     },
     {
       "type": "node",
       "request": "launch",
-      "name": "Restart",
+      "name": "Build",
       "runtimeExecutable": "npm",
-      "runtimeArgs": ["run", "restart"]
-    },
-    {
-      "type": "node",
-      "request": "launch",
-      "name": "Restart in Prod Mode",
-      "runtimeExecutable": "npm",
-      "runtimeArgs": ["run", "restart-prod"]
+      "runtimeArgs": ["run", "build"]
     }
   ]
 }

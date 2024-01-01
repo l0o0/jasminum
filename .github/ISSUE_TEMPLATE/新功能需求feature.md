@@ -3,8 +3,7 @@ name: 新功能需求Feature
 about: 新功能建议[Feature]
 title: "\U0001F6E0功能建议[Feature]"
 labels: enhancement
-assignees: ''
-
+assignees: ""
 ---
 
 请详细说明新功能点，描述地越清楚，开发起来速度越快。

@@ -20,13 +20,12 @@ declare const __env__: "production" | "development";
 
 declare class Localization {}
 
-
 declare interface Window {
   openDialog(
-      url: string,
-      target?: string,
-      features?: string,
-      ...args: any
+    url: string,
+    target?: string,
+    features?: string,
+    ...args: any
   ): Window;
 }
 

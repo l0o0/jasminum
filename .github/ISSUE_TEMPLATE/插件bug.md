@@ -3,8 +3,7 @@ name: 插件BUG
 about: 使用上出现问题请提bug
 title: 请概括一下内容，想一个标题[BUG]
 labels: bug
-assignees: ''
-
+assignees: ""
 ---
 
 **BUG说明**

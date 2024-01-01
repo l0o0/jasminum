@@ -1,206 +1,250 @@
-import { build } from "esbuild";
-import { zip } from "compressing";
-import { join, basename } from "path";
+import details from "../package.json" assert { type: "json" };
 import {
-    existsSync,
-    lstatSync,
-    writeFileSync,
-    readFileSync,
-    mkdirSync,
-    readdirSync,
-    rmSync,
-    renameSync,
-} from "fs";
+  Logger,
+  clearFolder,
+  copyFileSync,
+  copyFolderRecursiveSync,
+  dateFormat,
+} from "./utils.mjs";
+import { zip } from "compressing";
+import { build } from "esbuild";
+import { existsSync, readdirSync, renameSync } from "fs";
+import path from "path";
 import { env, exit } from "process";
 import replaceInFile from "replace-in-file";
-const { sync } = replaceInFile;
-import details from "../package.json" assert { type: "json" };
+
+const { replaceInFileSync } = replaceInFile;
+
+process.env.NODE_ENV =
+  process.argv[2] === "production" ? "production" : "development";
+
+const buildDir = "build";
 
 const { name, author, description, homepage, version, config } = details;
+const isPreRelease = version.includes("-");
 
-function copyFileSync(source, target) {
-    var targetFile = target;
+function replaceString(buildTime) {
+  const replaceFrom = [
+    /__author__/g,
+    /__description__/g,
+    /__homepage__/g,
+    /__buildVersion__/g,
+    /__buildTime__/g,
+  ];
+  const replaceTo = [author, description, homepage, version, buildTime];
 
-    // If target is a directory, a new file with the same name will be created
-    if (existsSync(target)) {
-        if (lstatSync(target).isDirectory()) {
-            targetFile = join(target, basename(source));
+  config.updateURL = isPreRelease
+    ? config.updateJSON.replace("update.json", "update-beta.json")
+    : config.updateJSON;
+
+  replaceFrom.push(
+    ...Object.keys(config).map((k) => new RegExp(`__${k}__`, "g")),
+  );
+  replaceTo.push(...Object.values(config));
+
+  const replaceResult = replaceInFileSync({
+    files: [
+      `${buildDir}/addon/**/*.xhtml`,
+      `${buildDir}/addon/**/*.html`,
+      `${buildDir}/addon/**/*.css`,
+      `${buildDir}/addon/**/*.json`,
+      `${buildDir}/addon/prefs.js`,
+      `${buildDir}/addon/manifest.json`,
+      `${buildDir}/addon/bootstrap.js`,
+    ],
+    from: replaceFrom,
+    to: replaceTo,
+    countMatches: true,
+  });
+
+  // Logger.debug(
+  //     "[Build] Run replace in ",
+  //     replaceResult.filter((f) => f.hasChanged).map((f) => `${f.file} : ${f.numReplacements} / ${f.numMatches}`),
+  // );
+}
+
+function prepareLocaleFiles() {
+  // Walk the builds/addon/locale folder's sub folders and rename *.ftl to addonRef-*.ftl
+  const localeDir = path.join(buildDir, "addon/locale");
+  const localeFolders = readdirSync(localeDir, { withFileTypes: true })
+    .filter((dirent) => dirent.isDirectory())
+    .map((dirent) => dirent.name);
+
+  for (const localeSubFolder of localeFolders) {
+    const localeSubDir = path.join(localeDir, localeSubFolder);
+    const localeSubFiles = readdirSync(localeSubDir, {
+      withFileTypes: true,
+    })
+      .filter((dirent) => dirent.isFile())
+      .map((dirent) => dirent.name);
+
+    for (const localeSubFile of localeSubFiles) {
+      if (localeSubFile.endsWith(".ftl")) {
+        renameSync(
+          path.join(localeSubDir, localeSubFile),
+          path.join(localeSubDir, `${config.addonRef}-${localeSubFile}`),
+        );
+      }
+    }
+  }
+
+  const localeMessage = new Set();
+  const localeMessageMiss = new Set();
+
+  const replaceResultFlt = replaceInFileSync({
+    files: [`${buildDir}/addon/locale/**/*.ftl`],
+    processor: (fltContent) => {
+      const lines = fltContent.split("\n");
+      const prefixedLines = lines.map((line) => {
+        // https://regex101.com/r/lQ9x5p/1
+        const match = line.match(
+          /^(?<message>[a-zA-Z]\S*)([ ]*=[ ]*)(?<pattern>.*)$/m,
+        );
+        if (match) {
+          localeMessage.add(match.groups.message);
+          return `${config.addonRef}-${line}`;
+        } else {
+          return line;
         }
-    }
+      });
+      return prefixedLines.join("\n");
+    },
+  });
 
-    writeFileSync(targetFile, readFileSync(source));
-}
-
-function copyFolderRecursiveSync(source, target) {
-    var files = [];
-
-    // Check if folder needs to be created or integrated
-    var targetFolder = join(target, basename(source));
-    if (!existsSync(targetFolder)) {
-        mkdirSync(targetFolder);
-    }
-
-    // Copy
-    if (lstatSync(source).isDirectory()) {
-        files = readdirSync(source);
-        files.forEach(function (file) {
-            var curSource = join(source, file);
-            if (lstatSync(curSource).isDirectory()) {
-                copyFolderRecursiveSync(curSource, targetFolder);
-            } else {
-                copyFileSync(curSource, targetFolder);
-            }
-        });
-    }
-}
-
-function clearFolder(target) {
-    if (existsSync(target)) {
-        rmSync(target, { recursive: true, force: true });
-    }
-
-    mkdirSync(target, { recursive: true });
-}
-
-function dateFormat(fmt, date) {
-    let ret;
-    const opt = {
-        "Y+": date.getFullYear().toString(),
-        "m+": (date.getMonth() + 1).toString(),
-        "d+": date.getDate().toString(),
-        "H+": date.getHours().toString(),
-        "M+": date.getMinutes().toString(),
-        "S+": date.getSeconds().toString(),
-    };
-    for (let k in opt) {
-        ret = new RegExp("(" + k + ")").exec(fmt);
-        if (ret) {
-            fmt = fmt.replace(
-                ret[1],
-                ret[1].length == 1 ? opt[k] : opt[k].padStart(ret[1].length, "0")
-            );
+  const replaceResultXhtml = replaceInFileSync({
+    files: [`${buildDir}/addon/**/*.xhtml`],
+    processor: (input) => {
+      const matchs = [...input.matchAll(/(data-l10n-id)="(\S*)"/g)];
+      matchs.map((match) => {
+        if (localeMessage.has(match[2])) {
+          input = input.replace(
+            match[0],
+            `${match[1]}="${config.addonRef}-${match[2]}"`,
+          );
+        } else {
+          localeMessageMiss.add(match[2]);
         }
-    }
-    return fmt;
+      });
+      return input;
+    },
+  });
+
+  Logger.debug(
+    "[Build] Prepare locale files OK",
+    // replaceResultFlt.filter((f) => f.hasChanged).map((f) => `${f.file} : OK`),
+    // replaceResultXhtml.filter((f) => f.hasChanged).map((f) => `${f.file} : OK`),
+  );
+
+  if (localeMessageMiss.size !== 0) {
+    Logger.warn(
+      `[Build] Fluent message [${new Array(
+        ...localeMessageMiss,
+      )}] do not exsit in addon's locale files.`,
+    );
+  }
 }
 
-async function main() {
-    const t = new Date();
-    const buildTime = dateFormat("YYYY-mm-dd HH:MM:SS", t);
-    const buildDir = "builds";
+function prepareUpdateJson() {
+  // If it is a pre-release, use update-beta.json
+  if (!isPreRelease) {
+    copyFileSync("scripts/update-template.json", "update.json");
+  }
+  if (existsSync("update-beta.json") || isPreRelease) {
+    copyFileSync("scripts/update-template.json", "update-beta.json");
+  }
 
-    console.log(
-        `[Build] BUILD_DIR=${buildDir}, VERSION=${version}, BUILD_TIME=${buildTime}, ENV=${[
-            env.NODE_ENV,
-        ]}`
-    );
+  const updateLink =
+    config.updateLink ?? isPreRelease
+      ? `${config.releasePage}/download/v${version}/${name}.xpi`
+      : `${config.releasePage}/latest/download/${name}.xpi`;
 
-    clearFolder(buildDir);
+  const replaceResult = replaceInFileSync({
+    files: [
+      "update-beta.json",
+      isPreRelease ? "pass" : "update.json",
+      `${buildDir}/addon/manifest.json`,
+    ],
+    from: [
+      /__addonID__/g,
+      /__buildVersion__/g,
+      /__updateLink__/g,
+      /__updateURL__/g,
+    ],
+    to: [config.addonID, version, updateLink, config.updateURL],
+    countMatches: true,
+  });
 
-    copyFolderRecursiveSync("addon", buildDir);
+  Logger.debug(
+    `[Build] Prepare Update.json for ${
+      isPreRelease
+        ? "\u001b[31m Prerelease \u001b[0m"
+        : "\u001b[32m Release \u001b[0m"
+    }`,
+    replaceResult
+      .filter((f) => f.hasChanged)
+      .map((f) => `${f.file} : ${f.numReplacements} / ${f.numMatches}`),
+  );
+}
 
-    copyFileSync("update-template.json", "update.json");
+export const esbuildOptions = {
+  entryPoints: ["src/index.ts"],
+  define: {
+    __env__: `"${env.NODE_ENV}"`,
+  },
+  bundle: true,
+  target: "firefox102",
+  outfile: path.join(
+    buildDir,
+    `addon/chrome/content/scripts/${config.addonRef}.js`,
+  ),
+  // Don't turn minify on
+  minify: env.NODE_ENV === "production",
+};
 
-    await build({
-        entryPoints: ["src/index.ts"],
-        define: {
-            __env__: `"${env.NODE_ENV}"`,
-        },
-        bundle: true,
-        outfile: join(buildDir, "addon/chrome/content/scripts/index.js"),
-        // Don't turn minify on
-        // minify: true,
-    }).catch(() => exit(1));
+export async function main() {
+  const t = new Date();
+  const buildTime = dateFormat("YYYY-mm-dd HH:MM:SS", new Date());
 
-    console.log("[Build] Run esbuild OK");
+  Logger.info(
+    `[Build] BUILD_DIR=${buildDir}, VERSION=${version}, BUILD_TIME=${buildTime}, ENV=${[
+      env.NODE_ENV,
+    ]}`,
+  );
 
-    const replaceFrom = [
-        /__author__/g,
-        /__description__/g,
-        /__homepage__/g,
-        /__buildVersion__/g,
-        /__buildTime__/g,
-        /__addonName__/g,
-        /__prefsPrefix__/g,
-        /____addonRef____/g,
-    ];
+  clearFolder(buildDir);
 
-    const replaceTo = [author, description, homepage, version, buildTime, config.addonName, config.prefsPrefix, config.addonRef];
+  copyFolderRecursiveSync("addon", buildDir);
+  replaceString(buildTime);
+  Logger.debug("[Build] Replace OK");
 
-    replaceFrom.push(
-        ...Object.keys(config).map((k) => new RegExp(`__${k}__`, "g"))
-    );
-    replaceTo.push(...Object.values(config));
+  prepareLocaleFiles();
 
-    const optionsAddon = {
-        files: [
-            join(buildDir, "**/*.rdf"),
-            join(buildDir, "**/*.dtd"),
-            join(buildDir, "**/*.xul"),
-            join(buildDir, "**/*.xhtml"),
-            join(buildDir, "**/*.json"),
-            join(buildDir, "addon/prefs.js"),
-            join(buildDir, "addon/chrome.manifest"),
-            join(buildDir, "addon/manifest.json"),
-            join(buildDir, "addon/bootstrap.js"),
-            "update.json",
-        ],
-        from: replaceFrom,
-        to: replaceTo,
-        countMatches: true,
-    };
+  await build(esbuildOptions);
+  Logger.debug("[Build] Run esbuild OK");
 
-    const replaceResult = sync(optionsAddon);
-    console.log(
-        "[Build] Run replace in ",
-        replaceResult
-            .filter((f) => f.hasChanged)
-            .map((f) => `${f.file} : ${f.numReplacements} / ${f.numMatches}`)
-    );
+  Logger.debug("[Build] Addon prepare OK");
 
-    console.log("[Build] Replace OK");
-
-    // Walk the builds/addon/locale folder's sub folders and rename *.ftl to addonRef-*.ftl
-    const localeDir = join(buildDir, "addon/locale");
-    const localeFolders = readdirSync(localeDir, { withFileTypes: true })
-        .filter((dirent) => dirent.isDirectory())
-        .map((dirent) => dirent.name);
-
-    for (const localeSubFolder of localeFolders) {
-        const localeSubDir = join(localeDir, localeSubFolder);
-        const localeSubFiles = readdirSync(localeSubDir, {
-            withFileTypes: true,
-        })
-            .filter((dirent) => dirent.isFile())
-            .map((dirent) => dirent.name);
-
-        for (const localeSubFile of localeSubFiles) {
-            if (localeSubFile.endsWith(".ftl")) {
-                renameSync(
-                    join(localeSubDir, localeSubFile),
-                    join(localeSubDir, `${config.addonRef}-${localeSubFile}`)
-                );
-            }
-        }
-    }
-
-    console.log("[Build] Addon prepare OK");
-
+  if (process.env.NODE_ENV === "production") {
     await zip.compressDir(
-        join(buildDir, "addon"),
-        join(buildDir, `${name}.xpi`),
-        {
-            ignoreBase: true,
-        }
+      path.join(buildDir, "addon"),
+      path.join(buildDir, `${name}.xpi`),
+      {
+        ignoreBase: true,
+      },
     );
+    Logger.debug("[Build] Addon pack OK");
 
-    console.log("[Build] Addon pack OK");
-    console.log(
-        `[Build] Finished in ${(new Date().getTime() - t.getTime()) / 1000} s.`
+    prepareUpdateJson();
+
+    Logger.debug(
+      `[Build] Finished in ${(new Date().getTime() - t.getTime()) / 1000} s.`,
     );
+  }
 }
 
-main().catch((err) => {
-    console.log(err);
+if (process.env.NODE_ENV === "production") {
+  main().catch((err) => {
+    Logger.error(err);
     exit(1);
-});
+  });
+}

@@ -33,7 +33,16 @@ class Addon {
       // ztoolkit: new MyToolkit(),
       ztoolkit: new ZoteroToolkit(),
       cookiebox: new MyCookieSandbox(),
-      CNDB: ['CNKI', 'WeiPu', 'Wanfang Data', 'SuperLib', '中国知网CNKI', '维普', '万方', '全国图书馆联盟']
+      CNDB: [
+        "CNKI",
+        "WeiPu",
+        "Wanfang Data",
+        "SuperLib",
+        "中国知网CNKI",
+        "维普",
+        "万方",
+        "全国图书馆联盟",
+      ],
     };
     this.hooks = hooks;
     this.api = {};

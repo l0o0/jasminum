@@ -1,6 +1,4 @@
 {
-  "editor.tabSize": 2,
-  "files.eol": "\n",
   "editor.formatOnType": false,
   "editor.formatOnSave": true,
   "editor.codeActionsOnSave": {

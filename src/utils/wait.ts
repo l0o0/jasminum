@@ -10,7 +10,7 @@ export function waitUntil(
   condition: () => boolean,
   callback: () => void,
   interval = 100,
-  timeout = 10000
+  timeout = 10000,
 ) {
   const start = Date.now();
   const intervalId = ztoolkit.getGlobal("setInterval")(() => {
@@ -32,7 +32,7 @@ export function waitUntil(
 export function waitUtilAsync(
   condition: () => boolean,
   interval = 100,
-  timeout = 10000
+  timeout = 10000,
 ) {
   return new Promise<void>((resolve, reject) => {
     const start = Date.now();

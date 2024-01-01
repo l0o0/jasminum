@@ -15,7 +15,7 @@ function showPop(
   msg: string,
   type: "success" | "fail" = "success",
   time = 1500,
-  progress = 100
+  progress = 100,
 ) {
   new ztoolkit.ProgressWindow(config.addonName, {
     closeOnClick: true,

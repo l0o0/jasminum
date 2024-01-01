@@ -15,7 +15,7 @@ async function onStartup() {
   initLocale();
   ztoolkit.ProgressWindow.setIconURI(
     "default",
-    `chrome://${config.addonRef}/content/icons/icon.png`
+    `chrome://${config.addonRef}/content/icons/icon.png`,
   );
 
   BasicExampleFactory.registerPrefs();
@@ -46,6 +46,13 @@ async function onStartup() {
   // Migrate Prefs from Zotero 6 to 7
   migratePrefs();
   initPrefs();
+
+  // TODO: Remove this after zotero#3387 is merged
+  if (__env__ === "development") {
+    // Keep in sync with the scripts/startup.mjs
+    const loadDevToolWhen = `Plugin ${config.addonID} startup`;
+    ztoolkit.log(loadDevToolWhen);
+  }
 }
 
 function onShutdown(): void {
@@ -64,7 +71,7 @@ async function onNotify(
   event: string,
   type: string,
   ids: Array<string | number>,
-  extraData: { [key: string]: any }
+  extraData: { [key: string]: any },
 ) {
   // You can add your code to the corresponding notify type
   ztoolkit.log("notify", event, type, ids, extraData);
@@ -82,7 +89,7 @@ function migratePrefs() {
     const extensionBranch = Services.prefs.getBranch("extensions");
     const prefs = extensionBranch.getChildList("", {});
     const jasminmPrefs = prefs.filter((p: string) =>
-      p.includes(".zotero.jasminum.")
+      p.includes(".zotero.jasminum."),
     );
     jasminmPrefs.forEach((ele: string) => {
       ztoolkit.log("extensions" + ele);

@@ -23,7 +23,7 @@ async function getCNKIReaderUrl(itemUrl: string) {
   const htmldoc = await getHTMLDoc(itemUrl);
   const nodes = Zotero.Utilities.xpath(
     htmldoc,
-    "//a[@id='cajDown' and (contains(text(), '章节下载') or contains(text(), '分章下载'))]"
+    "//a[@id='cajDown' and (contains(text(), '章节下载') or contains(text(), '分章下载'))]",
   );
   if (nodes.length == 0) {
     // No results
@@ -45,14 +45,14 @@ async function getCNKIReaderUrl(itemUrl: string) {
 
 async function getChapterText(
   chapterUrl: string,
-  item: Zotero.Item
+  item: Zotero.Item,
 ): Promise<any> {
   ztoolkit.log(`chapter Url: ${chapterUrl}`);
   const key = item.key;
   const lib = item.libraryID;
   const chapterHTML = await getHTMLDoc(chapterUrl);
   const rows = chapterHTML.querySelectorAll(
-    "div.main-content > div.list-main > ul.ls-chapters > li"
+    "div.main-content > div.list-main > ul.ls-chapters > li",
   );
   ztoolkit.log(rows.length);
   const rows_array = [];
@@ -132,7 +132,7 @@ async function addBookmark(item: Zotero.Item, bookmark: string) {
     "PDFtk: Running " +
       pdftk +
       " " +
-      args.map((arg) => "'" + arg + "'").join(" ")
+      args.map((arg) => "'" + arg + "'").join(" "),
   );
   try {
     await Zotero.Utilities.Internal.exec(pdftk, args);
@@ -142,7 +142,7 @@ async function addBookmark(item: Zotero.Item, bookmark: string) {
     showPop(
       getString("addbookmark-success", {
         args: { filename: item.attachmentFilename },
-      })
+      }),
     );
   } catch (e: any) {
     // try {
@@ -155,7 +155,7 @@ async function addBookmark(item: Zotero.Item, bookmark: string) {
       getString("addbookmark-fail", {
         args: { filename: item.attachmentFilename },
       }),
-      "fail"
+      "fail",
     );
   }
 }

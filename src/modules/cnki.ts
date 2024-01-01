@@ -69,7 +69,7 @@ export function getIDFromPage(page: Document): CNKIID | boolean {
  */
 export async function getCNKIID(
   url: string,
-  fromPage = false
+  fromPage = false,
 ): Promise<CNKIID | boolean> {
   if (!fromPage && getIDFromURL(url)) {
     return getIDFromURL(url);
@@ -189,15 +189,15 @@ export function splitFilename(filename: string) {
   }
   const patentSepArr: string[] = patent.split(/{%[^}]+}/);
   const patentSepRegArr: string[] = patentSepArr.map((x) =>
-    x.replace(/([\[\\\^\$\.\|\?\*\+\(\)])/g, "\\$&")
+    x.replace(/([[\\^$.|?*+()])/g, "\\$&"),
   );
   const patentMainArr: string[] | null = patent.match(/{%[^}]+}/g);
   //文件名中的作者姓名字段里不能包含下划线，请使用“&,，”等字符分隔多个作者，或仅使用第一个作者名（加不加“等”都行）。
   const patentMainRegArr = patentMainArr!.map((x) =>
     x.replace(
       /.+/,
-      /{%y}/.test(x) ? "(\\d+)" : /{%g}/.test(x) ? "([^_]+)" : "(.+)"
-    )
+      /{%y}/.test(x) ? "(\\d+)" : /{%g}/.test(x) ? "([^_]+)" : "(.+)",
+    ),
   );
   const regStrInterArr = patentSepRegArr.map((_, i) => [
     patentSepRegArr[i],
@@ -209,7 +209,7 @@ export function splitFilename(filename: string) {
       .apply([], regStrInterArr as never)
       .filter(Boolean)
       .join(""),
-    "g"
+    "g",
   );
 
   const prefixMainArr = patentReg.exec(prefix);
@@ -219,7 +219,7 @@ export function splitFilename(filename: string) {
       getString("filename-parse-fail", {
         args: { filename: filename, patent: patent },
       }),
-      "fail"
+      "fail",
     );
     return;
   }
@@ -292,7 +292,7 @@ export function selectCNKIRows(targetRows: CNKIRow[]) {
     "chrome://zotero/content/ingester/selectitems.xhtml",
     "",
     "chrome,modal,centerscreen,resizable=yes",
-    io
+    io,
   );
   const resultRows: CNKIRow[] = [];
   const targetIndicator = io.dataOut;
@@ -342,7 +342,7 @@ export async function searchCNKI(fileData: any): Promise<CNKIRow[]> {
     Origin: "https://kns.cnki.net",
     Connection: "keep-alive",
     Referer: `https://kns.cnki.net/kns/search?dbcode=SCDB&kw=${encodeURI(
-      fileData.title
+      fileData.title,
     )}&korder=SU&crossdbcodes=CJFQ,CDFD,CMFD,CPFD,IPFD,CCND,CISD,SNAD,BDZK,CCJD,CJRF,CJFN`,
   };
   const postUrl = "https://kns.cnki.net/kns/brief/grid";
@@ -430,7 +430,7 @@ export async function getRefworksText(targetID: CNKIID): Promise<string> {
         authors = authors.split(/\s*[;，,]\s*/); // that's a special comma
         if (!authors[authors.length - 1].trim()) authors.pop();
         return tag + " " + authors.join("\n" + tag + " ");
-      }
+      },
     )
     .trim();
 }
@@ -452,7 +452,7 @@ export async function trans2Items(data: string, libraryID: number) {
   });
   if (newItems.length) {
     ztoolkit.log(
-      `** Jasminum translate end,  ${newItems.length} item translated`
+      `** Jasminum translate end,  ${newItems.length} item translated`,
     );
     return newItems;
   } else {
@@ -522,7 +522,7 @@ export async function fixItem(newItems: Zotero.Item[], targetData: any) {
         "abstractNote",
         (newItem.getField("abstractNote") as string)
           .replace(/\s*[\r\n]\s*/g, "\n")
-          .replace(/&lt;.*?&gt;/g, "")
+          .replace(/&lt;.*?&gt;/g, ""),
       );
     }
     // Parse page content.
@@ -538,7 +538,7 @@ export async function fixItem(newItems: Zotero.Item[], targetData: any) {
     // Add DOI
     const doi = Zotero.Utilities.xpath(
       html,
-      "//*[contains(text(), 'DOI')]/following-sibling::p"
+      "//*[contains(text(), 'DOI')]/following-sibling::p",
     );
     if ("DOI" in newItem && doi != null) {
       // Some items lack DOI field
@@ -561,7 +561,7 @@ export async function fixItem(newItems: Zotero.Item[], targetData: any) {
     // Add Article publisher type, surrounded by <>. 核心期刊
     const publisherType = Zotero.Utilities.xpath(
       html,
-      "//div[@class='top-tip']//a[@class='type']"
+      "//div[@class='top-tip']//a[@class='type']",
     );
     if (publisherType != null) {
       extraString =
@@ -606,7 +606,7 @@ export async function searchCNKIMetadata(items: Zotero.Item[]) {
     if (Zotero.ItemTypes.getName(item.itemTypeID) === "webpage") {
       Zotero.debug("** Jasminum add webpage.");
       const articleId = (await getCNKIID(
-        item.getField("url") as string
+        item.getField("url") as string,
       )) as CNKIID;
       Zotero.debug([articleId]);
       const data = await getRefworksText(articleId);
@@ -655,7 +655,7 @@ export async function searchCNKIMetadata(items: Zotero.Item[]) {
             p.citations.push(c.citation);
             return p;
           },
-          { targetUrls: [], citations: [] }
+          { targetUrls: [], citations: [] },
         );
         const data = await getRefworksText(id);
         let newItems = await trans2Items(data, libraryID);
@@ -664,7 +664,7 @@ export async function searchCNKIMetadata(items: Zotero.Item[]) {
         if (itemCollections.length) {
           for (const collectionID of itemCollections) {
             newItems.forEach((i: Zotero.Item) =>
-              item.addToCollection(collectionID)
+              item.addToCollection(collectionID),
             );
           }
         }
@@ -697,7 +697,7 @@ export async function searchCNKIMetadata(items: Zotero.Item[]) {
           getString("cnkimetadata-fail", {
             args: { author: fileData!.author, title: fileData!.keyword },
           }),
-          "fail"
+          "fail",
         );
       }
     }
@@ -739,7 +739,7 @@ export async function updateCiteCSSCI() {
         getString("unmatched-itemtype-fail", {
           args: { itemType: Zotero.ItemTypes.getName(item.itemTypeID) },
         }),
-        "fail"
+        "fail",
       );
       continue;
     } else if (
@@ -798,7 +798,7 @@ export async function updateCiteCSSCI() {
             cite: cite ? cite : "",
             cssci: cssci ? cssci : "",
           },
-        })
+        }),
       );
       ztoolkit.log("cite number: ${cite} cssci: ${cssci}");
     } else {
