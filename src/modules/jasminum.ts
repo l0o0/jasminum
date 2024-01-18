@@ -17,26 +17,9 @@ import {
 } from "./tools";
 import { isCNKIFile } from "./ui";
 
-function example(
-  target: any,
-  propertyKey: string | symbol,
-  descriptor: PropertyDescriptor
-) {
-  const original = descriptor.value;
-  descriptor.value = function (...args: any) {
-    try {
-      ztoolkit.log(`Calling example ${target.name}.${String(propertyKey)}`);
-      return original.apply(this, args);
-    } catch (e) {
-      ztoolkit.log(`Error in example ${target.name}.${String(propertyKey)}`, e);
-      throw e;
-    }
-  };
-  return descriptor;
-}
+
 
 export class BasicExampleFactory {
-  @example
   static registerNotifier() {
     const callback = {
       notify: async (
@@ -70,7 +53,6 @@ export class BasicExampleFactory {
     );
   }
 
-  @example
   static itemAddedNotifier(addedItems: Zotero.Item[]) {
     let items: Zotero.Item[];
     if (getPref("autoupdate")) {
@@ -106,12 +88,10 @@ export class BasicExampleFactory {
     // }
   }
 
-  @example
   private static unregisterNotifier(notifierID: string) {
     Zotero.Notifier.unregisterObserver(notifierID);
   }
 
-  @example
   static registerPrefs() {
     const prefOptions = {
       pluginID: config.addonID,
@@ -125,7 +105,7 @@ export class BasicExampleFactory {
 }
 
 // export class KeyExampleFactory {
-//   @example
+//   
 //   static registerShortcuts() {
 //     const keysetId = `${config.addonRef}-keyset`;
 //     const cmdsetId = `${config.addonRef}-cmdset`;
@@ -184,7 +164,7 @@ export class BasicExampleFactory {
 //       .show();
 //   }
 
-//   @example
+//   
 //   static exampleShortcutLargerCallback() {
 //     new ztoolkit.ProgressWindow(config.addonName)
 //       .createLine({
@@ -194,7 +174,7 @@ export class BasicExampleFactory {
 //       .show();
 //   }
 
-//   @example
+//   
 //   static exampleShortcutSmallerCallback() {
 //     new ztoolkit.ProgressWindow(config.addonName)
 //       .createLine({
@@ -204,7 +184,7 @@ export class BasicExampleFactory {
 //       .show();
 //   }
 
-//   @example
+//   
 //   static exampleShortcutConflictingCallback() {
 //     const conflictingGroups = ztoolkit.Shortcut.checkAllKeyConflicting();
 //     new ztoolkit.ProgressWindow("Check Key Conflicting")
@@ -222,7 +202,7 @@ export class BasicExampleFactory {
 // }
 
 export class UIExampleFactory {
-  // @example
+  // 
   // static registerStyleSheet() {
   //   const styles = ztoolkit.UI.createElement(document, "link", {
   //     properties: {
@@ -237,7 +217,6 @@ export class UIExampleFactory {
   //     ?.classList.add("makeItRed");
   // }
 
-  @example
   static registerRightClickMenuPopup() {
     const iconBaseUrl = `chrome://${config.addonRef}/content/icons/`;
     ztoolkit.Menu.register("item", {
@@ -334,42 +313,28 @@ export class UIExampleFactory {
     });
   }
 
-  @example
   static async registerExtraColumn() {
-    await ztoolkit.ItemTree.register(
-      "cnki-citations",
-      getString("cnkicite-field-label"),
-      (
-        field: string,
-        unformatted: boolean,
-        includeBaseMapped: boolean,
-        item: Zotero.Item
-      ) => {
+    await Zotero.ItemTreeManager.registerColumns({
+      dataKey: "cnki-citations",
+      label: getString("cnkicite-field-label"),
+      pluginID: config.addonID,
+      dataProvider: (item, _) => {
         const cite = ztoolkit.ExtraField.getExtraField(
           item,
           "CNKICite"
         ) as string;
         return cite ? cite : "";
-      },
-      {
-        iconPath: `chrome://${config.addonRef}/content/icons/cssci.png`,
       }
-    );
-    await ztoolkit.ItemTree.register(
-      "cnki-journal-type",
-      getString("cssci-field-label"),
-      (
-        field: string,
-        unformatted: boolean,
-        includeBaseMapped: boolean,
-        item: Zotero.Item
-      ) => {
+    });
+
+    await Zotero.ItemTreeManager.registerColumns({
+      dataKey: "cnki-journal-type",
+      label: getString("cssci-field-label"),
+      pluginID: config.addonID,
+      dataProvider: (item, _) => {
         const sci = ztoolkit.ExtraField.getExtraField(item, "CSSCI") as string;
         return sci ? sci : "";
-      },
-      {
-        iconPath: `chrome://${config.addonRef}/content/icons/cssci.png`,
       }
-    );
+    })
   }
 }
