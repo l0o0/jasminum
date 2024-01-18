@@ -3,7 +3,7 @@
     "jasminum@linxzh.com": {
       "updates": [
         {
-          "version": "1.0.0-14",
+          "version": "1.0.0-15",
           "update_link": "https://github.com/l0o0/jasminum/releases/latest/download/jasminum.xpi",
           "applications": {
             "zotero": {
