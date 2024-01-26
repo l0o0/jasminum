@@ -71,7 +71,7 @@
 ```{powershell}
 scoop install pdftk
 
-# C:\Users\Yourname\scoop\shims\pdftk.EXE
+# 路径设置填入：C:\Users\Yourname\scoop\shims
 ```
 
 ### 3.2 Linux
