@@ -29,7 +29,6 @@
 从知网上抓取学位论文的章节页码，用第三方软件PDFtk，将书签添加到PDF中。学位论文PDF必须先抓取元数据后，才可添加书签。
 
 右键 -> 知网助手 -> 添加书签
-![](vx_images/jasminum_1.png)
 
 ### 2.3 更新知网引用数
 已经抓取到完整元数据的条目，可以用些功能从知网抓取引用数，期刊类型等信息。这些信息会存储在`extra`其他字段中（自定义字段正在设计中）
@@ -40,9 +39,6 @@
 ### 2.5 拆分姓名与合并姓名
 将条目中作者信息按**姓**和**名**进行拆分与合并，防止在引用时姓与名分开。不过有些CSL文件已经优化了此问题，拆分还是合并已经没有影响 
 
-![](vx_images/jasminum_2.png)
-
-
 ### 2.6 手动设置语言 
 先在茉莉花设置 - 小工具，添加需要手动设置的语言信息，**默认是zh-CN**。右键点击该功能后，可以条目语言栏中用设定值替换。
 
@@ -52,14 +48,12 @@
 ### 2.8 Zotero 中文转换器（翻译器）更新
 
 翻译器是 Zotero translator 的中文翻译。不过后面觉得这个翻译不好，有歧意。经常会有同学会认为和英文文献翻译相关，更有同学和 Zotero-PDF-Translate 插件搞混。现在统一定为转换器，将网页上的信息转换到Zotero条目上。
-![](vx_images/jasminum_3.png)
 
 按需要查找对应网站的转换器，点击 Update 的按钮进行下载。Local 是本地转换器的更新时间，如果未下载会显示**---**。NewUpdate是 Zotero 中文社区中转换器仓库[translators_CN](https://github.com/l0o0/translators_CN)的更新时间。如果出现在右侧出现感叹号，则是说明转换器可以更新，如果是绿色对勾，说明是最新的，不必更新。
 
 上面页面下载之后，还需要在浏览器右键 Zotero Connector ，选择Preference 或扩展选项
-![](vx_images/jasminum_4.png)
+
 在 Zotero Connector 设置页面找到 Advanced - Update Translators ，点击该按钮（建议多次点击），手动更新转换器
-![](vx_images/jasminum_5.png)
 
 🎯 使用**Mac Safari** 浏览器的同学，可以在Safari浏览器空白页面，右键 - Zotero Preference - Advanced - Update Translators。
 
@@ -70,8 +64,7 @@
 插件是调用 PDFtk server 提供的功能给PDF添加书签。所以使用该功能，需要提前下载安装好 PDFtk server，并在插件中设置好对应的目录，注意此处目录设置是**bin目录**。[PDFtk server 下载页面](https://www.pdflabs.com/tools/pdftk-server/)
 
 ### 3.1 Windows
-![](vx_images/jasminum_6.png)
-1. 在 [下载页面](https://www.pdflabs.com/tools/pdftk-server/)找到上图的下载链接，下载Windows的安装文件。按默认设置安装后，设置目录为**C:\Program Files (x86)\PDFtk Server\bin**
+1. 在 [下载页面](https://www.pdflabs.com/tools/pdftk-server/)找到下载链接，下载Windows的安装文件。按默认设置安装后，设置目录为**C:\Program Files (x86)\PDFtk Server\bin**
 
 
 2. 使用 [scoop](https://scoop.sh/) 安装
@@ -88,7 +81,6 @@ sudo apt install pdftk
 which pdftk
 # /usr/bin/pdftk
 ```
-![](vx_images/jasminum_7.png)
 
 ### 3.3 Mac
 
