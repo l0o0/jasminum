@@ -71,7 +71,15 @@
 
 ### 3.1 Windows
 ![](vx_images/jasminum_6.png)
-在[下载页面](https://www.pdflabs.com/tools/pdftk-server/)找到上图的下载链接，下载Windows的安装文件。按默认设置安装后，设置目录为**C:\Program Files (x86)\PDFtk Server\bin**
+1. 在 [下载页面](https://www.pdflabs.com/tools/pdftk-server/)找到上图的下载链接，下载Windows的安装文件。按默认设置安装后，设置目录为**C:\Program Files (x86)\PDFtk Server\bin**
+
+
+2. 使用 [scoop](https://scoop.sh/) 安装
+```{powershell}
+scoop install pdftk
+
+# C:\Users\Yourname\scoop\shims\pdftk.EXE
+```
 
 ### 3.2 Linux
 以经典的 Ubuntu 16.04 为例，安装`pdftk`
