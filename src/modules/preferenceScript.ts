@@ -19,7 +19,7 @@ export async function checkPath(pathvalue: string): Promise<void> {
   let pdftk = "";
   let checkResult = false;
   try {
-    if (ztoolkit.getGlobal("Zotero").isWin) {
+    if (Zotero.isWin) {
       pdftk = PathUtils.join(pathvalue, "pdftk.exe");
     } else {
       pdftk = PathUtils.join(pathvalue, "pdftk");
@@ -41,20 +41,18 @@ export async function checkPath(pathvalue: string): Promise<void> {
 async function getLastUpdateFromFile(filename: string): Promise<string> {
   const desPath = PathUtils.join(
     PathUtils.join(
-      ztoolkit.getGlobal("Zotero").Prefs.get("dataDir") as string,
+      Zotero.Prefs.get("dataDir") as string,
       "translators",
       filename
     )
   );
   Zotero.debug(desPath);
-  if (!(await ztoolkit.getGlobal("OS").File.exists(desPath))) {
+  if (!(IOUtils.exists(desPath))) {
     Zotero.debug(filename + " not exists");
     return "---";
   }
   try {
-    const source = (await ztoolkit
-      .getGlobal("Zotero")
-      .File.getContentsAsync(desPath)) as string;
+    const source = (await Zotero.File.getContentsAsync(desPath)) as string;
     const infoRe = /^\s*{[\S\s]*?}\s*?[\r\n]/;
     const metaData = JSON.parse(infoRe.exec(source)![0]);
     return metaData.lastUpdated;
@@ -143,29 +141,21 @@ async function getTranslatorData(refresh = true): Promise<any> {
     : "https://oss.wwang.de/translators_CN";
   const url = baseUrl + "/data/translators.json";
 
-  const cacheFile = ztoolkit.getGlobal("Zotero").getTempDirectory();
+  const cacheFile = Zotero.getTempDirectory();
   if (!cacheFile.exists()) {
     // Sometimes the temp folder is missing
-    await ztoolkit
-      .getGlobal("Zotero")
-      .File.createDirectoryIfMissingAsync(cacheFile.path);
+    await Zotero.File.createDirectoryIfMissingAsync(cacheFile.path);
   }
   cacheFile.append("translator.json");
   ztoolkit.log(cacheFile.path);
   let contents;
   if (refresh == false && cacheFile.exists()) {
-    contents = await ztoolkit
-      .getGlobal("Zotero")
-      .File.getContentsAsync(cacheFile, "utf8");
+    contents = await Zotero.File.getContentsAsync(cacheFile, "utf8");
     return JSON.parse(contents as string);
   } else {
     try {
-      contents = await ztoolkit
-        .getGlobal("Zotero")
-        .File.getContentsFromURLAsync(url);
-      await ztoolkit
-        .getGlobal("Zotero")
-        .File.putContentsAsync(cacheFile, contents);
+      contents = await Zotero.File.getContentsFromURLAsync(url);
+      await Zotero.File.putContentsAsync(cacheFile, contents);
       return JSON.parse(contents);
     } catch (e) {
       ztoolkit.log("更新转换器数据失败");
@@ -203,12 +193,10 @@ async function downloadTranslator(filename: string): Promise<void> {
   const url = baseUrl + "/" + filename;
   ztoolkit.log(url);
   try {
-    const contents = await ztoolkit
-      .getGlobal("Zotero")
-      .File.getContentsFromURL(url);
+    const contents = await Zotero.File.getContentsFromURLAsync(url);
     const desPath = PathUtils.join(
       PathUtils.join(
-        ztoolkit.getGlobal("Zotero").Prefs.get("dataDir") as string,
+        Zotero.Prefs.get("dataDir") as string,
         "translators"
       ),
       filename
@@ -216,9 +204,6 @@ async function downloadTranslator(filename: string): Promise<void> {
     await IOUtils.writeUTF8(desPath, contents);
     await updateTranslatorImg(filename);
     ztoolkit.log(`${filename} 下载成功`);
-    showPop(
-      getString("translator-download-success", { args: { filename: filename } })
-    );
   } catch (e) {
     ztoolkit.log(`${filename} 下载失败 ${e}`);
     showPop(
@@ -293,7 +278,7 @@ async function updatePrefsUI() {
   if (addon.data.prefs?.window == undefined) return;
 
   ztoolkit.log("***** update UI");
-  const renderLock = ztoolkit.getGlobal("Zotero").Promise.defer();
+  const renderLock = Zotero.Promise.defer();
   checkInputMenu();
   // Update pdftk check icon
   await checkPath(getPref("pdftkpath") as string);

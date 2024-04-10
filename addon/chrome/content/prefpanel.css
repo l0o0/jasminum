@@ -20,7 +20,6 @@
   height: 12px;
   top: 0;
   position: sticky;
-  background: white;
   text-align: left;
   z-index: 4;
 }
@@ -44,8 +43,6 @@
 .jasminum-tooltip-text {
   position: absolute;
   z-index: 2;
-  color: black;
-  background-color: white;
   border: 1px solid;
   border-radius: 5px;
   margin: 10px 0px 10px 10px;
