@@ -13,7 +13,6 @@ if (!basicTool.getGlobal("Zotero")[config.addonInstance]) {
   _globalThis.document = basicTool.getGlobal("document");
   _globalThis.addon = new Addon();
   _globalThis.ztoolkit = addon.data.ztoolkit;
-  _globalThis.OS = basicTool.getGlobal("OS") as typeof OS;
   ztoolkit.basicOptions.log.prefix = `[${config.addonName}]`;
   ztoolkit.basicOptions.log.disableConsole = addon.data.env === "production";
   ztoolkit.UI.basicOptions.ui.enableElementJSONLog =
