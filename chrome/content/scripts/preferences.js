@@ -224,8 +224,10 @@ updateIcon = async function (label, status) {
     }
 };
 
-updateTranslator = async function (label) {
+updateTranslator = async function (label, reinit = true) {
     var status = await downloadTo(label);
+    // 重新刷新转换器缓存，提高浏览器转换器更新的成功率
+    await Zotero.Translators.init({ reinit: reinit });
     if (status) {
         updateIcon(label, status);
     }
@@ -233,7 +235,8 @@ updateTranslator = async function (label) {
 
 updateAll = async function () {
     var data = await getUpdates();
-    Object.keys(data).forEach(async (label) => await updateTranslator(label));
+    Object.keys(data).forEach(async (label) => await updateTranslator(label, false));
+    await Zotero.Translators.init({ reinit: true });
     Zotero.Jasminum.Utils.showPopup(
         "更新完成",
         "所有翻译器已经完成更新"
