@@ -1,6 +1,6 @@
 import { config } from "../../package.json";
 
-export { initLocale, getString };
+export { initLocale, getString, getLocaleID };
 
 /**
  * Initialize locale data
@@ -42,7 +42,7 @@ function initLocale() {
 function getString(localString: string): string;
 function getString(localString: string, branch: string): string;
 function getString(
-  localString: string,
+  localeString: string,
   options: { branch?: string | undefined; args?: Record<string, unknown> }
 ): string;
 function getString(...inputs: any[]) {
@@ -60,19 +60,29 @@ function getString(...inputs: any[]) {
 }
 
 function _getString(
-  localString: string,
+  localeString: string,
   options: { branch?: string | undefined; args?: Record<string, unknown> } = {}
 ): string {
+  const localStringWithPrefix = `${config.addonRef}-${localeString}`;
   const { branch, args } = options;
   const pattern = addon.data.locale?.current.formatMessagesSync([
-    { id: localString, args },
+    { id: localStringWithPrefix, args },
   ])[0];
   if (!pattern) {
-    return localString;
+    return localStringWithPrefix;
   }
   if (branch && pattern.attributes) {
-    return pattern.attributes[branch] || localString;
+    for (const attr of pattern.attributes) {
+      if (attr.name === branch) {
+        return attr.value;
+      }
+    }
+    return pattern.attributes[branch] || localStringWithPrefix;
   } else {
-    return pattern.value || localString;
+    return pattern.value || localStringWithPrefix;
   }
+}
+
+function getLocaleID(id: string) {
+  return `${config.addonRef}-${id}`;
 }

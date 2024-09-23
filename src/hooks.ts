@@ -38,9 +38,9 @@ async function onStartup() {
 
   //   await UIExampleFactory.registerReaderTabPanel();
   await Zotero.Promise.delay(1000);
-  ztoolkit
+  (ztoolkit
     .getGlobal("ZoteroPane")
-    .document.getElementById("zotero-itemmenu")!
+    .document as Document).getElementById("zotero-itemmenu")!
     .addEventListener("popupshowing", displayMenuitem, false);
 
   // Migrate Prefs from Zotero 6 to 7

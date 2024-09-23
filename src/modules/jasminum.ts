@@ -10,7 +10,6 @@ import {
 import {
   concatName,
   concatNameMenu,
-  manualSetLanguage,
   manualSetLanguageMenu,
   splitNameMenu,
   splitSemicolonNames,
@@ -100,7 +99,7 @@ export class BasicExampleFactory {
       image: `chrome://${config.addonRef}/content/icons/icon.png`,
       defaultXUL: true,
     };
-    ztoolkit.PreferencePane.register(prefOptions);
+    Zotero.PreferencePanes.register(prefOptions);
   }
 }
 
