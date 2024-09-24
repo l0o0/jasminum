@@ -41,7 +41,7 @@
   },
   "homepage": "https://github.com/l0o0/jasminum#readme",
   "dependencies": {
-    "zotero-plugin-toolkit": "^2.1.3"
+    "zotero-plugin-toolkit": "^3.0.4"
   },
   "devDependencies": {
     "@types/node": "^20.1.1",

@@ -16,7 +16,7 @@ import replaceInFile from "replace-in-file";
 const { replaceInFileSync } = replaceInFile;
 import details from "../package.json" assert { type: "json" };
 
-const { name, author, homepage, version, config } = details;
+const { name, author, homepage, version, config, description, addonRef } = details;
 
 const t = new Date();
 const buildTime = dateFormat("YYYY-mm-dd HH:MM:SS", new Date());
@@ -130,8 +130,10 @@ function replaceString() {
         /__buildVersion__/g,
         /__buildTime__/g,
         /__updateLink__/g,
+        /__description__/g,
+        /__addonRef__/g,
     ];
-    const replaceTo = [author, homepage, version, buildTime, updateLink];
+    const replaceTo = [author, homepage, version, buildTime, updateLink, description, addonRef];
 
     replaceFrom.push(
         ...Object.keys(config).map((k) => new RegExp(`__${k}__`, "g")),
