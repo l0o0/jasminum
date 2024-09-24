@@ -21,6 +21,6 @@ export function string2HTML(text: string) {
   // This DOMParser is from XPCOM.
   /*         var parser = Components.classes["@mozilla.org/xmlextras/domparser;1"]
               .createInstance(Components.interfaces.nsIDOMParser); */
-  const parser = ztoolkit.getDOMParser();
+  const parser = new DOMParser();
   return parser.parseFromString(text, "text/html");
 }
