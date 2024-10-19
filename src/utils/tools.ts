@@ -1,11 +1,11 @@
 function isCNKIFile(item: Zotero.Item) {
   // Return true, when item is OK for update cnki data.
   if (
-      !item.isAttachment() ||
-      item.isRegularItem() ||
-      !item.isTopLevelItem()
+    !item.isAttachment() ||
+    item.isRegularItem() ||
+    !item.isTopLevelItem()
   ) {
-      return false;
+    return false;
   }
 
   const filename = item.attachmentFilename;
@@ -33,20 +33,20 @@ function isRegularTopItem(item: Zotero.Item) {
 */
 export function isCNKIPDF(item: Zotero.Item): boolean {
   return (
-      !item.isTopLevelItem() &&
-      item.isAttachment() &&
-      item.attachmentContentType &&
-      item.attachmentContentType === "application/pdf" &&
-      Zotero.ItemTypes.getName(item.parentItem!.itemTypeID) === "thesis"
+    !item.isTopLevelItem() &&
+    item.isAttachment() &&
+    item.attachmentContentType &&
+    item.attachmentContentType === "application/pdf" &&
+    Zotero.ItemTypes.getName(item.parentItem!.itemTypeID) === "thesis"
   ) as boolean;
 }
 
 function isCNKIWeb(item: Zotero.Item) {
   return (
-      item.isTopLevelItem() &&
-      item.isRegularItem() &&
-      Zotero.ItemTypes.getName(item.itemTypeID) === "webpage" &&
-      (item.getField("title") as string).endsWith("中国知网")
+    item.isTopLevelItem() &&
+    item.isRegularItem() &&
+    Zotero.ItemTypes.getName(item.itemTypeID) === "webpage" &&
+    (item.getField("title") as string).endsWith("中国知网")
   );
 }
 
@@ -77,4 +77,13 @@ export function getItems(type = "items", regular = false) {
   // 用于解决多选项目时选中附件类条目导致小组件修改错误，使得批量修改中断。
   if (regular) items = items.filter(item => item.isRegularItem());
   return items;
+}
+
+// df31699a-9e46-46e1-b2b3-7cb89f0a14e8 生成这样的id
+export function generateUUID(): string {
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
+    const r = Math.random() * 16 | 0,
+      v = c === 'x' ? r : (r & 0x3 | 0x8);
+    return v.toString(16);
+  });
 }

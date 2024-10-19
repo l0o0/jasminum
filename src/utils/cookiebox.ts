@@ -1,4 +1,6 @@
 import { getPref } from "./prefs";
+import { generateUUID } from "./tools";
+
 
 export class MyCookieSandbox {
   public searchCookieBox: any;
@@ -8,44 +10,57 @@ export class MyCookieSandbox {
   baseUrl = "https://cnki.net/";
 
   constructor() {
-      this.searchCookieBox = this.setSearchCookieBox();
-      this.attachmentCookieBox = this.setAttachmentCookieBox();
-      this.refCookieBox = this.setRefCookieSandbox();
+    this.searchCookieBox = this.setSearchCookieBox();
+    this.attachmentCookieBox = this.setAttachmentCookieBox();
+    this.refCookieBox = this.setRefCookieSandbox();
   }
 
   setSearchCookieBox() {
-      const cookieData =
-          "Ecp_ClientId=1200104193103044969; RsPerPage=20; " +
-          "cnkiUserKey=60c42f4d-35a2-6d3f-6efc-ad01eaffd4c3; " +
-          "_pk_ref=%5B%22%22%2C%22%22%2C1604497317%2C%22https%3A%2F%2Fcnki.net%2F%22%5D; " +
-          "ASP.NET_SessionId=zcw1abnl5vitqcliiq5almmj; " +
-          "SID_kns8=123121; " +
-          "Ecp_IpLoginFail=20110839.182.10.65";
-      return new Zotero.CookieSandbox(null, this.baseUrl, cookieData, this.userAgent);
+    function createEcpId() {
+      const now = new Date();
+      const year = String(now.getFullYear());
+      const month = String(now.getMonth() + 1).padStart(2, '0'); // 月份从 0 开始，需要加 1
+      const day = String(now.getDate()).padStart(2, '0');
+      const hours = String(now.getHours()).padStart(2, '0');
+      const minutes = String(now.getMinutes()).padStart(2, '0');
+      const seconds = String(now.getSeconds()).padStart(2, '0');
+      const milliseconds = String(now.getMilliseconds()).padStart(3, '0');
+
+      // 生成随机数作为最后几位
+      const randomPart = Math.floor(Math.random() * 1000000).toString().padStart(6, '0');
+      const createTime = `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`
+      const ecpid = `i${year.slice(-2)}${month}${day}${hours}${minutes}${seconds}${milliseconds}${randomPart}`
+      return [createTime, ecpid];
+    }
+    const [createTime, ecpid] = createEcpId();
+    const cookieData =
+      `cnkiUserKey=${generateUUID()}; ` +
+      "dblang=both; " +
+      `createtime-advInput=${createTime.replace(" ", "%20").replace(/:/g, "%3A")}; ` +
+      `Ecp_ClientId=${ecpid}; ` +
+      "SID_sug=zcw1abnl5vitqcliiq5almmj; "
+    //Zotero.debug(cookieData);
+    return new Zotero.CookieSandbox(null, this.baseUrl, cookieData, this.userAgent);
   }
 
   setAttachmentCookieBox() {
-      const cookieData = getPref("cnkiAttachmentCookie") as string;
-      return new Zotero.CookieSandbox(null, this.baseUrl, cookieData, this.userAgent);
+    const cookieData = getPref("cnkiAttachmentCookie") as string;
+    return new Zotero.CookieSandbox(null, this.baseUrl, cookieData, this.userAgent);
   }
 
   setRefCookieSandbox() {
-      const cookieData =
-          "Ecp_ClientId=1200104193103044969; RsPerPage=20; " +
-          "cnkiUserKey=60c42f4d-35a2-6d3f-6efc-ad01eaffd4c3; " +
-          "ASP.NET_SessionId=zcw1abnl5vitqcliiq5almmj; " +
-          "SID_kns8=123121; Ecp_IpLoginFail=20110839.182.10.65; " +
-          "SID_recommendapi=125144; CurrSortFieldType=desc; " +
-          "SID_kns=025123117; " +
-          "CurrSortField=%e5%8f%91%e8%a1%a8%e6%97%b6%e9%97%b4%2f(%e5%8f%91%e8%a1%a8%e6%97%b6%e9%97%b4%2c%27TIME%27); " +
-          "SID_kcms=124117; " +
-          "_pk_ref=%5B%22%22%2C%22%22%2C1604847086%2C%22https%3A%2F%2Fcnki.net%2F%22%5D; " +
-          "_pk_ses=*";
-      return new Zotero.CookieSandbox(null, this.baseUrl, cookieData, this.userAgent);
+    const cookieData =
+      `cnkiUserKey=${generateUUID()}; ` +
+      `createtime-advInput=${(new Date()).toISOString().replace('T', ' ').slice(0, 19)}; ` +
+      "dblang=both; " +
+      "SID_restapi=018105; " +
+      "SID_sug=018110";
+    Zotero.debug(cookieData);
+    return new Zotero.CookieSandbox(null, this.baseUrl, cookieData, this.userAgent);
   };
 
   // Update cookiebox when attachment old cookie is outdated.
   updateAttachmentCookieBox() {
-      this.attachmentCookieBox = this.setAttachmentCookieBox();
+    this.attachmentCookieBox = this.setAttachmentCookieBox();
   }
 }
