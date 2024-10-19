@@ -492,24 +492,22 @@ export async function trans2Items(data: string, libraryID: number) {
  */
 export async function fixItem(newItems: Zotero.Item[], targetData: any) {
   ztoolkit.log("start to fix cnki item");
-  let creators: MyCreator[];
   // 学位论文Thesis，导师 -> contributor
   for (let idx = 0; idx < newItems.length; idx++) {
     const newItem = newItems[idx];
     if (newItem.getNotes()) {
       if (Zotero.ItemTypes.getName(newItem.itemTypeID) == "thesis") {
-        creators = newItem.getCreators() as MyCreator[];
+        let creators: Zotero.Item.CreatorJSON[] = [];
         const note = Zotero.Items.get(newItem.getNotes()[0])
           .getNote()
           .split(/<br\s?\/>/);
         // Zotero.debug(note);
         for (const line of note) {
           if (line.startsWith("A3")) {
-            const creator: MyCreator = {
+            const creator: Zotero.Item.CreatorJSON = {
               firstName: "",
               lastName: line.replace("A3 ", ""),
               creatorType: "contributor",
-              fieldMode: 1,
             };
             creators.push(creator);
           }
@@ -520,13 +518,13 @@ export async function fixItem(newItems: Zotero.Item[], targetData: any) {
     }
     // 是否处理中文姓名. For Chinese name
     if (getPref("zhnamesplit")) {
-      creators = newItem.getCreators() as MyCreator[];
+      let creators = newItem.getCreators();
       for (let i = 0; i < creators.length; i++) {
         const creator = creators[i];
         creator.fieldMode = 0;
         if (creator.firstName) continue;
 
-        const lastSpace = creator.lastName.lastIndexOf(" ");
+        const lastSpace = creator.lastName!.lastIndexOf(" ");
         if (creator.lastName.search(/[A-Za-z]/) !== -1 && lastSpace !== -1) {
           // western name. split on last space
           creator.firstName = creator.lastName.substring(0, lastSpace);

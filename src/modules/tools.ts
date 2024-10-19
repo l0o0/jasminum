@@ -55,7 +55,7 @@ export async function splitName(items: Zotero.Item[]) {
         if (!isSplitEnName) continue;
         const EnglishName = creator.lastName;
         const temp = EnglishName!.split(/[\n\s+,]/g).filter(Boolean); // 过滤空字段
-        creator.lastName = temp.pop();
+        creator.lastName = temp.pop()!;
         creator.firstName = temp.join(" ");
       } else if (creator.firstName === "") {
         // For Chinese Name,名为空
@@ -85,8 +85,8 @@ export async function splitNameMenu(type: "items" | "collection") {
 export async function splitSemicolonNames(type: string) {
   const items = getItems(type);
   for (const item of items) {
-    const creators = item.getCreators();
-    const newlist = [];
+    const creators = item.getCreatorsJSON();
+    const newlist: Zotero.Item.CreatorJSON[] = [];
     for (const creator of creators) {
       if (creator.lastName!.search(";") && creator.firstName === "") {
         const names = creator
