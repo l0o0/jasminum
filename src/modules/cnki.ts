@@ -28,8 +28,8 @@ export function getIDFromSearchRow(row: Element): CNKIID | boolean {
   const input = row.querySelector("td.seq input");
   const filename = input?.getAttribute("value");
   const operat = row.querySelector("td.operat [data-dbname]");
-  const dbname = operat?.getAttribute("data-dbname")
-  const dbcode = operat?.getAttribute("data-filename");  // 注意此处dbcode 为 filename
+  const dbname = operat?.getAttribute("data-dbname");
+  const dbcode = operat?.getAttribute("data-filename"); // 注意此处dbcode 为 filename
 
   if (!dbname || !filename || !dbcode) return false;
   return { dbname: dbname, filename: filename, dbcode: dbcode };
@@ -86,14 +86,22 @@ function createRefPostData(id: CNKIID) {
   // filename=CPFDLAST2020!ZGXD202011001016!1!14%2CCPFDLAST2020!ZKBD202011001034!2!14&displaymode=Refworks&orderparam=0&ordertype=desc&selectfield=&random=0.9317799522629542
   // New multiple: FileName=CAPJ!XDTQ20231110001!1!0%2Ckd9kqNkOM8Xyu_MccKCQ5AM1UHjV0uMR_icN4IXwgicZ_CtYnuxduewAwhD5Qh2GSo4NZ_c4MLfuFbIiSMX1OrzIQ1G0iNFSWKuVwMIdPIM!%2Ckd9kqNkOM8Xyu_MccKCQ5AM1UHjV0uMR_icN4IXwgiecAKpOFogNWlYApDrbdtLwkhlBN69wm54APwSt_M517LzIQ1G0iNFSWKuVwMIdPIM!&DisplayMode=Refworks&OrderParam=0&OrderType=desc&SelectField=&PageIndex=1&PageSize=20&language=CHS&uniplatform=NZKPT&random=0.9986425284493061
   // New single: FileName=CCNDTEMP!ZJSB20231108A060!1!0&DisplayMode=Refworks&OrderParam=0&OrderType=desc&SelectField=&PageIndex=1&PageSize=20&language=&uniplatform=NZKPT&random=0.30585230060685187
-  return `FileName=${id.filename}&DisplayMode=Refworks&OrderParam=0&OrderType=desc&SelectField=&PageIndex=1&PageSize=20&language=&uniplatform=NZKPT&random=${Math.random()}`;
+  return `FileName=${
+    id.filename
+  }&DisplayMode=Refworks&OrderParam=0&OrderType=desc&SelectField=&PageIndex=1&PageSize=20&language=&uniplatform=NZKPT&random=${Math.random()}`;
 }
-
 
 function jsonToFormUrlEncoded(json: any) {
   return Object.keys(json)
-    .map(key => encodeURIComponent(key) + '=' + encodeURIComponent(typeof json[key] === 'object' ? JSON.stringify(json[key]) : json[key]))
-    .join('&');
+    .map(
+      (key) =>
+        encodeURIComponent(key) +
+        "=" +
+        encodeURIComponent(
+          typeof json[key] === "object" ? JSON.stringify(json[key]) : json[key]
+        )
+    )
+    .join("&");
 }
 
 /**
@@ -110,22 +118,24 @@ function createSearchPostData(fileData: any) {
     dstyle: "listmode",
     boolSortSearch: false,
     sentenceSearch: false,
-    productStr: "YSTT4HG0,LSTPFY1C,RMJLXHZ3,JQIRZIYA,JUP3MUPD,1UR4K4HZ,BPBAFJ5S,R79MZMCB,MPMFIG1A,WQ0UVIAA,NB3BWEHK,XVLO76FD,HR1YT1Z9,BLZOG7CK,EMRPGLPA,J708GVCE,ML4DRIDX,PWFIRAGL,NLBO1Z6R,NN3FJMUV,",
+    productStr:
+      "YSTT4HG0,LSTPFY1C,RMJLXHZ3,JQIRZIYA,JUP3MUPD,1UR4K4HZ,BPBAFJ5S,R79MZMCB,MPMFIG1A,WQ0UVIAA,NB3BWEHK,XVLO76FD,HR1YT1Z9,BLZOG7CK,EMRPGLPA,J708GVCE,ML4DRIDX,PWFIRAGL,NLBO1Z6R,NN3FJMUV,",
     searchFrom: "资源范围：总库;++中英文扩展;++时间范围：更新时间：不限;++",
     CurPage: 1,
-    aside: '',
+    aside: "",
   };
   const queryJson: any = {
     // KuaKuCode: "CJZK,CDFD,CMFD,CPFD,IPFD,CCND,BDZK,CPVD",
-    "Platform": "",
-    "Resource": "CROSSDB",
-    "Classid": "WD0FTY92",
-    "Products": "",
-    "ExScope": "1",
-    "SearchType": 1,
-    "Rlang": "CHINESE",
-    "KuaKuCode": "YSTT4HG0,LSTPFY1C,JUP3MUPD,MPMFIG1A,WQ0UVIAA,BLZOG7CK,PWFIRAGL,EMRPGLPA,NLBO1Z6R,NN3FJMUV",
-    "SearchFrom": 1,
+    Platform: "",
+    Resource: "CROSSDB",
+    Classid: "WD0FTY92",
+    Products: "",
+    ExScope: "1",
+    SearchType: 1,
+    Rlang: "CHINESE",
+    KuaKuCode:
+      "YSTT4HG0,LSTPFY1C,JUP3MUPD,MPMFIG1A,WQ0UVIAA,BLZOG7CK,PWFIRAGL,EMRPGLPA,NLBO1Z6R,NN3FJMUV",
+    SearchFrom: 1,
     QNode: {
       QGroup: [
         {
@@ -143,24 +153,24 @@ function createSearchPostData(fileData: any) {
           ChildItems: [],
         },
       ],
-    }
+    },
   };
 
   // 必要标题，不然搜个啥。标题全按主题词搜索，虽然模糊，可是适用范围大
   // 所谓模糊搜索就是将特殊符号去掉，所以字段放到主题词中
   // TODO: 新增模糊搜索选项
-  let aside = '';
+  let aside = "";
   const su = {
-    "Key": "input[data-tipid=gradetxt-1]",
-    "Title": "主题",
+    Key: "input[data-tipid=gradetxt-1]",
+    Title: "主题",
     Logic: 0,
     Items: [
       {
-        "Key": "input[data-tipid=gradetxt-1]",
-        "Title": "主题",
-        "Logic": 0,
-        "Field": "SU",
-        "Operator": "TOPRANK",
+        Key: "input[data-tipid=gradetxt-1]",
+        Title: "主题",
+        Logic: 0,
+        Field: "SU",
+        Operator: "TOPRANK",
         Value: fileData.keyword,
         Value2: "",
       },
@@ -360,13 +370,15 @@ export async function searchCNKI(fileData: any): Promise<CNKIRow[]> {
     "User-Agent":
       "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:109.0) Gecko/20100101 Firefox/119.0",
     Accept: "*/*",
-    "Accept-Language": "zh-CN,zh;q=0.9,en;q=0.8,en-GB;q=0.7,en-US;q=0.6,zh-TW;q=0.5",
+    "Accept-Language":
+      "zh-CN,zh;q=0.9,en;q=0.8,en-GB;q=0.7,en-US;q=0.6,zh-TW;q=0.5",
     "Accept-Encoding": "gzip, deflate, br, zstd",
     "Content-Type": "application/x-www-form-urlencoded; charset=UTF-8",
     "Content-Length": postData.length,
     Origin: "https://kns.cnki.net",
     Connection: "keep-alive",
-    Referer: "https://kns.cnki.net/kns8s/AdvSearch?crossids=YSTT4HG0%2CLSTPFY1C%2CJUP3MUPD%2CMPMFIG1A%2CWQ0UVIAA%2CBLZOG7CK%2CEMRPGLPA%2CPWFIRAGL%2CNLBO1Z6R%2CNN3FJMUV",
+    Referer:
+      "https://kns.cnki.net/kns8s/AdvSearch?crossids=YSTT4HG0%2CLSTPFY1C%2CJUP3MUPD%2CMPMFIG1A%2CWQ0UVIAA%2CBLZOG7CK%2CEMRPGLPA%2CPWFIRAGL%2CNLBO1Z6R%2CNN3FJMUV",
   };
   const postUrl = "https://kns.cnki.net/kns8s/brief/grid";
   // Zotero.debug(Zotero.Jasminum.CookieSandbox);
@@ -410,7 +422,10 @@ export async function searchCNKI(fileData: any): Promise<CNKIRow[]> {
 }
 
 // Get refwork text data from search target rows
-export async function getRefworksText(id: CNKIID, url: string): Promise<string> {
+export async function getRefworksText(
+  id: CNKIID,
+  url: string
+): Promise<string> {
   // let targetIDs: CNKIID[] = resultRows.reduce((p:CNKIID[], c) => {p.push(c.id); return p}, []);
   const postData = createRefPostData(id);
   const headers = {
@@ -422,8 +437,9 @@ export async function getRefworksText(id: CNKIID, url: string): Promise<string> 
     Host: "kns.cnki.net",
     Origin: "https://kns.cnki.net",
     Priority: "u=0",
-    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:131.0) Gecko/20100101 Firefox/131.0",
-    Referer: url
+    "User-Agent":
+      "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:131.0) Gecko/20100101 Firefox/131.0",
+    Referer: url,
   };
   Zotero.debug(postData);
   const apiurl = "https://kns.cnki.net/dm8/api/ShowExport";
@@ -445,7 +461,7 @@ export async function getRefworksText(id: CNKIID, url: string): Promise<string> 
     .replace(/^RT\s+Conference Proceeding/gim, "RT Conference Proceedings")
     .replace(/^RT\s+Dissertation\/Thesis/gim, "RT Dissertation")
     .replace("LA 中文;", "LA zh")
-    .replace(/^\s+/gm, '')  // remove leading space
+    .replace(/^\s+/gm, "") // remove leading space
     .replace(
       /^(A[1-4]|U2)\s*([^\r\n]+)/gm,
       function (m: any, tag: any, authors: any) {
@@ -497,7 +513,7 @@ export async function fixItem(newItems: Zotero.Item[], targetData: any) {
     const newItem = newItems[idx];
     if (newItem.getNotes()) {
       if (Zotero.ItemTypes.getName(newItem.itemTypeID) == "thesis") {
-        let creators: Zotero.Item.CreatorJSON[] = [];
+        const creators: Zotero.Item.CreatorJSON[] = [];
         const note = Zotero.Items.get(newItem.getNotes()[0])
           .getNote()
           .split(/<br\s?\/>/);
@@ -518,7 +534,7 @@ export async function fixItem(newItems: Zotero.Item[], targetData: any) {
     }
     // 是否处理中文姓名. For Chinese name
     if (getPref("zhnamesplit")) {
-      let creators = newItem.getCreators();
+      const creators = newItem.getCreators();
       for (let i = 0; i < creators.length; i++) {
         const creator = creators[i];
         creator.fieldMode = 0;
@@ -575,7 +591,7 @@ export async function fixItem(newItems: Zotero.Item[], targetData: any) {
     newItem.setField("url", targetData["targetUrls"][idx]);
     if (targetData.citations[idx]) {
       // Add citation
-      const citationString = `CNKIcitations:${targetData.citations[idx]}`;
+      const citationString = `CNKICite:${targetData.citations[idx]}`;
       extraString = citationString;
     }
 
@@ -631,7 +647,10 @@ export async function searchCNKIMetadata(items: Zotero.Item[]) {
         item.getField("url") as string
       )) as CNKIID;
       Zotero.debug([articleId]);
-      const data = await getRefworksText(articleId, item.getField("url") as string);
+      const data = await getRefworksText(
+        articleId,
+        item.getField("url") as string
+      );
       // Zotero.debug("** Jasminum webpage data");
 
       let newItems = await trans2Items(data, libraryID);
@@ -789,7 +808,10 @@ export async function updateCiteCSSCI() {
         };
         const targetRows = await searchCNKI(fileData);
         if (targetRows && targetRows.length > 0) {
-          const urls = await getRefworksText(targetRows[0].id, targetRows[0].url);
+          const urls = await getRefworksText(
+            targetRows[0].id,
+            targetRows[0].url
+          );
           Zotero.debug("** Jasminum " + urls[0]);
           // item.setField('url', urls[0]);
           // item.saveTx();
