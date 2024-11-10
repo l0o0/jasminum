@@ -130,21 +130,54 @@ Zotero.Jasminum.Scrape = new function () {
      * @return {String} 
      */
     this.createRefPostData = function (ids) {
-        // FileName=CAPJ!TNGZ20231120001!1!0%2CCJFQ!CCSS202311038!1!0&DisplayMode=Refworks&OrderParam=0&OrderType=desc&SelectField=&PageIndex=1&PageSize=20&language=&uniplatform=&random=0.8587002074972324
-        var args = ids.map((id) => `${id.dbcode}!${id.filename}!1!0`).join("%2C");
-        var postData = "FileName=" + args + "&DisplayMode=Refworks&OrderParam=0&OrderType=desc&SelectField=&PageIndex=1&PageSize=20&language=&uniplatform=&random=0.8587002074972324";
-        return postData;
+        const filenames = ids.map(id => id.filename);
+        return `FileName=${filenames.join(",")
+            }&DisplayMode=Refworks&OrderParam=0&OrderType=desc&SelectField=&PageIndex=1&PageSize=20&language=&uniplatform=NZKPT&random=${Math.random()}`;
     }.bind(Zotero.Jasminum);
+
+    function jsonToFormUrlEncoded(json) {
+        return Object.keys(json)
+            .map(
+                (key) =>
+                    encodeURIComponent(key) +
+                    "=" +
+                    encodeURIComponent(
+                        typeof json[key] === "object" ? JSON.stringify(json[key]) : json[key]
+                    )
+            )
+            .join("&");
+    }
 
     /**
      * Create post data for CNKI result
      */
     this.createPostData = function (fileData) {
-        var queryJson = {
+        const queryData = {
+            boolSearch: true,
+            QueryJson: NaN,
+            pageNum: 1,
+            pageSize: 20,
+            dstyle: "listmode",
+            boolSortSearch: false,
+            sentenceSearch: false,
+            productStr:
+                "YSTT4HG0,LSTPFY1C,RMJLXHZ3,JQIRZIYA,JUP3MUPD,1UR4K4HZ,BPBAFJ5S,R79MZMCB,MPMFIG1A,WQ0UVIAA,NB3BWEHK,XVLO76FD,HR1YT1Z9,BLZOG7CK,EMRPGLPA,J708GVCE,ML4DRIDX,PWFIRAGL,NLBO1Z6R,NN3FJMUV,",
+            searchFrom: "资源范围：总库;++中英文扩展;++时间范围：更新时间：不限;++",
+            CurPage: 1,
+            aside: "",
+        };
+        const queryJson = {
+            // KuaKuCode: "CJZK,CDFD,CMFD,CPFD,IPFD,CCND,BDZK,CPVD",
             Platform: "",
             Resource: "CROSSDB",
-            DBCode: "SCDB",
-            KuaKuCode: "CJZK,CDFD,CMFD,CPFD,IPFD,CCND,BDZK,CPVD",
+            Classid: "WD0FTY92",
+            Products: "",
+            ExScope: "1",
+            SearchType: 1,
+            Rlang: "CHINESE",
+            KuaKuCode:
+                "YSTT4HG0,LSTPFY1C,JUP3MUPD,MPMFIG1A,WQ0UVIAA,BLZOG7CK,PWFIRAGL,EMRPGLPA,NLBO1Z6R,NN3FJMUV",
+            SearchFrom: 1,
             QNode: {
                 QGroup: [
                     {
@@ -163,39 +196,19 @@ Zotero.Jasminum.Scrape = new function () {
                     },
                 ],
             },
-            ExScope: "1",
-            SearchType: "0",
         };
-        if (fileData.author) {
-            var au = {
-                Key: "",
-                Title: "",
-                Logic: 0,
-                Items: [
-                    {
-                        Key: "",
-                        Title: "作者",
-                        Logic: 0,
-                        Field: "AU",
-                        Operator: "DEFAULT",
-                        Value: fileData.author,
-                        Value2: "",
-                    },
-                ],
-                ChildItems: [],
-            };
-            queryJson.QNode.QGroup[0].ChildItems.push(au);
-        }
+
         // 必要标题，不然搜个啥。标题全按主题词搜索，虽然模糊，可是适用范围大
         // 所谓模糊搜索就是将特殊符号去掉，所以字段放到主题词中
         // TODO: 新增模糊搜索选项
-        var su = {
-            Key: "",
-            Title: "",
+        let aside = "";
+        const su = {
+            Key: "input[data-tipid=gradetxt-1]",
+            Title: "主题",
             Logic: 0,
             Items: [
                 {
-                    Key: "",
+                    Key: "input[data-tipid=gradetxt-1]",
                     Title: "主题",
                     Logic: 0,
                     Field: "SU",
@@ -207,10 +220,33 @@ Zotero.Jasminum.Scrape = new function () {
             ChildItems: [],
         };
         queryJson.QNode.QGroup[0].ChildItems.push(su);
-        // Zotero.debug(queryJson);
-        var tailing =
-            "&DbCode=SCDB&pageNum=1&pageSize=20&sortField=PT&sortType=desc&boolSearch=true&boolSortSearch=false&version=kns7&CurDisplayMode=listmode&productStr=CJZK,CDFD,CMFD,CPFD,IPFD,CCND,BDZK,CPVD&sentenceSearch=false&aside=空";
-        return encodeURI(`QueryJson=${JSON.stringify(queryJson)}` + tailing);
+        aside = `（主题：${fileData.keyword}）`;
+
+        if (fileData.author) {
+            const au = {
+                Key: "input[data-tipid=gradetxt-2]",
+                Title: "作者",
+                Logic: 0,
+                Items: [
+                    {
+                        Key: "input[data-tipid=gradetxt-2]",
+                        Title: "作者",
+                        Logic: 0,
+                        Field: "AU",
+                        Operator: "FUZZY",
+                        Value: fileData.author,
+                        Value2: "",
+                    },
+                ],
+                ChildItems: [],
+            };
+            queryJson.QNode.QGroup[0].ChildItems.push(au);
+            aside = `（主题：${fileData.keyword}）AND（作者：${fileData.author}(模糊)）`;
+        }
+        queryData.QueryJson = queryJson;
+        queryData.aside = aside;
+        Zotero.debug(queryData);
+        return jsonToFormUrlEncoded(queryData);
     }.bind(Zotero.Jasminum);
 
 
@@ -247,12 +283,12 @@ Zotero.Jasminum.Scrape = new function () {
 
 
     this.getIDFromSearchRow = function (row) {
-        var input = row.querySelector("td.seq input");
-        var values = input.getAttribute("value").split("!");
-        var dbname = input.getAttribute("tb");
-        if (!values || values.length != 3) return false;
-        const dbcode = values[0];
-        const filename = values[1];
+        const input = row.querySelector("td.seq input");
+        const filename = input.getAttribute("value");
+        const operat = row.querySelector("td.operat [data-dbname]");
+        const dbname = operat.getAttribute("data-dbname");
+        const dbcode = operat.getAttribute("data-filename"); // 注意此处dbcode 为 filename
+
         if (!dbname || !filename || !dbcode) return false;
         return { dbname: dbname, filename: filename, dbcode: dbcode };
     }
@@ -305,24 +341,23 @@ Zotero.Jasminum.Scrape = new function () {
     this.search = async function (fileData) {
         Zotero.debug("**Jasminum start search");
         var postData = this.Scrape.createPostData(fileData);
-        let requestHeaders = {
+        const requestHeaders = {
             Host: "kns.cnki.net",
             "User-Agent":
                 "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:109.0) Gecko/20100101 Firefox/119.0",
-            Accept: "text/html, */*; q=0.01",
-            "Accept-Language": "zh-CN,en-US;q=0.7,en;q=0.3",
-            "Accept-Encoding": "gzip, deflate, br",
+            Accept: "*/*",
+            "Accept-Language":
+                "zh-CN,zh;q=0.9,en;q=0.8,en-GB;q=0.7,en-US;q=0.6,zh-TW;q=0.5",
+            "Accept-Encoding": "gzip, deflate, br, zstd",
             "Content-Type": "application/x-www-form-urlencoded; charset=UTF-8",
-            "X-Requested-With": "XMLHttpRequest",
             "Content-Length": postData.length,
             Origin: "https://kns.cnki.net",
             Connection: "keep-alive",
-            Referer: `https://kns.cnki.net/kns/search?dbcode=SCDB&kw=${encodeURI(
-                fileData.title
-            )}&korder=SU&crossdbcodes=CJFQ,CDFD,CMFD,CPFD,IPFD,CCND,CISD,SNAD,BDZK,CCJD,CJRF,CJFN`,
-        }
-        var postUrl = "https://kns.cnki.net/kns/brief/grid";
-        var resp = await Zotero.HTTP.request("POST", postUrl, {
+            Referer:
+                "https://kns.cnki.net/kns8s/AdvSearch?crossids=YSTT4HG0%2CLSTPFY1C%2CJUP3MUPD%2CMPMFIG1A%2CWQ0UVIAA%2CBLZOG7CK%2CEMRPGLPA%2CPWFIRAGL%2CNLBO1Z6R%2CNN3FJMUV",
+        };
+        const postUrl = "https://kns.cnki.net/kns8s/brief/grid";
+        const resp = await Zotero.HTTP.request("POST", postUrl, {
             headers: requestHeaders,
             body: postData,
         });
@@ -426,7 +461,7 @@ Zotero.Jasminum.Scrape = new function () {
             "Content-Length": postData.length,
             Origin: "https://kns.cnki.net",
             Connection: "keep-alive",
-            Referer: `https://kns.cnki.net/dm/manage/export.html?filename=${targetIDs[0].dbname}!${targetIDs[0].filename}!1!0&displaymode=NEW&uniplatform=NZKPT`,
+            Referer: "https://kns.cnki.net/kns8s/AdvSearch?crossids=YSTT4HG0%2CLSTPFY1C%2CJUP3MUPD%2CMPMFIG1A%2CWQ0UVIAA%2CBLZOG7CK%2CEMRPGLPA%2CPWFIRAGL%2CNLBO1Z6R%2CNN3FJMUV",
         };
         var resp = await Zotero.HTTP.request("POST", url, {
             headers: headers,
@@ -467,7 +502,7 @@ Zotero.Jasminum.Scrape = new function () {
         var targetData = { targetUrls: [], citations: [] }, // url, citation
             targetIDs = [];
         targetRows.forEach(function (r) {
-            var url = r.getElementsByClassName("fz14")[0].getAttribute("href");
+            var url = r.querySelector("a.fz14").getAttribute("href");
             var cite = Zotero.Jasminum.Scrape.getCitationFromSearch(r);
             var id = Zotero.Jasminum.Scrape.getIDFromSearchRow(r);
             targetIDs.push(id);
