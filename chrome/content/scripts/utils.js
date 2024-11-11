@@ -139,14 +139,14 @@ Zotero.Jasminum.Utils = new function () {
             }
 
             // Add Article publisher type, surrounded by <>. 核心期刊
-            var publisherType = Zotero.Utilities.xpath(html, "//div[@class='top-tip']//a[@class='type']");
-            if (publisherType.length > 0) {
-                extraString = extraString + "<" + publisherType.map(function (ele) {
-                    return ele.innerText
-                }
-                ).join(", ")
-                    + ">";
-            }
+            // var publisherType = Zotero.Utilities.xpath(html, "//div[@class='top-tip']//a[@class='type']");
+            // if (publisherType.length > 0) {
+            //     extraString = extraString + "<" + publisherType.map(function (ele) {
+            //         return ele.innerText
+            //     }
+            //     ).join(", ")
+            //         + ">";
+            // }
 
             newItem.setField("extra", extraString);
 

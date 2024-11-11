@@ -442,6 +442,7 @@ Zotero.Jasminum = new function () {
      */
     this.updateCiteCSSCI = async function (items) {
         var html;
+        let cite;
         for (let item of items) {
             if (["patent", "webpage"].includes(Zotero.ItemTypes.getName(item.itemTypeID))) {
                 this.Utils.showPopup(
@@ -464,11 +465,12 @@ Zotero.Jasminum = new function () {
                 // 检测是否出现知网验证页面,一般网页以nxgp开头的页面，会出现知网验证页面
                 if (html.querySelector("div.verify_wrap")) {
                     this.Utils.showPopup(
-                        "期刊、引用抓取异常",
+                        "引用抓取异常",
                         "抓取信息时出现知网验证页面",
                         1);
                     continue;
                 }
+                cite = this.Scrape.getCitationFromPage(html);
                 // 特异性网址，
                 if (Zotero.Utilities.xpath(html, "//h2[@id='erro_span']")) {
                     Zotero.debug("** Jasminum 条目网址有点特殊");
@@ -477,34 +479,37 @@ Zotero.Jasminum = new function () {
                         author: item.getCreators()[0].lastName + item.getCreators()[0].firstName
                     };
                     let targetRows = await this.Scrape.search(fileData);
-                    if (targetRows && targetRows.length > 0) {
-                        let urls = await this.Scrape.getRefworks(
-                            targetRows, onlyUrl = true
+                    if (targetRows === null) {
+                        this.Utils.showPopup(
+                            "引用抓取异常",
+                            "未查询到期刊信息",
+                            1
                         );
-                        Zotero.debug("** Jasminum " + urls[0]);
-                        item.setField('url', urls[0]);
-                        item.saveTx();
-                        url = item.getField("url");
-                        resp = await Zotero.HTTP.request("GET", url);
-                        html = this.Utils.string2HTML(resp.responseText);
-                        // 检测是否出现知网验证页面,一般网页以nxgp开头的页面，会出现知网验证页面
-                        if (html.querySelector("div.verify_wrap")) {
+                    }
+                    else if (targetRows.length == 1) {
+                        cite = this.Scrape.getCitationFromSearch(targetRows[0])
+                    } else if (targetRows.length > 1) {
+                        const title = item.getField("title");
+                        const author = item.getCreators()[0].lastName + item.getCreators()[0].firstName;
+                        const pub = item.getField("publicationTitle");
+                        const targetRow = targetRows.filter(row => row.textContent.includes(titile) && row.textContent.includes(author) && row.textContent.includes(pub));
+                        if (targetRow) {
+                            cite = this.Scrape.getCitationFromSearch(targetRows[0])
+                        } else {
                             this.Utils.showPopup(
-                                "期刊、引用抓取异常",
-                                "抓取信息时出现知网验证页面",
-                                1);
-                            continue;
+                                "引用抓取异常",
+                                "未查询到期刊信息",
+                                1
+                            );
                         }
                     }
-
                 }
                 let dateString = new Date().toLocaleDateString().replace(/\//g, '-');
-                let cite = this.Scrape.getCitationFromPage(html);
                 // let citeString = `CNKI citations: ${cite}[${dateString}]`;
                 let citeString = `${cite}[${dateString}]`;
-                let cssci = this.Scrape.getCSSCI(html);
+                // let cssci = this.Scrape.getCSSCI(html);
                 // let cssciString = "Chinese Core Journals: <" + cssci + ">";
-                let cssciString = "<" + cssci + ">";
+                // let cssciString = "<" + cssci + ">";
                 let field = Zotero.Prefs.get("jasminum.citefield");
                 var extraData = item.getField(field);
                 // Remove old cite and CSSCI string
@@ -526,30 +531,29 @@ Zotero.Jasminum = new function () {
                     extraAdd = "👍" + citeString;
                 }
 
-                if (cssci) {  // 或者可以参考其他核心期刊数据来源
-                    // if (extraData.match(/Chinese Core Journals: /)) {
-                    //     extraData = extraData.replace(/Chinese Core Journals: <.*?>/, cssciString);
-                    // } else {
-                    //     extraData = extraData.trim() + '\n' + cssciString;
-                    // }
-                    if (extraData.match(/📗/)) {
-                        extraData = extraData.replace(/📗<.*?>/, "");
-                    }
-                    extraAdd += '📗' + cssciString;
-                }
+                // if (cssci) {  // 或者可以参考其他核心期刊数据来源
+                //     // if (extraData.match(/Chinese Core Journals: /)) {
+                //     //     extraData = extraData.replace(/Chinese Core Journals: <.*?>/, cssciString);
+                //     // } else {
+                //     //     extraData = extraData.trim() + '\n' + cssciString;
+                //     // }
+                //     if (extraData.match(/📗/)) {
+                //         extraData = extraData.replace(/📗<.*?>/, "");
+                //     }
+                //     extraAdd += '📗' + cssciString;
+                // }
                 this.Utils.showPopup(
-                    "期刊、引用抓取完毕",
-                    `${item.getField('title')}, ${cite}, ${cssci ? cssci : '非核心期刊'}`,
+                    "引用抓取完毕",
+                    `${item.getField('title')}, Cite: ${cite}`,
                     0
                 )
                 Zotero.debug("** Jasminum cite number: " + cite);
-                Zotero.debug("** Jasminum cssci: " + cssci);
                 item.setField(field, extraAdd + "\n" + extraData.trim());
                 await item.saveTx();
             } else {
                 this.Utils.showPopup(
-                    "条目抓取失败",
-                    "缺失条目 URL 信息",
+                    "引用抓取异常",
+                    "未查询到期刊信息",
                     1
                 );
             }
