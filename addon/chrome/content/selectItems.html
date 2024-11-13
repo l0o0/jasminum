@@ -1,0 +1,181 @@
+<!doctype html>
+<html>
+
+<head>
+  <title>Jasminum</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 20px;
+      background-color: #f9f9f9;
+    }
+
+    .form-container {
+      border: 1px solid #ccc;
+      padding: 20px;
+      margin-bottom: 20px;
+      border-radius: 10px;
+      /* 圆角 */
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+      /* 阴影 */
+      background-color: #fff;
+      margin: 0 auto;
+    }
+
+    .form-group {
+      margin-bottom: 15px;
+      display: flex;
+      align-items: center;
+    }
+
+    .form-group label {
+      font-weight: bold;
+      margin-right: 8px;
+      min-width: 8px;
+    }
+
+    .form-group input[type="checkbox"] {
+      margin-right: 10px;
+      transform: scale(1.2);
+      /* 放大复选框 */
+    }
+
+    .form-group span {
+      flex-grow: 1;
+    }
+
+    .buttons {
+      text-align: right;
+      margin-top: 20px;
+    }
+
+    .buttons button {
+      margin-left: 10px;
+      padding: 8px 15px;
+      border: none;
+      color: white;
+      border-radius: 5px;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+    }
+
+    .buttons button.select-all {
+      background-color: #28a745;
+      /* 绿色 */
+    }
+
+    .buttons button.select-all:hover {
+      background-color: #218838;
+      /* 深绿色 */
+    }
+
+    .buttons button.deselect-all {
+      background-color: #dc3545;
+      /* 红色 */
+    }
+
+    .buttons button.deselect-all:hover {
+      background-color: #c82333;
+      /* 深红色 */
+    }
+
+    .form-group.selected {
+      font-weight: bold;
+      /* 选中时加粗字体 */
+    }
+  </style>
+  <script>
+    function selectAll() {
+      var checkboxes = document.querySelectorAll('.option');
+      checkboxes.forEach(function (checkbox) {
+        checkbox.checked = true;
+        checkbox.parentElement.parentElement.classList.add('selected');
+      });
+    }
+
+    function deselectAll() {
+      var checkboxes = document.querySelectorAll('.option');
+      checkboxes.forEach(function (checkbox) {
+        checkbox.checked = false;
+        checkbox.parentElement.parentElement.classList.remove('selected');
+      });
+    }
+
+    document.querySelectorAll('.option').forEach(function (checkbox) {
+      checkbox.addEventListener('change', function () {
+        if (this.checked) {
+          this.parentElement.parentElement.classList.add('selected');
+        } else {
+          this.parentElement.parentElement.classList.remove('selected');
+        }
+      });
+    });
+  </script>
+</head>
+
+<body>
+  <h2>选择匹配条目（可多选）</h2>
+  <!-- <div class="buttons">
+    <button type="button" class="select-all" onclick="selectAll()">全选</button>
+    <button type="button" class="deselect-all" onclick="deselectAll()">取消全选</button>
+  </div> -->
+  <div class="form-container">
+    <form>
+      <div id="options">
+        <!-- <div class="form-group">
+          <label>
+            1
+          </label>
+          <span>这是选项 1 的详细信息。</span>
+        </div> -->
+      </div>
+    </form>
+  </div>
+  <div class="buttons">
+    <button type="button" class="select-all" onclick="confirm()">OK</button>
+    <button type="button" class="deselect-all" onclick="cancel()">Cancel</button>
+  </div>
+  <script>
+    window.onload = function () {
+      var io = window.arguments[0];
+      io.dataIn.forEach((value, index) => {
+        let inputNode = document.createElement("input");
+        let labelNode = document.createElement("label");
+        let divNode = document.createElement("div");
+        inputNode.setAttribute("type", "checkbox");
+        inputNode.setAttribute("class", "option");
+        inputNode.setAttribute("name", index);
+        labelNode.innerHTML = value;
+        divNode.setAttribute("class", "form-group");
+        divNode.appendChild(inputNode);
+        divNode.appendChild(labelNode);
+
+        document.querySelector("#options").appendChild(divNode);
+      }
+      );
+    }
+
+    confirm = function () {
+      document.querySelectorAll("input:checked").forEach(n => window.arguments[0]['dataOut'].push(n.name));
+      window.close();
+    }
+
+    cancel = function () {
+      window.arguments[0]['dataOut'] = [];
+      window.close();
+    };
+
+    document.querySelectorAll('.option').forEach(function (checkbox) {
+      checkbox.addEventListener('change', function () {
+        if (this.checked) {
+          this.parentElement.parentElement.classList.add('selected');
+        } else {
+          this.parentElement.parentElement.classList.remove('selected');
+        }
+      });
+    });
+  </script>
+
+</body>
+
+</html>
