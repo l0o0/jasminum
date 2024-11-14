@@ -22,15 +22,8 @@ const t = new Date();
 const buildTime = dateFormat("YYYY-mm-dd HH:MM:SS", new Date());
 const buildDir = "builds";
 
-const isPreRelease = version.includes("-");
-
-// If it is a pre-release, use update-beta.json
-config.updateURL = isPreRelease ? config.updateBetaJSON : config.updateJSON;
-
-const updateJSONFile = isPreRelease ? "update-beta.json" : "update.json";
-const updateLink = isPreRelease
-    ? `${config.releasePage}/download/${version}/${name}.xpi`
-    : `${config.releasePage}/latest/download/${name}.xpi`;
+const updateJSONFile = "update7.json";
+const updateLink = `${config.releasePage}/latest/download/${name}_${config.version}.xpi`;
 
 function copyFileSync(source, target) {
     var targetFile = target;
@@ -262,7 +255,7 @@ async function main() {
 
     await zip.compressDir(
         path.join(buildDir, "addon"),
-        path.join(buildDir, `${name}.xpi`),
+        path.join(buildDir, `${name}_${version}.xpi`),
         {
             ignoreBase: true,
         },

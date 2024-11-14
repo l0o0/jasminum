@@ -8,8 +8,8 @@
     "addonRef": "jasminum",
     "addonInstance": "Jasminum",
     "prefsPrefix": "extensions.jasminum",
-    "releasepage": "https://github.com/l0o0/jasminum/releases/latest/download/jasminum.xpi",
-    "updaterdf": "https://raw.githubusercontent.com/l0o0/jasminum/z7/update.json"
+    "releasePage": "https://github.com/l0o0/jasminum/releases",
+    "updaterdf": "https://raw.githubusercontent.com/l0o0/jasminum/z7/update7.json"
   },
   "main": "src/index.ts",
   "scripts": {
