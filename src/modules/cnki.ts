@@ -512,7 +512,7 @@ export async function fixItem(newItems: Zotero.Item[], targetData: any) {
     const newItem = newItems[idx];
     if (newItem.getNotes()) {
       if (Zotero.ItemTypes.getName(newItem.itemTypeID) == 'thesis') {
-        const creators: Zotero.Item.CreatorJSON[] = [];
+        const creators: Zotero.Item.CreatorJSON[] = newItem.getCreatorsJSON();
         const note = Zotero.Items.get(newItem.getNotes()[0])
           .getNote()
           .split(/<br\s?\/>/);
@@ -529,7 +529,7 @@ export async function fixItem(newItems: Zotero.Item[], targetData: any) {
         }
         newItem.setCreators(creators);
       }
-      Zotero.Items.erase(newItem.getNotes());
+      // Zotero.Items.erase(newItem.getNotes());
     }
     // 是否处理中文姓名. For Chinese name
     if (getPref('zhnamesplit')) {
