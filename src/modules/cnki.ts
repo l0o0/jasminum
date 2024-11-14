@@ -787,11 +787,12 @@ export async function updateCiteCSSCI() {
       showPop(getString('nonchinese-item'), 'fail');
       continue;
     } else if (item.getField('url')) {
-      ztoolkit.log(item.getField('url'));
-      const url = item.getField('url') as string;
-      const html = await getHTMLDoc(url);
+      // ztoolkit.log(item.getField('url'));
+      // const url = item.getField('url') as string;
+      // const html = await getHTMLDoc(url);
       // 检测是否出现知网验证页面,一般网页以nxgp开头的页面，会出现知网验证页面
-      if (html.querySelector('div.verify_wrap, #erro_span')) {
+      // if (html.querySelector('div.verify_wrap, #erro_span')) {
+      if (item) {
         ztoolkit.log(getString('cnki-capatch-warning'));
         const pubTitle = item.getField('publicationTitle');
         const fileData = {
@@ -816,9 +817,10 @@ export async function updateCiteCSSCI() {
             'fail',
           );
         }
-      } else {
-        cite = getCitationFromPage(html);
       }
+      // } else {
+      //   cite = getCitationFromPage(html);
+      // }
 
       if (cite != null && parseInt(cite) > 0) {
         await ztoolkit.ExtraField.setExtraField(item, 'CNKICite', cite);

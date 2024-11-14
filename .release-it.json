@@ -13,6 +13,6 @@
     "after:release": "echo Successfully released ${name} v${version} to ${repo.repository}."
   },
   "git": {
-    "requireBranch": "main"
+    "requireBranch": "z7"
   }
 }
