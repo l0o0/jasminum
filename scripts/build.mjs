@@ -23,7 +23,7 @@ const buildTime = dateFormat("YYYY-mm-dd HH:MM:SS", new Date());
 const buildDir = "builds";
 
 const updateJSONFile = "update7.json";
-const updateLink = `${config.releasePage}/latest/download/${name}_${config.version}.xpi`;
+const updateLink = `${config.releasePage}/latest/download/${name}_${version}.xpi`;
 
 function copyFileSync(source, target) {
     var targetFile = target;
@@ -125,8 +125,9 @@ function replaceString() {
         /__updateLink__/g,
         /__description__/g,
         /__addonRef__/g,
+        /__updateLink__/g,
     ];
-    const replaceTo = [author, homepage, version, buildTime, updateLink, description, addonRef];
+    const replaceTo = [author, homepage, version, buildTime, updateLink, description, addonRef, updateLink];
 
     replaceFrom.push(
         ...Object.keys(config).map((k) => new RegExp(`__${k}__`, "g")),

@@ -4,7 +4,7 @@
       "updates": [
         {
           "version": "1.0.0-19",
-          "update_link": "__releasepage__",
+          "update_link": "https://github.com/l0o0/jasminum/releases/latest/download/jasminum_1.0.0-19.xpi",
           "applications": {
             "zotero": {
               "strict_min_version": "6.999"
