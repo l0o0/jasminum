@@ -1,17 +1,17 @@
-import { config } from "../../package.json";
-import { getHTMLDoc } from "../utils/http";
-import { getString } from "../utils/locale";
-import { getPref } from "../utils/prefs";
-import { showPop } from "../utils/window";
-import { searchCNKI } from "./cnki";
+import { config } from '../../package.json';
+import { getHTMLDoc } from '../utils/http';
+import { getString } from '../utils/locale';
+import { getPref } from '../utils/prefs';
+import { showPop } from '../utils/window';
+import { searchCNKI, selectCNKIRows } from './cnki';
 
 async function checkPDFtkPath() {
-  const pdftkpath = getPref("pdftkpath") as string;
-  let pdftk = "";
+  const pdftkpath = getPref('pdftkpath') as string;
+  let pdftk = '';
   if (Zotero.isWin) {
-    pdftk = OS.Path.join(pdftkpath, "pdftk.exe");
+    pdftk = OS.Path.join(pdftkpath, 'pdftk.exe');
   } else {
-    pdftk = OS.Path.join(pdftkpath, "pdftk");
+    pdftk = OS.Path.join(pdftkpath, 'pdftk');
   }
   ztoolkit.log(pdftk);
   const fileExist = await OS.File.exists(pdftk);
@@ -19,52 +19,52 @@ async function checkPDFtkPath() {
 }
 
 async function getCNKIReaderUrl(itemUrl: string) {
-  ztoolkit.log("parsing chapter page");
+  ztoolkit.log('parsing chapter page');
   const htmldoc = await getHTMLDoc(itemUrl);
   const nodes = Zotero.Utilities.xpath(
     htmldoc,
-    "//a[@id='cajDown' and (contains(text(), '章节下载') or contains(text(), '分章下载'))]"
+    "//a[@id='cajDown' and (contains(text(), '章节下载') or contains(text(), '分章下载'))]",
   );
   if (nodes.length == 0) {
     // No results
-    return "";
+    return '';
   }
-  const href = nodes[0].getAttribute("href")!;
+  const href = nodes[0].getAttribute('href')!;
 
   ztoolkit.log(nodes.length);
   ztoolkit.log(href);
-  if (href.startsWith("..")) {
+  if (href.startsWith('..')) {
     // New CNKI url
-    ztoolkit.log("new");
-    return "https://kns.cnki.net/kcms2" + href.replace(/^\.\./, "");
+    ztoolkit.log('new');
+    return 'https://kns.cnki.net/kcms2' + href.replace(/^\.\./, '');
   } else {
-    ztoolkit.log("old");
-    return "https://kns.cnki.net" + href;
+    ztoolkit.log('old');
+    return 'https://kns.cnki.net' + href;
   }
 }
 
 async function getChapterText(
   chapterUrl: string,
-  item: Zotero.Item
+  item: Zotero.Item,
 ): Promise<any> {
   ztoolkit.log(`chapter Url: ${chapterUrl}`);
   const key = item.key;
   const lib = item.libraryID;
   const chapterHTML = await getHTMLDoc(chapterUrl);
   const rows = chapterHTML.querySelectorAll(
-    "div.main-content > div.list-main > ul.ls-chapters > li"
+    'div.main-content > div.list-main > ul.ls-chapters > li',
   );
   ztoolkit.log(rows.length);
   const rows_array = [];
-  let note = "";
+  let note = '';
   for (const row of rows) {
     ztoolkit.log(row.textContent!.trim());
     const level =
-      parseInt(row.getAttribute("class")?.split("-")[1] as string) + 1; // Source level from 0
-    const title = (row.querySelector("p.txt") as HTMLElement).innerText.trim();
+      parseInt(row.getAttribute('class')?.split('-')[1] as string) + 1; // Source level from 0
+    const title = (row.querySelector('p.txt') as HTMLElement).innerText.trim();
     const pageRange = (
-      row.querySelector("span.page") as HTMLElement
-    ).innerText.split("-");
+      row.querySelector('span.page') as HTMLElement
+    ).innerText.split('-');
     const page = pageRange[0];
     const bookmark = `BookmarkBegin\nBookmarkTitle: ${title}\nBookmarkLevel: ${level}\nBookmarkPageNumber: ${page}`;
     rows_array.push(bookmark);
@@ -77,20 +77,20 @@ async function getChapterText(
     `<p id="title"><strong>Contents[${d.toLocaleString()}]</strong></p>\n` +
     '<ul id="toc" style="list-style-type: none; padding-left: 0px">\n' +
     note +
-    "</ul>";
-  return { bookmark: rows_array.join("\n"), note: note };
+    '</ul>';
+  return { bookmark: rows_array.join('\n'), note: note };
 }
 
 async function addBookmark(item: Zotero.Item, bookmark: string) {
-  Zotero.debug("** Jasminum add bookmark begin");
+  Zotero.debug('** Jasminum add bookmark begin');
   // Zotero.debug(item);
   let cacheFile = Zotero.getTempDirectory();
   let cachePDF = Zotero.getTempDirectory();
   // PDFtk will throw errors when args contains Chinese character
   // So create a tmp folder.
   if (Zotero.isWin) {
-    const newTmp = OS.Path.join(cacheFile.path.slice(0, 3), "tmp");
-    Zotero.debug("** Jasminum new tmp path " + newTmp);
+    const newTmp = OS.Path.join(cacheFile.path.slice(0, 3), 'tmp');
+    Zotero.debug('** Jasminum new tmp path ' + newTmp);
     cacheFile = Zotero.getTempDirectory();
     cachePDF = Zotero.getTempDirectory();
     cacheFile.initWithPath(newTmp);
@@ -99,12 +99,12 @@ async function addBookmark(item: Zotero.Item, bookmark: string) {
       cacheFile.create(Components.interfaces.nsIFile.DIRECTORY_TYPE, 777);
     }
   }
-  cacheFile.append("bookmark.txt");
+  cacheFile.append('bookmark.txt');
   if (cacheFile.exists()) {
     cacheFile.remove(false);
   }
 
-  cachePDF.append("output.pdf");
+  cachePDF.append('output.pdf');
   if (cachePDF.exists()) {
     cachePDF.remove(false);
   }
@@ -112,27 +112,27 @@ async function addBookmark(item: Zotero.Item, bookmark: string) {
   const encoder = new TextEncoder();
   const array = encoder.encode(bookmark);
   await OS.File.writeAtomic(cacheFile.path, array, {
-    tmpPath: cacheFile.path + ".tmp",
+    tmpPath: cacheFile.path + '.tmp',
   });
-  let pdftk = getPref("pdftkpath") as string;
+  let pdftk = getPref('pdftkpath') as string;
   if (Zotero.isWin) {
-    pdftk = OS.Path.join(pdftk, "pdftk.exe");
+    pdftk = OS.Path.join(pdftk, 'pdftk.exe');
   } else {
-    pdftk = OS.Path.join(pdftk, "pdftk");
+    pdftk = OS.Path.join(pdftk, 'pdftk');
   }
-  Zotero.debug("** Jasminum pdftk path: " + pdftk);
+  Zotero.debug('** Jasminum pdftk path: ' + pdftk);
   const args: string[] = [
     item.getFilePath() as string,
-    "update_info_utf8",
+    'update_info_utf8',
     cacheFile.path,
-    "output",
+    'output',
     cachePDF.path,
   ];
   Zotero.debug(
-    "PDFtk: Running " +
+    'PDFtk: Running ' +
       pdftk +
-      " " +
-      args.map((arg) => "'" + arg + "'").join(" ")
+      ' ' +
+      args.map((arg) => "'" + arg + "'").join(' '),
   );
   try {
     await Zotero.Utilities.Internal.exec(pdftk, args);
@@ -140,9 +140,9 @@ async function addBookmark(item: Zotero.Item, bookmark: string) {
     cacheFile.remove(false);
     cachePDF.remove(false);
     showPop(
-      getString("addbookmark-success", {
+      getString('addbookmark-success', {
         args: { filename: item.attachmentFilename },
-      })
+      }),
     );
   } catch (e: any) {
     // try {
@@ -152,10 +152,10 @@ async function addBookmark(item: Zotero.Item, bookmark: string) {
     //   Zotero.logError(e);
     // }
     showPop(
-      getString("addbookmark-fail", {
+      getString('addbookmark-fail', {
         args: { filename: item.attachmentFilename },
       }),
-      "fail"
+      'fail',
     );
   }
 }
@@ -165,51 +165,52 @@ export async function addBookmarkItem(item?: Zotero.Item) {
     item = ZoteroPane.getSelectedItems()[0];
   }
   if (!(await checkPDFtkPath())) {
-    showPop(getString("pdftk-missing"), "fail");
+    showPop(getString('pdftk-missing'), 'fail');
     return;
   }
   // Show alert when file is missing
   const attachmentExists =
     item.getFilePath() && (await OS.File.exists(item.getFilePath() as string));
   if (!attachmentExists) {
-    showPop(getString("pdf-missing"), "fail");
+    showPop(getString('pdf-missing'), 'fail');
     return;
   }
 
   const parentItem = item.parentItem!;
-  let parentItemUrl = parentItem.getField("url") as string;
-  let chapterUrl = "";
-  if (!parentItemUrl || !parentItemUrl.startsWith("https://kns.cnki.net")) {
-    Zotero.debug("Jasminum search for item url");
+  let parentItemUrl = parentItem.getField('url') as string;
+  let chapterUrl = '';
+  if (!parentItemUrl || !parentItemUrl.startsWith('https://kns.cnki.net')) {
+    Zotero.debug('Jasminum search for item url');
     const fileData = {
-      keyword: parentItem.getField("title"),
+      keyword: parentItem.getField('title'),
       author:
         parentItem.getCreators()[0].lastName! +
         parentItem.getCreators()[0].firstName,
     };
-    const targetRows = await searchCNKI(fileData);
+    const resultRows = await searchCNKI(fileData);
+    const targetRows = selectCNKIRows(resultRows);
     ztoolkit.log(targetRows[0].url);
     if (targetRows.length === 0) {
       return null;
     }
     // Frist row in search table is selected.
     parentItemUrl = targetRows[0].url;
-    parentItem.setField("url", parentItemUrl);
+    parentItem.setField('url', parentItemUrl);
     await parentItem.saveTx();
     // 获取文献链接URL -> 获取章节目录URL
   }
   chapterUrl = await getCNKIReaderUrl(parentItemUrl);
-  ztoolkit.log("item url: " + parentItemUrl);
-  ztoolkit.log("item chapter url: " + chapterUrl);
+  ztoolkit.log('item url: ' + parentItemUrl);
+  ztoolkit.log('item chapter url: ' + chapterUrl);
 
-  if (chapterUrl == "") {
-    showPop(getString("bookmark-missing"), "fail");
+  if (chapterUrl == '') {
+    showPop(getString('bookmark-missing'), 'fail');
     return;
   }
 
   const bookmarkOut = await getChapterText(chapterUrl, item);
   if (!bookmarkOut.bookmark) {
-    showPop(getString("bookmark-missing"), "fail");
+    showPop(getString('bookmark-missing'), 'fail');
     return;
   } else {
     // Add TOC note

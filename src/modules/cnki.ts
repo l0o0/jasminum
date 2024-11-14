@@ -386,14 +386,13 @@ export async function searchCNKI(fileData: any): Promise<CNKIRow[]> {
   });
   // Zotero.debug(resp.responseText);
   ztoolkit.log(`CNKI search return status code : ${resp.status}`);
-  // targetRows
   const html = string2HTML(resp.responseText);
   const rows = html.querySelectorAll('table.result-table-list > tbody > tr');
   ztoolkit.log(`CNKI results: ${rows.length}`);
-  const targetRows: CNKIRow[] = [];
+  const resusltRows: CNKIRow[] = [];
   if (rows.length == 0) {
     ztoolkit.log('**Jasminum No items found.');
-    return targetRows;
+    return resusltRows;
   } else {
     ztoolkit.log('** found results');
     for (let idx = 0; idx < rows.length; idx++) {
@@ -406,7 +405,7 @@ export async function searchCNKI(fileData: any): Promise<CNKIRow[]> {
       ).innerText!.trim();
       const id = (getIDFromURL(href) ||
         getIDFromSearchRow(rows[idx])) as CNKIID;
-      targetRows.push({
+      resusltRows.push({
         url: href,
         id: id,
         title: rowText,
@@ -415,7 +414,6 @@ export async function searchCNKI(fileData: any): Promise<CNKIRow[]> {
       ztoolkit.log(rowText);
     }
   }
-  const resusltRows = selectCNKIRows(targetRows);
   return resusltRows;
 }
 
@@ -684,7 +682,8 @@ export async function searchCNKIMetadata(items: Zotero.Item[]) {
     } else {
       const fileData = splitFilename(item.attachmentFilename);
       ztoolkit.log(fileData);
-      const targetRows = await searchCNKI(fileData);
+      const resultRows = await searchCNKI(fileData);
+      const targetRows = selectCNKIRows(resultRows);
       // 有查询结果返回
       if (targetRows.length > 0) {
         // const ids = targetRows.map((r) => r.id);
@@ -768,10 +767,10 @@ function getCSSCI(html: Document) {
  * @return {void}
  */
 export async function updateCiteCSSCI() {
-  let html;
+  let cite;
   const items = ztoolkit.getGlobal('ZoteroPane').getSelectedItems();
   for (const item of items) {
-    ztoolkit.log('CSSSI');
+    ztoolkit.log('start get citation');
     if (
       ['patent', 'webpage'].includes(Zotero.ItemTypes.getName(item.itemTypeID))
     ) {
@@ -789,60 +788,59 @@ export async function updateCiteCSSCI() {
       continue;
     } else if (item.getField('url')) {
       ztoolkit.log(item.getField('url'));
-      let url = item.getField('url') as string;
-      html = await getHTMLDoc(url);
+      const url = item.getField('url') as string;
+      const html = await getHTMLDoc(url);
       // 检测是否出现知网验证页面,一般网页以nxgp开头的页面，会出现知网验证页面
-      if (html.querySelector('div.verify_wrap')) {
-        showPop(getString('cnki-capatch-warning'), 'fail');
-        continue;
-      }
-      // 特异性网址，
-      const warnnode = Zotero.Utilities.xpath(html, "//h2[@id='erro_span']");
-      if (warnnode.length > 0) {
-        Zotero.debug('** Jasminum 条目网址有点特殊');
+      if (html.querySelector('div.verify_wrap, #erro_span')) {
+        ztoolkit.log(getString('cnki-capatch-warning'));
+        const pubTitle = item.getField('publicationTitle');
         const fileData = {
           keyword: item.getField('title'),
           author:
             item.getCreators()[0].lastName! + item.getCreators()[0].firstName,
         };
         const targetRows = await searchCNKI(fileData);
-        if (targetRows && targetRows.length > 0) {
-          const urls = await getRefworksText(
-            targetRows[0].id,
-            targetRows[0].url,
+        const itemRows = targetRows.filter(
+          (r: CNKIRow) =>
+            r.title.includes(fileData.keyword) &&
+            r.title.includes(fileData.author) &&
+            r.title.includes(pubTitle),
+        );
+        if (itemRows.length > 0) {
+          cite = itemRows[0].citation;
+        } else {
+          showPop(
+            getString('cnkimetadata-fail', {
+              args: { author: fileData.author, title: fileData.keyword },
+            }),
+            'fail',
           );
-          Zotero.debug('** Jasminum ' + urls[0]);
-          // item.setField('url', urls[0]);
-          // item.saveTx();
-          url = item.getField('url') as string;
-          html = await getHTMLDoc(url);
-          // 检测是否出现知网验证页面,一般网页以nxgp开头的页面，会出现知网验证页面
-          if (html.querySelector('div.verify_wrap')) {
-            showPop(getString('cnki-capatch-warning'), 'fail');
-            continue;
-          }
         }
+      } else {
+        cite = getCitationFromPage(html);
       }
-      const cite = getCitationFromPage(html);
-      // let citeString = `CNKI citations: ${cite}[${dateString}]`;
-      const cssci = getCSSCI(html);
+
       if (cite != null && parseInt(cite) > 0) {
         await ztoolkit.ExtraField.setExtraField(item, 'CNKICite', cite);
+        showPop(
+          getString('cssci-success', {
+            args: {
+              title: item.getField('title'),
+              cite: cite,
+            },
+          }),
+        );
+        ztoolkit.log(`cite number: ${cite}`);
+      } else {
+        showPop(
+          getString('cssci-success', {
+            args: {
+              title: item.getField('title'),
+              cite: '未查询到引用数或引用数为空',
+            },
+          }),
+        );
       }
-      if (cssci) {
-        // 或者可以参考其他核心期刊数据来源
-        await ztoolkit.ExtraField.setExtraField(item, 'CSSCI', cssci);
-      }
-      showPop(
-        getString('cssci-success', {
-          args: {
-            title: item.getField('title'),
-            cite: cite ? cite : '',
-            cssci: cssci ? cssci : '',
-          },
-        }),
-      );
-      ztoolkit.log('cite number: ${cite} cssci: ${cssci}');
     } else {
       showPop(getString('url-missing'), 'fail');
     }
