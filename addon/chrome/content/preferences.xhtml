@@ -155,6 +155,10 @@
     <label>
       <html:h2 data-l10n-id="translators-caption"></html:h2>
     </label>
+    <hbox>
+      <button data-l10n-id="updateall-label" id="download-all-translators" native="true" flex="0.5" />
+      <button data-l10n-id="refresh-label" id="refresh-translators" native="true" flex="0.5" />
+    </hbox>
     <hbox class="virtualized-table-container" flex="1" height="300">
       <html:div style="height: 350px; overflow-y: scroll">
         <html:div id="jasminum-translator-table-loading">
@@ -175,10 +179,6 @@
           </html:tbody>
         </html:table>
       </html:div>
-    </hbox>
-    <hbox>
-      <button data-l10n-id="updateall-label" id="download-all-translators" native="true" flex="0.5" />
-      <button data-l10n-id="refresh-label" id="refresh-translators" native="true" flex="0.5" />
     </hbox>
   </groupbox>
 </vbox>
