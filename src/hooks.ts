@@ -27,19 +27,7 @@ async function onStartup() {
   initPrefs();
   registerNotifier();
   registerExtraColumnWithCustomCell();
-  // BasicExampleFactory.registerPrefs();
 
-  // BasicExampleFactory.registerNotifier();
-
-  // KeyExampleFactory.registerShortcuts();
-
-  // await UIExampleFactory.registerExtraColumn();
-
-  // await UIExampleFactory.registerExtraColumnWithCustomCell();
-
-  // UIExampleFactory.registerItemPaneSection();
-
-  // UIExampleFactory.registerReaderItemPaneSection();
   // @ts-ignore - Not typed.
   await Zotero.Promise.delay(1000);
   await Promise.all(
@@ -53,47 +41,6 @@ async function onMainWindowLoad(win: Window): Promise<void> {
 
   // @ts-ignore This is a moz feature
   win.MozXULElement.insertFTLIfNeeded(`${config.addonRef}-mainWindow.ftl`);
-
-  // const popupWin = new ztoolkit.ProgressWindow(config.addonName, {
-  //   closeOnClick: true,
-  //   closeTime: -1,
-  // })
-  //   .createLine({
-  //     text: getString("startup-begin"),
-  //     type: "default",
-  //     progress: 0,
-  //   })
-  //   .show();
-  // // @ts-ignore - Promise delay is not typed.
-  // await Zotero.Promise.delay(1000);
-  // popupWin.changeLine({
-  //   progress: 30,
-  //   text: `[30%] ${getString("startup-begin")}`,
-  // });
-
-  // UIExampleFactory.registerStyleSheet(win);
-
-  // UIExampleFactory.registerRightClickMenuItem();
-
-  // UIExampleFactory.registerRightClickMenuPopup(win);
-
-  // UIExampleFactory.registerWindowMenuWithSeparator();
-
-  // PromptExampleFactory.registerNormalCommandExample();
-
-  // PromptExampleFactory.registerAnonymousCommandExample(win);
-
-  // PromptExampleFactory.registerConditionalCommandExample();
-  // @ts-ignore - Promise delay is not typed.
-  // await Zotero.Promise.delay(1000);
-
-  // popupWin.changeLine({
-  //   progress: 100,
-  //   text: `[100%] ${getString("startup-finish")}`,
-  // });
-  // popupWin.startCloseTimer(5000);
-
-  // addon.hooks.onDialogEvents("dialogExample");
 }
 
 async function onMainWindowUnload(win: Window): Promise<void> {
@@ -139,28 +86,6 @@ function onShortcuts(type: string) {
       break;
   }
 }
-
-// function onDialogEvents(type: string) {
-//   switch (type) {
-//     case "dialogExample":
-//       // HelperExampleFactory.dialogExample();
-//       break;
-//     case "clipboardExample":
-//       // HelperExampleFactory.clipboardExample();
-//       break;
-//     case "filePickerExample":
-//       // HelperExampleFactory.filePickerExample();
-//       break;
-//     case "progressWindowExample":
-//       // HelperExampleFactory.progressWindowExample();
-//       break;
-//     case "vtableExample":
-//       // HelperExampleFactory.vtableExample();
-//       break;
-//     default:
-//       break;
-//   }
-// }
 
 // Add your hooks here. For element click, etc.
 // Keep in mind hooks only do dispatch. Don't add code that does real jobs in hooks.
