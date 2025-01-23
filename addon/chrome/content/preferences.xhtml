@@ -1,0 +1,195 @@
+<linkset>
+  <html:link rel="localization" href="__addonRef__-preferences.ftl" />
+  <html:link
+    xmlns:html="http://www.w3.org/1999/xhtml"
+    rel="stylesheet"
+    href="chrome://__addonRef__/content/prefpanel.css"
+  />
+</linkset>
+<!-- 元数据抓取 -->
+<groupbox
+  onload="Zotero.__addonInstance__.hooks.onPrefsEvent('load', { window });"
+>
+  <label><html:h2 data-l10n-id="pref-group-metadata"></html:h2></label>
+  <checkbox
+    id="zotero-prefpane-__addonRef__-autoupdate"
+    preference="autoupdate"
+    data-l10n-id="label-autoupdate-metadata"
+  />
+  <checkbox
+    id="zotero-prefpane-__addonRef__-zhnamesplit"
+    preference="zhnamesplit"
+    data-l10n-id="label-zhnamesplit"
+  />
+  <!-- <checkbox
+    id="zotero-prefpane-__addonRef__-rename"
+    preference="rename"
+    data-l10n-id="label-rename"
+  /> -->
+  <hbox flex="2" class="inputbox">
+    <menulist
+      id="zotero-prefpane-__addonRef__-namepattern-menulist"
+      native="true"
+    >
+      <menupopup>
+        <menuitem value="auto" data-l10n-id="label-namepattern-auto" />
+        <menuitem value="{%t}_{%g}" data-l10n-id="label-namepattern-tg" />
+        <menuitem value="{%t}" data-l10n-id="label-namepattern-t" />
+        <menuseparator></menuseparator>
+        <menuitem value="custom" data-l10n-id="label-namepattern-custom" />
+      </menupopup>
+    </menulist>
+    <html:input
+      type="text"
+      class="auto_width"
+      id="zotero-prefpane-__addonRef__-namepattern-input"
+      preference="namepattern"
+    >
+    </html:input>
+    <html:input
+      type="text"
+      class="auto_width hidden"
+      id="zotero-prefpane-__addonRef__-namepatternCustom-input"
+      preference="namepatternCustom"
+    >
+    </html:input>
+    <image
+      src="chrome://jasminum/content/icons/help.svg"
+      style="margin-top: 5px; margin-bottom: 5px"
+      data-l10n-id="namepattern-desc"
+    />
+  </hbox>
+  <hbox align="center">
+    <label
+      for="zotero-prefpane-__addonRef__-metadata-source"
+      data-l10n-id="label-metadata-source"
+    ></label>
+    <html:input
+      type="text"
+      id="zotero-prefpane-__addonRef__-metadata-source-input"
+      preference="metadataSource"
+      disabled="true"
+    ></html:input>
+    <html:div>
+      <button
+        id="zotero-prefpane-__addonRef__-metadata-source-button"
+        data-l10n-id="label-choose-source"
+      ></button>
+      <html:div id="metadata-source-dropdown" class="dropdown-content">
+        <checkbox
+          disabled="true"
+          class="metadata-drop-item"
+          value="CNKI"
+          data-l10n-id="label-metadata-source-cnki"
+        />
+        <!-- <checkbox
+          class="metadata-drop-item"
+          value="CVIP"
+          data-l10n-id="label-metadata-source-cvip"
+        /> -->
+      </html:div>
+    </html:div>
+  </hbox>
+  <!-- <hbox align="center">
+    <label
+      for="zotero-prefpane-__addonRef__-pdf-match-folder"
+      data-l10n-id="label-pdf-match-folder"
+    ></label>
+    <html:input
+      type="text"
+      id="zotero-prefpane-__addonRef__-pdf-match-folder-input"
+      preference="pdfMatchFolder"
+    ></html:input>
+    <button
+      id="zotero-prefpane-__addonRef__-pdf-match-folder-button"
+      data-l10n-id="label-choose-folder"
+    ></button>
+  </hbox> -->
+</groupbox>
+<!-- 转换器 -->
+<groupbox>
+  <label><html:h2 data-l10n-id="pref-group-translators"></html:h2></label>
+  <hbox alien="center">
+    <checkbox
+      id="zotero-prefpane-__addonRef__-autoUpdateTranslators"
+      preference="autoUpdateTranslators"
+      data-l10n-id="label-auto-update-translators"
+    />
+    <button
+      id="zotero-prefpane-__addonRef__-force-update"
+      data-l10n-id="label-translators-force-update"
+      style="margin-left: 4px"
+    ></button>
+  </hbox>
+  <hbox align="center">
+    <label data-l10n-id="label-translators-detail">click</label>
+    <button
+      id="zotero-prefpane-__addonRef__-open-translator-table"
+      data-l10n-id="label-translators-detail-click"
+    ></button>
+  </hbox>
+</groupbox>
+<!-- 小工具 -->
+<groupbox>
+  <label><html:h2 data-l10n-id="pref-group-tools"></html:h2></label>
+  <hbox align="center">
+    <label
+      for="zotero-prefpane-__addonRef__-language"
+      data-l10n-id="label-language"
+    ></label>
+    <html:input
+      type="text"
+      id="zotero-prefpane-__addonRef__-language"
+      preference="language"
+    ></html:input>
+  </hbox>
+  <hbox>
+    <label data-l10n-id="label-tools-info"></label>
+    <label
+      data-l10n-id="label-tools-linter"
+      is="zotero-text-link"
+      class="zotero-text-link"
+      href="https://zotero-chinese.com/user-guide/plugins/linter"
+    ></label>
+  </hbox>
+</groupbox>
+<!-- WPS下载 -->
+<!-- <groupbox>
+  <label><html:h2 data-l10n-id="pref-group-wps"></html:h2></label>
+  <hbox align="center">
+    <label data-l10n-id="label-wps"></label>
+    <button
+      id="zotero-prefpane-__addonRef__-install-wps-plugin-button"
+      data-l10n-id="label-install-wps-plugin-click"
+    ></button>
+    <label
+      data-l10n-id="label-wps-help"
+      is="zotero-text-link"
+      class="zotero-text-link"
+      href="https://zotero-chinese.com/"
+    ></label>
+  </hbox>
+</groupbox> -->
+<!-- 介绍及致谢 -->
+<groupbox>
+  <label><html:h2 data-l10n-id="pref-group-about"></html:h2></label>
+  <hbox>
+    <label
+      value="Jasminum "
+      is="zotero-text-link"
+      class="zotero-text-link"
+      href="https://github.com/l0o0/jasminum"
+      style="margin-right: 4px"
+    ></label>
+    <label
+      data-l10n-id="pref-help"
+      data-l10n-args='{"time": "__buildTime__","name": "__addonName__","version":"__buildVersion__"}'
+    ></label>
+    <label
+      data-l10n-id="label-zotero-chinese"
+      is="zotero-text-link"
+      class="zotero-text-link"
+      href="https://zotero-chinese.com/"
+    ></label>
+  </hbox>
+</groupbox>

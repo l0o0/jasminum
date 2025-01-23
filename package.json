@@ -1,0 +1,59 @@
+{
+  "name": "jasminum",
+  "version": "1.0.1",
+  "description": "一个简单的 Zotero 中文插件",
+  "config": {
+    "addonName": "Jasminum",
+    "addonID": "jasminum@linxzh.com",
+    "addonRef": "jasminum",
+    "addonInstance": "Jasminum",
+    "prefsPrefix": "extensions.jasminum"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/l0o0/jasminum.git"
+  },
+  "author": "windingwind",
+  "bugs": {
+    "url": "https://github.com/l0o0/jasminum/issues"
+  },
+  "homepage": "https://github.com/l0o0/jasminum#readme",
+  "license": "AGPL-3.0-or-later",
+  "scripts": {
+    "start": "zotero-plugin serve",
+    "build": "tsc --noEmit && zotero-plugin build",
+    "lint": "prettier --write . && eslint . --fix",
+    "release": "zotero-plugin release",
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "update-deps": "npm update --save"
+  },
+  "dependencies": {
+    "zotero-plugin-toolkit": "^4.1.1"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.18.0",
+    "@types/node": "^22.10.7",
+    "eslint": "^9.18.0",
+    "prettier": "^3.4.2",
+    "typescript": "^5.7.3",
+    "typescript-eslint": "^8.20.0",
+    "zotero-plugin-scaffold": "0.2.0-beta.22",
+    "zotero-types": "^3.1.6"
+  },
+  "prettier": {
+    "printWidth": 80,
+    "tabWidth": 2,
+    "endOfLine": "lf",
+    "overrides": [
+      {
+        "files": [
+          "*.xhtml"
+        ],
+        "options": {
+          "htmlWhitespaceSensitivity": "css"
+        }
+      }
+    ]
+  },
+  "packageManager": "pnpm@9.15.1+sha512.1acb565e6193efbebda772702950469150cf12bcc764262e7587e71d19dc98a423dff9536e57ea44c49bdf790ff694e83c27be5faa23d67e0c033b583be4bfcf"
+}

@@ -1,0 +1,12 @@
+{
+  "editor.tabSize": 2,
+  "files.eol": "\n",
+  "editor.formatOnType": false,
+  "editor.formatOnSave": true,
+  "editor.codeActionsOnSave": {
+    "source.fixAll.eslint": "explicit"
+  },
+  "eslint.validate": ["javascript", "typescript"],
+  "prettier.requireConfig": true,
+  "commentTranslate.hover.enabled": true
+}

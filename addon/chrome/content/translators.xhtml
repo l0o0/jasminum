@@ -1,0 +1,208 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?xml-stylesheet href="chrome://global/skin/" type="text/css"?> <?xml-stylesheet
+href="chrome://zotero/skin/zotero.css" type="text/css"?> <?xml-stylesheet
+href="chrome://zotero-platform/content/zotero-react-client.css"
+type="text/css"?> <?xml-stylesheet
+href="chrome://zotero-platform/content/zotero.css" type="text/css"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Zotero 中文社区转换器列表</title>
+    <style>
+      /* 表格容器样式 */
+      .table-container {
+        width: 900px; /* 宽度 */
+        height: 400px; /* 高度 */
+        overflow: auto; /* 超出部分显示滚动条 */
+        border: 1px solid #ddd; /* 边框 */
+        margin-top: 20px;
+        position: relative; /* 相对定位 */
+      }
+
+      /* 表格样式 */
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        padding-bottom: 4px;
+      }
+
+      tbody {
+        font-size: 13px;
+      }
+
+      th,
+      td {
+        border: 1px solid #ddd;
+        padding: 8px;
+        text-align: left;
+      }
+
+      th {
+        background-color: #f2f2f2;
+        cursor: pointer;
+        position: sticky; /* 固定表头 */
+        top: 0; /* 固定在顶部 */
+        z-index: 1; /* 确保表头在内容上方 */
+      }
+
+      /* 排序图标样式 */
+      .sort-icon {
+        margin-left: 5px;
+        font-size: 12px;
+      }
+
+      /* 搜索框样式 */
+      input[type="text"] {
+        padding: 6px;
+        width: 200px;
+      }
+
+      #footer {
+        margin: 8px 0 8px 0 8px;
+      }
+
+      #loading-img {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+      }
+
+      #loading-img img {
+        width: 50px;
+        margin-top: 50px;
+      }
+
+      /* 黑暗模式下的样式 */
+      @media (prefers-color-scheme: dark) {
+        body {
+          background-color: #121212; /* 深色背景 */
+          color: #e0e0e0; /* 浅色文本 */
+        }
+
+        .table-container {
+          border-color: #444; /* 调整边框颜色 */
+        }
+
+        th {
+          background-color: #333; /* 深色表头背景 */
+          color: #e0e0e0; /* 浅色表头文本 */
+          border-color: #444; /* 调整边框颜色 */
+        }
+
+        td {
+          border-color: #444; /* 调整单元格边框颜色 */
+        }
+
+        input[type="text"] {
+          background-color: #333; /* 深色输入框背景 */
+          color: #e0e0e0; /* 浅色输入框文本 */
+          border-color: #444; /* 调整输入框边框颜色 */
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Zotero 中文社区转换器列表</h1>
+    <label for="searchInput">🔍</label
+    ><input type="text" id="searchInput" placeholder="搜索..." />
+    <!-- <button id="updateTranslatorAll">全部更新</button> -->
+
+    <!-- 表格容器 -->
+    <div class="table-container">
+      <div id="loading-img">
+        <img src="chrome://jasminum/content/icons/loading-loop.svg" />
+      </div>
+      <table id="dataTable">
+        <thead></thead>
+        <tbody style="display: &quot;none&quot;">
+          <!-- 表格内容由 JavaScript 动态生成 -->
+        </tbody>
+      </table>
+    </div>
+    <div id="footer">
+      <label
+        xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul"
+        is="zotero-text-link"
+        value="如果更新Zotero和浏览器中的转换器"
+        href="https://zotero-chinese.com/user-guide/faqs/update-translators#%E6%9B%B4%E6%96%B0%E6%8A%93%E5%8F%96%E6%96%87%E7%8C%AE%E4%BF%A1%E6%81%AF%E7%9A%84%E8%BD%AC%E6%8D%A2%E5%99%A8"
+        class="zotero-text-link"
+        role="link"
+      />
+      <a
+        href="https://zotero-chinese.com/user-guide/faqs/update-translators#%E6%9B%B4%E6%96%B0%E6%8A%93%E5%8F%96%E6%96%87%E7%8C%AE%E4%BF%A1%E6%81%AF%E7%9A%84%E8%BD%AC%E6%8D%A2%E5%99%A8"
+        target="_blank"
+        >如果更新Zotero和浏览器中的转换器</a
+      >
+    </div>
+
+    <script>
+      //<![CDATA[
+      window.arguments[0]._initPromise.resolve();
+      // 获取 DOM 元素
+      const tableBody = document.querySelector("#dataTable tbody");
+      const searchInput = document.getElementById("searchInput");
+      const thead = `
+        <tr>
+          <th data-key="filename">
+            ${window.arguments[0].columns[0]}
+            <span class="sort-icon" id="filenameSortIcon">▼</span>
+          </th>
+          <th data-key="label">${window.arguments[0].columns[1]}</th>
+          <th data-key="local">${window.arguments[0].columns[2]}</th>
+          <th data-key="remote">${window.arguments[0].columns[3]}</th>
+        </tr>`;
+      document.querySelector("#dataTable thead").innerHTML = thead;
+
+      let isAscending = true; // 默认升序
+      function sortTable() {
+        const filenameSortIcon = document.getElementById("filenameSortIcon");
+        const table = document.getElementById("dataTable");
+        const tbody = table.querySelector("tbody");
+        const rows = Array.from(tbody.querySelectorAll("tr"));
+
+        rows.sort((rowA, rowB) => {
+          const cellA = rowA.querySelectorAll("td")[0].textContent;
+          const cellB = rowB.querySelectorAll("td")[0].textContent;
+          if (cellA < cellB) return isAscending ? -1 : 1;
+          if (cellA > cellB) return isAscending ? 1 : -1;
+          return 0;
+        });
+
+        // 清空表格并重新插入排序后的行
+        tbody.innerHTML = "";
+        rows.forEach((row) => tbody.appendChild(row));
+        isAscending = !isAscending; // 切换排序方式
+        const filenameHeader = document.querySelector(
+          "th[data-key='filename']",
+        );
+        filenameSortIcon.textContent = isAscending ? "▲" : "▼"; // 更新排序图标
+      }
+
+      // 点击表头排序
+      const filenameHeader = document.querySelector("th[data-key='filename']");
+      filenameHeader.addEventListener("click", sortTable);
+
+      // 搜索功能
+      let rows = [];
+      searchInput.addEventListener("input", (e) => {
+        const searchText = e.target.value.toLowerCase();
+        const tbody = document.querySelector("#dataTable tbody");
+        if (rows.length == 0) {
+          rows = Array.from(tbody.querySelectorAll("tr"));
+        }
+        const filteredRows = rows.filter((row) => {
+          const tds = row.querySelectorAll("td");
+          return (
+            tds[0].textContent.toLowerCase().includes(searchText) ||
+            tds[1].textContent.toLowerCase().includes(searchText)
+          );
+        });
+        tbody.innerHTML = "";
+        filteredRows.forEach((row) => tbody.appendChild(row));
+      });
+      //]]>
+    </script>
+  </body>
+</html>

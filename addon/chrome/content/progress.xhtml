@@ -1,0 +1,409 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?xml-stylesheet href="chrome://global/skin/" type="text/css"?> <?xml-stylesheet
+href="chrome://zotero/skin/zotero.css" type="text/css"?> <?xml-stylesheet
+href="chrome://zotero-platform/content/zotero-react-client.css"
+type="text/css"?> <?xml-stylesheet
+href="chrome://zotero-platform/content/zotero.css" type="text/css"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>抓取任务列表</title>
+    <style>
+      /* 默认样式（Light Mode） */
+      html {
+        height: 100%;
+      }
+
+      body {
+        font-family: Arial, sans-serif;
+        margin: 8px;
+        padding: 8px;
+        border-radius: 4px;
+        background-color: #ffffff;
+        color: #000000;
+        height: 334px;
+      }
+
+      .task {
+        margin-bottom: 10px;
+        border: 1px solid #ddd;
+        padding: 10px;
+        border-radius: 5px;
+        background-color: #f9f9f9;
+      }
+
+      .task-header {
+        display: flex;
+        align-items: center;
+        cursor: pointer;
+      }
+
+      .task-status {
+        margin-right: 10px;
+        font-size: 20px;
+      }
+
+      .task-title {
+        font-weight: bold;
+        flex-grow: 1;
+      }
+
+      .toggle-icon {
+        margin-left: 10px;
+        font-size: 14px;
+        transition: transform 0.2s;
+      }
+
+      .search-results-container {
+        display: flex;
+        align-items: flex-start; /* 确保按钮和搜索结果对齐 */
+        margin-left: 20px;
+        margin-top: 10px;
+      }
+
+      .confirm-button {
+        margin-right: 10px; /* 按钮放在搜索结果左侧 */
+        padding: 5px 10px;
+        background: #4caf50;
+        color: white;
+        border: none;
+        border-radius: 3px;
+        cursor: pointer;
+        display: none; /* 默认隐藏 */
+      }
+
+      .confirm-button:disabled {
+        background-color: #ccc;
+        cursor: not-allowed;
+      }
+
+      .search-results {
+        flex-grow: 1; /* 搜索结果占据剩余空间 */
+      }
+
+      .search-result {
+        margin-bottom: 5px;
+        padding: 5px;
+        border: 1px solid #eee;
+        border-radius: 3px;
+        background-color: #ffffff;
+        display: flex;
+        align-items: center;
+      }
+
+      .search-result input[type="radio"] {
+        margin-right: 10px;
+      }
+
+      .search-result .info {
+        flex-grow: 1;
+      }
+
+      .search-result .source {
+        color: #666;
+        font-size: 0.9em;
+      }
+
+      .search-result .title {
+        font-weight: bold;
+      }
+
+      .task.completed .search-result input[type="radio"] {
+        pointer-events: none; /* 禁用单选按钮 */
+        opacity: 0.5; /* 降低透明度 */
+      }
+
+      div.buttons {
+        position: absolute;
+        bottom: 2px; /* 固定在底部 */
+        right: 20px; /* 固定在右侧 */
+        padding: 8px; /* 内边距 */
+        /* background-color: #f9f9f9; 背景色 */
+        /* border-top: 1px solid #ccc; 顶部边框 */
+        display: flex;
+        gap: 10px; /* 按钮之间的间距 */
+      }
+
+      .task-msg {
+        width: 14px;
+        margin-left: 8px;
+      }
+
+      /* 黑暗模式样式 */
+      @media (prefers-color-scheme: dark) {
+        body {
+          background-color: #121212;
+          color: #e0e0e0;
+        }
+
+        .task {
+          background-color: #1e1e1e;
+          border-color: #444;
+        }
+
+        .search-result,
+        div.buttons {
+          background-color: #2d2d2d;
+          border-color: #444;
+        }
+
+        .search-result .source {
+          color: #999;
+        }
+
+        .search-result .title {
+          color: #e0e0e0;
+        }
+
+        .task-status {
+          color: #e0e0e0;
+        }
+
+        .task-title,
+        div.buttons {
+          color: #e0e0e0;
+        }
+
+        .toggle-icon {
+          color: #e0e0e0;
+        }
+
+        .confirm-button {
+          background-color: #4caf50;
+        }
+
+        .confirm-button:disabled {
+          background-color: #666;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <h1>抓取任务列表</h1>
+    <div id="task-list"></div>
+    <div class="buttons">
+      <button id="button-cancel">Close</button>
+      <button id="button-ok" style="display: none">OK</button>
+    </div>
+  </body>
+  <script>
+    //<![CDATA[
+    if (window.arguments) {
+      document.addEventListener("DOMContentLoaded", (ev) => {
+        Services.scriptloader.loadSubScript(
+          "chrome://zotero/content/include.js",
+          this,
+        );
+
+        Services.scriptloader.loadSubScript(
+          "resource://zotero/require.js",
+          this,
+        );
+
+        window.arguments[0]._initPromise.resolve();
+      });
+    }
+
+    // 模拟数据
+    const tasks = [
+      {
+        id: "1",
+        type: "attachment",
+        item: { getField: () => "论文标题 1" },
+        status: "success",
+        errorMsg: "This is error msg1",
+        searchResult: [
+          {
+            source: "Source A",
+            title: "Result 1",
+            url: "https://example.com/1",
+          },
+          {
+            source: "Source B",
+            title: "Result 2",
+            url: "https://example.com/2",
+          },
+        ],
+      },
+      {
+        id: "2",
+        type: "snapshot",
+        item: { getField: () => "论文标题 2" },
+        status: "processing",
+        errorMsg: "This is error msg2",
+      },
+      {
+        id: "3",
+        type: "attachment",
+        item: { getField: () => "论文标题 3" },
+        status: "fail",
+        errorMsg: "抓取失败",
+      },
+    ];
+
+    // 状态图标映射
+    const statusIcons = {
+      waiting: "⏳",
+      processing: "🔄",
+      multiple_results: "🔍",
+      success: "✅",
+      fail: "❌",
+    };
+
+    // 渲染任务列表
+    function renderTaskList(tasks) {
+      const taskList = document.getElementById("task-list");
+      if (!taskList) return;
+
+      taskList.innerHTML = tasks
+        .map(
+          (task) => `
+            <div class="task" data-task-id="${task.id}">
+              <div class="task-header">
+                <span class="task-status">${statusIcons[task.status]}</span>
+                <span class="task-title">${task.item.getField("title")}</span>
+                <span class="task-msg" id="task-msg-${task.id}" title="${task.errorMsg}">⚠️</span>
+                ${
+                  task.searchResult && task.searchResult.length > 0
+                    ? `<span class="toggle-icon" id="toggle-icon-${task.id}">▼</span>`
+                    : ""
+                }
+              </div>
+              ${
+                task.searchResult && task.searchResult.length > 0
+                  ? `
+                    <div class="search-results-container" id="search-results-container-${task.id}">
+                      <button class="confirm-button" data-task-id="${task.id}">确认</button>
+                      <div class="search-results" id="search-results-${task.id}">
+                        ${task.searchResult
+                          .map(
+                            (result, index) => `
+                              <div class="search-result">
+                                <input type="radio" name="task-${task.id}" data-task-id="${task.id}" data-result-index="${index}" />
+                                <div class="info">
+                                  <span class="source">来源: ${result.source}</span>
+                                  <span class="title">标题: ${result.title}</span>
+                                </div>
+                              </div>
+                            `,
+                          )
+                          .join("")}
+                      </div>
+                    </div>
+                  `
+                  : ""
+              }
+            </div>
+          `,
+        )
+        .join("");
+    }
+
+    // 切换搜索结果的显示/隐藏
+    function toggleSearchResults(taskId) {
+      const searchResultsContainer = document.getElementById(
+        `search-results-container-${taskId}`,
+      );
+      const toggleIcon = document.getElementById(`toggle-icon-${taskId}`);
+      console.log("click", `#search-results-container-${taskId}`);
+      if (searchResultsContainer && toggleIcon) {
+        if (searchResultsContainer.style.display === "none") {
+          searchResultsContainer.style.display = "";
+          toggleIcon.textContent = "▲"; // 展开时显示向上箭头
+        } else {
+          searchResultsContainer.style.display = "none";
+          toggleIcon.textContent = "▼"; // 收起时显示向下箭头
+        }
+      }
+    }
+
+    // 事件委托：绑定点击事件
+    document.getElementById("task-list").addEventListener("click", (event) => {
+      console.log("click", event.target);
+      const taskHeader = event.target.closest(".task-header");
+      if (taskHeader) {
+        const taskId = taskHeader.closest(".task").getAttribute("data-task-id");
+        toggleSearchResults(taskId);
+      }
+
+      const radio = event.target.closest('input[type="radio"]');
+      if (radio) {
+        const taskId = radio.getAttribute("data-task-id");
+        const confirmButton = document.querySelector(
+          `.confirm-button[data-task-id="${taskId}"]`,
+        );
+        if (confirmButton) {
+          confirmButton.style.display = radio.checked ? "inline-block" : "none";
+        }
+      }
+
+      const confirmButton = event.target.closest(".confirm-button");
+      if (confirmButton) {
+        const taskId = confirmButton.getAttribute("data-task-id");
+        const selectedRadio = document.querySelector(
+          `input[type="radio"][data-task-id="${taskId}"]:checked`,
+        );
+        if (selectedRadio) {
+          const resultIndex = selectedRadio.getAttribute("data-result-index");
+          console.log(`已确认选择：${taskId} (${resultIndex})`);
+          const targetTask = Zotero.Jasminum.data.progress.taskList.filter(
+            (task) => task.id === taskId,
+          )[0];
+          targetTask.resultIndex = resultIndex;
+          Zotero.Jasminum.scraper.translate(targetTask);
+
+          // 标记任务为已完成
+          const taskElement = confirmButton.closest(".task");
+          taskElement.classList.add("completed");
+
+          // 禁用所有单选按钮
+          const radios = taskElement.querySelectorAll('input[type="radio"]');
+          radios.forEach((radio) => {
+            radio.disabled = true;
+          });
+
+          // 隐藏确认按钮
+          confirmButton.style.display = "none";
+        }
+      }
+    });
+
+    document.getElementById("button-cancel").addEventListener("click", (e) => {
+      console.log(e);
+      const unfinishedTasks = Zotero.Jasminum.data.progress.taskList.filter(
+        (t) => t.status != "fail" && t.status != "success",
+      );
+      if (unfinishedTasks.length > 0) {
+        const userConfirmed = confirm(
+          `还有 ${unfinishedTasks.length} 个抓取任务，是否关闭窗口？`,
+        );
+        if (userConfirmed) {
+          window.close();
+        }
+      } else {
+        window.close();
+      }
+    });
+
+    // 初始化渲染
+    if (window.arguments == undefined) {
+      renderTaskList(tasks);
+      // 默认展开有多个搜索结果的任务
+      tasks.forEach((task) => {
+        if (task.searchResult && task.searchResult.length > 0) {
+          const searchResults = document.getElementById(
+            `search-results-${task.id}`,
+          );
+          const toggleIcon = document.getElementById(`toggle-icon-${task.id}`);
+          if (searchResults && toggleIcon) {
+            searchResults.style.display = "block"; // 默认展开
+            toggleIcon.textContent = "▲"; // 默认显示向上箭头
+          }
+        }
+      });
+    }
+    //]]>
+  </script>
+</html>
