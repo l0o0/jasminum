@@ -3,6 +3,8 @@ type OutlineNode = {
   title: string;
   pageIndex?: number;
   children?: OutlineNode[];
+  collape?: boolean;
+  style?: "bold" | "Italic";
 };
 
 type PdfRef = {
@@ -43,7 +45,6 @@ export async function getOutline(
     };
     // Some pdf missing dest, position instead.
     if (node.location && node.location.dest) {
-      ztoolkit.log(node);
       const pageIndex = await pdfDocument.getPageIndex(node.location.dest[0]);
       outlineNode.pageIndex = pageIndex;
     }
