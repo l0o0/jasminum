@@ -1,8 +1,8 @@
-import { text } from "stream/consumers";
 import { config } from "../../package.json";
 import { getString } from "../utils/locale";
 import { getPref } from "../utils/prefs";
 import { isChineseTopAttachment } from "./menu";
+import { getOutline } from "./outline";
 import { splitChineseName } from "./tools";
 
 export function registerNotifier() {
@@ -88,7 +88,6 @@ export async function registerExtraColumnWithCustomCell() {
       ) => {
         const id = ids[0] as string;
         if (type == "tab" && extraData[id].type == "reader") {
-          if (type) return;
           ztoolkit.log("====start");
           ztoolkit.log(event);
           ztoolkit.log(type);
@@ -103,6 +102,9 @@ export async function registerExtraColumnWithCustomCell() {
             await Zotero.Promise.delay(5000);
             ztoolkit.log("wait 2", new Date());
             const doc = reader._iframeWindow?.document;
+
+            const joutline = await getOutline(reader);
+            ztoolkit.log("++joutline", joutline);
 
             if (doc && doc.querySelector("#j-outline-button") === null) {
               const originOutlineButton = doc.querySelector("#viewOutline");
