@@ -16,6 +16,7 @@ class Addon {
       window: Window;
     };
     progress: Progress;
+    windows: Record<string, Window>;
   };
   // Lifecycle hooks
   public hooks: typeof hooks;
@@ -29,6 +30,7 @@ class Addon {
       env: __env__,
       ztoolkit: createZToolkit(),
       progress: new Progress(),
+      windows: {},
     };
     this.hooks = hooks;
     this.api = {};

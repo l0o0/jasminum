@@ -43,7 +43,7 @@ href="chrome://zotero-platform/content/zotero.css" type="text/css"?>
         background-color: #f2f2f2;
         cursor: pointer;
         position: sticky; /* 固定表头 */
-        top: 0; /* 固定在顶部 */
+        top: -1px; /* 固定在顶部 */
         z-index: 1; /* 确保表头在内容上方 */
       }
 
@@ -114,32 +114,38 @@ href="chrome://zotero-platform/content/zotero.css" type="text/css"?>
       <div id="loading-img">
         <img src="chrome://jasminum/content/icons/loading-loop.svg" />
       </div>
-      <table id="dataTable">
+      <table id="dataTable" style="display: none">
         <thead></thead>
-        <tbody style="display: &quot;none&quot;">
+        <tbody>
           <!-- 表格内容由 JavaScript 动态生成 -->
         </tbody>
       </table>
     </div>
     <div id="footer">
-      <label
-        xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul"
-        is="zotero-text-link"
-        value="如果更新Zotero和浏览器中的转换器"
-        href="https://zotero-chinese.com/user-guide/faqs/update-translators#%E6%9B%B4%E6%96%B0%E6%8A%93%E5%8F%96%E6%96%87%E7%8C%AE%E4%BF%A1%E6%81%AF%E7%9A%84%E8%BD%AC%E6%8D%A2%E5%99%A8"
-        class="zotero-text-link"
-        role="link"
-      />
       <a
+        value="如何更新Zotero和浏览器中的转换器"
         href="https://zotero-chinese.com/user-guide/faqs/update-translators#%E6%9B%B4%E6%96%B0%E6%8A%93%E5%8F%96%E6%96%87%E7%8C%AE%E4%BF%A1%E6%81%AF%E7%9A%84%E8%BD%AC%E6%8D%A2%E5%99%A8"
-        target="_blank"
-        >如果更新Zotero和浏览器中的转换器</a
+        onclick="Zotero.launchURL(this.getAttribute('href'))"
+        >如何更新Zotero和浏览器中的转换器</a
       >
     </div>
 
     <script>
       //<![CDATA[
-      window.arguments[0]._initPromise.resolve();
+      document.addEventListener("DOMContentLoaded", (ev) => {
+        Services.scriptloader.loadSubScript(
+          "chrome://zotero/content/include.js",
+          this,
+        );
+
+        Services.scriptloader.loadSubScript(
+          "resource://zotero/require.js",
+          this,
+        );
+
+        window.arguments[0]._initPromise.resolve();
+      });
+
       // 获取 DOM 元素
       const tableBody = document.querySelector("#dataTable tbody");
       const searchInput = document.getElementById("searchInput");

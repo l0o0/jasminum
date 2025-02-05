@@ -145,41 +145,50 @@ async function openTranslatorTable() {
     ],
     _initPromise: Zotero.Promise.defer(),
   };
-  const win = (
-    Services.wm.getMostRecentWindow("navigator:browser") as Window
-  ).openDialog(
-    `chrome://${config.addonRef}/content/translators.xhtml`,
-    "",
-    "chrome,centerscreen,dialog=yes,resizable=no,status=no",
-    windowArgs,
-  );
-  await windowArgs._initPromise.promise;
-  ztoolkit.log(win);
-  const translatorData = await getTranslatorData(true);
-
-  const tableBody = win!.document.querySelector("#dataTable tbody")!;
-  tableBody.innerHTML = "";
-
-  for (const translator in translatorData) {
-    const localUpdateTime = await getLastUpdateFromFile(translator);
-    translatorData[translator].localUpdateTime = localUpdateTime || "--";
-    const tr = win!.document.createElement("tr");
-    const row = {
-      filename: translator,
-      label: translatorData[translator].label,
-      localUpdateTime: translatorData[translator].localUpdateTime,
-      lastUpdated: translatorData[translator].lastUpdated,
+  if (addon.data.windows && addon.data.windows.translators) {
+    addon.data.windows.translators.focus();
+    ztoolkit.log("Translators window is opened.");
+  } else {
+    const win = (
+      Services.wm.getMostRecentWindow("navigator:browser") as Window
+    ).openDialog(
+      `chrome://${config.addonRef}/content/translators.xhtml`,
+      "",
+      "chrome,centerscreen,dialog=yes,resizable=no,status=no",
+      windowArgs,
+    );
+    win!.onclose = (e) => {
+      delete addon.data.windows.translators;
     };
-    (Object.keys(row) as (keyof typeof row)[]).forEach((column) => {
-      const td = win!.document.createElement("td");
-      td.textContent = row[column];
-      tr.appendChild(td);
-    });
-    tableBody.appendChild(tr);
+    addon.data.windows.translators = win!;
+    await windowArgs._initPromise.promise;
+    ztoolkit.log(win);
+    const translatorData = await getTranslatorData(true);
+
+    const tableBody = win!.document.querySelector("#dataTable tbody")!;
+    tableBody.innerHTML = "";
+
+    for (const translator in translatorData) {
+      const localUpdateTime = await getLastUpdateFromFile(translator);
+      translatorData[translator].localUpdateTime = localUpdateTime || "--";
+      const tr = win!.document.createElement("tr");
+      const row = {
+        filename: translator,
+        label: translatorData[translator].label,
+        localUpdateTime: translatorData[translator].localUpdateTime,
+        lastUpdated: translatorData[translator].lastUpdated,
+      };
+      (Object.keys(row) as (keyof typeof row)[]).forEach((column) => {
+        const td = win!.document.createElement("td");
+        td.textContent = row[column];
+        tr.appendChild(td);
+      });
+      tableBody.appendChild(tr);
+    }
+    win!.document.getElementById("loading-img")!.style.display = "none";
+    win!.document.getElementById("dataTable")!.style.display = "";
+    ztoolkit.log("Table was rendered.");
   }
-  win!.document.getElementById("loading-img")!.style.display = "none";
-  win!.document.getElementById("dataTable")!.style.display = "";
-  ztoolkit.log("Table was rendered.");
 }
 
 function bindPrefEvents() {
