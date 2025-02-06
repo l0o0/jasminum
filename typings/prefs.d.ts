@@ -8,6 +8,7 @@ declare namespace _ZoteroTypes {
   interface Prefs {
     PluginPrefsMap: {
       "firstrun": boolean;
+      "isMainlandChina": boolean;
       "namepattern": string;
       "namepatternCustom": string;
       "autoupdate": boolean;

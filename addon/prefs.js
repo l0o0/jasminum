@@ -1,5 +1,6 @@
 /* eslint-disable no-undef */
 pref("firstrun", false);
+pref("isMainlandChina", true);
 pref("namepattern", "{%t}_{%g}");
 pref("namepatternCustom", "{%t}");
 pref("autoupdate", true);

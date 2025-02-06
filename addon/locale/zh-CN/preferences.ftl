@@ -1,5 +1,7 @@
 # 元数据设置
 pref-group-metadata = 中文元数据抓取设置
+label-isMainlandChina = 
+  .label = 当前位于中国大陆（不包括中国香港、中国澳门及中国台湾），海外用户请取消勾选
 label-autoupdate-metadata = 
   .label = 添加中文PDF/CAJ时自动从知网抓取元数据
 label-zhnamesplit = 

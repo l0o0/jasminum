@@ -1,4 +1,5 @@
 import { config } from "../../package.json";
+import { isMainlandChina } from "../utils/http";
 import { getString } from "../utils/locale";
 import { getPref, setPref } from "../utils/prefs";
 import {
@@ -31,7 +32,7 @@ export async function registerPrefsScripts(_window: Window) {
 }
 
 // Initialize platform specific preferences
-export function initPrefs() {
+export async function initPrefs() {
   ztoolkit.log("init some prefs");
   let downloadsPath: string;
   // @ts-ignore - Profile is not typed.
@@ -60,6 +61,9 @@ export function initPrefs() {
     setPref("pdfMatchFolder", downloadsPath);
     ztoolkit.log(getPref("pdfMatchFolder"));
   }
+
+  const inMainlandChina = await isMainlandChina();
+  setPref("isMainlandChina", inMainlandChina);
 
   if (Math.random() > 0.5) {
     setPref("translatorSource", "https://ftp.linxingzhong.top/translators_CN/");
