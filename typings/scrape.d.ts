@@ -22,7 +22,7 @@ type ScrapeSearchResult = {
 
 type ScrapeTask = {
   id: string;
-  type: "attachment" | "snapshot";
+  type: "attachment" | "snapshot" | "book";
   item: Zotero.Item;
   searchResults?: ScrapeSearchResult[];
   resultIndex?: 0;

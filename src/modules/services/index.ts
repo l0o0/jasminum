@@ -5,9 +5,11 @@ import { isChinsesSnapshot } from "../menu";
 
 export class Scraper {
   cnki: ScrapeService | undefined;
+  ccpinfo: ScrapeService | undefined;
 
   constructor() {
     import("./cnki").then((e) => (this.cnki = new e.default()));
+    import("./ccpinfo").then((e) => (this.ccpinfo = new e.default()));
   }
 
   // Need to monitor the task search result change.
@@ -85,10 +87,12 @@ export class Scraper {
   }
 
   public async search(item: Zotero.Item, options?: any): Promise<void> {
-    const scrapeServices = getPref("metadataSource").split(", ") || ["CNKI"];
+    // const scrapeServices = getPref("metadataSource").split(", ") || ["CNKI"];
     let taskType: "attachment" | "snapshot" = "attachment";
     // add more condition.
-    if (isChinsesSnapshot(item)) {
+    if (options) {
+      taskType = options.taskType;
+    } else if (isChinsesSnapshot(item)) {
       taskType = "snapshot";
     }
     const task: ScrapeTask = {
@@ -104,9 +108,12 @@ export class Scraper {
     taskProxy.status = "processing";
     // Searching by different scrape services
     let scrapeSearchResults: ScrapeSearchResult[] = [];
-    if (taskProxy.type == "attachment") {
+    if (taskProxy.type == "snapshot") {
+      const tmp = await (this.cnki as ScrapeService).searchSnapshot!(taskProxy);
+      if (tmp) scrapeSearchResults = scrapeSearchResults.concat(tmp);
+    } else {
       const searchOption = await this.getSearchOption(taskProxy.item);
-      if (searchOption) {
+      if (searchOption && taskProxy.type == "attachment") {
         const cnkiSearchResult = await (this.cnki as ScrapeService).search(
           searchOption,
         );
@@ -114,13 +121,18 @@ export class Scraper {
         if (cnkiSearchResult) {
           scrapeSearchResults = scrapeSearchResults.concat(cnkiSearchResult);
         }
+      } else if (searchOption && taskProxy.type == "book") {
+        const cppinfoSearchResult = await (
+          this.ccpinfo as ScrapeService
+        ).search(searchOption);
+        ztoolkit.log("cnki results", cppinfoSearchResult);
+        if (cppinfoSearchResult) {
+          scrapeSearchResults = scrapeSearchResults.concat(cppinfoSearchResult);
+        }
       } else {
         taskProxy.errorMsg = "Filename parsing error";
         taskProxy.status = "fail";
       }
-    } else if (taskProxy.type == "snapshot") {
-      const tmp = await (this.cnki as ScrapeService).searchSnapshot!(taskProxy);
-      if (tmp) scrapeSearchResults = scrapeSearchResults.concat(tmp);
     }
 
     ztoolkit.log("all results: ", scrapeSearchResults);
@@ -150,6 +162,13 @@ export class Scraper {
         case "CNKI":
           ztoolkit.log("translated by CNKI");
           newItem = await (this.cnki as ScrapeService).translate(task, false);
+          break;
+        case "CCPINFO":
+          ztoolkit.log("translated by CCPINFO");
+          newItem = await (this.ccpinfo as ScrapeService).translate(
+            task,
+            false,
+          );
           break;
         default:
           break;

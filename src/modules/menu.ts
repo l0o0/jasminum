@@ -63,6 +63,7 @@ const metaddataMenuItems: MenuitemOptions[] = [
       // @ts-ignore - The plugin instance is not typed.
       Zotero[config.addonInstance].scraper.search(
         Zotero.getActiveZoteroPane().getSelectedItems()[0],
+        { taskType: "book" },
       );
     },
   },
