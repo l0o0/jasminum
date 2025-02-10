@@ -1,0 +1,51 @@
+{
+  "IsSearch": "true",
+  "QueryJson": {
+    "Platform": "",
+    "DBCode": "CFLS",
+    "KuaKuCode": "CJFQ,CDMD,CIPD,CCND,CYFD,CCJD,BDZK,CISD,CJFQ,CDMD,CIPD,CCND,CYFD,CCJD,BDZK,CISD,CJFN",
+    "QNode": {
+      "QGroup": [
+        {
+          "Key": "Subject",
+          "Title": "",
+          "Logic": 4,
+          "Items": [
+            {
+              "Key": "Expert",
+              "Title": "",
+              "Logic": 0,
+              "Name": "",
+              "Operate": "",
+              "Value": "TI+%+'黄瓜共表达'+and+AU='林行众'",
+              "ExtendType": 12,
+              "ExtendValue": "中英文对照",
+              "Value2": "",
+              "BlurType": ""
+            }
+          ],
+          "ChildItems": []
+        },
+        {
+          "Key": "ControlGroup",
+          "Title": "",
+          "Logic": 1,
+          "Items": [],
+          "ChildItems": []
+        }
+      ]
+    },
+    "ExScope": 1,
+    "CodeLang": ""
+  },
+  "PageName": "AdvSearch",
+  "DBCode": "CFLS",
+  "KuaKuCodes": "CJFQ,CDMD,CIPD,CCND,CYFD,CCJD,BDZK,CISD,CJFQ,CDMD,CIPD,CCND,CYFD,CCJD,BDZK,CISD,CJFN",
+  "CurPage": "1",
+  "RecordsCntPerPage": "20",
+  "CurDisplayMode": "listmode",
+  "CurrSortField": "",
+  "CurrSortFieldType": "desc",
+  "IsSentenceSearch": "false",
+  "Subject": ""
+}

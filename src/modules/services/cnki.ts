@@ -10,6 +10,11 @@ import { getPref } from "../../utils/prefs";
 function createSearchPostOptions(searchOption: SearchOption) {
   let url;
   let headers;
+  let searchExp = `TI % '${searchOption.title}'`;
+  if (searchOption.author)
+    searchExp = searchExp + ` AND AU='${searchOption.author}'`;
+  const searchExpAside = searchExp.replace(/'/g, "&#39;");
+  let queryJson;
   if (getPref("isMainlandChina")) {
     ztoolkit.log("CNKI in mainland China.");
     url = "https://kns.cnki.net/kns8s/brief/grid";
@@ -18,111 +23,64 @@ function createSearchPostOptions(searchOption: SearchOption) {
       "User-Agent":
         "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:109.0) Gecko/20100101 Firefox/133.0",
       Accept: "*/*",
-      "Accept-Language":
-        "zh-CN,zh;q=0.9,en;q=0.8,en-GB;q=0.7,en-US;q=0.6,zh-TW;q=0.5",
+      "Accept-Language": "zh-CN,en-US;q=0.7,en;q=0.3",
       "Content-Type": "application/x-www-form-urlencoded; charset=UTF-8",
       Origin: "https://kns.cnki.net",
       Referer:
-        "https://kns.cnki.net/kns8s/AdvSearch?crossids=YSTT4HG0%2CLSTPFY1C%2CJUP3MUPD%2CMPMFIG1A%2CWQ0UVIAA%2CBLZOG7CK%2CEMRPGLPA%2CPWFIRAGL%2CNLBO1Z6R%2CNN3FJMUV",
+        "https://kns.cnki.net/kns8s/AdvSearch?crossids=YSTT4HG0%2CLSTPFY1C%2CJUP3MUPD%2CMPMFIG1A%2CWQ0UVIAA%2CBLZOG7CK%2CPWFIRAGL%2CEMRPGLPA%2CNLBO1Z6R%2CNN3FJMUV",
     };
-    const queryData = {
-      boolSearch: true,
-      QueryJson: NaN,
-      pageNum: 1,
-      pageSize: 20,
-      dstyle: "listmode",
-      boolSortSearch: false,
-      sentenceSearch: false,
-      productStr:
-        "YSTT4HG0,LSTPFY1C,RMJLXHZ3,JQIRZIYA,JUP3MUPD,1UR4K4HZ,BPBAFJ5S,R79MZMCB,MPMFIG1A,WQ0UVIAA,NB3BWEHK,XVLO76FD,HR1YT1Z9,BLZOG7CK,EMRPGLPA,J708GVCE,ML4DRIDX,PWFIRAGL,NLBO1Z6R,NN3FJMUV,",
-      searchFrom: "资源范围：总库;++中英文扩展;++时间范围：更新时间：不限;++",
-      CurPage: 1,
-      aside: "",
-    };
-    const queryJson: any = {
-      // KuaKuCode: "CJZK,CDFD,CMFD,CPFD,IPFD,CCND,BDZK,CPVD",
-      Platform: "",
-      Resource: "CROSSDB",
-      Classid: "WD0FTY92",
-      Products: "",
-      ExScope: "1",
-      SearchType: 1,
-      Rlang: "CHINESE",
-      KuaKuCode:
-        "YSTT4HG0,LSTPFY1C,JUP3MUPD,MPMFIG1A,WQ0UVIAA,BLZOG7CK,PWFIRAGL,EMRPGLPA,NLBO1Z6R,NN3FJMUV",
-      SearchFrom: 1,
-      QNode: {
-        QGroup: [
-          {
-            Key: "Subject",
-            Title: "",
-            Logic: 0,
-            Items: [],
-            ChildItems: [], // fill up here
-          },
-          {
-            Key: "ControlGroup",
-            Title: "",
-            Logic: 0,
-            Items: [],
-            ChildItems: [],
-          },
-        ],
-      },
-    };
-
-    // 必要标题，不然搜个啥。标题全按主题词搜索，虽然模糊，可是适用范围大
-    // 所谓模糊搜索就是将特殊符号去掉，所以字段放到主题词中
-    // TODO: 新增模糊搜索选项
-    let aside = "";
-    const su = {
-      Key: "input[data-tipid=gradetxt-1]",
-      Title: "主题",
-      Logic: 0,
-      Items: [
-        {
-          Key: "input[data-tipid=gradetxt-1]",
-          Title: "主题",
-          Logic: 0,
-          Field: "SU",
-          Operator: "TOPRANK",
-          Value: searchOption.title.replace(" ", "+"),
-          Value2: "",
+    queryJson = {
+      boolSearch: "true",
+      QueryJson: {
+        Platform: "",
+        Resource: "CROSSDB",
+        Classid: "WD0FTY92",
+        Products: "",
+        QNode: {
+          QGroup: [
+            {
+              Key: "Subject",
+              Title: "",
+              Logic: 0,
+              Items: [
+                {
+                  Key: "Expert",
+                  Title: "",
+                  Logic: 0,
+                  Field: "EXPERT",
+                  Operator: 0,
+                  Value: searchExp,
+                  Value2: "",
+                },
+              ],
+              ChildItems: [],
+            },
+            {
+              Key: "ControlGroup",
+              Title: "",
+              Logic: 0,
+              Items: [],
+              ChildItems: [],
+            },
+          ],
         },
-      ],
-      ChildItems: [],
-    };
-    queryJson.QNode.QGroup[0].ChildItems.push(su);
-    aside = `（主题：${searchOption.title.replace(" ", "+")}）`;
-
-    if (searchOption.author) {
-      const au = {
-        Key: "input[data-tipid=gradetxt-2]",
-        Title: "作者",
-        Logic: 0,
-        Items: [
-          {
-            Key: "input[data-tipid=gradetxt-2]",
-            Title: "作者",
-            Logic: 0,
-            Field: "AU",
-            Operator: "FUZZY",
-            Value: searchOption.author,
-            Value2: "",
-          },
-        ],
-        ChildItems: [],
-      };
-      queryJson.QNode.QGroup[0].ChildItems.push(au);
-      aside = `（主题：${searchOption.title.replace(" ", "+")}）AND（作者：${searchOption.author}(模糊)）`;
-    }
-    queryData.QueryJson = queryJson;
-    queryData.aside = aside;
-    // ztoolkit.log(queryData);
-    return {
-      url: url,
-      data: jsonToFormUrlEncoded(queryData),
-      headers: headers,
+        ExScope: "1",
+        SearchType: 4,
+        Rlang: "CHINESE",
+        KuaKuCode:
+          "YSTT4HG0,LSTPFY1C,JUP3MUPD,MPMFIG1A,WQ0UVIAA,BLZOG7CK,PWFIRAGL,EMRPGLPA,NLBO1Z6R,NN3FJMUV",
+        SearchFrom: 1,
+      },
+      pageNum: "1",
+      pageSize: "20",
+      sortField: "",
+      sortType: "",
+      dstyle: "listmode",
+      productStr:
+        "YSTT4HG0,LSTPFY1C,RMJLXHZ3,JQIRZIYA,JUP3MUPD,1UR4K4HZ,BPBAFJ5S,R79MZMCB,MPMFIG1A,WQ0UVIAA,NB3BWEHK,XVLO76FD,HR1YT1Z9,BLZOG7CK,PWFIRAGL,EMRPGLPA,J708GVCE,ML4DRIDX,NLBO1Z6R,NN3FJMUV,",
+      aside: `(${searchExpAside})`,
+      searchFrom: "资源范围：总库;++中英文扩展;++时间范围：更新时间：不限;++",
+      CurPage: "1",
     };
   } else {
     ztoolkit.log("Using CNKI oversea.");
@@ -132,13 +90,13 @@ function createSearchPostOptions(searchOption: SearchOption) {
       Referer:
         "https://chn.oversea.cnki.net/kns/AdvSearch?dbcode=CFLS&crossDbcodes=CJFQ,CDMD,CIPD,CCND,CYFD,CCJD,BDZK,CISD,CJFQ,CDMD,CIPD,CCND,CYFD,CCJD,BDZK,CISD,CJFN",
     };
-    let searchExp = `TI='${searchOption.title}'`;
-    if (searchOption.author)
-      searchExp = searchExp + ` AND AU='${searchOption.author}'`;
-    const queryDataO = {
+    queryJson = {
+      IsSearch: "true",
       QueryJson: {
         Platform: "",
         DBCode: "CFLS",
+        KuaKuCode:
+          "CJFQ,CDMD,CIPD,CCND,CYFD,CCJD,BDZK,CISD,CJFQ,CDMD,CIPD,CCND,CYFD,CCJD,BDZK,CISD,CJFN",
         QNode: {
           QGroup: [
             {
@@ -172,27 +130,27 @@ function createSearchPostOptions(searchOption: SearchOption) {
         },
         ExScope: 1,
         CodeLang: "",
-        KuaKuCode: "CJFQ,CCND,CIPD,CDMD,CYFD,BDZK,CISD,CCJD,CJFN",
       },
-      IsSearch: false,
-      CurPage: 1,
-      RecordsCntPerPage: 20,
-      CurrSortField: "RELEVANT",
-      CurrSortFieldType: "desc",
-      CurDisplayMode: "listmode",
-      IsSentenceSearch: false,
-      KuaKuCodes: "CJFQ,CCND,CIPD,CDMD,CYFD,BDZK,CISD,CCJD,CJFN",
       PageName: "AdvSearch",
       DBCode: "CFLS",
+      KuaKuCodes:
+        "CJFQ,CDMD,CIPD,CCND,CYFD,CCJD,BDZK,CISD,CJFQ,CDMD,CIPD,CCND,CYFD,CCJD,BDZK,CISD,CJFN",
+      CurPage: "1",
+      RecordsCntPerPage: "20",
+      CurDisplayMode: "listmode",
+      CurrSortField: "",
+      CurrSortFieldType: "desc",
+      IsSentenceSearch: "false",
       Subject: "",
     };
-    // ztoolkit.log(queryDataO);
-    return {
-      url: url,
-      data: jsonToFormUrlEncoded(queryDataO),
-      headers: headers,
-    };
   }
+  ztoolkit.log(queryJson);
+  ztoolkit.log(jsonToFormUrlEncoded(queryJson));
+  return {
+    url: url,
+    data: jsonToFormUrlEncoded(queryJson),
+    headers: headers,
+  };
 }
 
 function createRefPostData(searchResult: ScrapeSearchResult) {

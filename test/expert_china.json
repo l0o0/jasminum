@@ -1,0 +1,51 @@
+{
+  "boolSearch": "true",
+  "QueryJson": {
+    "Platform": "",
+    "Resource": "CROSSDB",
+    "Classid": "WD0FTY92",
+    "Products": "",
+    "QNode": {
+      "QGroup": [
+        {
+          "Key": "Subject",
+          "Title": "",
+          "Logic": 0,
+          "Items": [
+            {
+              "Key": "Expert",
+              "Title": "",
+              "Logic": 0,
+              "Field": "EXPERT",
+              "Operator": 0,
+              "Value": "TI+%+'黄瓜共表达'+and+AU='林行众'",
+              "Value2": ""
+            }
+          ],
+          "ChildItems": []
+        },
+        {
+          "Key": "ControlGroup",
+          "Title": "",
+          "Logic": 0,
+          "Items": [],
+          "ChildItems": []
+        }
+      ]
+    },
+    "ExScope": "1",
+    "SearchType": 4,
+    "Rlang": "CHINESE",
+    "KuaKuCode": "YSTT4HG0,LSTPFY1C,JUP3MUPD,MPMFIG1A,WQ0UVIAA,BLZOG7CK,PWFIRAGL,EMRPGLPA,NLBO1Z6R,NN3FJMUV",
+    "SearchFrom": 1
+  },
+  "pageNum": "1",
+  "pageSize": "20",
+  "sortField": "",
+  "sortType": "",
+  "dstyle": "listmode",
+  "productStr": "YSTT4HG0,LSTPFY1C,RMJLXHZ3,JQIRZIYA,JUP3MUPD,1UR4K4HZ,BPBAFJ5S,R79MZMCB,MPMFIG1A,WQ0UVIAA,NB3BWEHK,XVLO76FD,HR1YT1Z9,BLZOG7CK,PWFIRAGL,EMRPGLPA,J708GVCE,ML4DRIDX,NLBO1Z6R,NN3FJMUV,",
+  "aside": "(TI+%+&#39;黄瓜共表达&#39;+and+AU=&#39;林行众&#39;)",
+  "searchFrom": "资源范围：总库;++中英文扩展;++时间范围：更新时间：不限;++",
+  "CurPage": "1"
+}
