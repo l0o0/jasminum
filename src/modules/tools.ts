@@ -62,6 +62,18 @@ export async function mergeChineseName(item: Zotero.Item): Promise<void> {
   }
 }
 
+export async function updateCNKICite(item: Zotero.Item): Promise<void> {
+  const searchOption = {
+    title: item.getField("title"),
+    author: item.getCreators()[0].lastName + item.getCreators()[0].firstName,
+  };
+  const searchResults = await addon.scraper.cnki?.search(searchOption);
+  if (searchResults && searchResults.length > 0) {
+    const cite = searchResults[0].citation as string;
+    ztoolkit.ExtraField.setExtraField(item, "CNKICite", cite);
+  }
+}
+
 async function renameAttachmentFromParent(attachmentItem: Zotero.Item) {
   if (
     !attachmentItem.isAttachment() ||
