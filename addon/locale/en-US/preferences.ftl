@@ -1,5 +1,7 @@
 # Metadata Settings
 pref-group-metadata = Chinese Metadata Retrieval Settings
+label-isMainlandChina = 
+  .label = Currently located in Chinese Mainland (excluding Hong Kong, Macao and Taiwan), uncheck for overseas users
 label-autoupdate-metadata =
 .label = Automatically retrieve metadata from CNKI when adding Chinese PDF/CAJ files
 label-zhnamesplit =
@@ -60,7 +62,7 @@ label-install-wps-plugin-click =
 
 # About
 pref-group-about = About
-pref-help = Version { time } ❤️
+pref-help = Version { $version } Build { $time } ❤️
 label-zotero-chinese = Zotero Chinese Community
 pref-enable =
 .label = Enable
