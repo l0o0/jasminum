@@ -1,7 +1,7 @@
 import { getArgsFromPattern } from "../../utils/pattern";
 import { getPDFTitle } from "../../utils/pdfParser";
 import { getPref } from "../../utils/prefs";
-import { isChinsesSnapshot } from "../menu";
+import { isChineseTopAttachment, isChinsesSnapshot } from "../menu";
 
 export class Scraper {
   cnki: ScrapeService | undefined;
@@ -84,57 +84,68 @@ export class Scraper {
     }
   }
 
-  public async search(item: Zotero.Item, options?: any): Promise<void> {
-    const scrapeServices = getPref("metadataSource").split(", ") || ["CNKI"];
-    let taskType: "attachment" | "snapshot" = "attachment";
-    // add more condition.
-    if (isChinsesSnapshot(item)) {
-      taskType = "snapshot";
+  public async search(items: Zotero.Item[], options?: any): Promise<void> {
+    // const scrapeServices = getPref("metadataSource").split(", ") || ["CNKI"];
+    const cnItems = items.filter(
+      (i) => isChineseTopAttachment(i) || isChinsesSnapshot(i),
+    );
+    if (cnItems.length == 0) {
+      ztoolkit.log("No candidate items found. Stop search.");
+      return;
     }
-    const task: ScrapeTask = {
-      id: Zotero.Utilities.randomString(),
-      item: item,
-      type: taskType,
-      status: "waiting",
-    };
-    const taskProxy = this.toProxyTask(task);
-    ztoolkit.log("search task", taskProxy);
-    // TODO: Maybe this is a slient task.
-    addon.data.progress.addTask(taskProxy);
-    taskProxy.status = "processing";
-    // Searching by different scrape services
-    let scrapeSearchResults: ScrapeSearchResult[] = [];
-    if (taskProxy.type == "attachment") {
-      const searchOption = await this.getSearchOption(taskProxy.item);
-      if (searchOption) {
-        const cnkiSearchResult = await (this.cnki as ScrapeService).search(
-          searchOption,
-        );
-        ztoolkit.log("cnki results", cnkiSearchResult);
-        if (cnkiSearchResult) {
-          scrapeSearchResults = scrapeSearchResults.concat(cnkiSearchResult);
-        }
-      } else {
-        taskProxy.errorMsg = "Filename parsing error";
-        taskProxy.status = "fail";
+    for (const item of cnItems) {
+      let taskType: "attachment" | "snapshot" = "attachment";
+      // add more condition.
+      if (isChinsesSnapshot(item)) {
+        taskType = "snapshot";
       }
-    } else if (taskProxy.type == "snapshot") {
-      const tmp = await (this.cnki as ScrapeService).searchSnapshot!(taskProxy);
-      if (tmp) scrapeSearchResults = scrapeSearchResults.concat(tmp);
-    }
+      const task: ScrapeTask = {
+        id: Zotero.Utilities.randomString(),
+        item: item,
+        type: taskType,
+        status: "waiting",
+      };
+      const taskProxy = this.toProxyTask(task);
+      ztoolkit.log("search task", taskProxy);
+      // TODO: Maybe this is a slient task.
+      addon.data.progress.addTask(taskProxy);
+      taskProxy.status = "processing";
+      // Searching by different scrape services
+      let scrapeSearchResults: ScrapeSearchResult[] = [];
+      if (taskProxy.type == "attachment") {
+        const searchOption = await this.getSearchOption(taskProxy.item);
+        if (searchOption) {
+          const cnkiSearchResult = await (this.cnki as ScrapeService).search(
+            searchOption,
+          );
+          ztoolkit.log("cnki results", cnkiSearchResult);
+          if (cnkiSearchResult) {
+            scrapeSearchResults = scrapeSearchResults.concat(cnkiSearchResult);
+          }
+        } else {
+          taskProxy.errorMsg = "Filename parsing error";
+          taskProxy.status = "fail";
+        }
+      } else if (taskProxy.type == "snapshot") {
+        const tmp = await (this.cnki as ScrapeService).searchSnapshot!(
+          taskProxy,
+        );
+        if (tmp) scrapeSearchResults = scrapeSearchResults.concat(tmp);
+      }
 
-    ztoolkit.log("all results: ", scrapeSearchResults);
-    if (scrapeSearchResults.length == 0) {
-      taskProxy.errorMsg = "No search results";
-      taskProxy.status = "fail";
-    } else if (scrapeSearchResults.length > 1) {
-      taskProxy.status = "multiple_results";
-    }
-    taskProxy.searchResults = scrapeSearchResults;
-    // When there is only one search result, translate it directly.
-    // User will select in progress windows and continue to translate.
-    if (scrapeSearchResults.length == 1) {
-      await this.translate(taskProxy);
+      ztoolkit.log("all results: ", scrapeSearchResults);
+      if (scrapeSearchResults.length == 0) {
+        taskProxy.errorMsg = "No search results";
+        taskProxy.status = "fail";
+      } else if (scrapeSearchResults.length > 1) {
+        taskProxy.status = "multiple_results";
+      }
+      taskProxy.searchResults = scrapeSearchResults;
+      // When there is only one search result, translate it directly.
+      // User will select in progress windows and continue to translate.
+      if (scrapeSearchResults.length == 1) {
+        await this.translate(taskProxy);
+      }
     }
   }
 

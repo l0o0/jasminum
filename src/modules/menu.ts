@@ -44,7 +44,7 @@ const metaddataMenuItems: MenuitemOptions[] = [
     commandListener: () => {
       // @ts-ignore - The plugin instance is not typed.
       Zotero[config.addonInstance].scraper.search(
-        Zotero.getActiveZoteroPane().getSelectedItems()[0],
+        Zotero.getActiveZoteroPane().getSelectedItems(),
       );
     },
   },
@@ -157,5 +157,7 @@ export function registerMenu() {
   //     ztoolkit.log(title);
   //   },
   // });
-  ztoolkit.Menu.register("collection", metadataMenu);
+
+  // Disable in collection
+  // ztoolkit.Menu.register("collection", metadataMenu);
 }

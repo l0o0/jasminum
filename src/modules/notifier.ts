@@ -48,7 +48,7 @@ function onNotify(
 
       if (getPref("autoupdate")) {
         if (isChineseTopAttachment(item)) {
-          await addon.scraper.search(item);
+          await addon.scraper.search([item]);
         }
       }
 
@@ -66,7 +66,7 @@ export async function registerExtraColumnWithCustomCell() {
     pluginID: config.addonID,
     dataProvider: (item, dataKey) => {
       // 网友提供的特殊字符，方便排序
-      return ztoolkit.ExtraField.getExtraField(item, "citation") || "\u2068";
+      return ztoolkit.ExtraField.getExtraField(item, "CNKICite") || "\u2068";
     },
     // @ts-ignore - Not typed.
     // renderCell(index, data, column, isFirstColumn, doc) {
