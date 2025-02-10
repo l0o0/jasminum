@@ -80,11 +80,11 @@ export class Progress {
       id: `search-results-container-${task.id}`,
       children: [
         {
+          namespace: "html",
           tag: "button",
           classList: ["confirm-button"],
           properties: {
             innerText: "确认",
-            namespace: "html",
           },
           attributes: { "data-task-id": task.id },
         },
@@ -152,6 +152,7 @@ export class Progress {
         properties: { style: "display: none;" },
         children: [
           {
+            namespace: "html",
             tag: "button",
             classList: ["confirm-button"],
             properties: { innerText: "确认" },
