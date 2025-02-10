@@ -233,36 +233,36 @@ function bindPrefEvents() {
     });
 
   // metadata source dropdown
-  doc
-    .querySelector(`#zotero-prefpane-${config.addonRef}-metadata-source-button`)
-    ?.addEventListener("click", (e) => {
-      e.stopPropagation(); // 阻止事件冒泡
-      const pvalues = (getPref("metadataSource") as string).split(", ");
-      doc.querySelectorAll("checkbox.metadata-drop-item")!.forEach((e: any) => {
-        e.checked = pvalues.includes(e.getAttribute("value")!);
-      });
-      doc.querySelector("#metadata-source-dropdown")?.classList.toggle("show");
-    });
+  // doc
+  //   .querySelector(`#zotero-prefpane-${config.addonRef}-metadata-source-button`)
+  //   ?.addEventListener("click", (e) => {
+  //     e.stopPropagation(); // 阻止事件冒泡
+  //     const pvalues = (getPref("metadataSource") as string).split(", ");
+  //     doc.querySelectorAll("checkbox.metadata-drop-item")!.forEach((e: any) => {
+  //       e.checked = pvalues.includes(e.getAttribute("value")!);
+  //     });
+  //     doc.querySelector("#metadata-source-dropdown")?.classList.toggle("show");
+  //   });
 
-  doc
-    .querySelector("#metadata-source-dropdown")
-    ?.addEventListener("click", (e) => {
-      const checkbox = (e.target as HTMLElement).closest(
-        ".metadata-drop-item",
-      )!;
-      let pvalues = getPref("metadataSource").split(", ") || ["CNKI"];
-      if (checkbox.getAttribute("checked") == "true") {
-        const checkedSource = checkbox.getAttribute("value")!;
-        if (!pvalues.includes(checkedSource)) {
-          pvalues.push(checkedSource);
-        }
-      } else {
-        pvalues = pvalues.filter(
-          (option) => option !== checkbox.getAttribute("value")!,
-        );
-      }
-      setPref("metadataSource", pvalues.join(", "));
-    });
+  // doc
+  //   .querySelector("#metadata-source-dropdown")
+  //   ?.addEventListener("click", (e) => {
+  //     const checkbox = (e.target as HTMLElement).closest(
+  //       ".metadata-drop-item",
+  //     )!;
+  //     let pvalues = getPref("metadataSource").split(", ") || ["CNKI"];
+  //     if (checkbox.getAttribute("checked") == "true") {
+  //       const checkedSource = checkbox.getAttribute("value")!;
+  //       if (!pvalues.includes(checkedSource)) {
+  //         pvalues.push(checkedSource);
+  //       }
+  //     } else {
+  //       pvalues = pvalues.filter(
+  //         (option) => option !== checkbox.getAttribute("value")!,
+  //       );
+  //     }
+  //     setPref("metadataSource", pvalues.join(", "));
+  //   });
 
   // doc
   //   .querySelector(
