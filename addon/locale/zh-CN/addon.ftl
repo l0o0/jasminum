@@ -1,9 +1,3 @@
-startup-begin = 插件加载中
-startup-finish = 插件已就绪
-menuitem-label = 插件模板: 帮助工具样例
-menupopup-label = 插件模板: 弹出菜单
-menuitem-submenulabel = 插件模板：子菜单
-menuitem-filemenulabel = 插件模板: 文件菜单
 prefs-title = 茉莉花
 prefs-table-title = 标题
 prefs-table-detail = 详情
@@ -28,6 +22,11 @@ menuitem-retrieveMetadataForBook = 抓取书籍元数据
 menu-tools = 小工具
 menuitem-mergeName = 合并姓名
 menuitem-splitName = 拆分姓名
+menuitem-updateCNKICite = 更新知网引用数
 
 # ui
 CNKIcitation = 知网引用数
+
+# popup window
+citation = 引用
+no-chinese-item-for-citation = 只有中文条目才能抓取引用数哦😀

@@ -1,4 +1,7 @@
 import { getPref } from "../utils/prefs";
+import { config } from "../../package.json";
+import { isChineseTopAttachment, isChineseTopItem } from "./menu";
+import { getString } from "../utils/locale";
 
 export async function splitChineseName(item: Zotero.Item): Promise<void> {
   const isSplitEnName = getPref("ennamesplit") || false;
@@ -62,15 +65,60 @@ export async function mergeChineseName(item: Zotero.Item): Promise<void> {
   }
 }
 
-export async function updateCNKICite(item: Zotero.Item): Promise<void> {
+export async function getCNKICite(item: Zotero.Item): Promise<string> {
   const searchOption = {
     title: item.getField("title"),
     author: item.getCreators()[0].lastName + item.getCreators()[0].firstName,
   };
+  let cite = "";
   const searchResults = await addon.scraper.cnki?.search(searchOption);
   if (searchResults && searchResults.length > 0) {
-    const cite = searchResults[0].citation as string;
-    ztoolkit.ExtraField.setExtraField(item, "CNKICite", cite);
+    cite = searchResults[0].citation as string;
+    ztoolkit.log(`CNKI citation: ${cite}`);
+    if (cite) {
+      ztoolkit.ExtraField.setExtraField(item, "CNKICite", cite);
+    }
+  }
+  return cite;
+}
+
+export async function updateCNKICite(items: Zotero.Item[]) {
+  const items2 = items.filter((i) => isChineseTopItem(i));
+  if (items2.length > 0) {
+    let popupWin;
+    for (let i = 0; i < items2.length; i++) {
+      const cite = await getCNKICite(items2[i]);
+      if (i == 0) {
+        popupWin = new ztoolkit.ProgressWindow(config.addonName, {
+          closeOnClick: true,
+          closeTime: 1500,
+        })
+          .createLine({
+            text: `${getString("citation")}:${cite ? cite : "0"} ${items[i].getField("title")}`,
+            type: "default",
+            icon: `chrome://${config.addonRef}/content/icons/cite.png`,
+          })
+          .show();
+      } else {
+        popupWin?.changeLine({
+          text: `${getString("citation")}:${cite ? cite : "0"} ${items[i].getField("title")}`,
+          type: "default",
+          icon: `chrome://${config.addonRef}/content/icons/cite.png`,
+        });
+      }
+    }
+  } else {
+    ztoolkit.log("No Chinese items to update citation.");
+    new ztoolkit.ProgressWindow(config.addonName, {
+      closeOnClick: true,
+      closeTime: 3500,
+    })
+      .createLine({
+        text: getString("no-chinese-item-for-citation"),
+        type: "default",
+        icon: `chrome://${config.addonRef}/content/icons/cite.png`,
+      })
+      .show();
   }
 }
 

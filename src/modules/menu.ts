@@ -1,7 +1,7 @@
 import { MenuitemOptions } from "zotero-plugin-toolkit/dist/managers/menu";
 import { config } from "../../package.json";
 import { getString } from "../utils/locale";
-import { mergeChineseName, splitChineseName } from "./tools";
+import { mergeChineseName, splitChineseName, updateCNKICite } from "./tools";
 
 /**
  * Return true when item is a top level Chinese PDF/CAJ item.
@@ -11,6 +11,14 @@ export function isChineseTopAttachment(item: Zotero.Item): boolean {
     item.isAttachment() &&
     item.isTopLevelItem() &&
     /.*[\u4e00-\u9fff].*\.(pdf|caj|kdh|nh)$/i.test(item.attachmentFilename)
+  );
+}
+
+export function isChineseTopItem(item: Zotero.Item): boolean {
+  return (
+    item.isRegularItem() &&
+    item.isTopLevelItem() &&
+    /.*[\u4e00-\u9fff]$/i.test(item.getField("title"))
   );
 }
 
@@ -31,10 +39,6 @@ const metaddataMenuItems: MenuitemOptions[] = [
     tag: "menuitem",
     label: "retrieveMetadata",
     icon: `chrome://${config.addonRef}/content/icons/searchCNKI.png`,
-    // @ts-ignore - not typed
-    onShowing: () => {
-      ztoolkit.log("searchCNKI onshowing");
-    },
     isHidden: (_elm, _ev) =>
       Zotero.getActiveZoteroPane()
         .getSelectedItems()
@@ -73,12 +77,6 @@ const toolsMenuItems: MenuitemOptions[] = [
     tag: "menuitem",
     label: "mergeName",
     icon: `chrome://${config.addonRef}/content/icons/name.png`,
-    getVisibility: (_elm, _ev) =>
-      Zotero.getActiveZoteroPane()
-        .getSelectedItems()
-        .some((item) => {
-          return item.isTopLevelItem();
-        }),
     commandListener: () => {
       for (const item of Zotero.getActiveZoteroPane().getSelectedItems()) {
         mergeChineseName(item);
@@ -89,16 +87,18 @@ const toolsMenuItems: MenuitemOptions[] = [
     tag: "menuitem",
     label: "splitName",
     icon: `chrome://${config.addonRef}/content/icons/name.png`,
-    getVisibility: (_elm, _ev) =>
-      Zotero.getActiveZoteroPane()
-        .getSelectedItems()
-        .some((item) => {
-          return item.isTopLevelItem();
-        }),
     commandListener: () => {
       for (const item of Zotero.getActiveZoteroPane().getSelectedItems()) {
         splitChineseName(item);
       }
+    },
+  },
+  {
+    tag: "menuitem",
+    label: "updateCNKICite",
+    icon: `chrome://${config.addonRef}/content/icons/cite.png`,
+    commandListener: async () => {
+      await updateCNKICite(Zotero.getActiveZoteroPane().getSelectedItems());
     },
   },
 ];

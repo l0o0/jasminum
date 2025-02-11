@@ -144,8 +144,8 @@ function createSearchPostOptions(searchOption: SearchOption) {
       Subject: "",
     };
   }
-  ztoolkit.log(queryJson);
-  ztoolkit.log(jsonToFormUrlEncoded(queryJson));
+  // ztoolkit.log(queryJson);
+  // ztoolkit.log(jsonToFormUrlEncoded(queryJson));
   return {
     url: url,
     data: jsonToFormUrlEncoded(queryJson),
