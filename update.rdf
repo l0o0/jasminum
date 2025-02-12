@@ -12,7 +12,7 @@
                                 <em:id>zotero@chnm.gmu.edu</em:id>
                                 <em:minVersion>5.0.0</em:minVersion>
                                 <em:maxVersion>6.*</em:maxVersion>
-                                <em:updateLink>https://github.com/l0o0/jasminum/releases/download/v0.3.0/jasminum-v0.3.0.xpi</em:updateLink>
+                                <em:updateLink>https://github.com/l0o0/jasminum/releases/download/v0.3.1/jasminum-v0.3.1.xpi</em:updateLink>
                             </rdf:Description>
                         </em:targetApplication> 
 
@@ -21,7 +21,7 @@
                                 <em:id>juris-m@juris-m.github.io</em:id>
                                 <em:minVersion>5.0</em:minVersion>
                                 <em:maxVersion>5.0.*</em:maxVersion>
-                                <em:updateLink>https://github.com/l0o0/jasminum/releases/download/v0.3.0/jasminum-v0.3.0.xpi</em:updateLink>
+                                <em:updateLink>https://github.com/l0o0/jasminum/releases/download/v0.3.1/jasminum-v0.3.1.xpi</em:updateLink>
                             </rdf:Description>
                         </em:targetApplication>
 
