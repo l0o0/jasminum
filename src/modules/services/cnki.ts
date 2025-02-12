@@ -180,7 +180,7 @@ async function getRefworksText(searchResult: ScrapeSearchResult) {
     body: postData,
     headers: headers,
   });
-  ztoolkit.log(`Refworks from CNKI: ${resp.responseText}`);
+  // ztoolkit.log(`Refworks from CNKI: ${resp.responseText}`);
   return resp.responseText
     .replace(/^.*<li>\s+/, "")
     .replace(/\s+<\/li>.*$/, "")

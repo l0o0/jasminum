@@ -152,28 +152,40 @@ export class Scraper {
   // Translate into items
   public async translate(task: ScrapeTask): Promise<void> {
     if (task.searchResults) {
-      const resultIndex = task.resultIndex || 0; // default is 0
-      task.resultIndex = resultIndex;
-      const result = task.searchResults[resultIndex];
-      ztoolkit.log(`start translate for search result: ${result.title}`);
-      let newItem: Zotero.Item | null | undefined = null;
-      switch (result.source) {
-        case "CNKI":
-          ztoolkit.log("translated by CNKI");
-          newItem = await (this.cnki as ScrapeService).translate(task, false);
-          break;
-        default:
-          break;
-      }
-      ztoolkit.log(newItem);
+      try {
+        const resultIndex = task.resultIndex || 0; // default is 0
+        task.resultIndex = resultIndex;
+        const result = task.searchResults[resultIndex];
+        ztoolkit.log(`start translate for search result: ${result.title}`);
+        let newItem: Zotero.Item | null | undefined = null;
+        switch (result.source) {
+          case "CNKI":
+            ztoolkit.log("translated by CNKI");
+            newItem = await (this.cnki as ScrapeService).translate(task, false);
+            break;
+          default:
+            break;
+        }
+        ztoolkit.log(newItem);
 
-      if (newItem) {
-        // if (addon.data.env != "development")
-        task.item.parentID = newItem.id;
-        await task.item.saveTx();
-        task.status = "success";
-      } else {
-        task.errorMsg = "Translation error";
+        if (newItem) {
+          // if (addon.data.env != "development")
+          if (task.type == "attachment") {
+            task.item.parentID = newItem.id;
+            await task.item.saveTx();
+          } else if (task.type == "snapshot") {
+            ztoolkit.log("Foud item, remove snapshot item");
+            const tmpJSON = newItem.toJSON();
+            task.item.fromJSON(tmpJSON);
+            await task.item.saveTx();
+          }
+          task.status = "success";
+        } else {
+          task.errorMsg = "Translation error";
+          task.status = "fail";
+        }
+      } catch (e) {
+        task.errorMsg = `ERROR: ${e}`;
         task.status = "fail";
       }
     } else {
