@@ -34,7 +34,7 @@ export function isChinsesSnapshot(item: Zotero.Item): boolean {
   );
 }
 
-const metaddataMenuItems: MenuitemOptions[] = [
+const metadataMenuItems: MenuitemOptions[] = [
   {
     tag: "menuitem",
     label: "retrieveMetadata",
@@ -107,13 +107,19 @@ export function registerMenu() {
   const separatorMenu: MenuitemOptions = {
     tag: "menuseparator",
     id: `${config.addonRef}-separator`,
+    isHidden: () =>
+      Zotero.getActiveZoteroPane()
+        .getSelectedItems()
+        .some((item) => {
+          return !(item.isTopLevelItem() && item.isRegularItem());
+        }),
   };
   const metadataMenu: MenuitemOptions = {
     tag: "menu",
     label: getString("menu-metadata"),
     id: `${config.addonRef}-metadata-menu`,
     icon: `chrome://${config.addonRef}/content/icons/icon.png`,
-    children: metaddataMenuItems.map((subOption) => {
+    children: metadataMenuItems.map((subOption) => {
       const label = subOption.label as string;
       subOption.id = `${config.addonRef}-menuitem-${label}`;
       subOption.label = getString(`menuitem-${label}`);
