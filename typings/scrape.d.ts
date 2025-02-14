@@ -20,13 +20,21 @@ type ScrapeSearchResult = {
   [key: string]: string | number | null;
 };
 
-type ScrapeTask = {
+type TaskStatus =
+  | "waiting"
+  | "processing"
+  | "multiple_results"
+  | "success"
+  | "fail";
+type TaskType = "attachment" | "snapshot";
+interface ScrapeTask {
   id: string;
-  type: "attachment" | "snapshot";
+  type: TaskType;
   item: Zotero.Item;
-  searchResults?: ScrapeSearchResult[];
+  searchResults: ScrapeSearchResult[];
   resultIndex?: 0;
-  status: "waiting" | "processing" | "multiple_results" | "success" | "fail";
+  status: TaskStatus;
   silent?: boolean;
-  errorMsg?: string;
-};
+  message?: string;
+  addMsg: (msg: string) => void;
+}

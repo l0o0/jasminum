@@ -210,7 +210,7 @@ export class Progress {
             properties: {
               src: "chrome://jasminum/content/icons/notify.svg",
             },
-            attributes: { title: task.errorMsg },
+            attributes: { title: task.message },
           },
         );
         this.progressWindow.document

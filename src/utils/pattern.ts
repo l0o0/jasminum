@@ -1,5 +1,3 @@
-import { getPref } from "./prefs";
-
 export function getArgsFromPattern(
   filename: string,
   pattern: string,

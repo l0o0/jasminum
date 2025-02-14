@@ -3,64 +3,63 @@ import { getPDFTitle } from "../../utils/pdfParser";
 import { getPref } from "../../utils/prefs";
 import { isChineseTopAttachment, isChinsesSnapshot } from "../menu";
 
+export class Task implements ScrapeTask {
+  public id: string;
+  public item: Zotero.Item;
+  public type: "attachment" | "snapshot";
+  public message?: string;
+  public silent?: false;
+
+  private _status: TaskStatus;
+  private _searchResults: ScrapeSearchResult[] = [];
+
+  constructor(item: Zotero.Item, type: TaskType, silent?: false) {
+    this.id = Zotero.Utilities.randomString();
+    this.item = item;
+    this.type = type;
+    this.silent = false;
+    this._status = "waiting";
+  }
+
+  // 添加消息的方法（不需要通过代理）
+  addMsg(message: string) {
+    if (this.message) {
+      this.message = this.message + "\n" + message;
+    } else {
+      this.message = message;
+    }
+  }
+
+  // 使用 setter 处理属性变更
+  set status(newStatus: TaskStatus) {
+    const oldStatus = this._status;
+    this._status = newStatus;
+    ztoolkit.log(
+      `task ${this.id} changes "status" from "${oldStatus}" to "${newStatus}"`,
+    );
+    addon.data.progress.updateTaskStatus(this, newStatus);
+  }
+  get status(): TaskStatus {
+    return this._status;
+  }
+
+  set searchResults(results: ScrapeSearchResult[]) {
+    this._searchResults = results;
+    ztoolkit.log("searchResult changed");
+    if (results && results.length > 1) {
+      addon.data.progress.updateTaskSearchResult(this, results);
+    }
+  }
+  get searchResults() {
+    return this._searchResults;
+  }
+}
+
 export class Scraper {
   cnki: ScrapeService | undefined;
 
   constructor() {
     import("./cnki").then((e) => (this.cnki = new e.default()));
-  }
-
-  // Need to monitor the task search result change.
-  private toProxyTask(task: ScrapeTask) {
-    const handler = {
-      set<K extends keyof ScrapeTask>(
-        target: ScrapeTask,
-        property: K,
-        value: ScrapeTask[K],
-      ): boolean {
-        // 记录 status 属性的变化
-        switch (property) {
-          case "status":
-            ztoolkit.log(
-              `task ${target.id} changes "${property}" from "${target[property]}" to "${value}"`,
-            );
-            addon.data.progress.updateTaskStatus(target, value as string);
-            break;
-          case "searchResults":
-            ztoolkit.log("searchResult changed");
-            if (value && (value as ScrapeSearchResult[]).length > 1) {
-              addon.data.progress.updateTaskSearchResult(
-                target,
-                value as ScrapeSearchResult[],
-              );
-            }
-            break;
-        }
-
-        // 允许设置的属性列表
-        const allowedProperties: (keyof ScrapeTask)[] = [
-          "status",
-          "item",
-          "searchResults",
-          "id",
-          "errorMsg",
-          "type",
-          "silent",
-          "resultIndex",
-        ];
-
-        // 检查属性是否允许设置
-        if (allowedProperties.includes(property)) {
-          target[property] = value;
-          return true; // 返回 true 表示设置成功
-        } else {
-          // 如果属性不在允许列表中，可以抛出错误或静默忽略
-          ztoolkit.log(`属性 "${property}" 不允许直接设置`);
-          return false;
-        }
-      },
-    };
-    return new Proxy(task, handler);
   }
 
   public async getSearchOption(
@@ -99,52 +98,45 @@ export class Scraper {
       if (isChinsesSnapshot(item)) {
         taskType = "snapshot";
       }
-      const task: ScrapeTask = {
-        id: Zotero.Utilities.randomString(),
-        item: item,
-        type: taskType,
-        status: "waiting",
-      };
-      const taskProxy = this.toProxyTask(task);
-      ztoolkit.log("search task", taskProxy);
+      const task = new Task(item, taskType);
+      ztoolkit.log("search task", task);
       // TODO: Maybe this is a slient task.
-      addon.data.progress.addTask(taskProxy);
-      taskProxy.status = "processing";
+      addon.data.progress.addTask(task);
+      task.status = "processing";
       // Searching by different scrape services
       let scrapeSearchResults: ScrapeSearchResult[] = [];
-      if (taskProxy.type == "attachment") {
-        const searchOption = await this.getSearchOption(taskProxy.item);
+      if (task.type == "attachment") {
+        const searchOption = await this.getSearchOption(task.item);
         if (searchOption) {
           const cnkiSearchResult = await (this.cnki as ScrapeService).search(
             searchOption,
           );
           ztoolkit.log("cnki results", cnkiSearchResult);
           if (cnkiSearchResult) {
+            task.addMsg(`Found ${cnkiSearchResult.length} results from CNKI`);
             scrapeSearchResults = scrapeSearchResults.concat(cnkiSearchResult);
           }
         } else {
-          taskProxy.errorMsg = "Filename parsing error";
-          taskProxy.status = "fail";
+          task.addMsg("Filename parsing error");
+          task.status = "fail";
         }
-      } else if (taskProxy.type == "snapshot") {
-        const tmp = await (this.cnki as ScrapeService).searchSnapshot!(
-          taskProxy,
-        );
+      } else if (task.type == "snapshot") {
+        const tmp = await (this.cnki as ScrapeService).searchSnapshot!(task);
         if (tmp) scrapeSearchResults = scrapeSearchResults.concat(tmp);
       }
 
       ztoolkit.log("all results: ", scrapeSearchResults);
       if (scrapeSearchResults.length == 0) {
-        taskProxy.errorMsg = "No search results";
-        taskProxy.status = "fail";
+        task.addMsg("No search results");
+        task.status = "fail";
       } else if (scrapeSearchResults.length > 1) {
-        taskProxy.status = "multiple_results";
+        task.status = "multiple_results";
       }
-      taskProxy.searchResults = scrapeSearchResults;
+      task.searchResults = scrapeSearchResults;
       // When there is only one search result, translate it directly.
       // User will select in progress windows and continue to translate.
       if (scrapeSearchResults.length == 1) {
-        await this.translate(taskProxy);
+        await this.translate(task);
       }
     }
   }
@@ -181,15 +173,15 @@ export class Scraper {
           }
           task.status = "success";
         } else {
-          task.errorMsg = "Translation error";
+          task.addMsg("Translation error");
           task.status = "fail";
         }
       } catch (e) {
-        task.errorMsg = `ERROR: ${e}`;
+        task.addMsg(`ERROR: ${e}`);
         task.status = "fail";
       }
     } else {
-      task.errorMsg = "No search results found.";
+      task.addMsg("No search results found.");
       task.status = "fail";
     }
   }

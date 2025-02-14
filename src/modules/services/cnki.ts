@@ -336,6 +336,7 @@ export default class CNKI implements ScrapeService {
       }
     } catch (e) {
       ztoolkit.log(`CNKI web translation failed: ${e}`);
+      task.addMsg(`CNKI web translation failed: ${e}`);
       isWebTranslated = false;
     }
 
@@ -356,11 +357,13 @@ export default class CNKI implements ScrapeService {
         });
       } catch (e) {
         ztoolkit.log(`CNKI refwork translation failed: ${e}`);
+        task.addMsg(`CNKI refwork translation failed: ${e}`);
       }
     }
 
     if (translatedItems.length > 1) {
       ztoolkit.log("Wired and Additional Items Appear.");
+      task.addMsg("Wired! More than one item after tranlsation.");
       return null;
     } else if (translatedItems.length == 1) {
       item = translatedItems[0];
@@ -368,6 +371,7 @@ export default class CNKI implements ScrapeService {
       return updateItem(item, searchResult);
     } else {
       ztoolkit.log("CNKI service translated item is null.");
+      task.addMsg("CNKI service translated item is null.");
       return null;
     }
   }
@@ -377,7 +381,7 @@ export default class CNKI implements ScrapeService {
     ztoolkit.log("Start to search for snapshot");
     let webpageItem: Zotero.Item;
     let attachmentItem: Zotero.Item | undefined;
-    let searchResults: ScrapeSearchResult[] | null = null;
+    let searchResults: ScrapeSearchResult[] | null = [];
 
     if (task.item.isTopLevelItem()) {
       webpageItem = task.item;
