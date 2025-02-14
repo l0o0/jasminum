@@ -67,6 +67,7 @@ export class Scraper {
   ): Promise<SearchOption | null> {
     let namepattern = getPref("namepattern");
     // Get title from pdf page content.
+    // 1: title from PDF, 2: {%t}_{%g}
     if (namepattern == "auto") {
       let title = undefined;
       try {
@@ -76,7 +77,7 @@ export class Scraper {
       }
       if (title) return { title };
 
-      return getArgsFromPattern(item.attachmentFilename, "{%t}");
+      return getArgsFromPattern(item.attachmentFilename, "{%t}_{%g}");
     } else {
       if (namepattern == "custom") namepattern = getPref("namepatternCustom");
       return getArgsFromPattern(item.attachmentFilename, namepattern);
