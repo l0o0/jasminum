@@ -107,11 +107,11 @@ export function registerMenu() {
   const separatorMenu: MenuitemOptions = {
     tag: "menuseparator",
     id: `${config.addonRef}-separator`,
-    isHidden: () =>
+    isHidden: (e) =>
       Zotero.getActiveZoteroPane()
         .getSelectedItems()
         .some((item) => {
-          return !(item.isTopLevelItem() && item.isRegularItem());
+          return !(isChineseTopAttachment(item) || isChinsesSnapshot(item) || item.isRegularItem());
         }),
   };
   const metadataMenu: MenuitemOptions = {
