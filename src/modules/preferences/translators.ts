@@ -83,25 +83,24 @@ async function updateTableUI() {
 }
 
 function bindEvents(doc: Document) {
-  doc
-    .getElementById("search-box")
-    ?.addEventListener("command", async (event) => {
-      ztoolkit.log("search", event);
-      const value = (event.target as XULTextBoxElement).value;
-      if (!value) return;
-      addon.data.translators.rows = addon.data.translators.rows.filter(
-        (row) => {
-          function ignoreCaseIncludes(str: string, search: string) {
-            return str.toLowerCase().includes(search.toLowerCase());
-          }
-          return (
-            ignoreCaseIncludes(row.filename, value) ||
-            ignoreCaseIncludes(row.label, value)
-          );
-        },
+  const searchBox = doc.getElementById("search-box");
+  searchBox?.addEventListener("command", async (event) => {
+    ztoolkit.log("search", event);
+    const value = (event.target as XULTextBoxElement).value;
+    if (!value) return;
+    addon.data.translators.rows = addon.data.translators.rows.filter((row) => {
+      function ignoreCaseIncludes(str: string, search: string) {
+        return str.toLowerCase().includes(search.toLowerCase());
+      }
+      return (
+        ignoreCaseIncludes(row.filename, value) ||
+        ignoreCaseIncludes(row.label, value)
       );
-      await updateTableUI();
     });
+    await updateTableUI();
+  });
+
+  searchBox?.focus();
 
   doc
     .getElementById("request-new-translator")
