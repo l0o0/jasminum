@@ -21,8 +21,7 @@ export async function getLastUpdatedFromFile(
   filename: string,
 ): Promise<string | false> {
   const desPath = PathUtils.join(
-    // If dataDir is unavailable, Zotero will alert user to set the data directory.
-    Zotero.Prefs.get("dataDir") as string,
+    Zotero.DataDirectory.dir,
     "translators",
     filename,
   );
@@ -50,7 +49,7 @@ export async function getLastUpdatedMap(
   refresh = true,
 ): Promise<LastUpdatedMap> {
   const cachePath = PathUtils.join(
-    Zotero.Prefs.get("dataDir") as string,
+    Zotero.DataDirectory.dir,
     "translators_CN.json",
   );
 
@@ -132,8 +131,7 @@ export async function updateTranslators(force = false): Promise<boolean> {
           const url = `${baseUrl}/${filename}`;
           const code = await Zotero.File.getContentsFromURLAsync(url);
           const desPath = PathUtils.join(
-            // If dataDir is unavailable, Zotero will alert user to set the data directory.
-            Zotero.Prefs.get("dataDir") as string,
+            Zotero.DataDirectory.dir,
             "translators",
             filename,
           );
