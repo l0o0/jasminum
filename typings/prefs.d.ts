@@ -7,20 +7,20 @@
 declare namespace _ZoteroTypes {
   interface Prefs {
     PluginPrefsMap: {
-      "firstrun": boolean;
-      "isMainlandChina": boolean;
-      "namepattern": string;
-      "namepatternCustom": string;
-      "autoupdate": boolean;
-      "ennamesplit": boolean;
-      "zhnamesplit": boolean;
+      "firstRun": boolean;
+      "enNameSplit": boolean;
+      "zhNameSplit": boolean;
+      "language": string;
+      "autoUpdateMetadata": boolean;
+      "namePattern": string;
+      "namePatternCustom": string;
       "metadataSource": string;
+      "isMainlandChina": boolean;
+      "cnkiAttachmentCookie": string;
       "pdfMatchFolder": string;
       "autoUpdateTranslators": boolean;
+      "translatorUpdateTime": number;
       "translatorSource": string;
-      "cnkiAttachmentCookie": string;
-      "translatorUpdateTime": string;
-      "language": string;
     };
   }
 }

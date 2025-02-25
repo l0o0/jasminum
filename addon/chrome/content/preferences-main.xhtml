@@ -1,5 +1,5 @@
 <linkset>
-  <html:link rel="localization" href="__addonRef__-preferences.ftl" />
+  <html:link rel="localization" href="__addonRef__-preferences-main.ftl" />
   <html:link
     xmlns:html="http://www.w3.org/1999/xhtml"
     rel="stylesheet"
@@ -8,7 +8,7 @@
 </linkset>
 <!-- 元数据抓取 -->
 <groupbox
-  onload="Zotero.__addonInstance__.hooks.onPrefsEvent('load', { window });"
+  onload="Zotero.__addonInstance__.hooks.onPrefsWindowLoad(window);"
 >
   <label><html:h2 data-l10n-id="pref-group-metadata"></html:h2></label>
   <checkbox
@@ -20,21 +20,15 @@
   <checkbox
     id="zotero-prefpane-__addonRef__-autoupdate"
     native="true"
-    preference="autoupdate"
+    preference="autoUpdateMetadata"
     data-l10n-id="label-autoupdate-metadata"
   />
   <checkbox
     id="zotero-prefpane-__addonRef__-zhnamesplit"
     native="true"
-    preference="zhnamesplit"
+    preference="zhNameSplit"
     data-l10n-id="label-zhnamesplit"
   />
-  <!-- <checkbox
-    id="zotero-prefpane-__addonRef__-rename"
-    native="true"
-    preference="rename"
-    data-l10n-id="label-rename"
-  /> -->
   <hbox flex="2" class="inputbox">
     <menulist
       id="zotero-prefpane-__addonRef__-namepattern-menulist"
@@ -52,14 +46,14 @@
       type="text"
       class="auto_width"
       id="zotero-prefpane-__addonRef__-namepattern-input"
-      preference="namepattern"
+      preference="namePattern"
     >
     </html:input>
     <html:input
       type="text"
       class="auto_width hidden"
       id="zotero-prefpane-__addonRef__-namepatternCustom-input"
-      preference="namepatternCustom"
+      preference="namePatternCustom"
     >
     </html:input>
     <image
@@ -120,7 +114,7 @@
 <!-- 转换器 -->
 <groupbox>
   <label><html:h2 data-l10n-id="pref-group-translators"></html:h2></label>
-  <hbox alien="center">
+  <hbox align="center">
     <checkbox
       id="zotero-prefpane-__addonRef__-autoUpdateTranslators"
       native="true"

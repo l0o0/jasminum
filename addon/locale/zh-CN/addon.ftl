@@ -1,4 +1,5 @@
-prefs-title = 茉莉花
+plugin-name = 茉莉花
+
 prefs-table-title = 标题
 prefs-table-detail = 详情
 tabpanel-lib-tab-label = 库标签
@@ -6,13 +7,13 @@ tabpanel-reader-tab-label = 阅读器标签
 
 # Preference
 select-download-folder = 选择下载文件保存目录
+get-Chinese-styles = 获取中文社区样式
 
 # Preference translator table
-translator-filename = 转换器
-translator-label = 详情
-translator-localUpdateTime = 本地版本
-translator-lastUpdated = 最新版本
-translator-downloaded = 转换器已下载更新
+th-filename = 文件名
+th-label = 标签
+th-local-update-time = 本地更新时间
+th-remote-update-time = 远程更新时间
 
 # Menu
 menu-metadata = 元数据抓取
@@ -30,3 +31,8 @@ CNKIcitation = 知网引用数
 # popup window
 citation = 引用
 no-chinese-item-for-citation = 只有中文条目才能抓取引用数哦😀
+update-translators-start = 开始更新转换器
+update-successfully = 更新成功：{ $name }
+update-failed = 更新失败：{ $name }
+update-skipped = 跳过更新：{ $name }
+update-translators-complete = 转换器更新完成

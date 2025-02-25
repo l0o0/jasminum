@@ -43,7 +43,7 @@ pref-group-translators = 中文转换器设置
 label-auto-update-translators = 
   .label = 自动更新转换器
 label-translators-force-update = 
-  .label = 立即更新转换
+  .label = 立即更新
 label-translators-detail = 转换器详情
 label-translators-detail-click = 点击查看
 

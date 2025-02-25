@@ -1,15 +1,20 @@
 /* eslint-disable no-undef */
-pref("firstrun", false);
-pref("isMainlandChina", true);
-pref("namepattern", "{%t}_{%g}");
-pref("namepatternCustom", "{%t}");
-pref("autoupdate", true);
-pref("ennamesplit", false);
-pref("zhnamesplit", false);
-pref("metadataSource", "CNKI");
-pref("pdfMatchFolder", "");
-pref("autoUpdateTranslators", true);
-pref("translatorSource", "");
-pref("cnkiAttachmentCookie", "");
-pref("translatorUpdateTime", "");
+pref("firstRun", true);
+/* tools */
+pref("enNameSplit", false);
+pref("zhNameSplit", false);
 pref("language", "zh");
+/* retrieve metadata */
+pref("autoUpdateMetadata", true);
+pref("namePattern", "{%t}_{%g}");
+pref("namePatternCustom", "{%t}");
+pref("metadataSource", "CNKI");
+pref("isMainlandChina", true);
+pref("cnkiAttachmentCookie", "");
+/* match pdf */
+pref("pdfMatchFolder", "");
+/* update translators */
+pref("autoUpdateTranslators", true);
+pref("translatorUpdateTime", 0);
+pref("translatorSource", "");
+

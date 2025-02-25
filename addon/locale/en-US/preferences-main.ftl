@@ -43,7 +43,7 @@ pref-group-translators = Chinese Translator Settings
 label-auto-update-translators =
 .label = Automatically Update Translators
 label-translators-force-update =
-.label = Update Translators Immediately
+.label = Update Immediately
 label-translators-detail = Translator Details
 label-translators-detail-click = Click to View
 
