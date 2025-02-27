@@ -83,6 +83,10 @@ async function updateTableUI() {
 }
 
 function bindEvents(doc: Document) {
+  doc.getElementById("github-link")?.addEventListener("click", (event) => {
+    Zotero.launchURL("https://github.com/l0o0/translators_CN");
+  });
+
   const searchBox = doc.getElementById("search-box");
   searchBox?.addEventListener("command", async (event) => {
     ztoolkit.log("search", event);

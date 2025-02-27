@@ -43,6 +43,18 @@
         min-height: 400px;
         height: 100%;
       }
+      header, footer {
+        display: flex;
+        align-items: center;
+        height: 50px;
+        padding: 0 10px;
+      }
+      toolbar, toolbar > hbox {
+        width: 100%;
+      }
+      .toolbarbutton-text{
+        margin-left: 4px;
+      }
       main {
         width: 100%;
         height: calc(100% - 2*50px);
@@ -54,11 +66,6 @@
       }
       #translators-table {
         height: 100%;
-      }
-      header, footer {
-        display: flex;
-        align-items: center;
-        padding: 10px;
       }
       footer {
         justify-content: space-between;
@@ -79,23 +86,26 @@
     </style>
   </head>
   <body>
-    <header>
-      <div style="width: 100%;display: flex;justify-content: end;">
-        <xul:search-textbox id="search-box" data-l10n-id="search-box" data-l10n-attrs="placeholder" timeout="1" style="padding: 0;"/>
-      </div>
+    <header xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul">
+      <toolbar class="zotero-toolbar toolbar toolbar-primary">
+        <hbox align="center">
+          <toolbarbutton id="github-link" class="zotero-tb-button" data-l10n-id="github-link" image="chrome://__addonRef__/content/icons/github.svg" />
+          <spacer flex="1"></spacer>
+          <search-textbox id="search-box" data-l10n-id="search-box" data-l10n-attrs="placeholder" timeout="1" style="padding: 0;"/>
+        </hbox>
+      </toolbar>
     </header>
     <main>
       <div id="table-container"></div>
     </main>
     <footer>
-      
-      <div id="buttons">
+      <div id="buttons" xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul">
         <button id="request-new-translator" data-l10n-id="request-new-translator" />
         <button id="report-translator-bug" data-l10n-id="report-translator-bug" />
       </div>
       <div id="links" xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul">
         <label data-l10n-id="how-to-update-translators" class="zotero-text-link"/>
-        <label data-l10n-id="translators-homepage" class="zotero-text-link"/>
+        <label data-l10n-id="translators-dashboard" class="zotero-text-link"/>
       </div>
     </footer>
   </body>
