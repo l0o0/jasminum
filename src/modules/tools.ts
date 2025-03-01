@@ -4,7 +4,7 @@ import { isChineseTopAttachment, isChineseTopItem } from "./menu";
 import { getString } from "../utils/locale";
 
 export async function splitChineseName(item: Zotero.Item): Promise<void> {
-  const isSplitEnName = getPref("ennamesplit") || false;
+  const isSplitEnName = getPref("enNameSplit") || false;
 
   const creators = item.getCreators();
   for (let i = 0; i < creators.length; i++) {
@@ -38,7 +38,7 @@ export async function splitChineseName(item: Zotero.Item): Promise<void> {
 }
 
 export async function mergeChineseName(item: Zotero.Item): Promise<void> {
-  const isSplitEnName = getPref("ennamesplit") || false;
+  const isSplitEnName = getPref("enNameSplit") || false;
   const creators = item.getCreators();
   for (let i = 0; i < creators.length; i++) {
     const creator = creators[i];

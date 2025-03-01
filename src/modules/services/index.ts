@@ -65,7 +65,7 @@ export class Scraper {
   public async getSearchOption(
     item: Zotero.Item,
   ): Promise<SearchOption | null> {
-    let namepattern = getPref("namepattern");
+    let namepattern = getPref("namePattern");
     // Get title from pdf page content.
     // 1: title from PDF, 2: {%t}_{%g}
     if (namepattern == "auto") {
@@ -79,7 +79,7 @@ export class Scraper {
 
       return getArgsFromPattern(item.attachmentFilename, "{%t}_{%g}");
     } else {
-      if (namepattern == "custom") namepattern = getPref("namepatternCustom");
+      if (namepattern == "custom") namepattern = getPref("namePatternCustom");
       return getArgsFromPattern(item.attachmentFilename, namepattern);
     }
   }
