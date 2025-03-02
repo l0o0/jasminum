@@ -1,6 +1,6 @@
 {
   "name": "jasminum",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "一个简单的 Zotero 中文插件",
   "config": {
     "addonName": "Jasminum",
@@ -28,17 +28,17 @@
     "update-deps": "npm update --save"
   },
   "dependencies": {
-    "zotero-plugin-toolkit": "^4.1.1"
+    "zotero-plugin-toolkit": "^4.1.2"
   },
   "devDependencies": {
-    "@eslint/js": "^9.18.0",
-    "@types/node": "^22.10.9",
-    "eslint": "^9.18.0",
-    "prettier": "^3.4.2",
-    "typescript": "^5.7.3",
-    "typescript-eslint": "^8.21.0",
+    "@eslint/js": "^9.21.0",
+    "@types/node": "^22.13.8",
+    "eslint": "^9.21.0",
+    "prettier": "^3.5.2",
+    "typescript": "^5.8.2",
+    "typescript-eslint": "^8.25.0",
     "zotero-plugin-scaffold": "0.2.3",
-    "zotero-types": "^3.1.6"
+    "zotero-types": "^3.1.7"
   },
   "prettier": {
     "printWidth": 80,
