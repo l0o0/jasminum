@@ -179,6 +179,7 @@ async function getRefworksText(searchResult: ScrapeSearchResult) {
   const resp = await Zotero.HTTP.request("POST", apiurl, {
     body: postData,
     headers: headers,
+    cookieSandbox: addon.data.myCookieSandbox?.refCookieBox,
   });
   // ztoolkit.log(`Refworks from CNKI: ${resp.responseText}`);
   return resp.responseText

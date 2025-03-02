@@ -3,6 +3,7 @@ import { createZToolkit } from "./utils/ztoolkit";
 import { Scraper } from "./modules/services";
 import { Progress } from "./modules/progress";
 import { VirtualizedTableHelper } from "zotero-plugin-toolkit";
+import { MyCookieSandbox } from "./utils/cookiebox";
 
 class Addon {
   public data: {
@@ -24,6 +25,7 @@ class Addon {
       rows: TableRow[];
       selected?: string;
     };
+    myCookieSandbox?: MyCookieSandbox;
   };
   // Lifecycle hooks
   public hooks: typeof hooks;
@@ -41,6 +43,7 @@ class Addon {
       translators: {
         rows: [],
       },
+      myCookieSandbox: new MyCookieSandbox(),
     };
     this.hooks = hooks;
     this.api = {};
