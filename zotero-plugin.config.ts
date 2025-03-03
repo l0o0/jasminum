@@ -6,12 +6,13 @@ export default defineConfig({
   dist: "build",
   name: pkg.config.addonName,
   id: pkg.config.addonID,
+  xpiName: `${pkg.config.addonRef}_${pkg.version}`,
   namespace: pkg.config.addonRef,
   updateURL: `https://github.com/{{owner}}/{{repo}}/releases/download/release/${
     pkg.version.includes("-") ? "update-beta.json" : "update.json"
   }`,
   xpiDownloadLink:
-    "https://github.com/{{owner}}/{{repo}}/releases/download/v{{version}}/{{xpiName}}_{{version}}.xpi",
+    "https://github.com/{{owner}}/{{repo}}/releases/download/v{{version}}/{{xpiName}}.xpi",
 
   build: {
     assets: ["addon/**/*.*"],
