@@ -21,10 +21,18 @@
     <meta charset="utf-8" />
     <xul:linkset>
       <link rel="localization" href="zotero.ftl" />
-      <link rel="localization" href="__addonRef__-preferences-translators.ftl" />
+      <link
+        rel="localization"
+        href="__addonRef__-preferences-translators.ftl"
+      />
     </xul:linkset>
     <xul:keyset>
-      <xul:key id="key_close" key="W" modifiers="accel" oncommand="window.close()"/>
+      <xul:key
+        id="key_close"
+        key="W"
+        modifiers="accel"
+        oncommand="window.close()"
+      />
     </xul:keyset>
     <script>
       document.addEventListener("DOMContentLoaded", (ev) => {
@@ -34,6 +42,12 @@
         );
         window.arguments[0]._initPromise.resolve();
       });
+
+      // Custom elements
+      Services.scriptloader.loadSubScript(
+        "chrome://zotero/content/customElements.js",
+        this,
+      );
     </script>
     <style>
       html,
@@ -43,21 +57,23 @@
         min-height: 400px;
         height: 100%;
       }
-      header, footer {
+      header,
+      footer {
         display: flex;
         align-items: center;
         height: 50px;
         padding: 0 10px;
       }
-      toolbar, toolbar > hbox {
+      toolbar,
+      toolbar > hbox {
         width: 100%;
       }
-      .toolbarbutton-text{
+      .toolbarbutton-text {
         margin-left: 4px;
       }
       main {
         width: 100%;
-        height: calc(100% - 2*50px);
+        height: calc(100% - 2 * 50px);
         background: var(--material-background);
       }
       #table-container {
@@ -86,12 +102,25 @@
     </style>
   </head>
   <body>
-    <header xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul">
+    <header
+      xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul"
+    >
       <toolbar class="zotero-toolbar toolbar toolbar-primary">
         <hbox align="center">
-          <toolbarbutton id="github-link" class="zotero-tb-button" data-l10n-id="github-link" image="chrome://__addonRef__/content/icons/github.svg" />
+          <toolbarbutton
+            id="github-link"
+            class="zotero-tb-button"
+            data-l10n-id="github-link"
+            image="chrome://__addonRef__/content/icons/github.svg"
+          />
           <spacer flex="1"></spacer>
-          <search-textbox id="search-box" data-l10n-id="search-box" data-l10n-attrs="placeholder" timeout="1" style="padding: 0;"/>
+          <search-textbox
+            id="search-box"
+            data-l10n-id="search-box"
+            data-l10n-attrs="placeholder"
+            timeout="1"
+            style="padding: 0"
+          />
         </hbox>
       </toolbar>
     </header>
@@ -99,13 +128,35 @@
       <div id="table-container"></div>
     </main>
     <footer>
-      <div id="buttons" xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul">
-        <button id="request-new-translator" data-l10n-id="request-new-translator" />
-        <button id="report-translator-bug" data-l10n-id="report-translator-bug" />
+      <div
+        id="buttons"
+        xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul"
+      >
+        <button
+          id="request-new-translator"
+          data-l10n-id="request-new-translator"
+        />
+        <button
+          id="report-translator-bug"
+          data-l10n-id="report-translator-bug"
+        />
       </div>
-      <div id="links" xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul">
-        <label data-l10n-id="how-to-update-translators" class="zotero-text-link" is="zotero-text-link"/>
-        <label data-l10n-id="translators-dashboard" class="zotero-text-link" is="zotero-text-link"/>
+      <div
+        id="links"
+        xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul"
+      >
+        <label
+          data-l10n-id="how-to-update-translators"
+          class="zotero-text-link"
+          is="zotero-text-link"
+          href="https://zotero-chinese.com/user-guide/faqs/update-translators"
+        />
+        <label
+          data-l10n-id="translators-dashboard"
+          class="zotero-text-link"
+          is="zotero-text-link"
+          href="https://zotero-chinese.com/translators/"
+        />
       </div>
     </footer>
   </body>
