@@ -163,12 +163,6 @@ export async function updateTranslators(force = false): Promise<boolean> {
     },
   );
   await Promise.all(translatorUpdateTasks);
-  popupWin.changeLine({
-    text: getString("update-translators-finish"),
-    type: "default",
-    progress: 100,
-  });
-  popupWin.startCloseTimer(3000);
   // @ts-ignore Translators is missing
   await Zotero.Translators.reinit();
   setPref("translatorUpdateTime", now);

@@ -155,14 +155,8 @@ function bindPrefEvents(doc: Document) {
     .getElementById(`zotero-prefpane-${config.addonRef}-force-update`)
     ?.addEventListener("click", async (event) => {
       (event.target as HTMLButtonElement).disabled = true;
-      updateTranslators(true);
-    });
-
-  doc
-    .getElementById(`zotero-prefpane-${config.addonRef}-update-translators`)
-    ?.addEventListener("click", async (event) => {
-      (event.target as HTMLButtonElement).disabled = true;
-      updateTranslators();
+      await updateTranslators(true);
+      (event.target as HTMLButtonElement).disabled = false;
     });
 
   doc
