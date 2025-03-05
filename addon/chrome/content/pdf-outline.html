@@ -1,0 +1,60 @@
+<!doctype html>
+<html>
+  <head>
+    <!-- Additional icon fonts. Wunderbaum uses bootstrap icons by default. -->
+    <!-- <link
+      rel="stylesheet"
+      href="chrome://jasminum/content/lib/bootstrap-icons.css"
+    /> -->
+    <!-- Wunderbaum CSS and Library -->
+    <!-- <link
+      rel="stylesheet"
+      href="chrome://jasminum/content/lib/wunderbaum.min.css"
+    /> -->
+    <!-- <script
+      defer
+      src="chrome://jasminum/content/lib/wunderbaum.umd.min.js"
+    ></script> -->
+    <!-- Your application code -->
+    <script>
+      data = [
+        {
+          title: "Node 1",
+          expanded: true,
+          children: [
+            {
+              title: "Node 1.1",
+            },
+            {
+              title: "Node 1.2",
+            },
+          ],
+        },
+        {
+          title: "Node 2",
+        },
+      ];
+
+      document.addEventListener("DOMContentLoaded", (event) => {
+        const tree = new mar10.Wunderbaum({
+          element: document.getElementById("demo-tree"),
+          source: data,
+          init: (e) => {
+            e.tree.setFocus();
+          },
+          activate: (e) => {
+            alert(`Thank you for activating ${e.node}.`);
+          },
+        });
+      });
+    </script>
+  </head>
+
+  <body>
+    <div
+      id="demo-tree"
+      class="wb-skeleton wb-initializing wb-fade-expander"
+    ></div>
+    <p>this is a test</p>
+  </body>
+</html>

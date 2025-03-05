@@ -156,15 +156,26 @@ export async function registerExtraColumnWithCustomCell() {
                 children: [
                   {
                     tag: "div",
+                    namespace: "html",
                     id: "j-outline-viewer",
                     classList: ["outline-view"],
-                    properties: { innerText: "jasminum outline test" },
                     attributes: {
                       tabindex: "-1",
                       "data-tabstop": "1",
                       role: "tabpanel",
                       "aria-labelledby": "j-outline-button",
                     },
+                    children: [
+                      {
+                        tag: "iframe",
+                        namespace: "html",
+                        id: "j-outline-iframe",
+                        classList: ["outline-iframe"],
+                        attributes: {
+                          src: "chrome://jasminum/content/pdf-outline.html",
+                        },
+                      },
+                    ],
                   },
                 ],
               });
