@@ -10,7 +10,18 @@ import { getPref } from "../../utils/prefs";
 function createSearchPostOptions(searchOption: SearchOption) {
   let url;
   let headers;
-  let searchExp = `TI % '${searchOption.title}'`;
+  // SU may find more results than TI. SU %= | TI %=
+  let searchExp: string;
+  if (searchOption.title.includes("...")) {
+    searchExp =
+      "TI %= " +
+      searchOption.title
+        .split("...")
+        .map((_i) => `'${_i}'`)
+        .join(" % ");
+  } else {
+    searchExp = `TI %= '${searchOption.title}'`;
+  }
   if (searchOption.author)
     searchExp = searchExp + ` AND AU='${searchOption.author}'`;
   const searchExpAside = searchExp.replace(/'/g, "&#39;");
@@ -181,7 +192,7 @@ async function getRefworksText(searchResult: ScrapeSearchResult) {
     headers: headers,
     cookieSandbox: addon.data.myCookieSandbox?.refCookieBox,
   });
-  // ztoolkit.log(`Refworks from CNKI: ${resp.responseText}`);
+  ztoolkit.log(`Refworks from CNKI: ${resp.responseText}`);
   return resp.responseText
     .replace(/^.*<li>\s+/, "")
     .replace(/\s+<\/li>.*$/, "")
