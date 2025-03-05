@@ -78,6 +78,25 @@ async function onAddItem(
   }
 }
 
+export async function registerExtraColumnWithCustomCell() {
+  const registeredDataKey = Zotero.ItemTreeManager.registerColumn({
+    dataKey: "CNKIcitation",
+    label: getString("CNKIcitation"),
+    pluginID: config.addonID,
+    dataProvider: (item, dataKey) => {
+      // 网友提供的特殊字符，方便排序
+      return ztoolkit.ExtraField.getExtraField(item, "CNKICite") || "\u2068";
+    },
+    // @ts-ignore - Not typed.
+    // renderCell(index, data, column, isFirstColumn, doc) {
+    //   const span = doc.createElementNS("http://www.w3.org/1999/xhtml", "span");
+    //   span.className = `cell ${column.className}`;
+    //   span.title = getString("CNKIcitation");
+    //   span.innerText = data == "" ? null : data;
+    //   return span;
+    // },
+  });
+}
 
 // TODO: Complete the notifier.
 async function onOpenTab(

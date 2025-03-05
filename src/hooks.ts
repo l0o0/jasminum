@@ -7,7 +7,10 @@ import {
 } from "./modules/preferences/main";
 import { createZToolkit } from "./utils/ztoolkit";
 import { registerMenu } from "./modules/menu";
-import { registerNotifiers } from "./modules/notifier";
+import {
+  registerExtraColumnWithCustomCell,
+  registerNotifiers,
+} from "./modules/notifier";
 import { injectStylesLink } from "./modules/styles";
 import { updateTranslators } from "./modules/translators";
 import { getPref } from "./utils/prefs";
@@ -27,6 +30,7 @@ async function onStartup() {
   registerNotifiers();
 
   registerMenu();
+  await registerExtraColumnWithCustomCell();
 
   injectStylesLink();
 
