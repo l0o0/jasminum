@@ -7,7 +7,7 @@ tabpanel-reader-tab-label = 閱讀器標籤
 
 # Preference
 select-download-folder = 選擇下載檔案儲存目錄
-get-Chinese-styles = 取得中文社群樣式
+get-Chinese-styles = 取得中文社群樣式…
 
 # Preference translator table
 th-filename = 檔案名稱
