@@ -13,17 +13,22 @@ function createSearchPostOptions(searchOption: SearchOption) {
   // SU may find more results than TI. SU %= | TI %=
   let searchExp: string;
   if (searchOption.title.includes(" ")) {
+    // 过滤掉短的主题词，可以避免出现大量无关结果
+    const titleParts = searchOption.title
+      .split(" ")
+      .filter((i) => i.length > 4);
     searchExp =
-      "TI %= " +
-      searchOption.title
-        .split(" ")
-        .map((_i) => `'${_i}'`)
-        .join(" % ");
+      "(TI %= " +
+      titleParts.map((_i) => `'${_i}'`).join(" % ") +
+      " OR SU %= " +
+      titleParts.join("+") +
+      ")";
   } else {
     searchExp = `TI %= '${searchOption.title}'`;
   }
   if (searchOption.author)
     searchExp = searchExp + ` AND AU='${searchOption.author}'`;
+  ztoolkit.log("Search expression: ", searchExp);
   const searchExpAside = searchExp.replace(/'/g, "&#39;");
   let queryJson;
   if (getPref("isMainlandChina")) {
