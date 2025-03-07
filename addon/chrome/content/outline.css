@@ -1,0 +1,143 @@
+body {
+  font-family: Arial, sans-serif;
+  line-height: 1.6;
+  color: #333;
+  background-color: #f5f5f5;
+  padding: 20px;
+}
+
+.j-outline-container {
+  max-width: 1000px;
+  margin: 0 auto;
+  background: white;
+  padding: 20px;
+  border-radius: 5px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+h1 {
+  margin-bottom: 20px;
+  color: #2c3e50;
+}
+
+.tree-controls {
+  margin-bottom: 20px;
+}
+
+button {
+  padding: 8px 16px;
+  background: #3498db;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  margin-right: 10px;
+  font-size: 14px;
+}
+
+button:hover {
+  background: #2980b9;
+}
+
+.tree-container {
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  padding: 15px;
+  background: #fff;
+  min-height: 300px;
+  max-height: 600px;
+  overflow: auto;
+}
+
+.tree-list {
+  list-style-type: none;
+  padding-left: 0;
+}
+
+.tree-list li {
+  margin: 5px 0;
+}
+
+.tree-list ul {
+  list-style-type: none;
+  padding-left: 25px;
+  padding-top: 5px;
+}
+
+.tree-node {
+  display: flex;
+  align-items: center;
+  padding: 6px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.tree-node:hover {
+  background: #f0f0f0;
+}
+
+.node-selected {
+  background: #e8f4fd;
+}
+
+.tree-node.dragging {
+  opacity: 0.5;
+}
+
+.dragover {
+  border: 2px dashed #3498db;
+  padding: 4px;
+}
+
+.expander {
+  width: 16px;
+  height: 16px;
+  cursor: pointer;
+  margin-right: 5px;
+  text-align: center;
+  line-height: 16px;
+  font-size: 12px;
+}
+
+.node-content {
+  flex-grow: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.node-title {
+  display: inline-block;
+}
+
+.node-edit {
+  padding: 2px;
+  border: 1px solid #ccc;
+  border-radius: 3px;
+  font-family: inherit;
+  font-size: inherit;
+  width: 100%;
+}
+
+/* 节点级别样式可以根据深度自动缩进 */
+.level-0 {
+  font-weight: bold;
+  font-size: 16px;
+}
+.level-1 {
+  font-size: 15px;
+}
+.level-2 {
+  font-size: 14px;
+}
+.level-3 {
+  font-size: 13px;
+}
+.level-4 {
+  font-size: 12px;
+}
+
+.collapsed > ul {
+  display: none;
+}
