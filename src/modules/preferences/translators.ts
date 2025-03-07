@@ -110,7 +110,7 @@ function bindEvents(doc: Document) {
     .getElementById("request-new-translator")
     ?.addEventListener("click", (event) => {
       Zotero.launchURL(
-        "https://github.com/l0o0/translators_CN/issues/new?template=T3_new_translator.md",
+        "https://github.com/l0o0/translators_CN/issues/new?template=T3_new_translator.yaml",
       );
     });
 
@@ -118,7 +118,7 @@ function bindEvents(doc: Document) {
     .getElementById("report-translator-bug")
     ?.addEventListener("click", (event) => {
       Zotero.launchURL(
-        "https://github.com/l0o0/translators_CN/issues/new?template=T1_bug.md",
+        "https://github.com/l0o0/translators_CN/issues/new?template=T1_bug.yaml",
       );
     });
 }
