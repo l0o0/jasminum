@@ -1,0 +1,713 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>PDF 书签大纲树</title>
+        <!-- <link rel="stylesheet" href="styles.css"> -->
+        <style>
+            body {
+                font-family: Arial, sans-serif;
+                line-height: 1.6;
+                color: #333;
+                background-color: #f5f5f5;
+                padding: 20px;
+            }
+
+            .j-outline-container {
+                max-width: 1000px;
+                margin: 0 auto;
+                background: white;
+                padding: 20px;
+                border-radius: 5px;
+                box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            }
+
+            h1 {
+                margin-bottom: 20px;
+                color: #2c3e50;
+            }
+
+            .tree-controls {
+                margin-bottom: 20px;
+            }
+
+            button {
+                padding: 8px 16px;
+                background: #3498db;
+                color: white;
+                border: none;
+                border-radius: 4px;
+                cursor: pointer;
+                margin-right: 10px;
+                font-size: 14px;
+            }
+
+            button:hover {
+                background: #2980b9;
+            }
+
+            .tree-container {
+                border: 1px solid #ddd;
+                border-radius: 4px;
+                padding: 15px;
+                background: #fff;
+                min-height: 300px;
+                max-height: 600px;
+                overflow: auto;
+            }
+
+            .tree-list {
+                list-style-type: none;
+                padding-left: 0;
+            }
+
+            .tree-list li {
+                margin: 5px 0;
+            }
+
+            .tree-list ul {
+                list-style-type: none;
+                padding-left: 25px;
+                padding-top: 5px;
+            }
+
+            .tree-node {
+                display: flex;
+                align-items: center;
+                padding: 6px;
+                border-radius: 4px;
+                cursor: pointer;
+                transition: background 0.2s;
+            }
+
+            .tree-node:hover {
+                background: #f0f0f0;
+            }
+
+            .node-selected {
+                background: #e8f4fd;
+            }
+
+            .tree-node.dragging {
+                opacity: 0.5;
+            }
+
+            .dragover {
+                border: 2px dashed #3498db;
+                padding: 4px;
+            }
+
+            .expander {
+                width: 16px;
+                height: 16px;
+                cursor: pointer;
+                margin-right: 5px;
+                text-align: center;
+                line-height: 16px;
+                font-size: 12px;
+            }
+
+            .node-content {
+                flex-grow: 1;
+                overflow: hidden;
+                text-overflow: ellipsis;
+                white-space: nowrap;
+            }
+
+            .node-title {
+                display: inline-block;
+            }
+
+            .node-edit {
+                padding: 2px;
+                border: 1px solid #ccc;
+                border-radius: 3px;
+                font-family: inherit;
+                font-size: inherit;
+                width: 100%;
+            }
+
+            /* 节点级别样式可以根据深度自动缩进 */
+            .level-0 {
+                font-weight: bold;
+                font-size: 16px;
+            }
+            .level-1 {
+                font-size: 15px;
+            }
+            .level-2 {
+                font-size: 14px;
+            }
+            .level-3 {
+                font-size: 13px;
+            }
+            .level-4 {
+                font-size: 12px;
+            }
+
+            .collapsed > ul {
+                display: none;
+            }
+        </style>
+        <script>
+            // 示例书签数据
+            const bookmarkData = [
+                {
+                    id: "1",
+                    title: "第一章：介绍",
+                    children: [
+                        { id: "1.1", title: "1.1 背景", children: [] },
+                        { id: "1.2", title: "1.2 研究目的", children: [] },
+                    ],
+                },
+                {
+                    id: "2",
+                    title: "第二章：文献综述",
+                    children: [
+                        {
+                            id: "2.1",
+                            title: "2.1 相关理论",
+                            children: [
+                                {
+                                    id: "2.1.1",
+                                    title: "2.1.1 基础理论",
+                                    children: [],
+                                },
+                                {
+                                    id: "2.1.2",
+                                    title: "2.1.2 应用理论",
+                                    children: [],
+                                },
+                            ],
+                        },
+                        { id: "2.2", title: "2.2 研究方法", children: [] },
+                    ],
+                },
+                {
+                    id: "3",
+                    title: "第三章：方法论",
+                    children: [],
+                },
+            ];
+
+            // 全局变量
+            let draggedNode = null;
+            let selectedNode = null;
+            let uniqueIdCounter = 100; // 用于生成唯一ID
+
+            // DOM 加载完成后初始化
+            document.addEventListener("DOMContentLoaded", function () {
+                initTree();
+                initEventListeners();
+            });
+
+            // 初始化树结构
+            function initTree() {
+                const rootList = document.getElementById("root-list");
+                createTreeNodes(bookmarkData, rootList, 0);
+            }
+
+            // 递归创建树节点
+            function createTreeNodes(nodes, parentElement, level) {
+                nodes.forEach((node) => {
+                    const li = document.createElement("li");
+                    li.dataset.id = node.id;
+                    li.classList.add("tree-item");
+                    if (node.children && node.children.length > 0) {
+                        li.classList.add("has-children");
+                    }
+
+                    const nodeDiv = document.createElement("div");
+                    nodeDiv.classList.add("tree-node", `level-${level}`);
+                    nodeDiv.draggable = true;
+                    nodeDiv.dataset.id = node.id;
+
+                    // 展开/折叠图标
+                    const expander = document.createElement("span");
+                    expander.classList.add("expander");
+                    if (node.children && node.children.length > 0) {
+                        expander.textContent = "▼";
+                    } else {
+                        expander.textContent = " ";
+                    }
+
+                    const nodeContent = document.createElement("div");
+                    nodeContent.classList.add("node-content");
+
+                    const nodeTitle = document.createElement("span");
+                    nodeTitle.classList.add("node-title");
+                    nodeTitle.textContent = node.title;
+
+                    nodeContent.appendChild(nodeTitle);
+                    nodeDiv.appendChild(expander);
+                    nodeDiv.appendChild(nodeContent);
+                    li.appendChild(nodeDiv);
+
+                    // 如果有子节点，递归创建
+                    if (node.children && node.children.length > 0) {
+                        const ul = document.createElement("ul");
+                        ul.classList.add("tree-list");
+                        li.appendChild(ul);
+                        createTreeNodes(node.children, ul, level + 1);
+                    }
+
+                    parentElement.appendChild(li);
+                });
+            }
+
+            // 初始化事件监听器
+            function initEventListeners() {
+                // 展开/折叠按钮事件
+                document
+                    .getElementById("expand-all")
+                    .addEventListener("click", expandAll);
+                document
+                    .getElementById("collapse-all")
+                    .addEventListener("click", collapseAll);
+
+                // 添加和删除节点事件
+                document
+                    .getElementById("add-node")
+                    .addEventListener("click", addNewNode);
+                document
+                    .getElementById("delete-selected")
+                    .addEventListener("click", deleteSelectedNode);
+
+                // 树交互事件委托
+                const treeContainer = document.getElementById("bookmark-tree");
+
+                // 节点点击选择事件
+                treeContainer.addEventListener("click", function (e) {
+                    const target = e.target;
+
+                    // 检查是否点击的是展开/折叠图标
+                    if (
+                        target.classList.contains("expander") &&
+                        target.textContent.trim() !== ""
+                    ) {
+                        const listItem = target.closest("li");
+                        toggleNode(listItem);
+                        e.stopPropagation();
+                        return;
+                    }
+
+                    // 节点选择
+                    if (target.closest(".tree-node")) {
+                        selectNode(target.closest(".tree-node"));
+                    }
+                });
+
+                // 双击编辑节点
+                treeContainer.addEventListener("dblclick", function (e) {
+                    if (e.target.classList.contains("node-title")) {
+                        makeNodeEditable(e.target);
+                    }
+                });
+
+                // 拖拽相关事件
+                treeContainer.addEventListener("dragstart", handleDragStart);
+                treeContainer.addEventListener("dragover", handleDragOver);
+                treeContainer.addEventListener("dragleave", handleDragLeave);
+                treeContainer.addEventListener("drop", handleDrop);
+                treeContainer.addEventListener("dragend", handleDragEnd);
+            }
+
+            // 展开所有节点
+            function expandAll() {
+                const collapsedNodes = document.querySelectorAll(
+                    ".tree-item.collapsed"
+                );
+                collapsedNodes.forEach((node) => {
+                    node.classList.remove("collapsed");
+                });
+            }
+
+            // 折叠所有节点
+            function collapseAll() {
+                const parentNodes = document.querySelectorAll(
+                    ".tree-item.has-children"
+                );
+                parentNodes.forEach((node) => {
+                    node.classList.add("collapsed");
+                });
+            }
+
+            // 切换节点展开/折叠状态
+            function toggleNode(node) {
+                if (node.classList.contains("has-children")) {
+                    node.classList.toggle("collapsed");
+
+                    // 更新展开/折叠图标
+                    const expander = node.querySelector(".expander");
+                    if (node.classList.contains("collapsed")) {
+                        expander.textContent = "►";
+                    } else {
+                        expander.textContent = "▼";
+                    }
+                }
+            }
+
+            // 选择节点
+            function selectNode(nodeElement) {
+                // 取消之前的选择
+                if (selectedNode) {
+                    selectedNode.classList.remove("node-selected");
+                }
+
+                // 设置新选择
+                nodeElement.classList.add("node-selected");
+                selectedNode = nodeElement;
+            }
+
+            // 添加新节点
+            function addNewNode() {
+                const newId = `new-${uniqueIdCounter++}`;
+                const newTitle = "新书签";
+
+                // 如果没有选中节点，添加到根
+                if (!selectedNode) {
+                    const rootList = document.getElementById("root-list");
+                    const newNode = createNodeElement(newId, newTitle, 0);
+                    rootList.appendChild(newNode);
+                } else {
+                    // 添加为选中节点的子节点或兄弟节点
+                    const parentLi = selectedNode.closest("li");
+
+                    // 检查是否有子列表，如果没有，创建一个
+                    let childList = parentLi.querySelector("ul");
+                    if (!childList) {
+                        childList = document.createElement("ul");
+                        childList.classList.add("tree-list");
+                        parentLi.appendChild(childList);
+
+                        // 添加父节点标记并更新展开图标
+                        parentLi.classList.add("has-children");
+                        const expander = parentLi.querySelector(".expander");
+                        expander.textContent = "▼";
+                    }
+
+                    const newNode = createNodeElement(
+                        newId,
+                        newTitle,
+                        parseInt(selectedNode.classList[1].split("-")[1]) + 1
+                    );
+                    childList.appendChild(newNode);
+
+                    // 确保父节点展开
+                    parentLi.classList.remove("collapsed");
+                }
+            }
+
+            // 创建新节点元素
+            function createNodeElement(id, title, level) {
+                const li = document.createElement("li");
+                li.dataset.id = id;
+                li.classList.add("tree-item");
+
+                const nodeDiv = document.createElement("div");
+                nodeDiv.classList.add("tree-node", `level-${level}`);
+                nodeDiv.draggable = true;
+                nodeDiv.dataset.id = id;
+
+                const expander = document.createElement("span");
+                expander.classList.add("expander");
+                expander.textContent = " ";
+
+                const nodeContent = document.createElement("div");
+                nodeContent.classList.add("node-content");
+
+                const nodeTitle = document.createElement("span");
+                nodeTitle.classList.add("node-title");
+                nodeTitle.textContent = title;
+
+                nodeContent.appendChild(nodeTitle);
+                nodeDiv.appendChild(expander);
+                nodeDiv.appendChild(nodeContent);
+                li.appendChild(nodeDiv);
+
+                // 选择并使新节点可编辑
+                setTimeout(() => {
+                    selectNode(nodeDiv);
+                    makeNodeEditable(nodeTitle);
+                }, 10);
+
+                return li;
+            }
+
+            // 删除选中节点
+            function deleteSelectedNode() {
+                if (!selectedNode) return;
+
+                const listItem = selectedNode.closest("li");
+                const parent = listItem.parentNode;
+
+                // 移除节点
+                parent.removeChild(listItem);
+
+                // 如果父列表没有其他子元素，更新其父节点的状态
+                if (
+                    parent.children.length === 0 &&
+                    parent.tagName === "UL" &&
+                    parent !== document.getElementById("root-list")
+                ) {
+                    const parentLi = parent.parentNode;
+                    parentLi.removeChild(parent);
+                    parentLi.classList.remove("has-children");
+                    const expander = parentLi.querySelector(".expander");
+                    expander.textContent = " ";
+                }
+
+                selectedNode = null;
+            }
+
+            // 使节点可编辑
+            function makeNodeEditable(titleElement) {
+                const currentText = titleElement.textContent;
+                const input = document.createElement("input");
+                input.type = "text";
+                input.classList.add("node-edit");
+                input.value = currentText;
+
+                const parent = titleElement.parentNode;
+                parent.replaceChild(input, titleElement);
+
+                input.focus();
+                input.select();
+
+                function handleEdit(e) {
+                    if (
+                        e.type === "blur" ||
+                        (e.type === "keydown" && e.key === "Enter")
+                    ) {
+                        const newText = input.value.trim() || currentText;
+                        titleElement.textContent = newText;
+                        parent.replaceChild(titleElement, input);
+                    } else if (e.type === "keydown" && e.key === "Escape") {
+                        parent.replaceChild(titleElement, input);
+                    }
+                }
+
+                input.addEventListener("blur", handleEdit);
+                input.addEventListener("keydown", handleEdit);
+            }
+
+            // 拖拽开始
+            function handleDragStart(e) {
+                if (!e.target.classList.contains("tree-node")) return;
+
+                draggedNode = e.target.closest("li");
+                e.dataTransfer.setData("text/plain", draggedNode.dataset.id);
+                e.dataTransfer.effectAllowed = "move";
+
+                // 为拖拽中的元素添加样式
+                setTimeout(() => {
+                    draggedNode.classList.add("dragging");
+                }, 0);
+            }
+
+            // 拖拽经过目标元素
+            function handleDragOver(e) {
+                e.preventDefault();
+                e.dataTransfer.dropEffect = "move";
+
+                // 找到最近的节点元素
+                const targetNode = e.target.closest(".tree-node");
+                if (!targetNode) return;
+
+                // 添加可放置样式
+                targetNode.classList.add("dragover");
+            }
+
+            // 拖拽离开目标元素
+            function handleDragLeave(e) {
+                const targetNode = e.target.closest(".tree-node");
+                if (!targetNode) return;
+
+                // 移除可放置样式
+                targetNode.classList.remove("dragover");
+            }
+
+            // 处理放置
+            function handleDrop(e) {
+                e.preventDefault();
+
+                // 获取目标节点
+                const targetTreeNode = e.target.closest(".tree-node");
+                if (!targetTreeNode) return;
+
+                // 移除可放置样式
+                targetTreeNode.classList.remove("dragover");
+
+                // 获取目标列表项
+                const targetLi = targetTreeNode.closest("li");
+
+                // 不能将节点拖到自己或其子节点上
+                if (
+                    draggedNode === targetLi ||
+                    isAncestor(draggedNode, targetLi)
+                ) {
+                    return;
+                }
+
+                // 移除拖拽的节点
+                const oldParent = draggedNode.parentNode;
+                oldParent.removeChild(draggedNode);
+
+                // 判断放置位置：是作为子节点还是兄弟节点
+                const dropPosition = determineDropPosition(e, targetTreeNode);
+
+                if (dropPosition === "child") {
+                    // 作为子节点
+                    let targetUl = targetLi.querySelector("ul");
+
+                    // 如果没有子列表，创建一个
+                    if (!targetUl) {
+                        targetUl = document.createElement("ul");
+                        targetUl.classList.add("tree-list");
+                        targetLi.appendChild(targetUl);
+
+                        // 更新父节点状态
+                        targetLi.classList.add("has-children");
+                        const expander = targetLi.querySelector(".expander");
+                        expander.textContent = "▼";
+                    }
+
+                    // 确保目标节点展开
+                    targetLi.classList.remove("collapsed");
+
+                    // 添加到子列表
+                    targetUl.appendChild(draggedNode);
+                } else {
+                    // 作为兄弟节点
+                    const targetParent = targetLi.parentNode;
+
+                    if (dropPosition === "before") {
+                        targetParent.insertBefore(draggedNode, targetLi);
+                    } else {
+                        // 'after'
+                        targetParent.insertBefore(
+                            draggedNode,
+                            targetLi.nextSibling
+                        );
+                    }
+                }
+
+                // 如果原父列表为空，更新其父节点状态
+                if (
+                    oldParent.children.length === 0 &&
+                    oldParent.tagName === "UL" &&
+                    oldParent !== document.getElementById("root-list")
+                ) {
+                    const oldGrandParent = oldParent.parentNode;
+                    oldGrandParent.removeChild(oldParent);
+                    oldGrandParent.classList.remove("has-children");
+                    const expander = oldGrandParent.querySelector(".expander");
+                    expander.textContent = " ";
+                }
+
+                // 更新节点级别样式
+                updateNodeLevels(draggedNode);
+            }
+
+            // 拖拽结束
+            function handleDragEnd() {
+                if (!draggedNode) return;
+
+                draggedNode.classList.remove("dragging");
+                draggedNode = null;
+
+                // 清除所有dragover样式
+                document.querySelectorAll(".dragover").forEach((el) => {
+                    el.classList.remove("dragover");
+                });
+            }
+
+            // 检查一个节点是否是另一个节点的祖先
+            function isAncestor(ancestor, descendant) {
+                let current = descendant.parentNode;
+
+                while (current && current !== document.body) {
+                    if (current === ancestor) {
+                        return true;
+                    }
+                    current = current.parentNode;
+                }
+
+                return false;
+            }
+
+            // 确定放置位置：作为子节点、同级前面或同级后面
+            function determineDropPosition(event, targetNode) {
+                const rect = targetNode.getBoundingClientRect();
+                const mouseY = event.clientY;
+
+                // 上三分之一区域放在前面，下三分之一区域放在后面，中间放在内部
+                const relativeY = mouseY - rect.top;
+                const height = rect.height;
+
+                if (relativeY < height / 3) {
+                    return "before";
+                } else if (relativeY > (height * 2) / 3) {
+                    return "after";
+                } else {
+                    return "child";
+                }
+            }
+
+            // 更新节点及其子节点的级别样式
+            function updateNodeLevels(node) {
+                const updateLevel = (element, level) => {
+                    const nodeDiv = element.querySelector(".tree-node");
+
+                    // 移除所有级别类
+                    for (let i = 0; i < 10; i++) {
+                        nodeDiv.classList.remove(`level-${i}`);
+                    }
+
+                    // 添加正确的级别类
+                    nodeDiv.classList.add(`level-${level}`);
+
+                    // 递归处理子节点
+                    const childList = element.querySelector("ul");
+                    if (childList) {
+                        Array.from(childList.children).forEach((child) => {
+                            updateLevel(child, level + 1);
+                        });
+                    }
+                };
+
+                // 计算当前节点的级别
+                let level = 0;
+                let parent = node.parentNode;
+
+                while (parent && parent.id !== "root-list") {
+                    if (parent.tagName === "UL") {
+                        level++;
+                    }
+                    parent = parent.parentNode;
+                }
+
+                updateLevel(node, level);
+            }
+        </script>
+    </head>
+    <body>
+        <div class="j-outline-container">
+            <div class="tree-controls">
+                <button id="expand-all">展开所有</button>
+                <button id="collapse-all">折叠所有</button>
+                <button id="add-node">添加节点</button>
+                <button id="delete-selected">删除选中</button>
+            </div>
+
+            <div id="bookmark-tree" class="tree-container">
+                <ul id="root-list" class="tree-list">
+                    <!-- 树节点将通过 JavaScript 动态生成 -->
+                </ul>
+            </div>
+        </div>
+
+        <script src="script.js"></script>
+    </body>
+</html>
