@@ -12,11 +12,11 @@ function createSearchPostOptions(searchOption: SearchOption) {
   let headers;
   // SU may find more results than TI. SU %= | TI %=
   let searchExp: string;
-  if (searchOption.title.includes("...")) {
+  if (searchOption.title.includes(" ")) {
     searchExp =
       "TI %= " +
       searchOption.title
-        .split("...")
+        .split(" ")
         .map((_i) => `'${_i}'`)
         .join(" % ");
   } else {
