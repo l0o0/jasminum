@@ -1,9 +1,13 @@
-body {
+#j-outline-viewer {
   font-family: Arial, sans-serif;
   line-height: 1.6;
   color: #333;
   background-color: #f5f5f5;
   padding: 20px;
+}
+
+#for-css-test {
+  color: red;
 }
 
 .j-outline-container {
@@ -15,16 +19,11 @@ body {
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
 }
 
-h1 {
-  margin-bottom: 20px;
-  color: #2c3e50;
-}
-
 .tree-controls {
   margin-bottom: 20px;
 }
 
-button {
+/* button {
   padding: 8px 16px;
   background: #3498db;
   color: white;
@@ -37,7 +36,7 @@ button {
 
 button:hover {
   background: #2980b9;
-}
+} */
 
 .tree-container {
   border: 1px solid #ddd;
