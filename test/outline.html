@@ -1,0 +1,1031 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>PDF.js 书签功能</title>
+    <script src="https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.min.js"></script>
+    <style>
+      :root {
+        --background-color: #f5f5f5;
+        --container-bg: white;
+        --text-color: #333;
+        --border-color: #ddd;
+        --button-bg: #3498db;
+        --button-hover-bg: #2980b9;
+        --bookmark-hover-bg: #f0f0f0;
+        --shadow-color: rgba(0, 0, 0, 0.1);
+      }
+
+      [data-theme="dark"] {
+        --background-color: #1a1a1a;
+        --container-bg: #2c2c2c;
+        --text-color: #e0e0e0;
+        --border-color: #444;
+        --button-bg: #2196f3;
+        --button-hover-bg: #1976d2;
+        --bookmark-hover-bg: #3e3e3e;
+        --shadow-color: rgba(0, 0, 0, 0.3);
+      }
+
+      body {
+        font-family: Arial, sans-serif;
+        margin: 0;
+        padding: 0;
+        background-color: var(--background-color);
+        color: var(--text-color);
+        transition:
+          background-color 0.3s,
+          color 0.3s;
+        display: flex;
+        flex-direction: column;
+        height: 100vh;
+      }
+
+      .header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 10px;
+        background-color: var(--container-bg);
+        box-shadow: 0 2px 4px var(--shadow-color);
+      }
+
+      .controls {
+        display: flex;
+        gap: 10px;
+        align-items: center;
+      }
+
+      button {
+        padding: 8px 16px;
+        background: var(--button-bg);
+        color: white;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 14px;
+        transition: background 0.2s;
+      }
+
+      button:hover {
+        background: var(--button-hover-bg);
+      }
+
+      input[type="file"] {
+        display: none;
+      }
+
+      .file-label {
+        padding: 8px 16px;
+        background: var(--button-bg);
+        color: white;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 14px;
+      }
+
+      .file-label:hover {
+        background: var(--button-hover-bg);
+      }
+
+      .theme-toggle {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+
+      .theme-toggle-switch {
+        position: relative;
+        display: inline-block;
+        width: 50px;
+        height: 24px;
+      }
+
+      .theme-toggle-switch input {
+        opacity: 0;
+        width: 0;
+        height: 0;
+      }
+
+      .slider {
+        position: absolute;
+        cursor: pointer;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: #ccc;
+        transition: 0.4s;
+        border-radius: 24px;
+      }
+
+      .slider:before {
+        position: absolute;
+        content: "";
+        height: 18px;
+        width: 18px;
+        left: 3px;
+        bottom: 3px;
+        background-color: white;
+        transition: 0.4s;
+        border-radius: 50%;
+      }
+
+      input:checked + .slider {
+        background-color: var(--button-bg);
+      }
+
+      input:checked + .slider:before {
+        transform: translateX(26px);
+      }
+
+      .page-controls {
+        display: flex;
+        gap: 10px;
+        align-items: center;
+      }
+
+      #page-num {
+        width: 50px;
+        text-align: center;
+        padding: 5px;
+        border: 1px solid var(--border-color);
+        border-radius: 4px;
+        background-color: var(--container-bg);
+        color: var(--text-color);
+      }
+
+      .main-container {
+        display: flex;
+        flex: 1;
+        overflow: hidden;
+      }
+
+      #sidebar {
+        width: 300px;
+        background-color: var(--container-bg);
+        border-right: 1px solid var(--border-color);
+        overflow-y: auto;
+        transition: width 0.3s;
+      }
+
+      #sidebar.collapsed {
+        width: 0;
+      }
+
+      .sidebar-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 10px 15px;
+        border-bottom: 1px solid var(--border-color);
+      }
+
+      .bookmark-list {
+        padding: 0;
+        margin: 0;
+        list-style: none;
+      }
+
+      .bookmark-item {
+        padding: 10px 15px;
+        border-bottom: 1px solid var(--border-color);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        cursor: pointer;
+      }
+
+      .bookmark-item:hover {
+        background-color: var(--bookmark-hover-bg);
+      }
+
+      .bookmark-title {
+        flex: 1;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+
+      .bookmark-page {
+        margin-left: 10px;
+        color: #777;
+        font-size: 0.9em;
+      }
+
+      .bookmark-delete {
+        opacity: 0.5;
+        cursor: pointer;
+        margin-left: 10px;
+        font-size: 18px;
+      }
+
+      .bookmark-delete:hover {
+        opacity: 1;
+      }
+
+      #pdf-container {
+        flex: 1;
+        overflow: auto;
+        background-color: var(--background-color);
+        position: relative;
+      }
+
+      #pdf-viewer {
+        padding: 20px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+      }
+
+      .page-container {
+        margin-bottom: 20px;
+        position: relative;
+        box-shadow: 0 2px 10px var(--shadow-color);
+      }
+
+      canvas {
+        display: block;
+        margin: 0 auto;
+      }
+
+      .context-menu {
+        position: absolute;
+        background-color: var(--container-bg);
+        border: 1px solid var(--border-color);
+        border-radius: 4px;
+        box-shadow: 0 2px 10px var(--shadow-color);
+        padding: 8px 0;
+        z-index: 1000;
+        display: none;
+      }
+
+      .context-menu-item {
+        padding: 8px 15px;
+        cursor: pointer;
+        white-space: nowrap;
+      }
+
+      .context-menu-item:hover {
+        background-color: var(--bookmark-hover-bg);
+      }
+
+      .bookmark-modal {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.5);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        z-index: 1001;
+        display: none;
+      }
+
+      .bookmark-modal-content {
+        background-color: var(--container-bg);
+        padding: 20px;
+        border-radius: 8px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+        width: 300px;
+      }
+
+      .bookmark-modal-header {
+        margin-top: 0;
+        margin-bottom: 20px;
+        font-size: 1.2em;
+      }
+
+      .modal-input-group {
+        margin-bottom: 15px;
+      }
+
+      .modal-input-group label {
+        display: block;
+        margin-bottom: 5px;
+      }
+
+      .modal-input-group input {
+        width: 100%;
+        padding: 8px;
+        border: 1px solid var(--border-color);
+        border-radius: 4px;
+        background-color: var(--container-bg);
+        color: var(--text-color);
+      }
+
+      .modal-buttons {
+        display: flex;
+        justify-content: flex-end;
+        gap: 10px;
+      }
+
+      .bookmark-marker {
+        position: absolute;
+        width: 20px;
+        height: 20px;
+        background-color: rgba(255, 0, 0, 0.3);
+        border: 2px solid rgba(255, 0, 0, 0.5);
+        border-radius: 50%;
+        transform: translate(-50%, -50%);
+        z-index: 10;
+        pointer-events: none;
+      }
+
+      .loading-indicator {
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        background-color: rgba(0, 0, 0, 0.7);
+        color: white;
+        padding: 20px;
+        border-radius: 8px;
+        display: none;
+        z-index: 1002;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="header">
+      <div class="controls">
+        <label class="file-label" for="pdf-file">选择PDF</label>
+        <input type="file" id="pdf-file" accept="application/pdf" />
+        <button id="toggle-sidebar">切换侧边栏</button>
+      </div>
+
+      <div class="page-controls">
+        <button id="prev-page">上一页</button>
+        <div>
+          <input type="number" id="page-num" min="1" /> /
+          <span id="page-count">0</span>
+        </div>
+        <button id="next-page">下一页</button>
+        <div class="theme-toggle">
+          <span>☀️</span>
+          <label class="theme-toggle-switch">
+            <input type="checkbox" id="theme-toggle" />
+            <span class="slider"></span>
+          </label>
+          <span>🌙</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="main-container">
+      <div id="sidebar">
+        <div class="sidebar-header">
+          <h3>书签列表</h3>
+          <button id="clear-bookmarks">清空</button>
+        </div>
+        <ul class="bookmark-list" id="bookmark-list"></ul>
+      </div>
+
+      <div id="pdf-container">
+        <div id="pdf-viewer"></div>
+      </div>
+    </div>
+
+    <div class="context-menu" id="context-menu">
+      <div class="context-menu-item" id="add-bookmark">添加书签</div>
+    </div>
+
+    <div class="bookmark-modal" id="bookmark-modal">
+      <div class="bookmark-modal-content">
+        <h3 class="bookmark-modal-header">添加新书签</h3>
+        <div class="modal-input-group">
+          <label for="bookmark-title">书签名称</label>
+          <input type="text" id="bookmark-title" placeholder="输入书签标题" />
+        </div>
+        <div class="modal-buttons">
+          <button id="cancel-bookmark">取消</button>
+          <button id="save-bookmark">保存</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="loading-indicator" id="loading-indicator">正在加载PDF...</div>
+
+    <script>
+      // PDF.js 主模块
+      const PDFBookmarkApp = (function () {
+        // 设置PDF.js worker路径
+        pdfjsLib.GlobalWorkerOptions.workerSrc =
+          "https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.worker.min.js";
+
+        // 应用状态
+        const state = {
+          pdfDoc: null,
+          currentPage: 1,
+          pageRendering: false,
+          pageNumPending: null,
+          scale: 1.2,
+          bookmarks: [],
+          contextMenuVisible: false,
+          contextMenuPosition: {
+            x: 0,
+            y: 0,
+            pageNum: null,
+            exactPos: { x: 0, y: 0 },
+          },
+        };
+
+        // 缓存DOM元素
+        const elements = {
+          pdfFileInput: document.getElementById("pdf-file"),
+          pdfContainer: document.getElementById("pdf-container"),
+          pdfViewer: document.getElementById("pdf-viewer"),
+          sidebar: document.getElementById("sidebar"),
+          bookmarkList: document.getElementById("bookmark-list"),
+          prevPageButton: document.getElementById("prev-page"),
+          nextPageButton: document.getElementById("next-page"),
+          pageNumInput: document.getElementById("page-num"),
+          pageCount: document.getElementById("page-count"),
+          toggleSidebarButton: document.getElementById("toggle-sidebar"),
+          contextMenu: document.getElementById("context-menu"),
+          addBookmarkButton: document.getElementById("add-bookmark"),
+          bookmarkModal: document.getElementById("bookmark-modal"),
+          bookmarkTitleInput: document.getElementById("bookmark-title"),
+          saveBookmarkButton: document.getElementById("save-bookmark"),
+          cancelBookmarkButton: document.getElementById("cancel-bookmark"),
+          clearBookmarksButton: document.getElementById("clear-bookmarks"),
+          themeToggle: document.getElementById("theme-toggle"),
+          loadingIndicator: document.getElementById("loading-indicator"),
+        };
+
+        // 公共API
+        const publicAPI = {
+          init: function () {
+            this.initTheme();
+            this.loadBookmarksFromStorage();
+            this.renderBookmarkList();
+            this.attachEventListeners();
+          },
+        };
+
+        // 初始化主题
+        publicAPI.initTheme = function () {
+          const savedTheme = localStorage.getItem("pdfTheme");
+          const prefersDark =
+            window.matchMedia &&
+            window.matchMedia("(prefers-color-scheme: dark)").matches;
+
+          if (savedTheme === "dark" || (!savedTheme && prefersDark)) {
+            document.documentElement.setAttribute("data-theme", "dark");
+            elements.themeToggle.checked = true;
+          }
+
+          elements.themeToggle.addEventListener("change", function () {
+            if (this.checked) {
+              document.documentElement.setAttribute("data-theme", "dark");
+              localStorage.setItem("pdfTheme", "dark");
+            } else {
+              document.documentElement.setAttribute("data-theme", "light");
+              localStorage.setItem("pdfTheme", "light");
+            }
+          });
+        };
+
+        // 附加事件监听器
+        publicAPI.attachEventListeners = function () {
+          // 加载PDF文件
+          elements.pdfFileInput.addEventListener(
+            "change",
+            this.onPdfFileSelected.bind(this),
+          );
+
+          // 导航控制
+          elements.prevPageButton.addEventListener(
+            "click",
+            this.onPrevPage.bind(this),
+          );
+          elements.nextPageButton.addEventListener(
+            "click",
+            this.onNextPage.bind(this),
+          );
+          elements.pageNumInput.addEventListener(
+            "change",
+            this.onPageNumberChange.bind(this),
+          );
+
+          // 侧边栏控制
+          elements.toggleSidebarButton.addEventListener(
+            "click",
+            this.toggleSidebar.bind(this),
+          );
+
+          // 上下文菜单
+          elements.pdfViewer.addEventListener(
+            "contextmenu",
+            this.onContextMenu.bind(this),
+          );
+          document.addEventListener("click", this.onDocumentClick.bind(this));
+
+          // 书签功能
+          elements.addBookmarkButton.addEventListener(
+            "click",
+            this.onAddBookmark.bind(this),
+          );
+          elements.saveBookmarkButton.addEventListener(
+            "click",
+            this.onSaveBookmark.bind(this),
+          );
+          elements.cancelBookmarkButton.addEventListener(
+            "click",
+            this.closeBookmarkModal.bind(this),
+          );
+          elements.clearBookmarksButton.addEventListener(
+            "click",
+            this.clearBookmarks.bind(this),
+          );
+        };
+
+        // 从 localStorage 加载书签
+        publicAPI.loadBookmarksFromStorage = function () {
+          const savedBookmarks = localStorage.getItem("pdfBookmarks");
+          if (savedBookmarks) {
+            try {
+              state.bookmarks = JSON.parse(savedBookmarks);
+            } catch (e) {
+              console.error("Failed to parse bookmarks from localStorage", e);
+              state.bookmarks = [];
+            }
+          }
+        };
+
+        // 保存书签到 localStorage
+        publicAPI.saveBookmarksToStorage = function () {
+          localStorage.setItem("pdfBookmarks", JSON.stringify(state.bookmarks));
+        };
+
+        // 渲染书签列表
+        publicAPI.renderBookmarkList = function () {
+          elements.bookmarkList.innerHTML = "";
+
+          if (state.bookmarks.length === 0) {
+            const emptyItem = document.createElement("li");
+            emptyItem.className = "bookmark-item";
+            emptyItem.textContent = "暂无书签";
+            elements.bookmarkList.appendChild(emptyItem);
+            return;
+          }
+
+          // 按页码排序
+          const sortedBookmarks = [...state.bookmarks].sort(
+            (a, b) => a.pageNum - b.pageNum,
+          );
+
+          sortedBookmarks.forEach((bookmark) => {
+            const item = document.createElement("li");
+            item.className = "bookmark-item";
+            item.dataset.id = bookmark.id;
+
+            const titleSpan = document.createElement("span");
+            titleSpan.className = "bookmark-title";
+            titleSpan.textContent = bookmark.title;
+            titleSpan.title = bookmark.title;
+
+            const pageSpan = document.createElement("span");
+            pageSpan.className = "bookmark-page";
+            pageSpan.textContent = `第${bookmark.pageNum}页`;
+
+            const deleteBtn = document.createElement("span");
+            deleteBtn.className = "bookmark-delete";
+            deleteBtn.innerHTML = "&times;";
+            deleteBtn.title = "删除书签";
+
+            item.appendChild(titleSpan);
+            item.appendChild(pageSpan);
+            item.appendChild(deleteBtn);
+
+            elements.bookmarkList.appendChild(item);
+
+            // 绑定事件
+            item.addEventListener("click", (e) => {
+              if (e.target !== deleteBtn) {
+                this.jumpToBookmark(bookmark);
+              }
+            });
+
+            deleteBtn.addEventListener("click", (e) => {
+              e.stopPropagation();
+              this.deleteBookmark(bookmark.id);
+            });
+          });
+        };
+
+        // 当选择PDF文件时
+        publicAPI.onPdfFileSelected = function (event) {
+          const file = event.target.files[0];
+          if (file && file.type === "application/pdf") {
+            elements.loadingIndicator.style.display = "block";
+
+            const fileReader = new FileReader();
+            fileReader.onload = (event) => {
+              const typedarray = new Uint8Array(event.target.result);
+              this.loadPdfDocument(typedarray);
+            };
+            fileReader.readAsArrayBuffer(file);
+          }
+        };
+
+        // 加载PDF文档
+        publicAPI.loadPdfDocument = function (data) {
+          pdfjsLib
+            .getDocument({ data })
+            .promise.then((pdfDoc) => {
+              state.pdfDoc = pdfDoc;
+              elements.pageCount.textContent = pdfDoc.numPages;
+              elements.pageNumInput.max = pdfDoc.numPages;
+
+              // 重置当前页面并渲染
+              state.currentPage = 1;
+              elements.pageNumInput.value = state.currentPage;
+              elements.pdfViewer.innerHTML = "";
+
+              // 预渲染几页以提高体验
+              this.renderPage(1);
+
+              elements.loadingIndicator.style.display = "none";
+            })
+            .catch((error) => {
+              console.error("加载PDF文件时出错:", error);
+              elements.loadingIndicator.style.display = "none";
+              alert("无法加载PDF文件。请确保文件格式正确。");
+            });
+        };
+
+        // 渲染页面
+        publicAPI.renderPage = function (pageNum) {
+          state.pageRendering = true;
+
+          // 检查页面是否已经渲染
+          const existingPage = document.getElementById(`page-${pageNum}`);
+          if (existingPage) {
+            // 已渲染，只需滚动到页面
+            existingPage.scrollIntoView({ behavior: "smooth" });
+            state.pageRendering = false;
+            state.currentPage = pageNum;
+            elements.pageNumInput.value = pageNum;
+            return;
+          }
+
+          state.pdfDoc.getPage(pageNum).then((page) => {
+            const viewport = page.getViewport({ scale: state.scale });
+
+            // 创建页面容器
+            const pageContainer = document.createElement("div");
+            pageContainer.className = "page-container";
+            pageContainer.id = `page-${pageNum}`;
+            pageContainer.dataset.pageNumber = pageNum;
+
+            // 创建canvas
+            const canvas = document.createElement("canvas");
+            const context = canvas.getContext("2d");
+            canvas.width = viewport.width;
+            canvas.height = viewport.height;
+
+            // 渲染PDF页面到Canvas
+            const renderContext = {
+              canvasContext: context,
+              viewport: viewport,
+            };
+
+            const renderTask = page.render(renderContext);
+            renderTask.promise.then(() => {
+              // 显示该页上的书签标记
+              this.showBookmarksOnPage(pageContainer, pageNum, viewport);
+
+              state.pageRendering = false;
+              if (state.pageNumPending !== null) {
+                const pendingPage = state.pageNumPending;
+                state.pageNumPending = null;
+                this.renderPage(pendingPage);
+              }
+
+              // 添加当前页的标记
+              if (pageNum === state.currentPage) {
+                canvas.scrollIntoView({ behavior: "smooth" });
+              }
+            });
+
+            pageContainer.appendChild(canvas);
+            elements.pdfViewer.appendChild(pageContainer);
+          });
+
+          state.currentPage = pageNum;
+          elements.pageNumInput.value = pageNum;
+        };
+
+        // 显示页面上的书签标记
+        publicAPI.showBookmarksOnPage = function (
+          pageContainer,
+          pageNum,
+          viewport,
+        ) {
+          const bookmarksOnPage = state.bookmarks.filter(
+            (b) => b.pageNum === pageNum,
+          );
+
+          bookmarksOnPage.forEach((bookmark) => {
+            const marker = document.createElement("div");
+            marker.className = "bookmark-marker";
+            marker.title = bookmark.title;
+
+            // 计算标记位置 - 将PDF坐标转换为屏幕坐标
+            const pdfPoint = [bookmark.position.x, bookmark.position.y];
+            const screenPoint = viewport.convertToViewportPoint(
+              pdfPoint[0],
+              pdfPoint[1],
+            );
+
+            marker.style.left = `${screenPoint[0]}px`;
+            marker.style.top = `${screenPoint[1]}px`;
+
+            pageContainer.appendChild(marker);
+          });
+        };
+
+        // 定位到上一页
+        publicAPI.onPrevPage = function () {
+          if (state.currentPage <= 1) return;
+          this.queueRenderPage(state.currentPage - 1);
+        };
+
+        // 定位到下一页
+        publicAPI.onNextPage = function () {
+          if (state.pdfDoc && state.currentPage < state.pdfDoc.numPages) {
+            this.queueRenderPage(state.currentPage + 1);
+          }
+        };
+
+        // 页码变化处理
+        publicAPI.onPageNumberChange = function (e) {
+          const newPage = parseInt(e.target.value);
+          if (isNaN(newPage)) return;
+
+          if (state.pdfDoc && newPage > 0 && newPage <= state.pdfDoc.numPages) {
+            this.queueRenderPage(newPage);
+          } else {
+            e.target.value = state.currentPage;
+          }
+        };
+
+        // 将渲染排入队列
+        publicAPI.queueRenderPage = function (pageNum) {
+          if (state.pageRendering) {
+            state.pageNumPending = pageNum;
+          } else {
+            this.renderPage(pageNum);
+          }
+        };
+
+        // 显示/隐藏侧边栏
+        publicAPI.toggleSidebar = function () {
+          elements.sidebar.classList.toggle("collapsed");
+        };
+
+        // 右键菜单处理
+        publicAPI.onContextMenu = function (e) {
+          e.preventDefault();
+
+          if (!state.pdfDoc) return;
+
+          // 找到点击的页面
+          let targetPage = e.target.closest(".page-container");
+          if (!targetPage) return;
+
+          const pageNum = parseInt(targetPage.dataset.pageNumber);
+          if (isNaN(pageNum)) return;
+
+          // 计算在PDF上的精确坐标
+          const canvas = targetPage.querySelector("canvas");
+          const rect = canvas.getBoundingClientRect();
+          const x = e.clientX - rect.left;
+          const y = e.clientY - rect.top;
+
+          // 获取页面视口信息以便后续转换坐标
+          state.pdfDoc.getPage(pageNum).then((page) => {
+            const viewport = page.getViewport({ scale: state.scale });
+
+            // 将屏幕坐标转换为PDF坐标
+            const pdfPoint = viewport.convertToPdfPoint(x, y);
+
+            // 存储上下文菜单状态
+            state.contextMenuPosition = {
+              x: e.clientX,
+              y: e.clientY,
+              pageNum: pageNum,
+              exactPos: { x: pdfPoint[0], y: pdfPoint[1] },
+            };
+
+            // 显示上下文菜单
+            elements.contextMenu.style.display = "block";
+            elements.contextMenu.style.left = `${e.clientX}px`;
+            elements.contextMenu.style.top = `${e.clientY}px`;
+            state.contextMenuVisible = true;
+          });
+        };
+
+        // 文档点击处理（用于隐藏上下文菜单）
+        publicAPI.onDocumentClick = function (e) {
+          if (
+            state.contextMenuVisible &&
+            !elements.contextMenu.contains(e.target)
+          ) {
+            elements.contextMenu.style.display = "none";
+            state.contextMenuVisible = false;
+          }
+        };
+
+        // 添加书签
+        publicAPI.onAddBookmark = function () {
+          elements.contextMenu.style.display = "none";
+          state.contextMenuVisible = false;
+
+          // 显示添加书签的模态框
+          elements.bookmarkModal.style.display = "flex";
+          elements.bookmarkTitleInput.value = `第${state.contextMenuPosition.pageNum}页 书签`;
+          elements.bookmarkTitleInput.select();
+        };
+
+        // 保存书签
+        publicAPI.onSaveBookmark = function () {
+          const title = elements.bookmarkTitleInput.value.trim();
+
+          if (!title) {
+            alert("请输入书签名称");
+            return;
+          }
+
+          // 创建书签对象
+          const newBookmark = {
+            id: Date.now().toString(),
+            title: title,
+            pageNum: state.contextMenuPosition.pageNum,
+            position: {
+              x: state.contextMenuPosition.exactPos.x,
+              y: state.contextMenuPosition.exactPos.y,
+            },
+            createdAt: new Date().toISOString(),
+          };
+
+          // 添加到数组
+          state.bookmarks.push(newBookmark);
+
+          // 保存到localStorage
+          this.saveBookmarksToStorage();
+
+          // 刷新书签列表
+          this.renderBookmarkList();
+
+          // 在当前页添加书签标记
+          this.refreshBookmarkMarkers(state.contextMenuPosition.pageNum);
+
+          // 关闭模态框
+          this.closeBookmarkModal();
+        };
+
+        // 刷新页面上的书签标记
+        publicAPI.refreshBookmarkMarkers = function (pageNum) {
+          const pageContainer = document.getElementById(`page-${pageNum}`);
+          if (!pageContainer) return;
+
+          // 清除现有标记
+          const existingMarkers =
+            pageContainer.querySelectorAll(".bookmark-marker");
+          existingMarkers.forEach((marker) => marker.remove());
+
+          // 添加新标记
+          state.pdfDoc.getPage(pageNum).then((page) => {
+            const viewport = page.getViewport({ scale: state.scale });
+            this.showBookmarksOnPage(pageContainer, pageNum, viewport);
+          });
+        };
+
+        // 关闭添加书签的模态框
+        publicAPI.closeBookmarkModal = function () {
+          elements.bookmarkModal.style.display = "none";
+          elements.bookmarkTitleInput.value = "";
+        };
+
+        // 跳转到书签
+        publicAPI.jumpToBookmark = function (bookmark) {
+          if (!state.pdfDoc) {
+            alert("请先加载PDF文件");
+            return;
+          }
+
+          // 确保页码有效
+          if (
+            bookmark.pageNum < 1 ||
+            bookmark.pageNum > state.pdfDoc.numPages
+          ) {
+            alert("无效的页码");
+            return;
+          }
+
+          // 切换到目标页面
+          this.queueRenderPage(bookmark.pageNum);
+
+          // 延迟一下确保页面已渲染
+          setTimeout(() => {
+            // 找到页面容器
+            const pageContainer = document.getElementById(
+              `page-${bookmark.pageNum}`,
+            );
+            if (!pageContainer) return;
+
+            // 找到与书签位置最接近的标记
+            const markers = pageContainer.querySelectorAll(".bookmark-marker");
+            let targetMarker = null;
+
+            markers.forEach((marker) => {
+              if (marker.title === bookmark.title) {
+                targetMarker = marker;
+              }
+            });
+
+            if (targetMarker) {
+              // 滚动到标记位置
+              targetMarker.scrollIntoView({
+                behavior: "smooth",
+                block: "center",
+              });
+
+              // 突出显示标记
+              const origBackgroundColor = targetMarker.style.backgroundColor;
+              targetMarker.style.backgroundColor = "rgba(255, 255, 0, 0.7)";
+              targetMarker.style.transform = "translate(-50%, -50%) scale(1.5)";
+
+              setTimeout(() => {
+                targetMarker.style.backgroundColor = origBackgroundColor;
+                targetMarker.style.transform = "translate(-50%, -50%)";
+              }, 1000);
+            } else {
+              // 如果找不到标记，直接滚动到页面
+              pageContainer.scrollIntoView({ behavior: "smooth" });
+            }
+          }, 300);
+        };
+
+        // 删除书签
+        publicAPI.deleteBookmark = function (bookmarkId) {
+          const bookmarkIndex = state.bookmarks.findIndex(
+            (b) => b.id === bookmarkId,
+          );
+          if (bookmarkIndex === -1) return;
+
+          const bookmark = state.bookmarks[bookmarkIndex];
+          const pageNum = bookmark.pageNum;
+
+          // 从数组中移除
+          state.bookmarks.splice(bookmarkIndex, 1);
+
+          // 更新存储
+          this.saveBookmarksToStorage();
+
+          // 刷新书签列表
+          this.renderBookmarkList();
+
+          // 刷新页面上的标记
+          this.refreshBookmarkMarkers(pageNum);
+        };
+
+        // 清空所有书签
+        publicAPI.clearBookmarks = function () {
+          if (!confirm("确定要清空所有书签吗？")) return;
+
+          // 记录有书签的页面编号
+          const pagesWithBookmarks = [
+            ...new Set(state.bookmarks.map((b) => b.pageNum)),
+          ];
+
+          // 清空书签数组
+          state.bookmarks = [];
+
+          // 更新存储
+          this.saveBookmarksToStorage();
+
+          // 刷新书签列表
+          this.renderBookmarkList();
+
+          // 刷新所有页面的标记
+          pagesWithBookmarks.forEach((pageNum) =>
+            this.refreshBookmarkMarkers(pageNum),
+          );
+        };
+
+        return publicAPI;
+      })();
+
+      // 初始化应用
+      document.addEventListener("DOMContentLoaded", function () {
+        PDFBookmarkApp.init();
+      });
+    </script>
+  </body>
+</html>

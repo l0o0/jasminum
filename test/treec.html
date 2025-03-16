@@ -1,0 +1,1081 @@
+<!doctype html>
+<html lang="zh-CN" data-theme="light">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>PDF 书签大纲树</title>
+    <style>
+      :root {
+        /* Light mode variables */
+        --background-color: #f5f5f5;
+        --container-bg: white;
+        --text-color: #333;
+        --heading-color: #2c3e50;
+        --border-color: #ddd;
+        --button-bg: #3498db;
+        --button-hover-bg: #2980b9;
+        --node-hover-bg: #f0f0f0;
+        --selected-node-bg: #e8f4fd;
+        --shadow-color: rgba(0, 0, 0, 0.1);
+        --dragover-bg: rgba(52, 152, 219, 0.1);
+        --drop-indicator-color: #3498db;
+      }
+
+      [data-theme="dark"] {
+        /* Dark mode variables */
+        --background-color: #1a1a1a;
+        --container-bg: #2c2c2c;
+        --text-color: #e0e0e0;
+        --heading-color: #90caf9;
+        --border-color: #444;
+        --button-bg: #2196f3;
+        --button-hover-bg: #1976d2;
+        --node-hover-bg: #3e3e3e;
+        --selected-node-bg: #2a4055;
+        --shadow-color: rgba(0, 0, 0, 0.3);
+        --dragover-bg: rgba(33, 150, 243, 0.2);
+        --drop-indicator-color: #64b5f6;
+      }
+
+      body {
+        font-family: Arial, sans-serif;
+        line-height: 1.6;
+        color: var(--text-color);
+        background-color: var(--background-color);
+        padding: 20px;
+        transition:
+          background-color 0.3s,
+          color 0.3s;
+      }
+
+      .j-outline-container {
+        max-width: 1000px;
+        margin: 0 auto;
+        background: var(--container-bg);
+        padding: 20px;
+        border-radius: 5px;
+        box-shadow: 0 2px 10px var(--shadow-color);
+        transition:
+          background-color 0.3s,
+          box-shadow 0.3s;
+      }
+
+      h1 {
+        margin-bottom: 20px;
+        color: var(--heading-color);
+      }
+
+      .tree-controls {
+        margin-bottom: 20px;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        align-items: center;
+      }
+
+      button {
+        padding: 8px 16px;
+        background: var(--button-bg);
+        color: white;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 14px;
+        transition: background 0.2s;
+      }
+
+      button:hover {
+        background: var(--button-hover-bg);
+      }
+
+      .theme-toggle {
+        margin-left: auto;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+
+      .theme-toggle-switch {
+        position: relative;
+        display: inline-block;
+        width: 50px;
+        height: 24px;
+      }
+
+      .theme-toggle-switch input {
+        opacity: 0;
+        width: 0;
+        height: 0;
+      }
+
+      .slider {
+        position: absolute;
+        cursor: pointer;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: #ccc;
+        transition: 0.4s;
+        border-radius: 24px;
+      }
+
+      .slider:before {
+        position: absolute;
+        content: "";
+        height: 18px;
+        width: 18px;
+        left: 3px;
+        bottom: 3px;
+        background-color: white;
+        transition: 0.4s;
+        border-radius: 50%;
+      }
+
+      input:checked + .slider {
+        background-color: var(--button-bg);
+      }
+
+      input:checked + .slider:before {
+        transform: translateX(26px);
+      }
+
+      .theme-icon {
+        width: 16px;
+        height: 16px;
+      }
+
+      .tree-container {
+        border: 1px solid var(--border-color);
+        border-radius: 4px;
+        padding: 15px;
+        background: var(--container-bg);
+        width: 350px;
+        overflow: auto;
+        transition:
+          background 0.3s,
+          border-color 0.3s;
+      }
+
+      .tree-list {
+        list-style-type: none;
+        padding-left: 0;
+        position: relative;
+      }
+
+      .tree-list li {
+        margin: 5px 0;
+        position: relative;
+      }
+
+      .tree-list ul {
+        list-style-type: none;
+        padding-left: 25px;
+        padding-top: 5px;
+        position: relative;
+      }
+
+      .tree-node {
+        display: flex;
+        align-items: center;
+        padding: 6px;
+        border-radius: 4px;
+        cursor: pointer;
+        transition:
+          background 0.2s,
+          border-left-color 0.2s;
+        border-left: 4px solid transparent;
+        position: relative;
+      }
+
+      .tree-node:hover {
+        background: var(--node-hover-bg);
+      }
+
+      .node-selected {
+        background: var(--selected-node-bg);
+      }
+
+      .tree-node.dragging {
+        opacity: 0.5;
+      }
+
+      .dragover {
+        background-color: var(--dragover-bg);
+      }
+
+      .drop-indicator {
+        position: absolute;
+        height: 2px;
+        background-color: var(--drop-indicator-color);
+        left: 0;
+        right: 0;
+        pointer-events: none;
+        display: none;
+        transition: background-color 0.3s;
+      }
+
+      .drop-indicator.visible {
+        display: block;
+      }
+
+      .drop-indicator::after {
+        content: "";
+        position: absolute;
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        background-color: var(--drop-indicator-color);
+        right: -3px;
+        top: -2px;
+        transition: background-color 0.3s;
+      }
+
+      .drop-indicator.top {
+        top: 0;
+      }
+
+      .drop-indicator.bottom {
+        bottom: 0;
+      }
+
+      .drop-indicator.middle {
+        top: 50%;
+        box-shadow: 0 0 3px var(--shadow-color);
+      }
+
+      .expander {
+        width: 16px;
+        height: 16px;
+        cursor: pointer;
+        margin-right: 5px;
+        text-align: center;
+        line-height: 16px;
+        font-size: 12px;
+        flex-shrink: 0;
+      }
+
+      .node-content {
+        flex-grow: 1;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        display: flex;
+        align-items: center;
+      }
+
+      .node-title {
+        display: inline-block;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        width: 100%;
+      }
+
+      .node-edit {
+        padding: 2px;
+        border: 1px solid var(--border-color);
+        border-radius: 3px;
+        font-family: inherit;
+        font-size: inherit;
+        width: 100%;
+        background-color: var(--container-bg);
+        color: var(--text-color);
+      }
+
+      /* Rainbow hierarchy indicators for different levels - maintained in both themes */
+      .level-0 {
+        font-weight: bold;
+        font-size: 16px;
+        border-left-color: #ff5252; /* Red */
+      }
+
+      .level-1 {
+        font-size: 15px;
+        border-left-color: #ff9800; /* Orange */
+      }
+
+      .level-2 {
+        font-size: 14px;
+        border-left-color: #ffeb3b; /* Yellow */
+      }
+
+      .level-3 {
+        font-size: 13px;
+        border-left-color: #4caf50; /* Green */
+      }
+
+      .level-4 {
+        font-size: 12px;
+        border-left-color: #2196f3; /* Blue */
+      }
+
+      .level-5 {
+        font-size: 12px;
+        border-left-color: #673ab7; /* Purple */
+      }
+
+      .level-6 {
+        font-size: 12px;
+        border-left-color: #e91e63; /* Pink */
+      }
+
+      .collapsed > ul {
+        display: none;
+      }
+    </style>
+    <script>
+      // 使用立即执行函数表达式(IIFE)来封装所有功能和状态，避免全局变量
+      const OutlineTree = (function () {
+        // 私有状态变量
+        let state = {
+          draggedNode: null,
+          selectedNode: null,
+          uniqueIdCounter: 100,
+          dropIndicator: null,
+          lastDropPosition: null,
+          lastDropTarget: null,
+        };
+
+        // 示例书签数据
+        const bookmarkData = [
+          {
+            id: "1",
+            title: "第一章：介绍",
+            children: [
+              { id: "1.1", title: "1.1 背景", children: [] },
+              { id: "1.2", title: "1.2 研究目的", children: [] },
+            ],
+          },
+          {
+            id: "2",
+            title: "第二章：文献综述",
+            children: [
+              {
+                id: "2.1",
+                title: "2.1 相关理论",
+                children: [
+                  {
+                    id: "2.1.1",
+                    title:
+                      "2.1.1 基础理论，这是一个非常非常非常长的标题，可能会放不下一行",
+                    children: [],
+                  },
+                  {
+                    id: "2.1.2",
+                    title: "2.1.2 应用理论",
+                    children: [],
+                  },
+                  {
+                    id: "2.1.3",
+                    title: "2.1.3 应用理论2",
+                    children: [],
+                  },
+                ],
+              },
+              { id: "2.2", title: "2.2 研究方法", children: [] },
+            ],
+          },
+          {
+            id: "3",
+            title: "第三章：方法论",
+            children: [],
+          },
+        ];
+
+        // 公共接口 - 将被返回并暴露给外部
+        const publicAPI = {
+          init: function () {
+            this.createDropIndicator();
+            this.initTheme();
+            this.initTree();
+            this.initEventListeners();
+          },
+
+          // 获取新的唯一ID
+          getUniqueId: function () {
+            return `new-${state.uniqueIdCounter++}`;
+          },
+        };
+
+        // 辅助函数 - 创建拖拽指示器
+        publicAPI.createDropIndicator = function () {
+          state.dropIndicator = document.createElement("div");
+          state.dropIndicator.className = "drop-indicator";
+          document.body.appendChild(state.dropIndicator);
+        };
+
+        // 初始化主题
+        publicAPI.initTheme = function () {
+          const themeToggle = document.getElementById("theme-toggle");
+
+          // 检查本地存储或系统偏好设置
+          const savedTheme = localStorage.getItem("theme");
+          const prefersDark =
+            window.matchMedia &&
+            window.matchMedia("(prefers-color-scheme: dark)").matches;
+
+          // 如果已保存主题或系统偏好是暗色模式，则设置为暗色
+          if (savedTheme === "dark" || (!savedTheme && prefersDark)) {
+            document.documentElement.setAttribute("data-theme", "dark");
+            themeToggle.checked = true;
+          }
+
+          // 监听主题切换
+          themeToggle.addEventListener("change", function () {
+            if (this.checked) {
+              document.documentElement.setAttribute("data-theme", "dark");
+              localStorage.setItem("theme", "dark");
+            } else {
+              document.documentElement.setAttribute("data-theme", "light");
+              localStorage.setItem("theme", "light");
+            }
+          });
+
+          // 监听系统主题变化
+          window
+            .matchMedia("(prefers-color-scheme: dark)")
+            .addEventListener("change", (e) => {
+              if (!localStorage.getItem("theme")) {
+                const newTheme = e.matches ? "dark" : "light";
+                document.documentElement.setAttribute("data-theme", newTheme);
+                themeToggle.checked = e.matches;
+              }
+            });
+        };
+
+        // 初始化树结构
+        publicAPI.initTree = function () {
+          const rootList = document.getElementById("root-list");
+          this.createTreeNodes(bookmarkData, rootList, 0);
+        };
+
+        // 递归创建树节点
+        publicAPI.createTreeNodes = function (nodes, parentElement, level) {
+          nodes.forEach((node) => {
+            const li = document.createElement("li");
+            li.dataset.id = node.id;
+            li.classList.add("tree-item");
+            if (node.children && node.children.length > 0) {
+              li.classList.add("has-children");
+            }
+
+            const nodeDiv = document.createElement("div");
+            nodeDiv.classList.add("tree-node", `level-${level}`);
+            nodeDiv.draggable = true;
+            nodeDiv.dataset.id = node.id;
+
+            // 展开/折叠图标
+            const expander = document.createElement("span");
+            expander.classList.add("expander");
+            if (node.children && node.children.length > 0) {
+              expander.textContent = "▼";
+            } else {
+              expander.textContent = " ";
+            }
+
+            const nodeContent = document.createElement("div");
+            nodeContent.classList.add("node-content");
+
+            const nodeTitle = document.createElement("span");
+            nodeTitle.classList.add("node-title");
+            nodeTitle.textContent = node.title;
+            nodeTitle.title = node.title; // Add tooltip for long titles
+
+            nodeContent.appendChild(nodeTitle);
+            nodeDiv.appendChild(expander);
+            nodeDiv.appendChild(nodeContent);
+            li.appendChild(nodeDiv);
+
+            // 如果有子节点，递归创建
+            if (node.children && node.children.length > 0) {
+              const ul = document.createElement("ul");
+              ul.classList.add("tree-list");
+              li.appendChild(ul);
+              this.createTreeNodes(node.children, ul, level + 1);
+            }
+
+            parentElement.appendChild(li);
+          });
+        };
+
+        // 初始化事件监听器
+        publicAPI.initEventListeners = function () {
+          const self = this; // 保存对 publicAPI 的引用
+
+          // 展开/折叠按钮事件
+          document
+            .getElementById("expand-all")
+            .addEventListener("click", () => self.expandAll());
+
+          document
+            .getElementById("collapse-all")
+            .addEventListener("click", () => self.collapseAll());
+
+          // 添加和删除节点事件
+          document
+            .getElementById("add-node")
+            .addEventListener("click", () => self.addNewNode());
+
+          document
+            .getElementById("delete-selected")
+            .addEventListener("click", () => self.deleteSelectedNode());
+
+          // 树交互事件委托
+          const treeContainer = document.getElementById("j-outline-viewer");
+
+          // 节点点击选择事件
+          treeContainer.addEventListener("click", function (e) {
+            const target = e.target;
+
+            // 检查是否点击的是展开/折叠图标
+            if (
+              target.classList.contains("expander") &&
+              target.textContent.trim() !== ""
+            ) {
+              const listItem = target.closest("li");
+              self.toggleNode(listItem);
+              e.stopPropagation();
+              return;
+            }
+
+            // 节点选择
+            if (target.closest(".tree-node")) {
+              self.selectNode(target.closest(".tree-node"));
+            }
+          });
+
+          // 双击编辑节点
+          treeContainer.addEventListener("dblclick", function (e) {
+            if (e.target.classList.contains("node-title")) {
+              self.makeNodeEditable(e.target);
+            }
+          });
+
+          // 拖拽相关事件
+          treeContainer.addEventListener("dragstart", (e) =>
+            self.handleDragStart(e),
+          );
+          document.addEventListener("dragover", (e) => self.handleDragOver(e));
+          document.addEventListener("dragleave", (e) =>
+            self.handleDragLeave(e),
+          );
+          treeContainer.addEventListener("drop", (e) => self.handleDrop(e));
+          document.addEventListener("dragend", () => self.handleDragEnd());
+        };
+
+        // 展开所有节点
+        publicAPI.expandAll = function () {
+          const collapsedNodes = document.querySelectorAll(
+            ".tree-item.collapsed",
+          );
+          collapsedNodes.forEach((node) => {
+            node.classList.remove("collapsed");
+            // 更新展开图标
+            const expander = node.querySelector(".expander");
+            if (expander.textContent !== " ") {
+              expander.textContent = "▼";
+            }
+          });
+        };
+
+        // 折叠所有节点
+        publicAPI.collapseAll = function () {
+          const parentNodes = document.querySelectorAll(
+            ".tree-item.has-children",
+          );
+          parentNodes.forEach((node) => {
+            node.classList.add("collapsed");
+            // 更新折叠图标
+            const expander = node.querySelector(".expander");
+            if (expander.textContent !== " ") {
+              expander.textContent = "►";
+            }
+          });
+        };
+
+        // 切换节点展开/折叠状态
+        publicAPI.toggleNode = function (node) {
+          if (node.classList.contains("has-children")) {
+            node.classList.toggle("collapsed");
+
+            // 更新展开/折叠图标
+            const expander = node.querySelector(".expander");
+            if (node.classList.contains("collapsed")) {
+              expander.textContent = "►";
+            } else {
+              expander.textContent = "▼";
+            }
+          }
+        };
+
+        // 选择节点
+        publicAPI.selectNode = function (nodeElement) {
+          // 取消之前的选择
+          if (state.selectedNode) {
+            state.selectedNode.classList.remove("node-selected");
+          }
+
+          // 设置新选择
+          nodeElement.classList.add("node-selected");
+          state.selectedNode = nodeElement;
+        };
+
+        // 添加新节点
+        publicAPI.addNewNode = function () {
+          const newId = this.getUniqueId();
+          const newTitle = "新书签";
+
+          // 如果没有选中节点，添加到根
+          if (!state.selectedNode) {
+            const rootList = document.getElementById("root-list");
+            const newNode = this.createNodeElement(newId, newTitle, 0);
+            rootList.appendChild(newNode);
+          } else {
+            // 添加为选中节点的子节点或兄弟节点
+            const parentLi = state.selectedNode.closest("li");
+
+            // 检查是否有子列表，如果没有，创建一个
+            let childList = parentLi.querySelector("ul");
+            if (!childList) {
+              childList = document.createElement("ul");
+              childList.classList.add("tree-list");
+              parentLi.appendChild(childList);
+
+              // 添加父节点标记并更新展开图标
+              parentLi.classList.add("has-children");
+              const expander = parentLi.querySelector(".expander");
+              expander.textContent = "▼";
+            }
+
+            const newNode = this.createNodeElement(
+              newId,
+              newTitle,
+              parseInt(state.selectedNode.classList[1].split("-")[1]) + 1,
+            );
+            childList.appendChild(newNode);
+
+            // 确保父节点展开
+            parentLi.classList.remove("collapsed");
+          }
+        };
+
+        // 创建新节点元素
+        publicAPI.createNodeElement = function (id, title, level) {
+          const self = this;
+          const li = document.createElement("li");
+          li.dataset.id = id;
+          li.classList.add("tree-item");
+
+          const nodeDiv = document.createElement("div");
+          nodeDiv.classList.add("tree-node", `level-${level}`);
+          nodeDiv.draggable = true;
+          nodeDiv.dataset.id = id;
+
+          const expander = document.createElement("span");
+          expander.classList.add("expander");
+          expander.textContent = " ";
+
+          const nodeContent = document.createElement("div");
+          nodeContent.classList.add("node-content");
+
+          const nodeTitle = document.createElement("span");
+          nodeTitle.classList.add("node-title");
+          nodeTitle.textContent = title;
+          nodeTitle.title = title; // Add tooltip for accessibility
+
+          nodeContent.appendChild(nodeTitle);
+          nodeDiv.appendChild(expander);
+          nodeDiv.appendChild(nodeContent);
+          li.appendChild(nodeDiv);
+
+          // 选择并使新节点可编辑
+          setTimeout(() => {
+            self.selectNode(nodeDiv);
+            self.makeNodeEditable(nodeTitle);
+          }, 10);
+
+          return li;
+        };
+
+        // 删除选中节点
+        publicAPI.deleteSelectedNode = function () {
+          if (!state.selectedNode) return;
+
+          const listItem = state.selectedNode.closest("li");
+          const parent = listItem.parentNode;
+
+          // 移除节点
+          parent.removeChild(listItem);
+
+          // 如果父列表没有其他子元素，更新其父节点的状态
+          if (
+            parent.children.length === 0 &&
+            parent.tagName === "UL" &&
+            parent !== document.getElementById("root-list")
+          ) {
+            const parentLi = parent.parentNode;
+            parentLi.removeChild(parent);
+            parentLi.classList.remove("has-children");
+            const expander = parentLi.querySelector(".expander");
+            expander.textContent = " ";
+          }
+
+          state.selectedNode = null;
+        };
+
+        // 使节点可编辑
+        publicAPI.makeNodeEditable = function (titleElement) {
+          const currentText = titleElement.textContent;
+          const input = document.createElement("input");
+          input.type = "text";
+          input.classList.add("node-edit");
+          input.value = currentText;
+
+          const parent = titleElement.parentNode;
+          parent.replaceChild(input, titleElement);
+
+          input.focus();
+          input.select();
+
+          const handleEdit = (e) => {
+            if (
+              e.type === "blur" ||
+              (e.type === "keydown" && e.key === "Enter")
+            ) {
+              const newText = input.value.trim() || currentText;
+              titleElement.textContent = newText;
+              titleElement.title = newText; // Update tooltip
+              parent.replaceChild(titleElement, input);
+            } else if (e.type === "keydown" && e.key === "Escape") {
+              parent.replaceChild(titleElement, input);
+            }
+          };
+
+          input.addEventListener("blur", handleEdit);
+          input.addEventListener("keydown", handleEdit);
+        };
+
+        // 拖拽开始
+        publicAPI.handleDragStart = function (e) {
+          if (!e.target.classList.contains("tree-node")) return;
+
+          state.draggedNode = e.target.closest("li");
+          e.dataTransfer.setData("text/plain", state.draggedNode.dataset.id);
+          e.dataTransfer.effectAllowed = "move";
+
+          // 为拖拽中的元素添加样式
+          setTimeout(() => {
+            state.draggedNode.classList.add("dragging");
+          }, 0);
+        };
+
+        // 拖拽经过目标元素
+        publicAPI.handleDragOver = function (e) {
+          e.preventDefault();
+          if (!state.draggedNode) return;
+
+          e.dataTransfer.dropEffect = "move";
+
+          // 找到最近的树节点元素
+          const targetNode = e.target.closest(".tree-node");
+          if (!targetNode) {
+            this.hideDropIndicator();
+            return;
+          }
+
+          // 不能拖拽到自己或自己的子元素
+          const targetLi = targetNode.closest("li");
+          if (
+            state.draggedNode === targetLi ||
+            this.isAncestor(state.draggedNode, targetLi)
+          ) {
+            this.hideDropIndicator();
+            return;
+          }
+
+          // 计算拖拽位置（上方、中间放入其中、下方）
+          const rect = targetNode.getBoundingClientRect();
+          const mouseY = e.clientY;
+          const relativeY = mouseY - rect.top;
+          const height = rect.height;
+
+          let dropPosition;
+          if (relativeY < height / 3) {
+            dropPosition = "before";
+          } else if (relativeY > (height * 2) / 3) {
+            dropPosition = "after";
+          } else {
+            dropPosition = "inside";
+          }
+
+          // 如果位置或目标变化了，才更新指示器
+          if (
+            state.lastDropPosition !== dropPosition ||
+            state.lastDropTarget !== targetLi
+          ) {
+            this.updateDropIndicator(targetNode, dropPosition);
+            state.lastDropPosition = dropPosition;
+            state.lastDropTarget = targetLi;
+          }
+
+          // 添加可放置样式
+          document.querySelectorAll(".dragover").forEach((el) => {
+            el.classList.remove("dragover");
+          });
+          targetNode.classList.add("dragover");
+        };
+
+        // 更新拖拽指示器位置
+        publicAPI.updateDropIndicator = function (targetNode, position) {
+          const rect = targetNode.getBoundingClientRect();
+
+          // 清除所有位置类
+          state.dropIndicator.classList.remove("top", "middle", "bottom");
+          state.dropIndicator.classList.add("visible");
+
+          if (position === "before") {
+            state.dropIndicator.classList.add("top");
+            state.dropIndicator.style.left = `${rect.left}px`;
+            state.dropIndicator.style.top = `${rect.top - 2}px`;
+            state.dropIndicator.style.width = `${rect.width}px`;
+          } else if (position === "after") {
+            state.dropIndicator.classList.add("bottom");
+            state.dropIndicator.style.left = `${rect.left}px`;
+            state.dropIndicator.style.top = `${rect.bottom}px`;
+            state.dropIndicator.style.width = `${rect.width}px`;
+          } else {
+            // inside position
+            state.dropIndicator.classList.add("middle");
+            state.dropIndicator.style.left = `${rect.left + 20}px`;
+            state.dropIndicator.style.top = `${rect.top + rect.height / 2}px`;
+            state.dropIndicator.style.width = `${rect.width - 25}px`;
+          }
+        };
+
+        // 隐藏拖拽指示器
+        publicAPI.hideDropIndicator = function () {
+          state.dropIndicator.classList.remove("visible");
+          state.lastDropPosition = null;
+          state.lastDropTarget = null;
+        };
+
+        // 拖拽离开目标元素
+        publicAPI.handleDragLeave = function (e) {
+          // 仅当离开了关键元素才隐藏指示器
+          if (!e.relatedTarget || !e.relatedTarget.closest(".tree-container")) {
+            this.hideDropIndicator();
+          }
+
+          // 移除可放置样式
+          if (e.target.closest(".tree-node")) {
+            e.target.closest(".tree-node").classList.remove("dragover");
+          }
+        };
+
+        // 处理放置
+        publicAPI.handleDrop = function (e) {
+          e.preventDefault();
+
+          // 隐藏指示器
+          this.hideDropIndicator();
+
+          // 获取目标节点
+          const targetTreeNode = e.target.closest(".tree-node");
+          if (!targetTreeNode) return;
+
+          // 移除可放置样式
+          document.querySelectorAll(".dragover").forEach((el) => {
+            el.classList.remove("dragover");
+          });
+
+          // 获取目标列表项
+          const targetLi = targetTreeNode.closest("li");
+
+          // 不能将节点拖到自己或其子节点上
+          if (
+            state.draggedNode === targetLi ||
+            this.isAncestor(state.draggedNode, targetLi)
+          ) {
+            return;
+          }
+
+          // 移除拖拽的节点
+          const oldParent = state.draggedNode.parentNode;
+          oldParent.removeChild(state.draggedNode);
+
+          // 判断放置位置：是作为子节点还是兄弟节点
+          const dropPosition = this.determineDropPosition(e, targetTreeNode);
+
+          if (dropPosition === "child") {
+            // 作为子节点
+            let targetUl = targetLi.querySelector("ul");
+
+            // 如果没有子列表，创建一个
+            if (!targetUl) {
+              targetUl = document.createElement("ul");
+              targetUl.classList.add("tree-list");
+              targetLi.appendChild(targetUl);
+
+              // 更新父节点状态
+              targetLi.classList.add("has-children");
+              const expander = targetLi.querySelector(".expander");
+              expander.textContent = "▼";
+            }
+
+            // 确保目标节点展开
+            targetLi.classList.remove("collapsed");
+
+            // 添加到子列表
+            targetUl.appendChild(state.draggedNode);
+          } else {
+            // 作为兄弟节点
+            const targetParent = targetLi.parentNode;
+
+            if (dropPosition === "before") {
+              targetParent.insertBefore(state.draggedNode, targetLi);
+            } else {
+              // 'after'
+              targetParent.insertBefore(
+                state.draggedNode,
+                targetLi.nextSibling,
+              );
+            }
+          }
+
+          // 如果原父列表为空，更新其父节点状态
+          if (
+            oldParent.children.length === 0 &&
+            oldParent.tagName === "UL" &&
+            oldParent !== document.getElementById("root-list")
+          ) {
+            const oldGrandParent = oldParent.parentNode;
+            oldGrandParent.removeChild(oldParent);
+            oldGrandParent.classList.remove("has-children");
+            const expander = oldGrandParent.querySelector(".expander");
+            expander.textContent = " ";
+          }
+
+          // 更新节点级别样式
+          this.updateNodeLevels(state.draggedNode);
+        };
+
+        // 拖拽结束
+        publicAPI.handleDragEnd = function () {
+          if (!state.draggedNode) return;
+
+          state.draggedNode.classList.remove("dragging");
+          state.draggedNode = null;
+
+          // 隐藏指示器
+          this.hideDropIndicator();
+
+          // 清除所有dragover样式
+          document.querySelectorAll(".dragover").forEach((el) => {
+            el.classList.remove("dragover");
+          });
+        };
+
+        // 检查一个节点是否是另一个节点的祖先
+        publicAPI.isAncestor = function (ancestor, descendant) {
+          let current = descendant.parentNode;
+
+          while (current && current !== document.body) {
+            if (current === ancestor) {
+              return true;
+            }
+            current = current.parentNode;
+          }
+
+          return false;
+        };
+
+        // 确定放置位置：作为子节点、同级前面或同级后面
+        publicAPI.determineDropPosition = function (event, targetNode) {
+          const rect = targetNode.getBoundingClientRect();
+          const mouseY = event.clientY;
+
+          // 上三分之一区域放在前面，下三分之一区域放在后面，中间放在内部
+          const relativeY = mouseY - rect.top;
+          const height = rect.height;
+
+          if (relativeY < height / 3) {
+            return "before";
+          } else if (relativeY > (height * 2) / 3) {
+            return "after";
+          } else {
+            return "child";
+          }
+        };
+
+        // 更新节点及其子节点的级别样式
+        publicAPI.updateNodeLevels = function (node) {
+          const updateLevel = (element, level) => {
+            const nodeDiv = element.querySelector(".tree-node");
+
+            // 移除所有级别类
+            for (let i = 0; i < 10; i++) {
+              nodeDiv.classList.remove(`level-${i}`);
+            }
+
+            // 添加正确的级别类
+            nodeDiv.classList.add(`level-${level}`);
+
+            // 递归处理子节点
+            const childList = element.querySelector("ul");
+            if (childList) {
+              Array.from(childList.children).forEach((child) => {
+                updateLevel(child, level + 1);
+              });
+            }
+          };
+
+          // 计算当前节点的级别
+          let level = 0;
+          let parent = node.parentNode;
+
+          while (parent && parent.id !== "root-list") {
+            if (parent.tagName === "UL") {
+              level++;
+            }
+            parent = parent.parentNode;
+          }
+
+          updateLevel(node, level);
+        };
+
+        return publicAPI;
+      })(); // 立即执行并返回公共API
+
+      // DOM 加载完成后初始化
+      document.addEventListener("DOMContentLoaded", function () {
+        OutlineTree.init();
+      });
+    </script>
+  </head>
+  <body>
+    <div class="j-outline-container">
+      <div class="tree-controls">
+        <button id="expand-all">展开所有</button>
+        <button id="collapse-all">折叠所有</button>
+        <button id="add-node">添加节点</button>
+        <button id="delete-selected">删除选中</button>
+
+        <div class="theme-toggle">
+          <span>☀️</span>
+          <label class="theme-toggle-switch">
+            <input type="checkbox" id="theme-toggle" />
+            <span class="slider"></span>
+          </label>
+          <span>🌙</span>
+        </div>
+      </div>
+
+      <div id="j-outline-viewer" class="tree-container">
+        <ul id="root-list" class="tree-list">
+          <!-- 树节点将通过 JavaScript 动态生成 -->
+        </ul>
+      </div>
+    </div>
+  </body>
+</html>

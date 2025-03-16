@@ -1,76 +1,178 @@
 <!doctype html>
-<html lang="zh-CN">
+<html lang="zh-CN" data-theme="light">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>PDF 书签大纲树</title>
-    <!-- <link rel="stylesheet" href="styles.css"> -->
     <style>
+      :root {
+        /* Light mode variables */
+        --background-color: #f5f5f5;
+        --container-bg: white;
+        --text-color: #333;
+        --heading-color: #2c3e50;
+        --border-color: #ddd;
+        --button-bg: #3498db;
+        --button-hover-bg: #2980b9;
+        --node-hover-bg: #f0f0f0;
+        --selected-node-bg: #e8f4fd;
+        --shadow-color: rgba(0, 0, 0, 0.1);
+        --dragover-bg: rgba(52, 152, 219, 0.1);
+        --drop-indicator-color: #3498db;
+      }
+
+      [data-theme="dark"] {
+        /* Dark mode variables */
+        --background-color: #1a1a1a;
+        --container-bg: #2c2c2c;
+        --text-color: #e0e0e0;
+        --heading-color: #90caf9;
+        --border-color: #444;
+        --button-bg: #2196f3;
+        --button-hover-bg: #1976d2;
+        --node-hover-bg: #3e3e3e;
+        --selected-node-bg: #2a4055;
+        --shadow-color: rgba(0, 0, 0, 0.3);
+        --dragover-bg: rgba(33, 150, 243, 0.2);
+        --drop-indicator-color: #64b5f6;
+      }
+
       body {
         font-family: Arial, sans-serif;
         line-height: 1.6;
-        color: #333;
-        background-color: #f5f5f5;
+        color: var(--text-color);
+        background-color: var(--background-color);
         padding: 20px;
+        transition:
+          background-color 0.3s,
+          color 0.3s;
       }
 
       .j-outline-container {
         max-width: 1000px;
         margin: 0 auto;
-        background: white;
+        background: var(--container-bg);
         padding: 20px;
         border-radius: 5px;
-        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        box-shadow: 0 2px 10px var(--shadow-color);
+        transition:
+          background-color 0.3s,
+          box-shadow 0.3s;
       }
 
       h1 {
         margin-bottom: 20px;
-        color: #2c3e50;
+        color: var(--heading-color);
       }
 
       .tree-controls {
         margin-bottom: 20px;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        align-items: center;
       }
 
       button {
         padding: 8px 16px;
-        background: #3498db;
+        background: var(--button-bg);
         color: white;
         border: none;
         border-radius: 4px;
         cursor: pointer;
-        margin-right: 10px;
         font-size: 14px;
+        transition: background 0.2s;
       }
 
       button:hover {
-        background: #2980b9;
+        background: var(--button-hover-bg);
       }
 
-      .tree-container {
-        border: 1px solid #ddd;
+      .theme-toggle {
+        margin-left: auto;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+
+      .theme-toggle-switch {
+        position: relative;
+        display: inline-block;
+        width: 50px;
+        height: 24px;
+      }
+
+      .theme-toggle-switch input {
+        opacity: 0;
+        width: 0;
+        height: 0;
+      }
+
+      .slider {
+        position: absolute;
+        cursor: pointer;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: #ccc;
+        transition: 0.4s;
+        border-radius: 24px;
+      }
+
+      .slider:before {
+        position: absolute;
+        content: "";
+        height: 18px;
+        width: 18px;
+        left: 3px;
+        bottom: 3px;
+        background-color: white;
+        transition: 0.4s;
+        border-radius: 50%;
+      }
+
+      input:checked + .slider {
+        background-color: var(--button-bg);
+      }
+
+      input:checked + .slider:before {
+        transform: translateX(26px);
+      }
+
+      .theme-icon {
+        width: 16px;
+        height: 16px;
+      }
+
+      .j-outline-container {
+        border: 1px solid var(--border-color);
         border-radius: 4px;
         padding: 15px;
-        background: #fff;
-        /* min-height: 300px;
-        max-height: 600px; */
-        width: 250px;
+        background: var(--container-bg);
+        width: 350px;
         overflow: auto;
+        transition:
+          background 0.3s,
+          border-color 0.3s;
       }
 
       .tree-list {
         list-style-type: none;
         padding-left: 0;
+        position: relative;
       }
 
       .tree-list li {
         margin: 5px 0;
+        position: relative;
       }
 
       .tree-list ul {
         list-style-type: none;
         padding-left: 25px;
         padding-top: 5px;
+        position: relative;
       }
 
       .tree-node {
@@ -79,15 +181,19 @@
         padding: 6px;
         border-radius: 4px;
         cursor: pointer;
-        transition: background 0.2s;
+        transition:
+          background 0.2s,
+          border-left-color 0.2s;
+        border-left: 4px solid transparent;
+        position: relative;
       }
 
       .tree-node:hover {
-        background: #f0f0f0;
+        background: var(--node-hover-bg);
       }
 
       .node-selected {
-        background: #e8f4fd;
+        background: var(--selected-node-bg);
       }
 
       .tree-node.dragging {
@@ -95,8 +201,47 @@
       }
 
       .dragover {
-        border: 2px dashed #3498db;
-        padding: 4px;
+        background-color: var(--dragover-bg);
+      }
+
+      .drop-indicator {
+        position: absolute;
+        height: 2px;
+        background-color: var(--drop-indicator-color);
+        left: 0;
+        right: 0;
+        pointer-events: none;
+        display: none;
+        transition: background-color 0.3s;
+      }
+
+      .drop-indicator.visible {
+        display: block;
+      }
+
+      .drop-indicator::after {
+        content: "";
+        position: absolute;
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        background-color: var(--drop-indicator-color);
+        right: -3px;
+        top: -2px;
+        transition: background-color 0.3s;
+      }
+
+      .drop-indicator.top {
+        top: 0;
+      }
+
+      .drop-indicator.bottom {
+        bottom: 0;
+      }
+
+      .drop-indicator.middle {
+        top: 50%;
+        box-shadow: 0 0 3px var(--shadow-color);
       }
 
       .expander {
@@ -107,6 +252,7 @@
         text-align: center;
         line-height: 16px;
         font-size: 12px;
+        flex-shrink: 0;
       }
 
       .node-content {
@@ -114,37 +260,64 @@
         overflow: hidden;
         text-overflow: ellipsis;
         white-space: nowrap;
+        display: flex;
+        align-items: center;
       }
 
       .node-title {
         display: inline-block;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        width: 100%;
       }
 
       .node-edit {
         padding: 2px;
-        border: 1px solid #ccc;
+        border: 1px solid var(--border-color);
         border-radius: 3px;
         font-family: inherit;
         font-size: inherit;
         width: 100%;
+        background-color: var(--container-bg);
+        color: var(--text-color);
       }
 
-      /* 节点级别样式可以根据深度自动缩进 */
+      /* Rainbow hierarchy indicators for different levels - maintained in both themes */
       .level-0 {
         font-weight: bold;
         font-size: 16px;
+        border-left-color: #ff5252; /* Red */
       }
+
       .level-1 {
         font-size: 15px;
+        border-left-color: #ff9800; /* Orange */
       }
+
       .level-2 {
         font-size: 14px;
+        border-left-color: #ffeb3b; /* Yellow */
       }
+
       .level-3 {
         font-size: 13px;
+        border-left-color: #4caf50; /* Green */
       }
+
       .level-4 {
         font-size: 12px;
+        border-left-color: #2196f3; /* Blue */
+      }
+
+      .level-5 {
+        font-size: 12px;
+        border-left-color: #673ab7; /* Purple */
+      }
+
+      .level-6 {
+        font-size: 12px;
+        border-left-color: #e91e63; /* Pink */
       }
 
       .collapsed > ul {
@@ -202,12 +375,67 @@
       let draggedNode = null;
       let selectedNode = null;
       let uniqueIdCounter = 100; // 用于生成唯一ID
+      let dropIndicator = null;
+      let lastDropPosition = null;
+      let lastDropTarget = null;
 
       // DOM 加载完成后初始化
       document.addEventListener("DOMContentLoaded", function () {
+        // 创建拖拽指示器
+        createDropIndicator();
+
+        // 初始化主题
+        initTheme();
+
         initTree();
         initEventListeners();
       });
+
+      // 初始化主题
+      function initTheme() {
+        const themeToggle = document.getElementById("theme-toggle");
+
+        // 检查本地存储或系统偏好设置
+        const savedTheme = localStorage.getItem("theme");
+        const prefersDark =
+          window.matchMedia &&
+          window.matchMedia("(prefers-color-scheme: dark)").matches;
+
+        // 如果已保存主题或系统偏好是暗色模式，则设置为暗色
+        if (savedTheme === "dark" || (!savedTheme && prefersDark)) {
+          document.documentElement.setAttribute("data-theme", "dark");
+          themeToggle.checked = true;
+        }
+
+        // 监听主题切换
+        themeToggle.addEventListener("change", function () {
+          if (this.checked) {
+            document.documentElement.setAttribute("data-theme", "dark");
+            localStorage.setItem("theme", "dark");
+          } else {
+            document.documentElement.setAttribute("data-theme", "light");
+            localStorage.setItem("theme", "light");
+          }
+        });
+
+        // 监听系统主题变化
+        window
+          .matchMedia("(prefers-color-scheme: dark)")
+          .addEventListener("change", (e) => {
+            if (!localStorage.getItem("theme")) {
+              const newTheme = e.matches ? "dark" : "light";
+              document.documentElement.setAttribute("data-theme", newTheme);
+              themeToggle.checked = e.matches;
+            }
+          });
+      }
+
+      // 创建拖拽指示器
+      function createDropIndicator() {
+        dropIndicator = document.createElement("div");
+        dropIndicator.className = "drop-indicator";
+        document.body.appendChild(dropIndicator);
+      }
 
       // 初始化树结构
       function initTree() {
@@ -245,6 +473,7 @@
           const nodeTitle = document.createElement("span");
           nodeTitle.classList.add("node-title");
           nodeTitle.textContent = node.title;
+          nodeTitle.title = node.title; // Add tooltip for long titles
 
           nodeContent.appendChild(nodeTitle);
           nodeDiv.appendChild(expander);
@@ -314,10 +543,10 @@
 
         // 拖拽相关事件
         treeContainer.addEventListener("dragstart", handleDragStart);
-        treeContainer.addEventListener("dragover", handleDragOver);
-        treeContainer.addEventListener("dragleave", handleDragLeave);
+        document.addEventListener("dragover", handleDragOver);
+        document.addEventListener("dragleave", handleDragLeave);
         treeContainer.addEventListener("drop", handleDrop);
-        treeContainer.addEventListener("dragend", handleDragEnd);
+        document.addEventListener("dragend", handleDragEnd);
       }
 
       // 展开所有节点
@@ -327,6 +556,11 @@
         );
         collapsedNodes.forEach((node) => {
           node.classList.remove("collapsed");
+          // 更新展开图标
+          const expander = node.querySelector(".expander");
+          if (expander.textContent !== " ") {
+            expander.textContent = "▼";
+          }
         });
       }
 
@@ -337,6 +571,11 @@
         );
         parentNodes.forEach((node) => {
           node.classList.add("collapsed");
+          // 更新折叠图标
+          const expander = node.querySelector(".expander");
+          if (expander.textContent !== " ") {
+            expander.textContent = "►";
+          }
         });
       }
 
@@ -427,6 +666,7 @@
         const nodeTitle = document.createElement("span");
         nodeTitle.classList.add("node-title");
         nodeTitle.textContent = title;
+        nodeTitle.title = title; // Add tooltip for accessibility
 
         nodeContent.appendChild(nodeTitle);
         nodeDiv.appendChild(expander);
@@ -489,6 +729,7 @@
           ) {
             const newText = input.value.trim() || currentText;
             titleElement.textContent = newText;
+            titleElement.title = newText; // Update tooltip
             parent.replaceChild(titleElement, input);
           } else if (e.type === "keydown" && e.key === "Escape") {
             parent.replaceChild(titleElement, input);
@@ -516,35 +757,118 @@
       // 拖拽经过目标元素
       function handleDragOver(e) {
         e.preventDefault();
+        if (!draggedNode) return;
+
         e.dataTransfer.dropEffect = "move";
 
-        // 找到最近的节点元素
+        // 找到最近的树节点元素
         const targetNode = e.target.closest(".tree-node");
-        if (!targetNode) return;
+        if (!targetNode) {
+          hideDropIndicator();
+          return;
+        }
+
+        // 不能拖拽到自己或自己的子元素
+        const targetLi = targetNode.closest("li");
+        if (draggedNode === targetLi || isAncestor(draggedNode, targetLi)) {
+          hideDropIndicator();
+          return;
+        }
+
+        // 计算拖拽位置（上方、中间放入其中、下方）
+        const rect = targetNode.getBoundingClientRect();
+        const mouseY = e.clientY;
+        const relativeY = mouseY - rect.top;
+        const height = rect.height;
+
+        let dropPosition;
+        if (relativeY < height / 3) {
+          dropPosition = "before";
+        } else if (relativeY > (height * 2) / 3) {
+          dropPosition = "after";
+        } else {
+          dropPosition = "inside";
+        }
+
+        // 如果位置或目标变化了，才更新指示器
+        if (lastDropPosition !== dropPosition || lastDropTarget !== targetLi) {
+          updateDropIndicator(targetNode, dropPosition);
+          lastDropPosition = dropPosition;
+          lastDropTarget = targetLi;
+        }
 
         // 添加可放置样式
+        document.querySelectorAll(".dragover").forEach((el) => {
+          el.classList.remove("dragover");
+        });
         targetNode.classList.add("dragover");
+      }
+
+      // 更新拖拽指示器位置
+      function updateDropIndicator(targetNode, position) {
+        const rect = targetNode.getBoundingClientRect();
+
+        // 清除所有位置类
+        dropIndicator.classList.remove("top", "middle", "bottom");
+        dropIndicator.classList.add("visible");
+
+        if (position === "before") {
+          dropIndicator.classList.add("top");
+          dropIndicator.style.left = `${rect.left}px`;
+          dropIndicator.style.top = `${rect.top - 2}px`;
+          dropIndicator.style.width = `${rect.width}px`;
+        } else if (position === "after") {
+          dropIndicator.classList.add("bottom");
+          dropIndicator.style.left = `${rect.left}px`;
+          dropIndicator.style.top = `${rect.bottom}px`;
+          dropIndicator.style.width = `${rect.width}px`;
+        } else {
+          // inside position
+          dropIndicator.classList.add("middle");
+          dropIndicator.style.left = `${rect.left + 20}px`;
+          dropIndicator.style.top = `${rect.top + rect.height / 2}px`;
+          dropIndicator.style.width = `${rect.width - 25}px`;
+        }
+      }
+
+      // 隐藏拖拽指示器
+      function hideDropIndicator() {
+        dropIndicator.classList.remove("visible");
+        lastDropPosition = null;
+        lastDropTarget = null;
       }
 
       // 拖拽离开目标元素
       function handleDragLeave(e) {
-        const targetNode = e.target.closest(".tree-node");
-        if (!targetNode) return;
+        // 仅当离开了关键元素才隐藏指示器
+        if (
+          !e.relatedTarget ||
+          !e.relatedTarget.closest(".j-outline-container")
+        ) {
+          hideDropIndicator();
+        }
 
         // 移除可放置样式
-        targetNode.classList.remove("dragover");
+        if (e.target.closest(".tree-node")) {
+          e.target.closest(".tree-node").classList.remove("dragover");
+        }
       }
 
       // 处理放置
       function handleDrop(e) {
         e.preventDefault();
 
+        // 隐藏指示器
+        hideDropIndicator();
+
         // 获取目标节点
         const targetTreeNode = e.target.closest(".tree-node");
         if (!targetTreeNode) return;
 
         // 移除可放置样式
-        targetTreeNode.classList.remove("dragover");
+        document.querySelectorAll(".dragover").forEach((el) => {
+          el.classList.remove("dragover");
+        });
 
         // 获取目标列表项
         const targetLi = targetTreeNode.closest("li");
@@ -617,6 +941,9 @@
 
         draggedNode.classList.remove("dragging");
         draggedNode = null;
+
+        // 隐藏指示器
+        hideDropIndicator();
 
         // 清除所有dragover样式
         document.querySelectorAll(".dragover").forEach((el) => {
@@ -700,15 +1027,22 @@
         <button id="collapse-all">折叠所有</button>
         <button id="add-node">添加节点</button>
         <button id="delete-selected">删除选中</button>
+
+        <div class="theme-toggle">
+          <span>☀️</span>
+          <label class="theme-toggle-switch">
+            <input type="checkbox" id="theme-toggle" />
+            <span class="slider"></span>
+          </label>
+          <span>🌙</span>
+        </div>
       </div>
 
-      <div id="j-outline-viewer" class="tree-container">
+      <div id="j-outline-viewer" class="j-outline-container">
         <ul id="root-list" class="tree-list">
           <!-- 树节点将通过 JavaScript 动态生成 -->
         </ul>
       </div>
     </div>
-
-    <script src="script.js"></script>
   </body>
 </html>
