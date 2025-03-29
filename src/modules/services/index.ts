@@ -163,15 +163,17 @@ export class Scraper {
 
         if (newItem) {
           // if (addon.data.env != "development")
+          newItem = await this.globalItemFix(newItem);
           if (task.type == "attachment") {
             task.item.parentID = newItem.id;
-            await task.item.saveTx();
           } else if (task.type == "snapshot") {
             ztoolkit.log("Foud item, remove snapshot item");
             const tmpJSON = newItem.toJSON();
             task.item.fromJSON(tmpJSON);
-            await task.item.saveTx();
+            // Remove newItem, newItem'data is copied.
+            await newItem.eraseTx();
           }
+          await task.item.saveTx();
           task.status = "success";
         } else {
           task.addMsg("Translation error");
@@ -185,5 +187,25 @@ export class Scraper {
       task.addMsg("No search results found.");
       task.status = "fail";
     }
+  }
+
+  // Need to update data in item returned by translator.
+  async globalItemFix(item: Zotero.Item): Promise<Zotero.Item> {
+    if (Zotero.Prefs.get("extensions.zotero.automaticTags", true)) {
+      // Keyword tag type is automatic.
+      ztoolkit.log("update auto tags");
+      item.setTags(
+        item.getTags().map((t: { tag: string; type?: number }) => ({
+          tag: t.tag,
+          type: 1,
+        })),
+      );
+    } else {
+      // Remove automatic tags
+      ztoolkit.log("remove all tags");
+      item.removeAllTags();
+    }
+    await item.saveTx();
+    return item;
   }
 }

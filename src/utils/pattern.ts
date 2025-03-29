@@ -7,7 +7,8 @@ export function getArgsFromPattern(
     .replace(/\.\w+$/, "") // 删除文件后缀
     .replace(/\.ashx$/g, "") // 删除末尾.ashx字符
     .replace(/^_|_$/g, "") // 删除前后的下划线
-    .replace(/[（(]\d+[）)]$/, ""); // 删除重复下载时文件名出现的数字编号 (1) （1）
+    .replace(/[（(]\d+[）)]$/, "") // 删除重复下载时文件名出现的数字编号 (1) （1）
+    .trim();
   // 当文件名模板为"{%t}_{%g}"，文件名无下划线_时，将文件名认定为标题
   if (pattern === "{%t}_{%g}" && !prefix.includes("_")) {
     return {

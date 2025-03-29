@@ -262,12 +262,24 @@ async function updateItem(
       );
     }
 
+    if (searchResult.netFirst) {
+      ztoolkit.ExtraField.setExtraField(
+        item,
+        "Status",
+        "advance online publication",
+      );
+    }
+
     // Remove unmatched Zotero fields note.
     if (item.getNotes().length > 0) {
       item.getNotes().forEach(async (nid) => {
         const nItem = Zotero.Items.get(nid);
         await nItem.eraseTx();
       });
+    }
+
+    if (!item.getField("date") && searchResult.date) {
+      item.setField("date", searchResult.date);
     }
   }
   return item;
@@ -307,6 +319,8 @@ export default class CNKI implements ScrapeService {
           source: "CNKI",
           title: title,
           url: url,
+          date: Zotero.Date.strToISO(dt.innerText("td.date")) || "",
+          netFirst: dt.innerText("td.name > b.marktip"),
           citation: dt.innerText("td.quote"),
           exportID: dt.attr("td.seq input", "value"),
           dbname: dt.attr("td.operat > [data-dbname]", "data-dbname"),
