@@ -172,7 +172,7 @@ export async function addOutlineToReader(reader: _ZoteroTypes.ReaderInstance) {
     const PDFViewerApplication = (
       reader._internalReader._primaryView as _ZoteroTypes.Reader.PDFView
     )._iframeWindow.PDFViewerApplication;
-    const pageView = PDFViewerApplication.pdfViewer.getPageView(page - 1);
+    const pageView = PDFViewerApplication.pdfViewer!.getPageView(page - 1);
     // @ts-ignore - Not typed
     const [scrollX, scrollY] = pageView.viewport.convertToViewportPoint(x, y);
     (
@@ -356,8 +356,8 @@ function getReaderPagePosition(): PdfPosition {
   const PDFViewerApplication = primaryView._iframeWindow!.PDFViewerApplication;
   const doc = primaryView._iframeWindow!.document;
   const container = doc.getElementById("viewerContainer")!;
-  const pageIndex = PDFViewerApplication.pdfViewer.currentPageNumber - 1;
-  const pageView = PDFViewerApplication.pdfViewer.getPageView(pageIndex);
+  const pageIndex = PDFViewerApplication.pdfViewer!.currentPageNumber - 1;
+  const pageView = PDFViewerApplication.pdfViewer!.getPageView(pageIndex);
   const viewport = pageView.viewport;
   // const scrollX = container.scrollLeft - pageView.div.offsetLeft;
   const scrollX = 0;
