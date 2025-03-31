@@ -1,7 +1,9 @@
+import { wait } from "zotero-plugin-toolkit";
 import { config } from "../../package.json";
 import { getString } from "../utils/locale";
 import { getPref } from "../utils/prefs";
 import { isChineseTopAttachment } from "./menu";
+import { registerOutline } from "./outline";
 import { splitChineseName } from "./tools";
 
 /**
@@ -51,8 +53,7 @@ function unregisterNotifier(notifierID: string) {
  */
 export function registerNotifiers() {
   registerNotifier(onAddItem, ["item"]);
-  // TODO: Complete the notifier.
-  // registerNotifier(onOpenTab, ["tab"]);
+  registerNotifier(onOpenTab, ["tab"]);
 }
 
 async function onAddItem(
@@ -61,7 +62,7 @@ async function onAddItem(
   ids: Array<string | number>,
   extraData: { [key: string]: any },
 ) {
-  ztoolkit.log(`notify: add item, event: ${event}, type: ${type}, ids: ${ids}`);
+  // ztoolkit.log(`notify: add item, event: ${event}, type: ${type}, ids: ${ids}`);
   if (event !== "add" || type !== "item") return;
   for (const id of ids) {
     const item = Zotero.Items.get(id);
@@ -75,6 +76,24 @@ async function onAddItem(
     if (getPref("zhNameSplit")) {
       splitChineseName(item);
     }
+  }
+}
+
+// TODO: Complete the notifier.
+async function onOpenTab(
+  event: string,
+  type: string,
+  ids: Array<string | number>,
+  extraData: { [key: string]: any },
+) {
+  const id = ids[0];
+  if (
+    (event == "select" || event == "load") &&
+    type == "tab" &&
+    extraData[id].type == "reader"
+  ) {
+    ztoolkit.log("onOpenTab", event, type, extraData);
+    await registerOutline(id as string);
   }
 }
 
@@ -96,110 +115,4 @@ export async function registerExtraColumnWithCustomCell() {
     //   return span;
     // },
   });
-}
-
-// TODO: Complete the notifier.
-async function onOpenTab(
-  event: string,
-  type: string,
-  ids: string[],
-  extraData: { [key: string]: any },
-) {
-  const id = ids[0];
-  if (type !== "tab" || extraData[id].type !== "reader") return;
-  if (event == "select" || event == "load") {
-    // Only pdf
-    const reader = Zotero.Reader.getByTabID(id);
-    ztoolkit.log("wait", new Date());
-    // This should add a waiting process.
-    // @ts-ignore - not typed
-    await Zotero.Promise.delay(5000);
-    ztoolkit.log("wait 2", new Date());
-    const doc = reader._iframeWindow?.document;
-
-    if (doc && doc.querySelector("#j-outline-button") === null) {
-      const originOutlineButton = doc.querySelector("#viewOutline");
-      ztoolkit.log(originOutlineButton);
-      const newButton = ztoolkit.UI.createElement(doc, "button", {
-        namespace: "html",
-        id: "j-outline-button",
-        classList: ["toolbar-button"],
-        styles: {
-          border: "2px solid gray",
-        },
-        properties: { title: "测试" },
-        attributes: {
-          tabindex: "-1",
-          role: "tab",
-          "aria-selected": "false",
-          "aria-controls": "j-outline-viewer",
-        },
-        listeners: [
-          {
-            type: "click",
-            listener: (e) => {
-              ztoolkit.log("Button.click");
-              const d = (e.target! as HTMLButtonElement).ownerDocument;
-              const viewer =
-                d.getElementById("j-outline-viewer")?.parentElement;
-              if (!viewer?.classList.contains("hidden")) {
-                ztoolkit.log("Already display");
-              } else {
-                d
-                  .getElementById("thumbnailsView")
-                  ?.parentElement?.classList.toggle("hidden", true);
-                d
-                  .getElementById("annotationsView")
-                  ?.classList.toggle("hidden", true);
-                d
-                  .getElementById("outlineView")
-                  ?.parentElement?.classList.toggle("hidden", true);
-                viewer?.classList.toggle("hidden", false);
-                ztoolkit.log("Display jasminum outline.");
-              }
-            },
-          },
-        ],
-      });
-
-      const newPanel = ztoolkit.UI.createElement(doc, "div", {
-        classList: ["viewWrapper", "hidden"],
-        children: [
-          {
-            tag: "div",
-            id: "j-outline-viewer",
-            classList: ["outline-view"],
-            properties: { innerText: "jasminum outline test" },
-            attributes: {
-              tabindex: "-1",
-              "data-tabstop": "1",
-              role: "tabpanel",
-              "aria-labelledby": "j-outline-button",
-            },
-          },
-        ],
-      });
-      ztoolkit.log(newButton);
-      ztoolkit.log(newPanel);
-      doc.querySelector("#viewOutline")?.parentElement?.appendChild(newButton);
-      doc.querySelector("#sidebarContent")?.appendChild(newPanel);
-
-      const hiddenMyOutline = (e: Event) => {
-        ztoolkit.log(e.target as HTMLButtonElement, "clicked.");
-        doc
-          .getElementById("j-outline-viewer")
-          ?.parentElement?.classList.toggle("hidden", true);
-      };
-
-      doc
-        .getElementById("viewThumbnail")
-        ?.addEventListener("click", hiddenMyOutline);
-      doc
-        .getElementById("viewAnnotations")
-        ?.addEventListener("click", hiddenMyOutline);
-      doc
-        .getElementById("viewOutline")
-        ?.addEventListener("click", hiddenMyOutline);
-    }
-  }
 }

@@ -36,3 +36,11 @@ update-successfully = 更新成功：{ $name }
 update-failed = 更新失败：{ $name }
 update-skipped = 跳过更新：{ $name }
 update-translators-complete = 转换器更新完成
+
+# outline
+outline = 书签
+outline-expand-all = 展开所有
+outline-collapse-all = 收起所有
+outline-add = 添加书签
+outline-delete = 删除书签
+outline-save-to-pdf = 将书签保存到PDF文件

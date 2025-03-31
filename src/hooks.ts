@@ -14,6 +14,7 @@ import {
 import { injectStylesLink } from "./modules/styles";
 import { updateTranslators } from "./modules/translators";
 import { getPref } from "./utils/prefs";
+import { registerOutline } from "./modules/outline";
 
 async function onStartup() {
   await Promise.all([
@@ -49,7 +50,7 @@ async function onMainWindowLoad(win: Window): Promise<void> {
     ztoolkit.log("auto update translators");
     updateTranslators();
   }
-
+  registerOutline();
   // @ts-ignore - Not typed.
   await Zotero.Promise.delay(1000);
 }

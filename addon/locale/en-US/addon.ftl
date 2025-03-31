@@ -35,3 +35,11 @@ update-successfully = Update successfully: { $name }
 update-failed = Update failed: { $name }
 update-skipped = Update skipped: { $name }
 update-translators-complete = Update translators completed
+
+# outline
+outline = Bookmark
+outline-expand-all = Expand allß
+outline-collapse-all = Collapse all
+outline-add = Add bookmark
+outline-delete = Delete bookmark
+outline-save-to-pdf = Save bookmark to PDF
