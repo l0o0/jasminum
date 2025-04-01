@@ -217,9 +217,18 @@ export async function getOutlineFromPDF(
     if (outlineJson) return outlineJson;
   }
   // 如果上面没有返回Outline信息，重新读取
-  const pdfDocument =
-    // @ts-ignore - Not typed.
-    reader._primaryView._iframeWindow.PDFViewerApplication.pdfDocument;
+  // @ts-ignore - Not typed.
+  const PDFViewerApplication =
+    reader._primaryView._iframeWindow.PDFViewerApplication;
+  await PDFViewerApplication.init;
+  let waiting = 0;
+  while (!PDFViewerApplication.pdfDocument && waiting < 5000) {
+    // @ts-ignore - Not typed
+    await Zotero.Promise.delay(200);
+    ztoolkit.log(`Waiting ${waiting}, pdfDocument`);
+    waiting += 200;
+  }
+  const pdfDocument = PDFViewerApplication.pdfDocument;
   const originOutline: PdfOutlineNode[] = await pdfDocument.getOutline2();
 
   if (originOutline.length == 0) return null;
