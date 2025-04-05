@@ -44,3 +44,8 @@ outline-collapse-all = 收起所有
 outline-add = 添加书签
 outline-delete = 删除书签
 outline-save-to-pdf = 将书签保存到PDF文件
+outline-edit-placeholder = 请输入书签
+outline-empty-prompt = 请点击上方按钮{ $icon }创建书签
+outline-delete-confirm = 该节点有子节点，是否删除?
+  {" "}
+  如果删除，则所有子节点也会被删除。

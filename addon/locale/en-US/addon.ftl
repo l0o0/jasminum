@@ -43,3 +43,7 @@ outline-collapse-all = Collapse all
 outline-add = Add bookmark
 outline-delete = Delete bookmark
 outline-save-to-pdf = Save bookmark to PDF
+outline-empty-prompt = Please click the button above { $icon } to create a bookmark
+outline-delete-confirm = This node has child nodes, do you want to delete?
+  {" "}
+  If you delete, all child nodes will be deleted.

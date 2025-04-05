@@ -50,7 +50,7 @@ async function onMainWindowLoad(win: Window): Promise<void> {
     ztoolkit.log("auto update translators");
     updateTranslators();
   }
-  registerOutline();
+  // registerOutline();
   // @ts-ignore - Not typed.
   await Zotero.Promise.delay(1000);
 }

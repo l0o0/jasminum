@@ -44,3 +44,8 @@ outline-collapse-all = 收起所有
 outline-add = 添加書籤
 outline-delete = 刪除書籤
 outline-save-to-pdf = 將書籤儲存到PDF檔案
+outline-edit-placeholder = 請輸入書籤
+outline-empty-prompt = 請點擊上方按鈕{ $icon }創建書籤
+outline-delete-confirm = 該節點有子節點，是否刪除?
+  {" "}
+  如果刪除，則所有子節點也會被刪除。
