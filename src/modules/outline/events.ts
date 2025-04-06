@@ -1,4 +1,3 @@
-import { get } from "http";
 import { saveOutlineToJSON, createTreeNodes } from "./outline";
 import { ICONS } from "./style";
 import { getString } from "../../utils/locale";
@@ -185,15 +184,16 @@ function selectNode(node: Element) {
 }
 
 // Key events for the outline panel.
-export function handleKeydownEvent(ev: KeyboardEvent) {
+export async function handleKeydownEvent(ev: KeyboardEvent) {
   const newPanel = (ev.target! as Element).ownerDocument.getElementById(
     "root-list",
   )!;
   const nodes = Array.from(newPanel.querySelectorAll("div.tree-node"));
   const selectedNode = newPanel.querySelector("div.tree-node.node-selected");
   let currentIdx = nodes.indexOf(selectedNode as Element);
-  ztoolkit.log("Keydown event", currentIdx, ev);
-  if (ev.type === "keydown" && ev.key === "ArrowDown") {
+  // ztoolkit.log("Keydown event", currentIdx, ev);
+
+  if (ev.key === "ArrowDown") {
     while (currentIdx < nodes.length - 1) {
       const nextNode = nodes[currentIdx + 1] as HTMLElement;
       // ztoolkit.log("Next node", currentIdx, nextNode);
@@ -222,7 +222,7 @@ export function handleKeydownEvent(ev: KeyboardEvent) {
   }
 
   if (ev.key === " ") {
-    ztoolkit.log("Space key pressed", selectedNode);
+    // ztoolkit.log("Space key pressed", selectedNode);
     ev.preventDefault();
     makeNodeEditable(
       selectedNode!.querySelector<HTMLElement>("span.node-title")!,
@@ -230,8 +230,72 @@ export function handleKeydownEvent(ev: KeyboardEvent) {
   }
 
   if (ev.key === "Delete" || ev.key === "Backspace") {
-    ztoolkit.log("Delete key pressed");
+    // ztoolkit.log("Delete key pressed");
     deleteSelectedNode(ev);
+  }
+
+  // Level up
+  if (ev.key === "[") {
+    // ztoolkit.log("[ key pressed");
+    const targetNode = (ev.target as Element).querySelector<Element>(
+      ".node-selected",
+    )!;
+    const targetLi = targetNode.closest("li")!;
+    const oldParentUl = targetLi.parentElement!;
+    const oldGrandParent = oldParentUl.parentElement!;
+    // 如果是根节点，直接返回
+    if (oldParentUl.id === "root-list") return;
+    oldParentUl.removeChild(targetLi);
+    // 此时原来的父节点已经没有子节点了，删除
+    if (oldParentUl.children.length === 0) {
+      oldGrandParent.removeChild(oldParentUl);
+      oldGrandParent.classList.remove("has-children");
+      const expander = oldGrandParent.querySelector(".expander")!;
+      expander.textContent = " ";
+    }
+    oldGrandParent.parentElement!.insertBefore(
+      targetLi,
+      oldGrandParent.nextSibling,
+    );
+    updateNodeLevels(targetLi);
+    await saveOutlineToJSON();
+  }
+  // Level down
+  if (ev.key === "]") {
+    // ztoolkit.log("] key pressed");
+    const targetNode = (ev.target as Element).querySelector<Element>(
+      ".node-selected",
+    )!;
+    const targetLi = targetNode.closest("li")!;
+    const parentLi = targetLi.previousElementSibling;
+    if (!parentLi) return;
+    let parentUl = parentLi.querySelector("ul");
+
+    // 如果没有子列表，创建一个
+    if (!parentUl) {
+      parentUl = targetNode.ownerDocument.createElement("ul");
+      parentUl.classList.add("tree-list");
+      parentLi.appendChild(parentUl);
+
+      // 更新父节点状态
+      parentLi.classList.add("has-children");
+      const expander = parentLi.querySelector(".expander")!;
+      // expander.textContent = "▼";
+      expander.innerHTML = ICONS.down;
+    }
+    // 添加到子列表
+    parentUl.appendChild(targetLi);
+    // 确保目标节点展开
+    targetLi.classList.remove("collapsed");
+
+    updateNodeLevels(targetLi);
+    await saveOutlineToJSON();
+  }
+
+  // Add new node
+  if (ev.key === "\\") {
+    // ztoolkit.log("\\ key pressed");
+    addNewNode(ev);
   }
 }
 
@@ -323,12 +387,7 @@ function updateDropIndicator(
   // 清除所有位置类
   dropIndicator.classList.remove("top", "middle", "bottom");
   dropIndicator.classList.add("visible");
-  ztoolkit.log(
-    "updateDropIndicator",
-    targetNode.textContent,
-    position,
-    rect.toJSON(),
-  );
+
   if (position === "before") {
     dropIndicator.classList.add("top");
     dropIndicator.style.left = `${rect.left}px`;
@@ -619,11 +678,12 @@ export function makeNodeEditable(titleElement: Element) {
 // 删除选中节点
 export async function deleteSelectedNode(ev: Event) {
   const doc = (ev.target as Element).ownerDocument;
-  const selectedNode = doc.querySelector(".node-selected");
+  const selectedNode = doc.querySelector<HTMLElement>(".node-selected")!;
   const rootNode = doc.getElementById("root-list");
   if (!selectedNode || !rootNode) return;
 
   const listItem = selectedNode.closest("li")!;
+  const beforeSelectedLi = listItem.previousElementSibling;
   const parent = listItem.parentNode as HTMLElement;
 
   // 如果有子节点，则进行提示确认是否删除
@@ -667,6 +727,16 @@ export async function deleteSelectedNode(ev: Event) {
       rootNode,
     );
   }
+  if (beforeSelectedLi) {
+    beforeSelectedLi
+      .querySelector("div.tree-node")
+      ?.classList.add("node-selected");
+  } else {
+    parent.parentNode
+      ?.querySelector("div.tree-node")
+      ?.classList.add("node-selected");
+  }
+  doc.getElementById("j-outline-viewer")?.focus();
 }
 
 // 添加新节点
