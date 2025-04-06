@@ -46,7 +46,7 @@ jobs:
       - name: Install deps
         run: |
           rm -rf node_modules
-          npm ci --force
+          npm install -f
 
       - name: List deps
         run: npm list
