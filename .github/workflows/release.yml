@@ -4,6 +4,14 @@ on:
   push:
     tags:
       - v**
+  workflow_dispatch:   # 新增手动触发入口
+    inputs:
+      version:
+        description: 'Release version (格式 vX.Y.Z)'
+        required: true
+      skip-notification:
+        description: '跳过通知 (true/false)'
+        default: 'false'
 
 permissions:
   contents: write
@@ -21,24 +29,31 @@ jobs:
         with:
           fetch-depth: 0
 
+      # 手动触发时创建标签
+      - name: Create tag (manual)
+        if: ${{ github.event_name == 'workflow_dispatch' }}
+        run: |
+          git config --local user.email "actions@github.com"
+          git config --local user.name "GitHub Actions"
+          git tag ${{ inputs.version }}
+          git push origin ${{ inputs.version }}
+
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 22.14
 
       - name: Install deps
         run: npm install -f
 
       - name: Build
-        run: |
-          npm run build
+        run: npm run build
 
       - name: Release to GitHub
-        run: |
-          npm run release
-          sleep 1s
+        run: npm run release
 
       - name: Notify release
+        if: ${{ !contains(github.event.inputs.skip-notification, 'true') }}
         uses: apexskier/github-release-commenter@v1
         continue-on-error: true
         with:
