@@ -44,7 +44,9 @@ jobs:
           node-version: 22.14
 
       - name: Install deps
-        run: npm install -f
+        run: |
+          rm -rf node_modules
+          npm ci --force
 
       - name: List deps
         run: npm list
