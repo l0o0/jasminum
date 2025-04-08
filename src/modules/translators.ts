@@ -72,6 +72,8 @@ export async function getLastUpdatedMap(
   }
 }
 
+let updating = false;
+
 /**
  * Download outdated translators from the source, with 12 hours interval by default.
  *
@@ -79,6 +81,11 @@ export async function getLastUpdatedMap(
  * @param force Whether ignore the time interval and force to download
  */
 export async function updateTranslators(force = false): Promise<boolean> {
+  if (updating) {
+    ztoolkit.log("translators are updating, skip this update");
+    return false;
+  }
+  updating = true;
   let needUpdate = false;
   const lastUpdateTime = getPref("translatorUpdateTime");
   const now = Date.now();
@@ -164,7 +171,8 @@ export async function updateTranslators(force = false): Promise<boolean> {
   );
   await Promise.all(translatorUpdateTasks);
   // @ts-ignore Translators is missing
-  await Zotero.Translators.reinit();
+  await Zotero.Translators.reinit({ fromSchemaUpdate: false });
+  updating = false;
   setPref("translatorUpdateTime", now);
   popupWin.changeLine({
     text: getString("update-translators-complete"),
