@@ -139,6 +139,11 @@ export async function getOutlineFromPDF(
     waiting += 200;
   }
   const pdfDocument = PDFViewerApplication.pdfDocument;
+  if (!pdfDocument) {
+    ztoolkit.log("No pdfDocument");
+    return null;
+  }
+  // @ts-ignore - Not typed
   const originOutline: PdfOutlineNode[] = await pdfDocument.getOutline2();
 
   if (originOutline.length == 0) return null;
@@ -160,6 +165,7 @@ export async function getOutlineFromPDF(
     };
     // Some pdf missing dest, position instead.
     if (node.location && "dest" in node.location) {
+      // @ts-ignore - Not typed
       const page = await pdfDocument.getPageIndex(node.location.dest);
       outlineNode.page = page;
     } else if (node.location && "position" in node.location) {
