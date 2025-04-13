@@ -86,6 +86,7 @@ export async function updateTranslators(force = false): Promise<boolean> {
     return false;
   }
   updating = true;
+  await Zotero.Schema.schemaUpdatePromise;
   let needUpdate = false;
   const lastUpdateTime = getPref("translatorUpdateTime");
   const now = Date.now();
