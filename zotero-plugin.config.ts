@@ -29,13 +29,21 @@ export default defineConfig({
     },
     esbuildOptions: [
       {
-        entryPoints: ["src/index.ts"],
+        // entryPoints: ["src/index.ts"],
+        entryPoints: [
+          { in: "src/index.ts", out: pkg.config.addonRef },
+          {
+            in: "src/modules/workers/index.ts",
+            out: `${pkg.config.addonRef}-worker`,
+          },
+        ],
+        outdir: "build/addon/chrome/content/scripts",
         define: {
           __env__: `"${process.env.NODE_ENV}"`,
         },
         bundle: true,
         target: "firefox115",
-        outfile: `build/addon/chrome/content/scripts/${pkg.config.addonRef}.js`,
+        // outfile: `build/addon/chrome/content/scripts/${pkg.config.addonRef}.js`,
       },
     ],
   },

@@ -37,8 +37,8 @@ update-skipped = Update skipped: { $name }
 update-translators-complete = Update translators completed
 
 # outline
-outline = Bookmark
-outline-expand-all = Expand allß
+outline = Show Bookmark
+outline-expand-all = Expand all
 outline-collapse-all = Collapse all
 outline-add = Add bookmark
 outline-delete = Delete bookmark

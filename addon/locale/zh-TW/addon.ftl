@@ -38,7 +38,7 @@ update-skipped = 跳過更新：{ $name }
 update-translators-complete = 轉換器更新完成
 
 # outline
-outline = 書籤
+outline = 顯示書籤
 outline-expand-all = 展開所有
 outline-collapse-all = 收起所有
 outline-add = 添加書籤

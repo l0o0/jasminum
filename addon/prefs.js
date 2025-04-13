@@ -17,3 +17,5 @@ pref("pdfMatchFolder", "");
 pref("autoUpdateTranslators", true);
 pref("translatorUpdateTime", 0);
 pref("translatorSource", "");
+/* bookmark */
+pref("enableBookmark", true);

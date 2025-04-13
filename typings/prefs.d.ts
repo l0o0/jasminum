@@ -21,6 +21,7 @@ declare namespace _ZoteroTypes {
       "autoUpdateTranslators": boolean;
       "translatorUpdateTime": number;
       "translatorSource": string;
+      "enableBookmark": boolean;
     };
   }
 }

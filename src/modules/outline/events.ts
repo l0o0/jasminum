@@ -35,7 +35,10 @@ function getReaderPagePosition(): PdfPosition {
 export function initEventListener(doc: Document) {
   // Hide or show side bar
   function hiddenMyOutlineAndBar(e: Event) {
-    ztoolkit.log(e.target as HTMLButtonElement, "clicke to hide outline");
+    const targetElement = e.target as Element;
+    const button = targetElement.closest("button");
+    if (!button) return;
+    ztoolkit.log("clicke to hide outline", targetElement);
     doc
       .getElementById("j-outline-viewer")
       ?.parentElement?.classList.toggle("hidden", true);
@@ -44,14 +47,19 @@ export function initEventListener(doc: Document) {
       ?.classList.toggle("j-outline-hidden", true);
     doc.getElementById("j-outline-button")?.classList.toggle("active", false);
 
-    const targetElement = e.target as HTMLButtonElement;
-    // Zotero outline and annations list can not work as expected.
-    if (targetElement.id === "viewOutline") {
+    // Zotero original sidebar can not work as expected.
+    if (button.id === "viewOutline") {
       doc
         .getElementById("outlineView")
         ?.parentElement?.classList.toggle("hidden", false);
-    } else if (targetElement.id === "viewAnnotations") {
+    } else if (button.id === "viewAnnotations") {
       doc.getElementById("annotationsView")?.classList.toggle("hidden", false);
+    } else if (button.id === "viewThumbnail") {
+      ztoolkit.log("click thumbnail");
+      ztoolkit.log(doc.getElementById("thumbnailsView"));
+      doc
+        .getElementById("thumbnailsView")
+        ?.parentElement?.classList.toggle("hidden", false);
     }
   }
   // 给默认按钮添加事件，避免切换面板时异常

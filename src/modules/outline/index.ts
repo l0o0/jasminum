@@ -150,43 +150,52 @@ export async function registerOutline(tabID?: string) {
   }
   await Zotero.Reader.init();
   const reader = Zotero.Reader.getByTabID(tabID as string);
-  await reader._initPromise;
-  ztoolkit.log("Init " + reader._isReaderInitialized);
-  // Only pdf
-  if (reader._item.attachmentContentType != "application/pdf") {
-    ztoolkit.log("Only support PDF reader.");
-    return;
-  }
-  // This should add a waiting process.
-  // @ts-ignore - not typed
-  const doc = reader._iframeWindow?.document;
-
-  let toggleButton: HTMLElement | null = null;
-  let waiting = 0;
-  while (!toggleButton && waiting < 5000) {
-    // @ts-ignore - Not typed
-    await Zotero.Promise.delay(200);
-    if (doc) {
-      toggleButton = doc.getElementById("sidebarToggle");
-      if (toggleButton) {
-        ztoolkit.log("Toggle button shows");
-      }
+  try {
+    await reader._initPromise;
+    ztoolkit.log("Init " + reader._isReaderInitialized);
+    // Only pdf
+    if (reader._item.attachmentContentType != "application/pdf") {
+      ztoolkit.log("Only support PDF reader.");
+      return;
     }
-    ztoolkit.log(`Waiting ${waiting}`);
-    waiting += 200;
-  }
+    // This should add a waiting process.
+    // @ts-ignore - not typed
+    const doc = reader._iframeWindow?.document;
 
-  // Reader sidebarContainer is open
-  if (doc && doc.getElementById("sidebarContainer")) {
-    addOutlineToReader(reader);
-  } else if (doc && doc.getElementById("sidebarContainer") === null) {
-    doc
-      ?.getElementById("sidebarToggle")
-      ?.addEventListener("click", (ev: Event) => {
-        ztoolkit.log("outline is added by toggle click");
-        addOutlineToReader(reader);
-      });
-  } else {
-    ztoolkit.log("Nothing to do with outline");
+    let toggleButton: HTMLElement | null = null;
+    let waiting = 0;
+    while (!toggleButton && waiting < 5000) {
+      // @ts-ignore - Not typed
+      await Zotero.Promise.delay(200);
+      if (doc) {
+        toggleButton = doc.getElementById("sidebarToggle");
+        if (toggleButton) {
+          ztoolkit.log("Toggle button shows");
+        }
+      }
+      ztoolkit.log(`Waiting ${waiting}`);
+      waiting += 200;
+    }
+
+    // Reader sidebarContainer is open
+    if (doc && doc.getElementById("sidebarContainer")) {
+      addOutlineToReader(reader);
+    } else if (doc && doc.getElementById("sidebarContainer") === null) {
+      doc
+        ?.getElementById("sidebarToggle")
+        ?.addEventListener("click", (ev: Event) => {
+          ztoolkit.log("outline is added by toggle click");
+          addOutlineToReader(reader);
+        });
+    } else {
+      ztoolkit.log("Nothing to do with outline");
+    }
+  } catch (e) {
+    Zotero.debug(
+      "********************* outline add error *********************",
+    );
+    ztoolkit.log("Error in registerOutline", e);
+    ztoolkit.log(`tabID: ${tabID}`);
+    ztoolkit.log(`reader: ${reader}`);
   }
 }

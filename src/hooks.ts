@@ -50,7 +50,12 @@ async function onMainWindowLoad(win: Window): Promise<void> {
     ztoolkit.log("auto update translators");
     updateTranslators();
   }
-  // registerOutline();
+
+  if (getPref("enableBookmark")) {
+    registerOutline();
+  } else {
+    ztoolkit.log("Jasminum bookmark is disabled");
+  }
   // @ts-ignore - Not typed.
   await Zotero.Promise.delay(1000);
 }

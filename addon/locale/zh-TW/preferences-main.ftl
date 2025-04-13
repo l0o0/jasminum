@@ -47,6 +47,11 @@ label-translators-force-update =
 label-translators-detail = 轉換器詳情
 label-translators-detail-click = 點擊查看
 
+# 大綱書籤設定
+pref-group-bookmark = 大綱書籤設定
+label-enableBookmark = 
+  .label = 啟用大綱書籤
+
 # 小工具設定
 pref-group-tools = 小工具設定
 label-language = 手動設定語言

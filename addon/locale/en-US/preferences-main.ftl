@@ -38,7 +38,7 @@ label-choose-folder =
 namepattern-desc =
 .tooltiptext = Retrieve CNKI metadata based on filenames. Filename format settings: {"{"}%t{"}"}=Title, {"{"}%g{"}"}=Author, {"{"}%y{"}"}=Year, {"{"}%j{"}"}=Other (e.g., source information); specify separators as needed; multiple separators can be used consecutively; file extensions are ignored. Default uses {"{"}%t{"}"}_{"{"}%g{"}"}, which recognizes most CNKI filename formats, including filenames with only titles and no separators.
 
-# Converter Settings
+# Transator Settings
 pref-group-translators = Chinese Translator Settings
 label-auto-update-translators =
 .label = Automatically Update Translators
@@ -46,6 +46,11 @@ label-translators-force-update =
 .label = Update Immediately
 label-translators-detail = Translator Details
 label-translators-detail-click = Click to View
+
+# Outline Bookmark Settings
+pref-group-bookmark = Outline Bookmark Settings
+label-enableBookmark = 
+  .label = Enable Outline Bookmark
 
 # Tool Settings
 pref-group-tools = Tool Settings

@@ -93,7 +93,11 @@ async function onOpenTab(
     extraData[id].type == "reader"
   ) {
     ztoolkit.log("onOpenTab", event, type, extraData);
-    await registerOutline(id as string);
+    if (getPref("enableBookmark")) {
+      await registerOutline(id as string);
+    } else {
+      ztoolkit.log("Jasminum bookmark is disabled");
+    }
   }
 }
 
