@@ -8,6 +8,7 @@ declare namespace _ZoteroTypes {
   interface Prefs {
     PluginPrefsMap: {
       "firstRun": boolean;
+      "translatorsMended": boolean;
       "enNameSplit": boolean;
       "zhNameSplit": boolean;
       "language": string;
@@ -19,7 +20,7 @@ declare namespace _ZoteroTypes {
       "cnkiAttachmentCookie": string;
       "pdfMatchFolder": string;
       "autoUpdateTranslators": boolean;
-      "translatorUpdateTime": number;
+      "translatorUpdateTime": string;
       "translatorSource": string;
       "enableBookmark": boolean;
     };

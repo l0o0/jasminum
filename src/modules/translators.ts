@@ -74,6 +74,22 @@ export async function getLastUpdatedMap(
 
 let updating = false;
 
+async function mendTranslators() {
+  const translators = Zotero.Translators.getAll();
+  // 727 is the number of translators at the time of writing
+  if (
+    !getPref("firstRun") &&
+    !getPref("translatorsMended") &&
+    Object.keys(translators).length < 727
+  ) {
+    ztoolkit.log(
+      "jasminum has been installed, and translators seems to be missing, try to reset them",
+    );
+    await Zotero.Schema.resetTranslators();
+    setPref("translatorsMended", true);
+  }
+}
+
 /**
  * Download outdated translators from the source, with 12 hours interval by default.
  *
@@ -87,8 +103,9 @@ export async function updateTranslators(force = false): Promise<boolean> {
   }
   updating = true;
   await Zotero.Schema.schemaUpdatePromise;
+  await mendTranslators();
   let needUpdate = false;
-  const lastUpdateTime = getPref("translatorUpdateTime");
+  const lastUpdateTime = parseInt(getPref("translatorUpdateTime"));
   const now = Date.now();
   if (force == true || lastUpdateTime === undefined) {
     ztoolkit.log(
@@ -174,7 +191,7 @@ export async function updateTranslators(force = false): Promise<boolean> {
   // @ts-ignore Translators is missing
   await Zotero.Translators.reinit({ fromSchemaUpdate: false });
   updating = false;
-  setPref("translatorUpdateTime", now);
+  setPref("translatorUpdateTime", now.toString());
   popupWin.changeLine({
     text: getString("update-translators-complete"),
     type: "default",

@@ -61,6 +61,15 @@ export async function initPrefs() {
     );
   }
 
+  const translatortUpdateTime = getPref("translatorUpdateTime");
+  if (
+    typeof translatortUpdateTime !== "string" ||
+    /\D/.test(translatortUpdateTime)
+  ) {
+    Zotero.Prefs.clear(`${config.prefsPrefix}.translatorUpdateTime`);
+    setPref("translatorUpdateTime", "0");
+  }
+
   setPref("translatorSource", randomBaseUrl());
 }
 

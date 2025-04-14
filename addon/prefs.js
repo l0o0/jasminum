@@ -1,5 +1,6 @@
 /* eslint-disable no-undef */
 pref("firstRun", true);
+pref("translatorsMended", false);
 /* tools */
 pref("enNameSplit", false);
 pref("zhNameSplit", false);
@@ -15,7 +16,7 @@ pref("cnkiAttachmentCookie", "");
 pref("pdfMatchFolder", "");
 /* update translators */
 pref("autoUpdateTranslators", true);
-pref("translatorUpdateTime", 0);
+pref("translatorUpdateTime", "0");
 pref("translatorSource", "");
 /* bookmark */
 pref("enableBookmark", true);
