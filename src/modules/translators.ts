@@ -5,7 +5,7 @@ export function randomBaseUrl() {
   const baseUrls = [
     "https://ftp.linxingzhong.top/translators_CN",
     "https://oss.wwang.de/translators_CN",
-    "https://cdn.jsdelivr.net/gh/l0o0/translators_CN@master",
+    "https://www.wieke.cn/translators_CN",
   ];
   const baseUrl = baseUrls[Math.floor(Math.random() * baseUrls.length)];
   ztoolkit.log(`use base url: ${baseUrl}`);
