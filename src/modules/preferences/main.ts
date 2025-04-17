@@ -61,6 +61,10 @@ export async function initPrefs() {
     );
   }
 
+  if (!getPref("translatorSource")) {
+    setPref("translatorSource", randomBaseUrl());
+  }
+
   const translatortUpdateTime = getPref("translatorUpdateTime");
   if (
     typeof translatortUpdateTime !== "string" ||
@@ -69,8 +73,6 @@ export async function initPrefs() {
     Zotero.Prefs.clear(`${config.prefsPrefix}.translatorUpdateTime`);
     setPref("translatorUpdateTime", "0");
   }
-
-  setPref("translatorSource", randomBaseUrl());
 }
 
 /**

@@ -36,10 +36,13 @@ label-pdf-match-folder = 附件匹配資料夾
 label-choose-folder =
   .label = 選擇資料夾
 namepattern-desc = 
-  .tooltiptext = 根據檔案名稱抓取知網元數據，檔案名稱格式設定:{"{"}%t{"}"}=標題，{"{"}%g{"}"}=作者，{"{"}%y{"}"}=年份，{"{"}%j{"}"}=其他（例如來源資訊）；分隔符依實際情況指定，可連續使用多個；不用考慮檔案副檔名。預設使用{"{"}%t{"}"}_{"{"}%g{"}"}，可識別大部分知網下載的檔案名稱格式，包括檔案名稱只包括標題無分隔符號
+  .tooltiptext = 根據檔案名稱抓取知網元數據，檔案名稱格式設定:{"{"}%t{"}"}=標題，{"{"}%g{"}"}=作者，{"{"}%y{"}"}=年份，{"{"}%j{"}"}=其他（例如來源資訊）；分隔符依實際情況指定，可連續使用多個；不用考慮檔案副檔名。預設使用{"{"}%t{"}"}_{"{"}%g{"}"}，可識別大部分知網下載的檔案名稱格式，包括檔案名稱只包括標題無分隔符號。
 
 # 轉換器設定
 pref-group-translators = 中文轉換器設定
+label-translator-source = 轉換器下載源
+translatorSource-desc =
+  .tooltiptext = 選擇轉換器下載源，一般情況下不用切換。如果您無法下載中文轉換器，可選擇嘗試其他源。
 label-auto-update-translators = 
   .label = 自動更新轉換器
 label-translators-force-update = 

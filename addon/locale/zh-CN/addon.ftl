@@ -35,7 +35,7 @@ update-translators-start = 开始更新转换器
 update-successfully = 更新成功：{ $name }
 update-failed = 更新失败：{ $name }
 update-skipped = 跳过更新：{ $name }
-update-translators-complete = 转换器更新完成
+update-translators-complete = 转换器更新完成，成功：{ $successCounts }, 失败：{ $failCounts }， 跳过：{ $skipCounts }
 
 # outline
 outline = 显示书签

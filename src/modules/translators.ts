@@ -72,8 +72,6 @@ export async function getLastUpdatedMap(
   }
 }
 
-let updating = false;
-
 async function mendTranslators() {
   const translators = Zotero.Translators.getAll();
   // 727 is the number of translators at the time of writing
@@ -97,11 +95,11 @@ async function mendTranslators() {
  * @param force Whether ignore the time interval and force to download
  */
 export async function updateTranslators(force = false): Promise<boolean> {
-  if (updating) {
+  if (addon.data.translators.updating) {
     ztoolkit.log("translators are updating, skip this update");
     return false;
   }
-  updating = true;
+  addon.data.translators.updating = true;
   await Zotero.Schema.schemaUpdatePromise;
   await mendTranslators();
   let needUpdate = false;
@@ -141,11 +139,14 @@ export async function updateTranslators(force = false): Promise<boolean> {
     })
     .show();
   const progressStep = 100 / Object.keys(translatorData).length;
+  let progress = 0;
+  let successCounts = 0;
+  let skipCounts = 0;
+  let failCounts = 0;
   const translatorUpdateTasks = Object.keys(translatorData).map(
     async (filename) => {
       let type = "default",
-        text = "",
-        progress = 0;
+        text = "";
       const localUpdateTime = await getLastUpdatedFromFile(filename);
       const remoteUpdateTime = translatorData[filename].lastUpdated;
       if (
@@ -165,14 +166,17 @@ export async function updateTranslators(force = false): Promise<boolean> {
           text = getString("update-successfully", {
             args: { name: filename },
           });
+          successCounts += 1;
         } catch (error) {
           type = "fail";
           text = getString("update-failed", {
             args: { name: filename },
           });
+          failCounts += 1;
           ztoolkit.log(`update translator ${filename} failed: ${error}`);
         }
       } else {
+        skipCounts += 1;
         type = "default";
         text = getString("update-skipped", {
           args: { name: filename },
@@ -190,14 +194,18 @@ export async function updateTranslators(force = false): Promise<boolean> {
   await Promise.all(translatorUpdateTasks);
   // @ts-ignore Translators is missing
   await Zotero.Translators.reinit({ fromSchemaUpdate: false });
-  updating = false;
+  addon.data.translators.updating = false;
   setPref("translatorUpdateTime", now.toString());
   popupWin.changeLine({
-    text: getString("update-translators-complete"),
+    text: getString("update-translators-complete", {
+      args: { successCounts, failCounts, skipCounts },
+    }),
     type: "default",
     progress: 100,
   });
   popupWin.startCloseTimer(3000);
-  ztoolkit.log(`translators updated at ${new Date(now)}`);
+  ztoolkit.log(
+    `translators updated at ${new Date(now)}, success: ${successCounts}, skip: ${skipCounts}, fail: ${failCounts}`,
+  );
   return true;
 }
