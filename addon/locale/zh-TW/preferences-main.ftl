@@ -4,8 +4,6 @@ label-isMainlandChina =
   .label = 目前位於中國大陸（不包括中國香港、中國澳門及中國台灣），海外用戶請取消勾選
 label-autoupdate-metadata = 
   .label = 新增中文PDF/CAJ時自動從知網抓取元數據
-label-zhnamesplit = 
-  .label = 抓取元數據時拆分中文姓、名（包括瀏覽器抓取）
 label-rename = 
   .label = 根據元數據重新命名附件（依賴Attanger或zotmoov插件）
 label-namepattern = 檔案名稱解析範本
@@ -57,6 +55,10 @@ label-enableBookmark =
 
 # 小工具設定
 pref-group-tools = 小工具設定
+label-auto-split-name = 
+  .label = 導入新條目時自動拆分姓名
+label-split-en-name =
+  .label = 拆分/合併姓名時包括英文名
 label-language = 手動設定語言
 label-tools-info = 💡 Linter 插件提供更豐富的元數據檢查功能->
 label-tools-linter = Linter 插件教學

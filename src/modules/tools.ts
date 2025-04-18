@@ -1,68 +1,225 @@
-import { getPref } from "../utils/prefs";
 import { config } from "../../package.json";
-import { isChineseTopAttachment, isChineseTopItem } from "./menu";
+import { isChineseTopItem } from "./menu";
 import { getString } from "../utils/locale";
+import { getPref } from "../utils/prefs";
 
-export async function splitChineseName(item: Zotero.Item): Promise<void> {
-  const isSplitEnName = getPref("enNameSplit") || false;
+// 中国稀有姓氏统计小组发布于小红书ID4975028282
+// https://www.xiaohongshu.com/discovery/item/67c017cb000000001203db3d
+const compoundSurnames = [
+  /* A */
+  "奥屯",
+  /* B */
+  "百里",
+  "比干",
+  "单于",
+  /* C */
+  "陈留",
+  "成公",
+  "成功",
+  "叱干",
+  "褚师",
+  "淳于",
+  /* D */
+  "达奚",
+  "第二",
+  "第五",
+  "第伍",
+  "第一",
+  "丁若",
+  "东方",
+  "东里",
+  "东门",
+  "东野",
+  "豆卢",
+  "独孤",
+  "端木",
+  "段干",
+  /* E */
+  "尔朱",
+  /* F */
+  "伏羲",
+  "状阳",
+  "傅阳",
+  /* G */
+  "高堂",
+  "高阳",
+  "哥舒",
+  "葛天",
+  "公乘",
+  "公上",
+  "公孙",
+  "公羊",
+  "公冶",
+  "共工",
+  "古野",
+  "关龙",
+  "毌丘",
+  /* H */
+  "韩城",
+  "贺兰",
+  "贺楼",
+  "贺若",
+  "赫连",
+  "呼延",
+  "胡母",
+  "胡毋",
+  "斛律",
+  "华原",
+  "皇甫",
+  "皇父",
+  /* K */
+  "可汗",
+  /* J */
+  "即墨",
+  "夹谷",
+  "揭阳",
+  /* L */
+  "令狐",
+  "闾丘",
+  "闾邱",
+  /* M */
+  "马服",
+  "万矣",
+  "墨台",
+  "默台",
+  "母丘",
+  "木易",
+  "慕容",
+  /* N */
+  "南宫",
+  "南门",
+  "女娲",
+  /* O */
+  "欧侯",
+  "欧阳",
+  /* P */
+  "濮阳",
+  "蒲察",
+  /* Q */
+  "漆雕",
+  "亓官",
+  "綦连",
+  "綦毋",
+  "气伏",
+  "青阳",
+  "屈男",
+  "屈突",
+  /* S */
+  "上官",
+  "申徒",
+  "申屠",
+  "石抹",
+  "士孙",
+  "侍其",
+  "水丘",
+  "司城",
+  "司空",
+  "司寇",
+  "司马",
+  "司徒",
+  "司星",
+  "澹台",
+  /* T */
+  "拓跋",
+  "太史",
+  "太叔",
+  "徒单",
+  "涂山",
+  "脱脱",
+  /* W */
+  "完颜",
+  "闻人",
+  "武城",
+  "毋丘",
+  /* X */
+  "西门",
+  "夏侯",
+  "夏后",
+  "鲜于",
+  "相里",
+  "轩辕",
+  /* Y */
+  "延陵",
+  "羊舌",
+  "耶律",
+  "宇文",
+  "尉迟",
+  "乐正",
+  /* Z */
+  "宰父",
+  "长孙",
+  "钟离",
+  "诸葛",
+  "术虎",
+  "主父",
+  "祝融",
+  "颛孙",
+  "颛项",
+  "子车",
+  "宗正",
+  "宗政",
+  /* 璧联姓 */
+  "邓李",
+  "刘付",
+  "陆费",
+  "吴刘",
+];
 
+export async function splitName(item: Zotero.Item): Promise<void> {
   const creators = item.getCreators();
-  for (let i = 0; i < creators.length; i++) {
-    const creator = creators[i];
-    creator.fieldMode = 0;
+  for (const creator of creators) {
+    if (creator.fieldMode === 0 && creator.firstName !== "") continue;
     if (
-      // English Name
-      isSplitEnName &&
-      (creator.lastName.search(/[A-Za-z]/) >= 0 ||
-        creator.firstName.search(/[A-Za-z]/) >= 0) &&
-      creator.firstName === "" // 名为空
+      /\p{Unified_Ideograph}/u.test(`${creator.lastName}${creator.firstName}`)
     ) {
-      // 如果不拆分/合并英文名，则跳过
-      const englishName = creator.lastName;
-      const temp = englishName.split(/[\n\s+,]/g).filter(Boolean); // 过滤空字段
-      creator.lastName = temp.pop()!;
-      creator.firstName = temp.join(" ");
-    } else if (creator.firstName === "") {
-      // For Chinese Name,名为空
-      const chineseName = creator.lastName || creator.firstName;
-      creator.lastName = chineseName.charAt(0);
-      creator.firstName = chineseName.slice(1);
+      const fullName = creator.lastName;
+      const surname = compoundSurnames.find((surname) =>
+        creator.lastName.startsWith(surname),
+      );
+      if (fullName.includes("·")) {
+        const nameParts = fullName.split("·");
+        creator.lastName = nameParts.shift()!;
+        creator.firstName = nameParts.join("·");
+      } else if (surname) {
+        creator.lastName = surname;
+        creator.firstName = fullName.slice(surname.length);
+      } else {
+        creator.lastName = fullName.charAt(0);
+        creator.firstName = fullName.slice(1);
+      }
+      creator.fieldMode = 0;
+    } else if (getPref("splitEnName") && /[a-z]/i.test(creator.lastName)) {
+      const nameParts = creator.lastName.split(/\s+/g);
+      if (nameParts.length > 1) {
+        creator.lastName = nameParts.pop()!;
+        creator.firstName = nameParts.join(" ");
+        creator.fieldMode = 0;
+      }
     }
-    creator.fieldMode = 0; // 0: two-field, 1: one-field (with empty first name)
-    creators[i] = creator;
   }
-  if (creators != item.getCreators()) {
-    item.setCreators(creators);
-    await item.saveTx();
-  }
+  item.setCreators(creators);
+  await item.saveTx();
 }
 
-export async function mergeChineseName(item: Zotero.Item): Promise<void> {
-  const isSplitEnName = getPref("enNameSplit") || false;
+export async function mergeName(item: Zotero.Item): Promise<void> {
   const creators = item.getCreators();
-  for (let i = 0; i < creators.length; i++) {
-    const creator = creators[i];
-    creator.fieldMode = 1;
+  for (const creator of creators) {
     if (
-      // English Name
-      isSplitEnName &&
-      (creator.lastName.search(/[A-Za-z]/) !== -1 ||
-        creator.lastName.search(/[A-Za-z]/) !== -1)
+      /\p{Unified_Ideograph}/u.test(`${creator.firstName}${creator.lastName}`)
     ) {
-      // 如果不拆分/合并英文名，则跳过
-      creator.lastName = creator.firstName + " " + creator.lastName;
-    } else {
-      // For Chinese Name
-      creator.lastName = creator.lastName + creator.firstName;
+      // 由于拆分后信息丢失，难以判断少数民族的姓氏，这里的条件是充分不必要的
+      const delimiter = creator.firstName.includes("·") ? "·" : "";
+      creator.lastName = `${creator.lastName}${delimiter}${creator.firstName}`;
+      creator.firstName = "";
+      creator.fieldMode = 1;
+    } else if (getPref("splitEnName") && /[a-z]/i.test(creator.lastName)) {
+      creator.lastName = `${creator.firstName} ${creator.lastName}`.trimStart();
+      creator.firstName = "";
+      creator.fieldMode = 1;
     }
-    creator.firstName = "";
-    creator.fieldMode = 1; // 0: two-field, 1: one-field (with empty first name)
-    creators[i] = creator;
   }
-  if (creators != item.getCreators()) {
-    item.setCreators(creators);
-    await item.saveTx();
-  }
+  item.setCreators(creators);
+  await item.saveTx();
 }
 
 export async function getCNKICite(item: Zotero.Item): Promise<string> {

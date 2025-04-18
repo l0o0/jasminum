@@ -1,7 +1,8 @@
 import { MenuitemOptions } from "zotero-plugin-toolkit/dist/managers/menu";
 import { config } from "../../package.json";
 import { getString } from "../utils/locale";
-import { mergeChineseName, splitChineseName, updateCNKICite } from "./tools";
+import { mergeName, splitName, updateCNKICite } from "./tools";
+import { getPDFTitle } from "../utils/pdfParser";
 
 /**
  * Return true when item is a top level Chinese PDF/CAJ item.
@@ -10,7 +11,9 @@ export function isChineseTopAttachment(item: Zotero.Item): boolean {
   return (
     item.isAttachment() &&
     item.isTopLevelItem() &&
-    /.*[\u4e00-\u9fff].*\.(pdf|caj|kdh|nh)$/i.test(item.attachmentFilename)
+    /.*\p{Unified_Ideograph}.*\.(pdf|caj|kdh|nh)$/iu.test(
+      item.attachmentFilename.replace(/[和等年月日]/g, ""),
+    )
   );
 }
 
@@ -18,7 +21,7 @@ export function isChineseTopItem(item: Zotero.Item): boolean {
   return (
     item.isRegularItem() &&
     item.isTopLevelItem() &&
-    /.*[\u4e00-\u9fff]$/i.test(item.getField("title"))
+    /.*\p{Unified_Ideograph}$/iu.test(item.getField("title"))
   );
 }
 
@@ -79,7 +82,7 @@ const toolsMenuItems: MenuitemOptions[] = [
     icon: `chrome://${config.addonRef}/content/icons/name.png`,
     commandListener: () => {
       for (const item of Zotero.getActiveZoteroPane().getSelectedItems()) {
-        mergeChineseName(item);
+        mergeName(item);
       }
     },
   },
@@ -89,7 +92,7 @@ const toolsMenuItems: MenuitemOptions[] = [
     icon: `chrome://${config.addonRef}/content/icons/name.png`,
     commandListener: () => {
       for (const item of Zotero.getActiveZoteroPane().getSelectedItems()) {
-        splitChineseName(item);
+        splitName(item);
       }
     },
   },

@@ -9,8 +9,8 @@ declare namespace _ZoteroTypes {
     PluginPrefsMap: {
       "firstRun": boolean;
       "translatorsMended": boolean;
-      "enNameSplit": boolean;
-      "zhNameSplit": boolean;
+      "autoSplitName": boolean;
+      "splitEnName": boolean;
       "language": string;
       "autoUpdateMetadata": boolean;
       "namePattern": string;
