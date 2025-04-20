@@ -28,6 +28,7 @@
     "update-deps": "npm update --save"
   },
   "dependencies": {
+    "pdf-lib": "^1.17.1",
     "zotero-plugin-toolkit": "^4.1.2"
   },
   "devDependencies": {

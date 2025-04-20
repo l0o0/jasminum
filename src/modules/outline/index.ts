@@ -9,7 +9,11 @@ import {
 } from "./outline";
 import { ICONS } from "./style";
 
-export function renderTree(doc: Document, data: OutlineNode[] | null) {
+export function renderTree(
+  reader: _ZoteroTypes.ReaderInstance,
+  doc: Document,
+  data: OutlineNode[] | null,
+) {
   const dropIndicator = ztoolkit.UI.createElement(doc, "div", {
     classList: ["drop-indicator"],
   });
@@ -52,15 +56,6 @@ export function renderTree(doc: Document, data: OutlineNode[] | null) {
         classList: ["j-outline-toolbar-button", "toolbar-button"],
         properties: { innerHTML: ICONS.save },
         attributes: { title: getString("outline-save-to-pdf") },
-        listeners: [
-          {
-            type: "click",
-            listener: (ev: Event) => {
-              const doc = (ev.target as Element).ownerDocument;
-              doc.defaultView!.alert("保存到PDF文件的功能还在开发中");
-            },
-          },
-        ],
       },
     ],
   });
@@ -98,7 +93,7 @@ export function renderTree(doc: Document, data: OutlineNode[] | null) {
   treeContainer.appendChild(dropIndicator);
   createTreeNodes(data, treeContainer.querySelector("#root-list")!, doc);
   doc.querySelector("#sidebarContent")?.appendChild(treeContainer);
-  initEventListener(doc);
+  initEventListener(reader, doc);
 
   return treeContainer;
 }
@@ -135,7 +130,7 @@ export async function addOutlineToReader(reader: _ZoteroTypes.ReaderInstance) {
   registerOutlineCSS(doc);
   registerThemeChange(reader._iframeWindow!);
 
-  renderTree(doc, joutline);
+  renderTree(reader, doc, joutline);
 }
 
 export async function registerOutline(tabID?: string) {

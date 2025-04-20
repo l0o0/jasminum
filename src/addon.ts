@@ -4,7 +4,7 @@ import { Scraper } from "./modules/services";
 import { Progress } from "./modules/progress";
 import { VirtualizedTableHelper } from "zotero-plugin-toolkit";
 import { MyCookieSandbox } from "./utils/cookiebox";
-import { test } from "./modules/test";
+import { getOutlineFromPDF } from "./modules/outline/outline";
 
 class Addon {
   public data: {
@@ -49,7 +49,7 @@ class Addon {
       myCookieSandbox: new MyCookieSandbox(),
     };
     this.hooks = hooks;
-    this.api = { test: test };
+    this.api = { getOutlineFromPDF };
     this.scraper = new Scraper();
   }
 }

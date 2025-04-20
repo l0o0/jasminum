@@ -6,6 +6,7 @@ type OutlineNode = {
   y: number;
   children?: OutlineNode[];
   collapsed?: boolean;
+  ref?: PDFRef;
 };
 
 type OutlineInfo = {
@@ -13,17 +14,19 @@ type OutlineInfo = {
   outline: OutlineNode[];
 };
 
-type PdfRef = {
-  num: number;
-  gen: number;
-};
+// Reference of PDF object
+// type PdfRef = {
+//   num: number;
+//   gen: number;
+//   tag?: string; // 可能是 "Page" 或 "Outline"
+// };
 
 type PdfZoomMode = {
   name: string; // 缩放模式名称，例如 "Fit", "XYZ", "FitH", "FitV"
   args?: (number | null)[];
 };
 
-type PdfDest = { dest: [PdfRef, PdfZoomMode] };
+type PdfDest = { dest: [PDFRef, PdfZoomMode] };
 type PdfPosition = {
   position: { pageIndex: number; rects: [number, number, number, number][] };
 };
