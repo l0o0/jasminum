@@ -38,7 +38,7 @@ update-skipped = 跳过更新：{ $name }
 update-translators-complete = 转换器更新完成，成功：{ $successCounts }, 失败：{ $failCounts }， 跳过：{ $skipCounts }
 
 # outline
-outline = 显示书签
+outline = 显示书签（茉莉花）
 outline-expand-all = 展开所有
 outline-collapse-all = 收起所有
 outline-add = 添加书签

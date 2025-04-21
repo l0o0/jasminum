@@ -897,7 +897,7 @@ export async function addOutlineToPDFRunner(): Promise<void> {
       const data = event.data;
       ztoolkit.log("Main handler", data);
       // 仅处理匹配 jobID 和 action 的消息
-      if (data?.action !== "testReturn" || data?.jobID !== jobID) return;
+      if (data?.action !== "addOutlineReturn" || data?.jobID !== jobID) return;
 
       worker.removeEventListener("message", handler as EventListener);
 
