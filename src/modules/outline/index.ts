@@ -1,3 +1,4 @@
+import { wait } from "zotero-plugin-toolkit";
 import { getString } from "../../utils/locale";
 import { initEventListener } from "./events";
 import {
@@ -101,25 +102,20 @@ export function renderTree(
 export async function addOutlineToReader(reader: _ZoteroTypes.ReaderInstance) {
   const doc = reader._iframeWindow!.document;
   if (doc.querySelector("#j-outline-button")) {
-    ztoolkit.log("Outline is added already.");
+    ztoolkit.log("Outline is already added, skip.");
     return;
   }
   // 等待元素加载
-  let targetButton: HTMLElement | null = null;
-  let waiting = 0;
-  while (!targetButton && waiting < 5000) {
-    // @ts-ignore - Not typed
-    await Zotero.Promise.delay(200);
-    if (doc) {
-      targetButton = doc.querySelector("#sidebarContainer div.start");
-      if (targetButton) {
-        ztoolkit.log("sidebar tool buttons show");
-      }
-    }
-    ztoolkit.log(`Waiting ${waiting}`);
-    waiting += 200;
-  }
-
+  // ztoolkit.log(new Date().toISOString());
+  await wait.waitUtilAsync(
+    () => {
+      return doc.querySelector("#sidebarContainer div.start") ? true : false;
+    },
+    5, // 减少图标出现延迟感
+    5000,
+  );
+  // ztoolkit.log(new Date().toISOString());
+  ztoolkit.log("Sidebar container is ready.");
   addButton(doc);
   const joutline = await getOutlineFromPDF(reader);
   if (!joutline) {
@@ -133,15 +129,10 @@ export async function addOutlineToReader(reader: _ZoteroTypes.ReaderInstance) {
   renderTree(reader, doc, joutline);
 }
 
-export async function registerOutline(tabID?: string) {
+export async function registerOutline(tabID: string) {
   if (!tabID) {
-    ztoolkit.log("Need to add outline to opeened reader.");
-    if (ztoolkit.getGlobal("Zotero_Tabs").selectedType != "reader") {
-      ztoolkit.log("Zotero opened a non-reader tab in startup.");
-      return;
-    }
-    const tabID = ztoolkit.getGlobal("Zotero_Tabs").selectedID;
-    ztoolkit.log("Open tab id is ", tabID);
+    ztoolkit.log(`Tab ID is not valid. %{tabID}`);
+    return;
   }
   await Zotero.Reader.init();
   const reader = Zotero.Reader.getByTabID(tabID as string);
@@ -156,35 +147,27 @@ export async function registerOutline(tabID?: string) {
     // This should add a waiting process.
     // @ts-ignore - not typed
     const doc = reader._iframeWindow?.document;
-
-    let toggleButton: HTMLElement | null = null;
-    let waiting = 0;
-    while (!toggleButton && waiting < 5000) {
-      // @ts-ignore - Not typed
-      await Zotero.Promise.delay(200);
-      if (doc) {
-        toggleButton = doc.getElementById("sidebarToggle");
-        if (toggleButton) {
-          ztoolkit.log("Toggle button shows");
-        }
-      }
-      ztoolkit.log(`Waiting ${waiting}`);
-      waiting += 200;
-    }
-
-    // Reader sidebarContainer is open
+    // ztoolkit.log("registerOutline", new Date().toISOString());
+    await wait.waitUtilAsync(
+      () => {
+        return doc && doc.getElementById("sidebarToggle") ? true : false;
+      },
+      5,
+      5000,
+    );
+    // ztoolkit.log("registerOutline", new Date().toISOString());
+    ztoolkit.log("Sidebar toggle button is ready.");
+    // Sidebar is already opened, add outline.
     if (doc && doc.getElementById("sidebarContainer")) {
       addOutlineToReader(reader);
-    } else if (doc && doc.getElementById("sidebarContainer") === null) {
-      doc
-        ?.getElementById("sidebarToggle")
-        ?.addEventListener("click", (ev: Event) => {
-          ztoolkit.log("outline is added by toggle click");
-          addOutlineToReader(reader);
-        });
-    } else {
-      ztoolkit.log("Nothing to do with outline");
     }
+    // Click toggle button to open sidebar.
+    doc
+      ?.getElementById("sidebarToggle")
+      ?.addEventListener("click", (ev: Event) => {
+        ztoolkit.log("outline is added by toggle click");
+        addOutlineToReader(reader);
+      });
   } catch (e) {
     Zotero.debug(
       "********************* outline add error *********************",

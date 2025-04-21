@@ -1,4 +1,3 @@
-import { wait } from "zotero-plugin-toolkit";
 import { config } from "../../package.json";
 import { getString } from "../utils/locale";
 import { getPref } from "../utils/prefs";
@@ -53,7 +52,7 @@ function unregisterNotifier(notifierID: string) {
  */
 export function registerNotifiers() {
   registerNotifier(onAddItem, ["item"]);
-  registerNotifier(onOpenTab, ["tab"]);
+  // registerNotifier(onOpenTab, ["tab"]);
 }
 
 async function onAddItem(

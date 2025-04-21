@@ -45,7 +45,7 @@ export function initEventListener(
     const targetElement = e.target as Element;
     const button = targetElement.closest("button");
     if (!button) return;
-    ztoolkit.log("clicke to hide outline", targetElement);
+    ztoolkit.log("clicke to hide outline", targetElement, button);
     doc
       .getElementById("j-outline-viewer")
       ?.parentElement?.classList.toggle("hidden", true);
@@ -68,6 +68,7 @@ export function initEventListener(
         .getElementById("thumbnailsView")
         ?.parentElement?.classList.toggle("hidden", false);
     }
+    button.classList.toggle("active", true);
   }
   // 给默认按钮添加事件，避免切换面板时异常
   doc

@@ -1,3 +1,4 @@
+import { wait } from "zotero-plugin-toolkit";
 import { version } from "../../../package.json";
 import { getString } from "../../utils/locale";
 import { outline_css, ICONS } from "./style";
@@ -42,7 +43,7 @@ export function registerThemeChange(win: Window) {
 // Add outline button and outline tree.
 export function addButton(doc: Document) {
   if (doc.querySelector("#sidebarContainer div.start") === null) {
-    ztoolkit.log("Button toolbar is missing.");
+    ztoolkit.log("Sidebar toolbar button is missing.");
   }
   ztoolkit.UI.appendElement(
     {
@@ -97,7 +98,6 @@ export function addButton(doc: Document) {
                 .getElementById("outlineView")
                 ?.parentElement?.classList.toggle("hidden", true);
               viewer?.classList.toggle("hidden", false);
-              (e.target as Element).classList.toggle("active", true);
 
               ztoolkit.log("Display jasminum outline.");
             }
@@ -127,17 +127,23 @@ export async function getOutlineFromPDF(
     if (outlineJson) return outlineJson;
   }
   // 如果上面没有返回Outline信息，重新读取
+  await wait.waitUtilAsync(
+    () => {
+      return (reader._primaryView as _ZoteroTypes.Reader.PDFView)
+        ._iframeWindow &&
+        (reader._primaryView as _ZoteroTypes.Reader.PDFView)._iframeWindow!
+          .PDFViewerApplication.pdfDocument
+        ? true
+        : false;
+    },
+    200,
+    5000,
+  );
+  ztoolkit.log("PDFViewerApplication is ready");
   const PDFViewerApplication = (
     reader._primaryView as _ZoteroTypes.Reader.PDFView
   )._iframeWindow!.PDFViewerApplication;
   await PDFViewerApplication.init;
-  let waiting = 0;
-  while (!PDFViewerApplication.pdfDocument && waiting < 5000) {
-    // @ts-ignore - Not typed
-    await Zotero.Promise.delay(200);
-    ztoolkit.log(`Waiting ${waiting}, pdfDocument`);
-    waiting += 200;
-  }
   const pdfDocument = PDFViewerApplication.pdfDocument;
   if (!pdfDocument) {
     ztoolkit.log("No pdfDocument");
