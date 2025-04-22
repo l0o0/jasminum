@@ -35,10 +35,10 @@ update-translators-start = 開始更新轉換器
 update-successfully = 更新成功：{ $name }
 update-failed = 更新失敗：{ $name }
 update-skipped = 跳過更新：{ $name }
-update-translators-complete = 轉換器更新完成
+update-translators-complete = 轉換器更新完成，成功：{ $successCounts }, 失敗：{ $failCounts }， 跳過：{ $skipCounts }
 
 # outline
-outline = 顯示書籤
+outline = 顯示書籤（茉莉花）
 outline-expand-all = 展開所有
 outline-collapse-all = 收起所有
 outline-add = 添加書籤

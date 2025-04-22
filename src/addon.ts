@@ -4,7 +4,7 @@ import { Scraper } from "./modules/services";
 import { Progress } from "./modules/progress";
 import { VirtualizedTableHelper } from "zotero-plugin-toolkit";
 import { MyCookieSandbox } from "./utils/cookiebox";
-import { test } from "./modules/test";
+import { getOutlineFromPDF } from "./modules/outline/outline";
 
 class Addon {
   public data: {
@@ -25,6 +25,7 @@ class Addon {
       helper?: VirtualizedTableHelper;
       rows: TableRow[];
       selected?: string;
+      updating?: boolean;
     };
     myCookieSandbox?: MyCookieSandbox;
   };
@@ -43,11 +44,12 @@ class Addon {
       windows: {},
       translators: {
         rows: [],
+        updating: false,
       },
       myCookieSandbox: new MyCookieSandbox(),
     };
     this.hooks = hooks;
-    this.api = { test: test };
+    this.api = { getOutlineFromPDF };
     this.scraper = new Scraper();
   }
 }

@@ -34,10 +34,10 @@ update-translators-start = Start updating translators
 update-successfully = Update successfully: { $name }
 update-failed = Update failed: { $name }
 update-skipped = Update skipped: { $name }
-update-translators-complete = Update translators completed
+update-translators-complete = Update translators completed, Success: { $successCounts }, Failed: { $failCounts }, Skipped: { $skipCounts }
 
 # outline
-outline = Show Bookmark
+outline = Show Bookmark (By Jasminum)
 outline-expand-all = Expand all
 outline-collapse-all = Collapse all
 outline-add = Add bookmark

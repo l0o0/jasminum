@@ -1,4 +1,8 @@
-import { saveOutlineToJSON, createTreeNodes } from "./outline";
+import {
+  saveOutlineToJSON,
+  createTreeNodes,
+  getOutlineFromPDF,
+} from "./outline";
 import { ICONS } from "./style";
 import { getString } from "../../utils/locale";
 
@@ -32,13 +36,16 @@ function getReaderPagePosition(): PdfPosition {
   return { position: { pageIndex, rects: [[x, y, x, y]] } };
 }
 
-export function initEventListener(doc: Document) {
+export function initEventListener(
+  reader: _ZoteroTypes.ReaderInstance,
+  doc: Document,
+) {
   // Hide or show side bar
   function hiddenMyOutlineAndBar(e: Event) {
     const targetElement = e.target as Element;
     const button = targetElement.closest("button");
     if (!button) return;
-    ztoolkit.log("clicke to hide outline", targetElement);
+    ztoolkit.log("clicke to hide outline", targetElement, button);
     doc
       .getElementById("j-outline-viewer")
       ?.parentElement?.classList.toggle("hidden", true);
@@ -61,6 +68,7 @@ export function initEventListener(doc: Document) {
         .getElementById("thumbnailsView")
         ?.parentElement?.classList.toggle("hidden", false);
     }
+    button.classList.toggle("active", true);
   }
   // 给默认按钮添加事件，避免切换面板时异常
   doc
@@ -119,6 +127,14 @@ export function initEventListener(doc: Document) {
   doc
     .getElementById("j-outline-delete-node")
     ?.addEventListener("click", deleteSelectedNode);
+  doc
+    .getElementById("j-outline-save-pdf")
+    ?.addEventListener("click", async (ev: Event) => {
+      const button = ev.currentTarget as HTMLButtonElement;
+      button.disabled = true;
+      await addOutlineToPDFRunner();
+      button.disabled = false;
+    });
 
   // 拖拽相关事件
   treeContainer.addEventListener("dragstart", handleDragStart);
@@ -843,4 +859,56 @@ function clickToPosition(targetElement: Element) {
   )._iframeWindow!.document.getElementById("viewerContainer")!;
   ztoolkit.log(`Scroll to ${scrollX}, ${scrollY}`);
   container.scrollBy(scrollX, scrollY);
+}
+
+// Use worker to add outline to PDF
+export async function addOutlineToPDFRunner(): Promise<void> {
+  const reader = Zotero.Reader.getByTabID(
+    ztoolkit.getGlobal("Zotero_Tabs").selectedID,
+  );
+  if (!reader) {
+    ztoolkit.log("No reader found");
+    return;
+  }
+  const outlineNodes = await getOutlineFromPDF(reader);
+  if (!outlineNodes) {
+    ztoolkit.log("No outline nodes found");
+    return;
+  }
+  const filePath = reader._item.getFilePath();
+  const worker = new Worker(
+    "chrome://jasminum/content/scripts/jasminum-worker.js",
+  );
+  worker.onmessage = (event) => {
+    // @ts-ignore - event.data is not typed
+    const data = event.data;
+    ztoolkit.log("data", data);
+    if (data && data.action === "addOutlineReturn") {
+      ztoolkit.log("Add outline to PDF return", data);
+    }
+  };
+
+  return new Promise((resolve, reject) => {
+    ztoolkit.log(filePath, outlineNodes);
+    const jobID = Zotero.Utilities.randomString();
+
+    // 消息处理器
+    const handler = (event: MessageEvent<any>) => {
+      const data = event.data;
+      ztoolkit.log("Main handler", data);
+      // 仅处理匹配 jobID 和 action 的消息
+      if (data?.action !== "addOutlineReturn" || data?.jobID !== jobID) return;
+
+      worker.removeEventListener("message", handler as EventListener);
+
+      if (data.status === "success") {
+        resolve(data);
+      } else {
+        reject(new Error(data.error || "Unknown error"));
+      }
+    };
+
+    worker.addEventListener("message", handler as EventListener);
+    worker.postMessage({ action: "addOutline", jobID, filePath, outlineNodes });
+  });
 }

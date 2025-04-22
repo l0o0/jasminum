@@ -14,7 +14,7 @@ import {
 import { injectStylesLink } from "./modules/styles";
 import { updateTranslators } from "./modules/translators";
 import { getPref } from "./utils/prefs";
-import { registerOutline } from "./modules/outline";
+import { registerTab } from "./modules/tab";
 
 async function onStartup() {
   await Promise.all([
@@ -31,6 +31,7 @@ async function onStartup() {
   registerNotifiers();
 
   registerMenu();
+  registerTab();
   await registerExtraColumnWithCustomCell();
 
   injectStylesLink();
@@ -49,12 +50,6 @@ async function onMainWindowLoad(win: Window): Promise<void> {
   if (getPref("autoUpdateTranslators")) {
     ztoolkit.log("auto update translators");
     updateTranslators();
-  }
-
-  if (getPref("enableBookmark")) {
-    registerOutline();
-  } else {
-    ztoolkit.log("Jasminum bookmark is disabled");
   }
   // @ts-ignore - Not typed.
   await Zotero.Promise.delay(1000);

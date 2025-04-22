@@ -1,13 +1,23 @@
-import { test } from "./outline";
+import { test, addOutlineToPDF } from "./outline";
 
-addEventListener("message", async (event) => {
-  if (event.data && event.data.action === "test") {
-    const title = event.data.title;
-    const result = test(title);
-    postMessage({
-      action: "test",
+self.onmessage = async (e) => {
+  console.log("Minimal Worker收到:", e.data);
+  const data = e.data;
+  if (data && data.action === "test") {
+    const result = test(data.title);
+    self.postMessage({
+      action: "testReturn",
+      jobID: data.jobID,
       status: "success",
-      result: result,
+      result,
+    });
+  } else if (data && data.action === "addOutline") {
+    const { filePath, outlineNodes } = data;
+    await addOutlineToPDF(filePath, outlineNodes);
+    self.postMessage({
+      action: "addOutlineReturn",
+      jobID: data.jobID,
+      status: "success",
     });
   }
-});
+};

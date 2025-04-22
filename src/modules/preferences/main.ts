@@ -61,6 +61,10 @@ export async function initPrefs() {
     );
   }
 
+  if (!getPref("translatorSource")) {
+    setPref("translatorSource", randomBaseUrl());
+  }
+
   const translatortUpdateTime = getPref("translatorUpdateTime");
   if (
     typeof translatortUpdateTime !== "string" ||
@@ -69,8 +73,6 @@ export async function initPrefs() {
     Zotero.Prefs.clear(`${config.prefsPrefix}.translatorUpdateTime`);
     setPref("translatorUpdateTime", "0");
   }
-
-  setPref("translatorSource", randomBaseUrl());
 }
 
 /**
@@ -84,8 +86,8 @@ function migratePrefs(prefix: string) {
   const acceptPrefsMap: Record<string, keyof PluginPrefsMap> = {
     firstrun: "firstRun",
     /* tools */
-    ennamesplit: "enNameSplit",
-    zhnamesplit: "zhNameSplit",
+    zhnamesplit: "autoSplitName",
+    ennamesplit: "splitEnName",
     language: "language",
     /* retrieve metadata */
     autoupdate: "autoUpdateMetadata",

@@ -1,10 +1,9 @@
-import { wait } from "zotero-plugin-toolkit";
 import { config } from "../../package.json";
 import { getString } from "../utils/locale";
 import { getPref } from "../utils/prefs";
 import { isChineseTopAttachment } from "./menu";
 import { registerOutline } from "./outline";
-import { splitChineseName } from "./tools";
+import { splitName } from "./tools";
 
 /**
  * A wrap for Zotero.Notifier.registerObserver,
@@ -53,7 +52,7 @@ function unregisterNotifier(notifierID: string) {
  */
 export function registerNotifiers() {
   registerNotifier(onAddItem, ["item"]);
-  registerNotifier(onOpenTab, ["tab"]);
+  // registerNotifier(onOpenTab, ["tab"]);
 }
 
 async function onAddItem(
@@ -73,8 +72,8 @@ async function onAddItem(
       }
     }
 
-    if (getPref("zhNameSplit")) {
-      splitChineseName(item);
+    if (getPref("autoSplitName")) {
+      splitName(item);
     }
   }
 }
