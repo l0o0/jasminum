@@ -3,7 +3,7 @@ import { getString } from "../utils/locale";
 import { getPref } from "../utils/prefs";
 import { isChineseTopAttachment } from "./menu";
 import { registerOutline } from "./outline";
-import { splitChineseName } from "./tools";
+import { splitName } from "./tools";
 
 /**
  * A wrap for Zotero.Notifier.registerObserver,
@@ -72,8 +72,8 @@ async function onAddItem(
       }
     }
 
-    if (getPref("zhNameSplit")) {
-      splitChineseName(item);
+    if (getPref("autoSplitName")) {
+      splitName(item);
     }
   }
 }

@@ -86,8 +86,8 @@ function migratePrefs(prefix: string) {
   const acceptPrefsMap: Record<string, keyof PluginPrefsMap> = {
     firstrun: "firstRun",
     /* tools */
-    ennamesplit: "enNameSplit",
-    zhnamesplit: "zhNameSplit",
+    zhnamesplit: "autoSplitName",
+    ennamesplit: "splitEnName",
     language: "language",
     /* retrieve metadata */
     autoupdate: "autoUpdateMetadata",

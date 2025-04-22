@@ -21,12 +21,6 @@
     preference="autoUpdateMetadata"
     data-l10n-id="label-autoupdate-metadata"
   />
-  <checkbox
-    id="zotero-prefpane-__addonRef__-zhnamesplit"
-    native="true"
-    preference="zhNameSplit"
-    data-l10n-id="label-zhnamesplit"
-  />
   <hbox flex="2" class="inputbox">
     <menulist
       id="zotero-prefpane-__addonRef__-namepattern-menulist"
@@ -173,6 +167,20 @@
 <!-- 小工具 -->
 <groupbox>
   <label><html:h2 data-l10n-id="pref-group-tools"></html:h2></label>
+  <hbox align="center">
+    <checkbox
+      id="zotero-prefpane-__addonRef__-autoSplitName"
+      native="true"
+      preference="autoSplitName"
+      data-l10n-id="label-auto-split-name"
+    />
+    <checkbox
+      id="zotero-prefpane-__addonRef__-splitEnName"
+      native="true"
+      preference="splitEnName"
+      data-l10n-id="label-split-en-name"
+    />
+  </hbox>
   <hbox align="center">
     <label
       for="zotero-prefpane-__addonRef__-language"

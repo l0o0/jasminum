@@ -2,8 +2,8 @@
 pref("firstRun", true);
 pref("translatorsMended", false);
 /* tools */
-pref("enNameSplit", false);
-pref("zhNameSplit", false);
+pref("autoSplitName", false);
+pref("splitEnName", false);
 pref("language", "zh");
 /* retrieve metadata */
 pref("autoUpdateMetadata", true);
