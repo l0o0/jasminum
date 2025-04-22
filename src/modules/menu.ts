@@ -2,6 +2,7 @@ import { MenuitemOptions } from "zotero-plugin-toolkit/dist/managers/menu";
 import { config } from "../../package.json";
 import { getString } from "../utils/locale";
 import { mergeChineseName, splitChineseName, updateCNKICite } from "./tools";
+import { getPDFTitle } from "../utils/pdfParser";
 
 /**
  * Return true when item is a top level Chinese PDF/CAJ item.
@@ -10,7 +11,7 @@ export function isChineseTopAttachment(item: Zotero.Item): boolean {
   return (
     item.isAttachment() &&
     item.isTopLevelItem() &&
-    /.*[\u4e00-\u9fff].*\.(pdf|caj|kdh|nh)$/i.test(item.attachmentFilename)
+    /\p{Unified_Ideograph}.*\.(pdf|caj|kdh|nh)$/iu.test(item.attachmentFilename)
   );
 }
 
@@ -18,7 +19,7 @@ export function isChineseTopItem(item: Zotero.Item): boolean {
   return (
     item.isRegularItem() &&
     item.isTopLevelItem() &&
-    /.*[\u4e00-\u9fff]$/i.test(item.getField("title"))
+    /\p{Unified_Ideograph}/iu.test(item.getField("title"))
   );
 }
 
@@ -119,7 +120,7 @@ export function registerMenu() {
       subOption.label = getString(`menuitem-${label}`);
       return subOption;
     }),
-    isHidden: (e) =>
+    isHidden: (_event) =>
       Zotero.getActiveZoteroPane()
         .getSelectedItems()
         .some((item) => {
