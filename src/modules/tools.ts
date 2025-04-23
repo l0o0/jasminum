@@ -207,9 +207,17 @@ export async function mergeName(item: Zotero.Item): Promise<void> {
     if (
       /\p{Unified_Ideograph}/u.test(`${creator.firstName}${creator.lastName}`)
     ) {
-      // 由于拆分后信息丢失，难以判断少数民族的姓氏，这里的条件是充分不必要的
-      const delimiter = creator.firstName.includes("·") ? "·" : "";
-      creator.lastName = `${creator.lastName}${delimiter}${creator.firstName}`;
+      if (
+        // Chinese Name in One field.
+        creator.fieldMode === 1 &&
+        creator.lastName.length - 2 === creator.lastName.indexOf(" ")
+      ) {
+        creator.lastName = creator.lastName.split(" ").reverse().join("");
+      } else {
+        // 由于拆分后信息丢失，难以判断少数民族的姓氏，这里的条件是充分不必要的
+        const delimiter = creator.firstName.includes("·") ? "·" : "";
+        creator.lastName = `${creator.lastName}${delimiter}${creator.firstName}`;
+      }
       creator.firstName = "";
       creator.fieldMode = 1;
     } else if (getPref("splitEnName") && /[a-z]/i.test(creator.lastName)) {
