@@ -128,32 +128,25 @@ export async function addOutlineToPDF(
 
   console.log("Prepared outline nodes: ", preparedOutlineNodes);
   // Add outline item dict
-  preparedOutlineNodes.forEach((node: OutlineNode, idx: number) => {
-    // Create outline item dict
-    createOutlineItem(
-      pdfDoc,
-      node,
-      node.level === 1 ? rootRef : node.ref,
-      idx > 0 ? preparedOutlineNodes[idx - 1].ref : null,
-      idx < preparedOutlineNodes.length - 1
-        ? preparedOutlineNodes[idx + 1].ref
-        : null,
-      pageRefs[node.page - 1],
-    );
-    if (node.children && node.children.length > 0) {
-      const children = node.children;
-      children.forEach((childNode: OutlineNode, cidx: number) => {
-        createOutlineItem(
-          pdfDoc,
-          childNode,
-          node.ref,
-          cidx > 0 ? children[cidx - 1].ref : null,
-          cidx < children.length - 1 ? children[cidx + 1].ref : null,
-          pageRefs[childNode.page - 1],
-        );
-      });
-    }
-  });
+  const loop = (nodes: OutlineNode[]) => {
+    nodes.forEach((node: OutlineNode, idx: number) => {
+      // Create outline item dict
+      createOutlineItem(
+        pdfDoc,
+        node,
+        node.level === 1 ? rootRef : node.ref,
+        idx > 0 ? nodes[idx - 1].ref : null,
+        idx < nodes.length - 1 ? nodes[idx + 1].ref : null,
+        pageRefs[node.page - 1],
+      );
+      if (node.children && node.children.length > 0) {
+        const children = node.children;
+        loop(children);
+      }
+    });
+  };
+
+  loop(preparedOutlineNodes);
 
   const pdfBytesWithOutline = await pdfDoc.save();
   await IOUtils.write(pdfPath, pdfBytesWithOutline);

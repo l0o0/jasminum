@@ -91,7 +91,8 @@ export function initEventListener(
       const target = e.target as HTMLElement;
       ztoolkit.log("click container", e.target);
       // 检查是否点击的是展开/折叠图标
-      if (target.closest("span")!.classList.contains("expander")) {
+      const spanElement = target.closest("span");
+      if (spanElement && spanElement.classList.contains("expander")) {
         ztoolkit.log("click expander");
         const listItem = target.closest("li");
         if (!listItem) return;
