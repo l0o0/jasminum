@@ -219,19 +219,19 @@ button:hover.j-outline-toolbar-button {
   border-left-color: #ffeb3b; /* Yellow */
 }
 .level-4 {
-  font-size: 9px;
+  font-size: 10px;
   border-left-color: #4caf50; /* Green */
 }
 .level-5 {
-  font-size: 9px;
+  font-size: 10px;
   border-left-color: #2196f3; /* Blue */
 }
 .level-6 {
-  font-size: 9px;
+  font-size: 10px;
   border-left-color: #673ab7; /* Purple */
 }
 .level-7 {
-  font-size: 9px;
+  font-size: 10px;
   border-left-color: #e91e63; /* Pink */
 }
 .collapsed > ul {

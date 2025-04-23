@@ -23,6 +23,7 @@ declare namespace _ZoteroTypes {
       "translatorUpdateTime": string;
       "translatorSource": string;
       "enableBookmark": boolean;
+      "newNodeAsChild": boolean;
     };
   }
 }

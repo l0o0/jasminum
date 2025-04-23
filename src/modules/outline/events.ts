@@ -5,6 +5,7 @@ import {
 } from "./outline";
 import { ICONS } from "./style";
 import { getString } from "../../utils/locale";
+import { getPref } from "../../utils/prefs";
 
 const MAX_LEVEL = 7;
 
@@ -764,7 +765,8 @@ export async function deleteSelectedNode(ev: Event) {
   doc.getElementById("j-outline-viewer")?.focus();
 }
 
-// 添加新节点
+// 添加新节点。选中节点的子节点还是下一个同级节点
+// 默认设置为添加节点的同级节点
 export async function addNewNode(ev: Event) {
   const doc = (ev.target as Element).ownerDocument;
   const newTitle = "新书签";
@@ -790,41 +792,47 @@ export async function addNewNode(ev: Event) {
     doc.querySelector(".empty-outline-prompt")?.classList.add("hidden");
   } else {
     // 添加为选中节点的子节点或兄弟节点
-    const parentLi = selectedNode.closest("li.tree-item")!;
-    const parentLevel = parseInt(
-      parentLi.querySelector("div.tree-node")!.getAttribute("level") || "1",
-    );
+    let targetChildrenList: HTMLElement;
+    let targetLevel: number;
+    const selectedLevel = parseInt(selectedNode.getAttribute("level") || "1");
+    if (getPref("newNodeAsChild")) {
+      // 作为子节点
+      const selectedLi = selectedNode.closest("li.tree-item")!;
+      targetLevel = selectedLevel + 1;
 
-    // 检查是否有子列表，如果没有，创建一个
-    let childList = parentLi.querySelector("ul");
-    if (!childList) {
-      childList = ztoolkit.UI.createElement(doc, "ul", {
-        classList: ["tree-list"],
-      });
-      parentLi.appendChild(childList);
+      // 检查是否有子列表，如果没有，创建一个
+      targetChildrenList = selectedLi.querySelector("ul")!;
+      if (!targetChildrenList) {
+        targetChildrenList = ztoolkit.UI.createElement(doc, "ul", {
+          classList: ["tree-list"],
+        });
+        selectedLi.appendChild(targetChildrenList);
 
-      // 添加父节点标记并更新展开图标
-      parentLi.classList.add("has-children");
-      const expander = parentLi.querySelector(".expander")!;
-      //expander.textContent = "▼";
-      expander.innerHTML = ICONS.down;
+        // 添加父节点标记并更新展开图标
+        selectedLi.classList.add("has-children");
+        const expander = selectedLi.querySelector(".expander")!;
+        //expander.textContent = "▼";
+        expander.innerHTML = ICONS.down;
+      }
+      // 确保父节点展开
+      selectedLi.classList.remove("collapsed");
+    } else {
+      targetLevel = selectedLevel;
+      targetChildrenList = selectedNode.closest("ul.tree-list") as HTMLElement;
     }
-
     createTreeNodes(
       [
         {
-          level: parentLevel + 1,
+          level: targetLevel,
           title: newTitle,
           page: location.position.pageIndex + 1,
           x: location.position.rects[0][0],
           y: location.position.rects[0][1],
         },
       ],
-      childList,
+      targetChildrenList,
       doc,
     );
-    // 确保父节点展开
-    parentLi.classList.remove("collapsed");
   }
   // 保存节点信息
   await saveOutlineToJSON();

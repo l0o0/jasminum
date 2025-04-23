@@ -20,3 +20,4 @@ pref("translatorUpdateTime", "0");
 pref("translatorSource", "");
 /* bookmark */
 pref("enableBookmark", true);
+pref("newNodeAsChild", false);
