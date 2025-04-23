@@ -191,10 +191,14 @@ export async function updateTranslators(force = false): Promise<boolean> {
       });
     },
   );
-  await Promise.all(translatorUpdateTasks);
-  // @ts-ignore Translators is missing
-  await Zotero.Translators.reinit({ fromSchemaUpdate: false });
-  addon.data.translators.updating = false;
+  try {
+    await Promise.all(translatorUpdateTasks);
+    // @ts-ignore Translators is missing
+    await Zotero.Translators.reinit({ fromSchemaUpdate: false });
+  }
+  finally {
+    addon.data.translators.updating = false;
+  }
   setPref("translatorUpdateTime", now.toString());
   popupWin.changeLine({
     text: getString("update-translators-complete", {

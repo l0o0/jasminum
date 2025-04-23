@@ -11,7 +11,7 @@ export function isChineseTopAttachment(item: Zotero.Item): boolean {
   return (
     item.isAttachment() &&
     item.isTopLevelItem() &&
-    /.*\p{Unified_Ideograph}.*\.(pdf|caj|kdh|nh)$/iu.test(
+    /\p{Unified_Ideograph}.*\.(pdf|caj|kdh|nh)$/iu.test(
       item.attachmentFilename.replace(/[和等年月日]/g, ""),
     )
   );
@@ -21,7 +21,7 @@ export function isChineseTopItem(item: Zotero.Item): boolean {
   return (
     item.isRegularItem() &&
     item.isTopLevelItem() &&
-    /.*\p{Unified_Ideograph}$/iu.test(item.getField("title"))
+    /\p{Unified_Ideograph}/iu.test(item.getField("title"))
   );
 }
 
@@ -122,7 +122,7 @@ export function registerMenu() {
       subOption.label = getString(`menuitem-${label}`);
       return subOption;
     }),
-    isHidden: (e) =>
+    isHidden: (_event) =>
       Zotero.getActiveZoteroPane()
         .getSelectedItems()
         .some((item) => {

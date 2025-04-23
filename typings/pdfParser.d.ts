@@ -1,13 +1,17 @@
-type IOItems = {
-  [key: string]: string;
-};
-
 type RecognizerData = {
   metadata: {
     [key: string]: string;
   };
   totalPages: number;
   pages: RecognizerPage[];
+};
+
+type PdfData = {
+  metadata: {
+    [key: string]: string;
+  };
+  totalPages: number;
+  pages: PdfPage[];
 };
 
 type RecognizerPage = {
@@ -18,7 +22,33 @@ type RecognizerPage = {
   2: [[[[0, 0, 0, 0, RecognizerLine[]]]]];
 };
 
+type PdfPage = {
+  width: number;
+  height: number;
+  text: string;
+  classList: string[];
+  paragraphs: PdfParagraph[];
+};
+
+type PdfParagraph = {
+  fontSize: string;
+  text: string;
+  classList: string[];
+  lines: PdfLine[];
+};
+
 type RecognizerLine = [RecognizerWord[]];
+
+type PdfLine = {
+  xMin: number;
+  yMin: number;
+  xMax: number;
+  yMax: number;
+  fontSize: string;
+  baseline: number;
+  text: string;
+  words: PdfWord[];
+};
 
 type RecognizerWord = [
   // 0: xMin
@@ -51,10 +81,21 @@ type RecognizerWord = [
   string,
 ];
 
-type JSONLine = {
+type PdfWord = {
+  xMin: number;
+  yMin: number;
+  xMax: number;
+  yMax: number;
   fontSize: number;
-  class: string;
+  spaceAfter: boolean;
+  baseline: number;
+  rotation: boolean;
+  underlined: boolean;
+  bold: boolean;
+  italic: boolean;
+  colorIndex: number;
+  fontIndex: number;
   text: string;
 };
 
-type LiteratureType = "article" | "thesis" | "book";
+type DocType = "article" | "thesis" | "book";
