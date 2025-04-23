@@ -157,12 +157,19 @@
 <!-- 书签 -->
 <groupbox>
   <label><html:h2 data-l10n-id="pref-group-bookmark"></html:h2></label>
-  <checkbox
-    id="zotero-prefpane-__addonRef__-enableBookmark"
-    native="true"
-    preference="enableBookmark"
-    data-l10n-id="label-enableBookmark"
-  />
+  <hbox align="center">
+    <checkbox
+      id="zotero-prefpane-__addonRef__-enableBookmark"
+      native="true"
+      preference="enableBookmark"
+      data-l10n-id="label-enableBookmark"
+    />
+    <image
+      src="chrome://jasminum/content/icons/help.svg"
+      style="margin-top: 5px; margin-bottom: 5px; width: 20px"
+      data-l10n-id="outline-desc"
+    />
+  </hbox>
 </groupbox>
 <!-- 小工具 -->
 <groupbox>

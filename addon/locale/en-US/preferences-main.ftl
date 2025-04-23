@@ -52,6 +52,8 @@ label-translators-detail-click = Click to View
 pref-group-bookmark = Outline Bookmark Settings
 label-enableBookmark = 
   .label = Enable Outline Bookmark
+outline-desc = 
+  .tooltiptext = Please note that when you modify the outline or bookmarks, you need to click the 'Save' button to save them to the PDF file. By default, bookmark and outline information is saved separately from the PDF file.
 
 # Tool Settings
 pref-group-tools = Tool Settings

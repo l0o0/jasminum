@@ -5,8 +5,8 @@ export const ICONS = {
   add: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path fill="currentColor" d="m12 18l-4.2 1.8q-1 .425-1.9-.162T5 17.975V5q0-.825.588-1.412T7 3h5q.425 0 .713.288T13 4t-.288.713T12 5H7v12.95l5-2.15l5 2.15V12q0-.425.288-.712T18 11t.713.288T19 12v5.975q0 1.075-.9 1.663t-1.9.162zm0-13H7h6zm5 2h-1q-.425 0-.712-.288T15 6t.288-.712T16 5h1V4q0-.425.288-.712T18 3t.713.288T19 4v1h1q.425 0 .713.288T21 6t-.288.713T20 7h-1v1q0 .425-.288.713T18 9t-.712-.288T17 8z"/></svg>`,
   del: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path fill="currentColor" d="M16 7q-.425 0-.712-.288T15 6t.288-.712T16 5h4q.425 0 .713.288T21 6t-.288.713T20 7zm-4 11l-4.2 1.8q-1 .425-1.9-.162T5 17.975V5q0-.825.588-1.412T7 3h5q.425 0 .713.288T13 4t-.288.713T12 5H7v12.95l5-2.15l5 2.15V12q0-.425.288-.712T18 11t.713.288T19 12v5.975q0 1.075-.9 1.663t-1.9.162zm0-13H7h6z"/></svg>`,
   save: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path fill="currentColor" d="M5 21q-.825 0-1.412-.587T3 19V5q0-.825.588-1.412T5 3h11.175q.4 0 .763.15t.637.425l2.85 2.85q.275.275.425.638t.15.762V19q0 .825-.587 1.413T19 21zM19 7.85L16.15 5H5v14h14zM12 18q1.25 0 2.125-.875T15 15t-.875-2.125T12 12t-2.125.875T9 15t.875 2.125T12 18m-5-8h7q.425 0 .713-.288T15 9V7q0-.425-.288-.712T14 6H7q-.425 0-.712.288T6 7v2q0 .425.288.713T7 10M5 7.85V19V5z"/></svg>`,
-  down: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" color="currentColor"><path d="M16 10.5s-2.946 3-4 3s-4-3-4-3"/></g></svg>`,
-  right: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" color="currentColor"><path d="M10.5 8s3 2.946 3 4s-3 4-3 4"/></g></svg>`,
+  down: `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 2 20 20"><g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" color="currentColor"><path d="M16 10.5s-2.946 3-4 3s-4-3-4-3"/></g></svg>`,
+  right: `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 2 20 20"><g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" color="currentColor"><path d="M10.5 8s3 2.946 3 4s-3 4-3 4"/></g></svg>`,
 };
 
 export const outline_css = `
@@ -117,12 +117,13 @@ button:hover.j-outline-toolbar-button {
   display: flex;
   align-items: center;
   padding: 1px;
-  border-radius: 4px;
+  border-radius: 2px;
   cursor: pointer;
   transition:
     background 0.2s,
     border-left-color 0.2s;
-  border-left: 4px solid transparent;
+  border-left: 2px solid transparent;
+  border-left-width: 2px;
   position: relative;
 }
 .tree-node:hover {
@@ -172,10 +173,11 @@ button:hover.j-outline-toolbar-button {
   box-shadow: 0 0 3px var(--shadow-color);
 }
 .expander {
-  width: 24px;
-  height: 24px;
+  width: 20px;
+  height: 20px;
   cursor: pointer;
   margin-right: 2px;
+  margin-left: -6px;
   text-align: center;
   line-height: 10px;
   flex-shrink: 0;
@@ -205,23 +207,23 @@ button:hover.j-outline-toolbar-button {
 }
 /* Rainbow hierarchy indicators for different levels - maintained in both themes */
 .level-1 {
-  font-size: 14px;
+  font-size: 12px;
   border-left-color: #ff5252; /* Red */
 }
 .level-2 {
-  font-size: 13px;
+  font-size: 11px;
   border-left-color: #ff9800; /* Orange */
 }
 .level-3 {
-  font-size: 12px;
+  font-size: 10px;
   border-left-color: #ffeb3b; /* Yellow */
 }
 .level-4 {
-  font-size: 11px;
+  font-size: 9px;
   border-left-color: #4caf50; /* Green */
 }
 .level-5 {
-  font-size: 10px;
+  font-size: 9px;
   border-left-color: #2196f3; /* Blue */
 }
 .level-6 {
@@ -229,7 +231,7 @@ button:hover.j-outline-toolbar-button {
   border-left-color: #673ab7; /* Purple */
 }
 .level-7 {
-  font-size: 8px;
+  font-size: 9px;
   border-left-color: #e91e63; /* Pink */
 }
 .collapsed > ul {

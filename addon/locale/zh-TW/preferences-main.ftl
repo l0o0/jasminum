@@ -52,6 +52,8 @@ label-translators-detail-click = 點擊查看
 pref-group-bookmark = 大綱書籤設定
 label-enableBookmark = 
   .label = 啟用大綱書籤
+outline-desc = 
+  .tooltiptext = 請注意，當您修改大綱或書籤時，需要點擊「儲存」按鈕才會將變更保存至PDF檔案中。預設情況下，書籤與大綱資訊會與PDF檔案分開儲存。
 
 # 小工具設定
 pref-group-tools = 小工具設定

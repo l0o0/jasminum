@@ -52,6 +52,8 @@ label-translators-detail-click = 点击查看
 pref-group-bookmark = 大纲书签设置
 label-enableBookmark = 
   .label = 启用大纲书签
+outline-desc = 
+  .tooltiptext = 请注意，当您修改大纲或书签时，需要点击保存按钮才会保存到PDF文件中。默认将书签大纲信息与PDF文件分开保存。
 
 # 小工具设置
 pref-group-tools = 小工具设置

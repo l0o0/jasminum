@@ -86,7 +86,7 @@ export function initEventListener(
 
   // 节点展开/折叠事件，选中节点
   treeContainer // 节点点击选择事件
-    .addEventListener("click", function (e: Event) {
+    .addEventListener("click", async (e: Event) => {
       const target = e.target as HTMLElement;
       ztoolkit.log("click container", e.target);
       // 检查是否点击的是展开/折叠图标
@@ -96,6 +96,7 @@ export function initEventListener(
         if (!listItem) return;
         toggleNode(listItem);
         e.stopPropagation();
+        await saveOutlineToJSON();
         return;
       }
 

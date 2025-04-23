@@ -322,7 +322,9 @@ export function createTreeNodes(
                 properties: {
                   innerHTML:
                     node.children && node.children.length > 0
-                      ? ICONS.down
+                      ? node.collapsed === false
+                        ? ICONS.down
+                        : ICONS.right
                       : " ",
                 },
               },

@@ -38,12 +38,12 @@ update-skipped = 跳过更新：{ $name }
 update-translators-complete = 转换器更新完成，成功：{ $successCounts }, 失败：{ $failCounts }， 跳过：{ $skipCounts }
 
 # outline
-outline = 显示书签（茉莉花）
+outline = 显示书签大纲（茉莉花）
 outline-expand-all = 展开所有
 outline-collapse-all = 收起所有
 outline-add = 添加书签
 outline-delete = 删除书签
-outline-save-to-pdf = 将书签保存到PDF文件
+outline-save-to-pdf = 将大纲保存到PDF文件
 outline-edit-placeholder = 请输入书签
 outline-empty-prompt = 请点击上方按钮{ $icon }创建书签
 outline-delete-confirm = 该节点有子节点，是否删除?
