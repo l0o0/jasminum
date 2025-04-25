@@ -115,17 +115,9 @@ export async function getOutlineFromPDF(
   reader: _ZoteroTypes.ReaderInstance,
 ): Promise<OutlineNode[] | null> {
   const item = reader._item;
-  const attachmentPath = (await item.getFilePathAsync()) as string;
-  const attachmentFolder = PathUtils.parent(attachmentPath);
-  const outlinePath = PathUtils.join(
-    attachmentFolder!,
-    "jasminum-outline.json",
-  );
   // 优先从JSON缓存中读取书签信息
-  if (await IOUtils.exists(outlinePath)) {
-    const outlineJson = await loadOutlineFromJSON(outlinePath);
-    if (outlineJson) return outlineJson;
-  }
+  const outlineJson = await loadOutlineFromJSON(item);
+  if (outlineJson) return outlineJson;
   // 如果上面没有返回Outline信息，重新读取
   await wait.waitUtilAsync(
     () => {
@@ -247,35 +239,38 @@ export async function saveOutlineToJSON(
     outline: outline,
   };
   const outlineStr = JSON.stringify(outlineInfo);
-  const attachmentPath = await item.getFilePathAsync();
-  if (attachmentPath == false) return;
-  const attachmentFolder = PathUtils.parent(attachmentPath);
-  await Zotero.File.putContentsAsync(
-    PathUtils.join(attachmentFolder!, "jasminum-outline.json"),
-    outlineStr,
+  const outlinePath = PathUtils.join(
+    Zotero.DataDirectory.dir,
+    "storage",
+    item.key,
+    "jasminum-outline.json",
   );
+  await Zotero.File.putContentsAsync(outlinePath, outlineStr);
   ztoolkit.log("Save outline to JSON");
 }
 
 // 加载时要考虑JSON文件的版本信息，如果版本低，要重新从原文件加载信息
 export async function loadOutlineFromJSON(
-  parm: Zotero.Item | string,
+  item: Zotero.Item,
 ): Promise<OutlineNode[] | null> {
-  let outlinePath = "";
-  if (typeof parm == "string") {
-    outlinePath = parm;
-  } else {
-    const attachmentPath = await parm.getFilePathAsync();
-    if (attachmentPath == false) return null;
-    const attachmentFolder = PathUtils.parent(attachmentPath);
-    outlinePath = PathUtils.join(attachmentFolder!, "jasminum-outline.json");
-  }
-  const content = (await Zotero.File.getContentsAsync(outlinePath)) as string;
-  const tmp = JSON.parse(content);
-  if (tmp.info.schema < OUTLINE_SCHEMA) {
+  const outlinePath = PathUtils.join(
+    Zotero.DataDirectory.dir,
+    "storage",
+    item.key,
+    "jasminum-outline.json",
+  );
+  const isFileExist = await IOUtils.exists(outlinePath);
+  if (!isFileExist) {
+    ztoolkit.log(`Outline json is missing: ${outlinePath}`);
     return null;
   } else {
-    return JSON.parse(content)["outline"];
+    const content = (await Zotero.File.getContentsAsync(outlinePath)) as string;
+    const tmp = JSON.parse(content);
+    if (tmp.info.schema < OUTLINE_SCHEMA) {
+      return null;
+    } else {
+      return JSON.parse(content)["outline"];
+    }
   }
 }
 
