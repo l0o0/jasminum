@@ -47,12 +47,15 @@ async function onMainWindowLoad(win: Window): Promise<void> {
   // Create ztoolkit for every window
   addon.data.ztoolkit = createZToolkit();
 
+  // @ts-ignore - Not typed.
+  await Zotero.Promise.delay(1000);
+
   if (getPref("autoUpdateTranslators")) {
+    // @ts-ignore - Not typed.
+    await Zotero.Promise.delay(10000);
     ztoolkit.log("auto update translators");
     updateTranslators();
   }
-  // @ts-ignore - Not typed.
-  await Zotero.Promise.delay(1000);
 }
 
 function onShutdown(): void {

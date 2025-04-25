@@ -167,7 +167,14 @@ function bindPrefEvents(doc: Document) {
     ?.addEventListener("click", async (event) => {
       const button = event.target as HTMLButtonElement;
       button.disabled = true;
-      await updateTranslators(true);
+      if (addon.data.translators.updating) {
+        ztoolkit.log("Chinese translators are under updating.");
+        addon.data.prefs?.window.alert(
+          getString("info-translators-cn-updaing"),
+        );
+      } else {
+        await updateTranslators(true);
+      }
       addon.data.prefs?.window.setTimeout(() => {
         button.disabled = false;
       }, 3000);

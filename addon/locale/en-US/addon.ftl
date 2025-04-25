@@ -7,6 +7,8 @@ tabpanel-reader-tab-label = Reader Tab
 # Preference
 select-download-folder = Select download folder
 get-Chinese-styles = Get Chinese community styles…
+info-translators-cn-updaing = Chinese translators are under updating.
+
 
 # Preference translator table
 th-filename = File name
