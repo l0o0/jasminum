@@ -62,8 +62,9 @@ label-auto-split-name =
 label-split-en-name = 
   .label = Include English names when splitting/merging names
 label-language = Manually Set Language
-label-tools-info = 💡 The Linter plugin provides richer metadata inspection functionality ->
-label-tools-linter = Linter Plugin Tutorial
+label-tools-info-1 = 💡 The 
+label-tools-info-2 = provides richer metadata inspection functionality
+label-tools-linter = Linter Plugin
 
 # WPS Plugin Installation
 pref-group-wps = WPS Zotero Plugin
