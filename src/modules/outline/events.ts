@@ -153,7 +153,7 @@ export function initEventListener(
 }
 
 // 为节点添加事件监听，以下为事件处理函数
-function expandAll(ev: Event) {
+async function expandAll(ev: Event) {
   const doc = (ev.target as Element).ownerDocument;
   const collapsedNodes = doc.querySelectorAll(".tree-item.collapsed");
   collapsedNodes.forEach((node) => {
@@ -165,9 +165,10 @@ function expandAll(ev: Event) {
       expander!.innerHTML = ICONS.down;
     }
   });
+  await saveOutlineToJSON();
 }
 
-function collapseAll(ev: Event) {
+async function collapseAll(ev: Event) {
   const doc = (ev.target as Element).ownerDocument;
   const parentNodes = doc.querySelectorAll(".tree-item.has-children");
   parentNodes.forEach((node) => {
@@ -178,6 +179,7 @@ function collapseAll(ev: Event) {
       expander!.innerHTML = ICONS.right;
     }
   });
+  await saveOutlineToJSON();
 }
 
 // 切换节点展开/折叠状态
