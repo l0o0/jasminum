@@ -62,8 +62,9 @@ label-auto-split-name =
 label-split-en-name = 
   .label = 拆分/合并姓名时包括英文名
 label-language = 手动设置语言
-label-tools-info = 💡 Linter 插件提供更丰富的元数据检查功能->
-label-tools-linter = Linter 插件教程
+label-tools-info-1 = 💡 
+label-tools-info-2 = 提供更丰富的元数据检查功能
+label-tools-linter = Linter 插件
 
 # WPS 插件安装
 pref-group-wps = WPS Zotero 插件
