@@ -167,11 +167,22 @@ export class Scraper {
           if (task.type == "attachment") {
             task.item.parentID = newItem.id;
           } else if (task.type == "snapshot") {
-            ztoolkit.log("Foud item, remove snapshot item");
-            const tmpJSON = newItem.toJSON();
-            task.item.fromJSON(tmpJSON);
-            // Remove newItem, newItem'data is copied.
-            await newItem.eraseTx();
+            if (task.item.isTopLevelItem()) {
+              ztoolkit.log("Translate snapshot item for webpage item");
+              const tmpJSON = newItem.toJSON();
+              task.item.fromJSON(tmpJSON);
+              await newItem.eraseTx();
+            } else {
+              ztoolkit.log("Translate snapshot attachment item");
+              const oldParentItem = task.item.parentItem!;
+              const collectionIDs = oldParentItem.getCollections();
+              task.item.parentID = newItem.id;
+              // When parent item is erased, the attachment item will be erased. Set new parent item before the old parent will be earsed.
+              await task.item.saveTx();
+              await oldParentItem.eraseTx();
+              newItem.setCollections(collectionIDs);
+              await newItem.saveTx();
+            }
           }
           await task.item.saveTx();
           task.status = "success";

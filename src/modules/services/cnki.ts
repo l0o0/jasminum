@@ -412,7 +412,7 @@ export default class CNKI implements ScrapeService {
     ztoolkit.log("Start to search for snapshot");
     let webpageItem: Zotero.Item;
     let attachmentItem: Zotero.Item | undefined;
-    let searchResults: ScrapeSearchResult[] | null = [];
+    let searchResults: ScrapeSearchResult[] | null = null;
 
     if (task.item.isTopLevelItem()) {
       webpageItem = task.item;
@@ -422,7 +422,6 @@ export default class CNKI implements ScrapeService {
       webpageItem = task.item.parentItem!;
       attachmentItem = task.item;
     }
-
     // Find snapshot attachment,
     if (attachmentItem) {
       const filePath = (await attachmentItem.getFilePathAsync()) as string;
