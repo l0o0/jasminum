@@ -110,6 +110,16 @@ export function registerMenu() {
   const separatorMenu: MenuitemOptions = {
     tag: "menuseparator",
     id: `${config.addonRef}-separator`,
+    isHidden: (_event) =>
+      Zotero.getActiveZoteroPane()
+        .getSelectedItems()
+        .some((item) => {
+          return !(
+            isChineseTopAttachment(item) ||
+            isChinsesSnapshot(item) ||
+            (item.isTopLevelItem() && item.isRegularItem())
+          );
+        }),
   };
   const metadataMenu: MenuitemOptions = {
     tag: "menu",
