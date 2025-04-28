@@ -1,7 +1,9 @@
+import { get } from "http";
 import {
   ElementProps,
   TagElementProps,
 } from "zotero-plugin-toolkit/dist/tools/ui";
+import { getString } from "../utils/locale";
 
 export class Progress {
   public taskList: ScrapeTask[] = [];
@@ -22,15 +24,35 @@ export class Progress {
 
   // Add new task to task list.
   // If progress window is not open, open it.
-  public async addTask(task: ScrapeTask): Promise<void> {
-    this.taskList.push(task);
-    if (task.silent == true) return;
+  public async addTask(task: ScrapeTask): Promise<string | null> {
+    // Avoid deplicated task.
+    if (this.taskList.length === 0) {
+      this.taskList.push(task);
+    } else {
+      if (this.taskList.find((t) => t.id === task.id)) {
+        ztoolkit.log(`Task ${task.id} already exists.`);
+        if (this.progressWindow) {
+          this.progressWindow.alert(
+            getString("task-already-exists", {
+              args: { title: task.item.getField("title") },
+            }),
+          );
+        }
+        return null;
+      } else {
+        this.taskList.push(task);
+      }
+    }
+
+    if (task.silent == true) return task.id;
+
     if (this.progressWindow) {
       this.addTaskToProgressWindow(task);
     } else {
       await this.openProgressWindow();
       this.addTaskToProgressWindow(task);
     }
+    return task.id;
   }
 
   public async openProgressWindow(): Promise<void> {

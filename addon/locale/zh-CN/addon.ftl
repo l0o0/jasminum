@@ -50,3 +50,6 @@ outline-empty-prompt = 请点击上方按钮{ $icon }创建书签
 outline-delete-confirm = 该节点有子节点，是否删除?
   {" "}
   如果删除，则所有子节点也会被删除。
+
+# Progress window
+task-already-exists = 任务已存在：{ $title }

@@ -49,3 +49,6 @@ outline-empty-prompt = Please click the button above { $icon } to create a bookm
 outline-delete-confirm = This node has child nodes, do you want to delete?
   {" "}
   If you delete, all child nodes will be deleted.
+
+# Progress window
+task-already-exists = Task already exists: { $title }

@@ -14,7 +14,7 @@ export class Task implements ScrapeTask {
   private _searchResults: ScrapeSearchResult[] = [];
 
   constructor(item: Zotero.Item, type: TaskType, silent?: false) {
-    this.id = Zotero.Utilities.randomString();
+    this.id = Zotero.Utilities.Internal.md5(item.id.toString());
     this.item = item;
     this.type = type;
     this.silent = false;
@@ -102,7 +102,11 @@ export class Scraper {
       const task = new Task(item, taskType);
       ztoolkit.log("search task", task);
       // TODO: Maybe this is a slient task.
-      addon.data.progress.addTask(task);
+      const returnTaskID = await addon.data.progress.addTask(task);
+      if (!returnTaskID) {
+        ztoolkit.log("Trying to add task again. Stop here.");
+        continue;
+      }
       task.status = "processing";
       // Searching by different scrape services
       let scrapeSearchResults: ScrapeSearchResult[] = [];
