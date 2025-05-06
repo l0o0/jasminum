@@ -6,6 +6,7 @@ import { getString } from "../../utils/locale";
 async function onWindowLoad(_window: Window) {
   addon.data.translators.window = _window;
   await updateRowData();
+  addon.data.translators.rows = addon.data.translators.allRows;
   const columns = [
     {
       dataKey: "filename",
@@ -67,11 +68,11 @@ async function updateRowData() {
     rows.push({
       filename,
       label,
-      localUpdateTime: (await getLastUpdatedFromFile(filename)) || "",
+      localUpdateTime: (await getLastUpdatedFromFile(filename)) || "--",
       remoteUpdateTime: lastUpdated,
     });
   }
-  addon.data.translators.rows = rows;
+  addon.data.translators.allRows = rows;
 }
 
 async function updateTableUI() {
@@ -91,19 +92,24 @@ function bindEvents(doc: Document) {
   searchBox?.addEventListener("command", async (event) => {
     ztoolkit.log("search", event);
     const value = (event.target as XULTextBoxElement).value;
-    if (!value) return;
-    addon.data.translators.rows = addon.data.translators.rows.filter((row) => {
-      function ignoreCaseIncludes(str: string, search: string) {
-        return str.toLowerCase().includes(search.toLowerCase());
-      }
-      return (
-        ignoreCaseIncludes(row.filename, value) ||
-        ignoreCaseIncludes(row.label, value)
+    if (!value) {
+      addon.data.translators.rows = addon.data.translators.allRows;
+    } else {
+      addon.data.translators.rows = addon.data.translators.allRows.filter(
+        (row) => {
+          function ignoreCaseIncludes(str: string, search: string) {
+            return str.toLowerCase().includes(search.toLowerCase());
+          }
+          return (
+            ignoreCaseIncludes(row.filename, value) ||
+            ignoreCaseIncludes(row.label, value)
+          );
+        },
       );
-    });
+    }
     await updateTableUI();
+    ztoolkit.log(`Updated table for search: ${value}`);
   });
-
   searchBox?.focus();
 
   doc

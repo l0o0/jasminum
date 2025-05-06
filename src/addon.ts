@@ -24,6 +24,7 @@ class Addon {
       window?: Window;
       helper?: VirtualizedTableHelper;
       rows: TableRow[];
+      allRows: TableRow[];
       selected?: string;
       updating?: boolean;
     };
@@ -44,6 +45,7 @@ class Addon {
       windows: {},
       translators: {
         rows: [],
+        allRows: [],
         updating: false,
       },
       myCookieSandbox: new MyCookieSandbox(),
