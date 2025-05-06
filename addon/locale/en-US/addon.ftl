@@ -16,6 +16,13 @@ th-label = Label
 th-local-update-time = Local update time
 th-remote-update-time = Remote update time
 
+# Help menu
+help-menu-chinese = Zotero Chinese Community
+help-menu-wiki = Zotero Wiki
+help-menu-addons = Addon Store
+help-menu-csl = Donwload more CSL
+help-menu-translator = Help with Chinese literature capture
+
 # Menu
 menu-metadata = Metadata(CN)
 menuitem-retrieveMetadata = Find article metadata

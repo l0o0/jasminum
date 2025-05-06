@@ -16,6 +16,13 @@ th-label = 標籤
 th-local-update-time = 本地更新時間
 th-remote-update-time = 遠程更新時間
 
+# Help menu
+help-menu-chinese = Zotero 中文社群
+help-menu-wiki = Zotero 使用說明
+help-menu-addons = 插件商店
+help-menu-csl = CSL樣式下載
+help-menu-translator = 中文文獻抓取異常解決
+
 # Menu
 menu-metadata = 元資料抓取
 menuitem-retrieveMetadata = 抓取期刊元資料
