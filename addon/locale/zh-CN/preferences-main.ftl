@@ -30,11 +30,32 @@ label-metadata-source-cnki =
   .label = 中国知网CNKI
 label-metadata-source-cvip =
   .label = 维普期刊CVIP
-label-pdf-match-folder = 附件匹配文件夹
+
+namepattern-desc = 
+  .tooltiptext = 根据文件名抓取知网元数据，文件名格式设置:
+  {"{"}%t{"}"}=标题，{"{"}%g{"}"}=作者，{"{"}%y{"}"}=年份，{"{"}%j{"}"}=其他（例如来源信息）；分隔符依实情指定，可连续使用多个；不用考虑文件后缀名。
+  默认使用{"{"}%t{"}"}_{"{"}%g{"}"}，可识别大部分知网下载的文件名格式，包括文件名只包括标题无分隔符号。
+
+# 附件查找设置
+pref-group-attachment = 本地附件查找设置
+attachment-folder-desc = 
+  .tooltiptext = 从下载目录中查找附件，并匹配到缺少附件的条目中。
+  此处请设置为浏览器的下载目录，插件就可以批量从下载目录中导入和查询附件。
+label-pdf-match-folder = 附件下载文件夹
+action-after-import = 附件匹配到条目之后，如何处理原始下载的附件文件：
 label-choose-folder =
   .label = 选择文件夹
-namepattern-desc = 
-  .tooltiptext = 根据文件名抓取知网元数据，文件名格式设置:{"{"}%t{"}"}=标题，{"{"}%g{"}"}=作者，{"{"}%y{"}"}=年份，{"{"}%j{"}"}=其他（例如来源信息）；分隔符依实情指定，可连续使用多个；不用考虑文件后缀名。默认使用{"{"}%t{"}"}_{"{"}%g{"}"}，可识别大部分知网下载的文件名格式，包括文件名只包括标题无分隔符号。
+nothing-label =
+  .label = 无须处理
+backup-label =
+  .label = 备份附件
+delete-label =
+  .label = 删除附件
+action-after-import-desc =
+  .tooltiptext = 附件成功匹配到条目之后，您可以选择以下操作：
+  1. 无须处理：不做任何操作，下载的附件还在下载目录中；
+  2. 备份附件：将原始下载的附件文件备份到指定目录；
+  3. 删除附件：删除原始下载的附件文件，该附件已经匹配到条目，保存到Zotero中。
 
 # 转换器设置
 pref-group-translators = 中文转换器设置

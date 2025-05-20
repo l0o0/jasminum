@@ -1,7 +1,7 @@
 import { config } from "../../package.json";
 import { getString } from "../utils/locale";
 import { getPref } from "../utils/prefs";
-import { isChineseTopAttachment } from "./menu";
+import { isChineseTopAttachment } from "../utils/detect";
 import { registerOutline } from "./outline";
 import { splitName } from "./tools";
 
@@ -68,7 +68,7 @@ async function onAddItem(
 
     if (getPref("autoUpdateMetadata")) {
       if (isChineseTopAttachment(item)) {
-        await addon.scraper.search([item]);
+        await addon.taskRunner.createAndAddTask(item, "attachment");
       }
     }
 

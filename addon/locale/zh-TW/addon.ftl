@@ -28,6 +28,9 @@ menu-metadata = 元資料抓取
 menuitem-retrieveMetadata = 抓取期刊元資料
 menuitem-retrieveMetadataForBook = 抓取書籍元資料
 
+menuitem-find-attachment = 在資料夾中尋找附件
+menuitem-import-attachments = 從資料夾中導入附件
+
 menu-tools = 小工具
 menuitem-mergeName = 合併姓名
 menuitem-splitName = 拆分姓名
@@ -44,6 +47,10 @@ update-successfully = 更新成功：{ $name }
 update-failed = 更新失敗：{ $name }
 update-skipped = 跳過更新：{ $name }
 update-translators-complete = 轉換器更新完成，成功：{ $successCounts }, 失敗：{ $failCounts }， 跳過：{ $skipCounts }
+no-item-need-attachment = 項目已存在附件或屬於非學術類型
+import-attachments-success = 從資料夾中導入附件成功
+importing-attachments-is-running = 已有附件匯入任務正在執行，請稍後再試
+no-attachments-found = 未找到可匯入的附件（PDF、CAJ等）
 
 # outline
 outline = 顯示書籤大纲（茉莉花）

@@ -19,6 +19,9 @@ declare namespace _ZoteroTypes {
       "isMainlandChina": boolean;
       "cnkiAttachmentCookie": string;
       "pdfMatchFolder": string;
+      "actionAfterAttachmentImport": string;
+      "similarityThreshold": string;
+      "topMatchCount": number;
       "autoUpdateTranslators": boolean;
       "translatorUpdateTime": string;
       "translatorSource": string;

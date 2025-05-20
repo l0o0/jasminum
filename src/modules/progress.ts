@@ -1,4 +1,3 @@
-import { get } from "http";
 import {
   ElementProps,
   TagElementProps,
@@ -6,7 +5,6 @@ import {
 import { getString } from "../utils/locale";
 
 export class Progress {
-  public taskList: ScrapeTask[] = [];
   public progressWindow: Window | null;
   private statusIcons: Record<string, string> = {};
 
@@ -19,40 +17,6 @@ export class Progress {
       success: "chrome://jasminum/content/icons/check.svg",
       fail: "chrome://jasminum/content/icons/cross.svg",
     };
-    this.taskList = [];
-  }
-
-  // Add new task to task list.
-  // If progress window is not open, open it.
-  public async addTask(task: ScrapeTask): Promise<string | null> {
-    // Avoid deplicated task.
-    if (this.taskList.length === 0) {
-      this.taskList.push(task);
-    } else {
-      if (this.taskList.find((t) => t.id === task.id)) {
-        ztoolkit.log(`Task ${task.id} already exists.`);
-        if (this.progressWindow) {
-          this.progressWindow.alert(
-            getString("task-already-exists", {
-              args: { title: task.item.getField("title") },
-            }),
-          );
-        }
-        return null;
-      } else {
-        this.taskList.push(task);
-      }
-    }
-
-    if (task.silent == true) return task.id;
-
-    if (this.progressWindow) {
-      this.addTaskToProgressWindow(task);
-    } else {
-      await this.openProgressWindow();
-      this.addTaskToProgressWindow(task);
-    }
-    return task.id;
   }
 
   public async openProgressWindow(): Promise<void> {
@@ -68,12 +32,12 @@ export class Progress {
       this.progressWindow = win.openDialog(htmlUrl, "", chromeArgs, windowArgs);
       this.progressWindow!.onbeforeunload = (e) => {
         this.progressWindow = null;
-        this.taskList = [];
+        addon.taskRunner.tasks = [];
       };
       // For close button in header bar
       this.progressWindow!.onclose = (e) => {
         this.progressWindow = null;
-        this.taskList = [];
+        addon.taskRunner.tasks = [];
       };
       let t = 0;
       // Wait for window
@@ -93,8 +57,8 @@ export class Progress {
   }
 
   private createSearchResultProps(
-    task: ScrapeTask,
-    searchResults: ScrapeSearchResult[],
+    task: Task,
+    searchResults: (ScrapeSearchResult | AttachmentSearchResult)[],
   ): TagElementProps {
     return {
       tag: "div",
@@ -153,71 +117,76 @@ export class Progress {
   }
 
   // Add new task to progress window.
-  public addTaskToProgressWindow(task: ScrapeTask): void {
-    if (this.progressWindow) {
-      ztoolkit.log("Add task to progress window.");
-      const taskNodeProps: ElementProps = {
-        classList: ["task"],
-        children: [
-          {
-            tag: "div",
-            classList: ["task-header"],
-            id: `task-header-${task.id}`,
-          },
-        ],
-        attributes: { "data-task-id": task.id },
-      };
-      const searchContainer: TagElementProps = {
-        tag: "div",
-        classList: ["search-results-container"],
-        id: `search-results-container-${task.id}`,
-        properties: { style: "display: none;" },
-        children: [
-          {
-            namespace: "html",
-            tag: "button",
-            classList: ["confirm-button"],
-            properties: { innerText: "确认" },
-            attributes: { "data-task-id": task.id },
-          },
-        ],
-      };
-      // <object type="image/svg+xml" data="A.svg"></object>
-      const taskHeaderChildren: TagElementProps[] = [
-        {
-          tag: "img",
-          classList: ["task-status"],
-          id: `task-status-${task.id}`,
-          properties: { src: this.statusIcons[task.status] },
-        },
-        {
-          tag: "span",
-          classList: ["task-title"],
-          properties: { innerText: task.item.getField("title") },
-        },
-      ];
+  public async addTaskToProgressWindow(task: Task): Promise<void> {
+    if (task.silent === true) return;
 
-      // if (task.searchResult && task.searchResult.length > 0) {
-
-      // }
-
-      taskNodeProps.children![0].children = taskHeaderChildren;
-      taskNodeProps.children?.push(searchContainer);
-
-      const taskNode = ztoolkit.UI.createElement(
-        this.progressWindow!.document,
-        "div",
-        taskNodeProps,
-      );
-
-      this.progressWindow.document
-        .querySelector("#task-list")
-        ?.appendChild(taskNode);
+    if (this.progressWindow == null) {
+      await this.openProgressWindow();
     }
+
+    ztoolkit.log("Add task to progress window.");
+    const taskNodeProps: ElementProps = {
+      classList: ["task"],
+      children: [
+        {
+          tag: "div",
+          classList: ["task-header"],
+          id: `task-header-${task.id}`,
+        },
+      ],
+      attributes: { "data-task-id": task.id },
+    };
+    const searchContainer: TagElementProps = {
+      tag: "div",
+      classList: ["search-results-container"],
+      id: `search-results-container-${task.id}`,
+      properties: { style: "display: none;" },
+      children: [
+        {
+          namespace: "html",
+          tag: "button",
+          classList: ["confirm-button"],
+          properties: { innerText: "确认" },
+          attributes: { "data-task-id": task.id },
+        },
+      ],
+    };
+    // <object type="image/svg+xml" data="A.svg"></object>
+    const taskHeaderChildren: TagElementProps[] = [
+      {
+        tag: "img",
+        classList: ["task-status"],
+        id: `task-status-${task.id}`,
+        properties: { src: this.statusIcons[task.status] },
+      },
+      {
+        tag: "span",
+        classList: ["task-title"],
+        properties: { innerText: task.item.getField("title") },
+      },
+    ];
+
+    // if (task.searchResult && task.searchResult.length > 0) {
+
+    // }
+
+    taskNodeProps.children![0].children = taskHeaderChildren;
+    taskNodeProps.children?.push(searchContainer);
+
+    const taskNode = ztoolkit.UI.createElement(
+      this.progressWindow!.document,
+      "div",
+      taskNodeProps,
+    );
+
+    this.progressWindow!.document.querySelector("#task-list")?.appendChild(
+      taskNode,
+    );
   }
   // Update task status icon. Display error msgs when task fails.
-  public updateTaskStatus(task: ScrapeTask, status: string): void {
+  public updateTaskStatus(task: Task, status: string): void {
     if (this.progressWindow) {
+      ztoolkit.log(`Progress windows update task status: ${task.id} ${status}`);
       this.progressWindow.document
         .querySelector(`#task-status-${task.id}`)
         ?.setAttribute("src", this.statusIcons[status]);
@@ -235,6 +204,12 @@ export class Progress {
             attributes: { title: task.message },
           },
         );
+        // ztoolkit.log(this.progressWindow.document);
+        // ztoolkit.log(
+        //   this.progressWindow.document.querySelector(
+        //     `#task-header-${task.id} > span.task-title`,
+        //   ),
+        // );
         this.progressWindow.document
           .querySelector(`#task-header-${task.id} > span.task-title`)
           ?.appendChild(span);
@@ -243,8 +218,8 @@ export class Progress {
   }
 
   public updateTaskSearchResult(
-    task: ScrapeTask,
-    searchResults: ScrapeSearchResult[],
+    task: Task,
+    searchResults: (ScrapeSearchResult | AttachmentSearchResult)[],
   ): void {
     if (this.progressWindow) {
       ztoolkit.log(searchResults);

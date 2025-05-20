@@ -48,6 +48,27 @@ label-translators-force-update =
 label-translators-detail = Translator Details
 label-translators-detail-click = Click to View
 
+# Attachment Settings
+pref-group-attachment = Local Attachment Search Settings
+attachment-folder-desc = 
+  .tooltiptext = Search for attachments in the download directory and match them to entries that are missing attachments.
+  Set this to your browser's download directory, and the plugin can batch import and search for attachments from the download directory.
+label-pdf-match-folder = Attachment Download Folder
+action-after-import = After matching attachments to entries, what to do with the original downloaded files:
+label-choose-folder =
+  .label = Choose Folder
+nothing-label =
+  .label = Do Nothing
+backup-label =
+  .label = Backup Attachment
+delete-label =
+  .label = Delete Attachment
+action-after-import-desc =
+  .tooltiptext = After successfully matching attachments to entries, you can choose one of the following actions: 
+  1. Do Nothing: No action is taken, and the downloaded files remain in the download directory. 
+  2. Backup Attachment: Back up the original downloaded files to a specified directory. 
+  3. Delete Attachment: Delete the original downloaded files (the attachments are already matched and saved in Zotero).
+
 # Outline Bookmark Settings
 pref-group-bookmark = Outline Bookmark Settings
 label-enableBookmark = 

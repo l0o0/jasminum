@@ -1,41 +1,14 @@
 import { MenuitemOptions } from "zotero-plugin-toolkit/dist/managers/menu";
 import { config } from "../../package.json";
 import { getString } from "../utils/locale";
-import { mergeName, splitName, updateCNKICite } from "./tools";
-import { getPDFTitle } from "../utils/pdfParser";
-
-/**
- * Return true when item is a top level Chinese PDF/CAJ item.
- */
-export function isChineseTopAttachment(item: Zotero.Item): boolean {
-  return (
-    item.isAttachment() &&
-    item.isTopLevelItem() &&
-    /\p{Unified_Ideograph}.*\.(pdf|caj|kdh|nh)$/iu.test(
-      item.attachmentFilename.replace(/[和等年月日]/g, ""),
-    )
-  );
-}
-
-export function isChineseTopItem(item: Zotero.Item): boolean {
-  return (
-    item.isRegularItem() &&
-    item.isTopLevelItem() &&
-    /\p{Unified_Ideograph}/iu.test(item.getField("title"))
-  );
-}
-
-// CNKI Snapshot attachment item
-// CNKI Webpage top level item.
-export function isChinsesSnapshot(item: Zotero.Item): boolean {
-  return (
-    (item.isSnapshotAttachment() &&
-      item.getField("title").includes("- 中国知网")) ||
-    (item.isTopLevelItem() &&
-      item.itemType == "webpage" &&
-      item.getField("title").includes("- 中国知网"))
-  );
-}
+import {
+  mergeName,
+  splitName,
+  updateCNKICite,
+  importAttachmentsFromFolder,
+  handleAttachmentMenu,
+} from "./tools";
+import { isChineseTopAttachment, isChinsesSnapshot } from "../utils/detect";
 
 const metaddataMenuItems: MenuitemOptions[] = [
   {
@@ -48,11 +21,14 @@ const metaddataMenuItems: MenuitemOptions[] = [
         .some((item) => {
           return !(isChineseTopAttachment(item) || isChinsesSnapshot(item));
         }),
-    commandListener: () => {
-      // @ts-ignore - The plugin instance is not typed.
-      Zotero[config.addonInstance].scraper.search(
-        Zotero.getActiveZoteroPane().getSelectedItems(),
-      );
+    commandListener: async () => {
+      const items = Zotero.getActiveZoteroPane().getSelectedItems();
+      for (const item of items) {
+        await addon.taskRunner.createAndAddTask(
+          item,
+          isChineseTopAttachment(item) ? "attachment" : "snapshot",
+        );
+      }
     },
   },
   {
@@ -104,6 +80,14 @@ const toolsMenuItems: MenuitemOptions[] = [
       await updateCNKICite(Zotero.getActiveZoteroPane().getSelectedItems());
     },
   },
+  {
+    tag: "menuitem",
+    label: "find-attachment",
+    icon: `chrome://${config.addonRef}/content/icons/attachment-search.svg`,
+    commandListener: () => {
+      handleAttachmentMenu("item");
+    },
+  },
 ];
 
 export function registerMenu() {
@@ -121,6 +105,7 @@ export function registerMenu() {
           );
         }),
   };
+
   const metadataMenu: MenuitemOptions = {
     tag: "menu",
     label: getString("menu-metadata"),
@@ -160,6 +145,37 @@ export function registerMenu() {
   ztoolkit.Menu.register("item", separatorMenu);
   ztoolkit.Menu.register("item", metadataMenu);
   ztoolkit.Menu.register("item", toolsMenu);
+
+  const attachmentMenu: MenuitemOptions = {
+    tag: "menuitem",
+    label: getString("menuitem-find-attachment"),
+    id: `${config.addonRef}-attachment-menu`,
+    icon: `chrome://${config.addonRef}/content/icons/attachment-search.svg`,
+    commandListener: () => {
+      handleAttachmentMenu("collection");
+    },
+    isHidden: () =>
+      Zotero.getActiveZoteroPane().getSelectedCollection() === undefined
+        ? true
+        : false,
+  };
+
+  const importAttachmentMenu: MenuitemOptions = {
+    tag: "menuitem",
+    label: getString("menuitem-import-attachments"),
+    id: `${config.addonRef}-attachment-menu`,
+    icon: `chrome://${config.addonRef}/content/icons/folder-import.svg`,
+    commandListener: async () => {
+      await importAttachmentsFromFolder();
+    },
+    isHidden: () =>
+      Zotero.getActiveZoteroPane().getSelectedCollection() === undefined
+        ? true
+        : false,
+  };
+
+  ztoolkit.Menu.register("collection", attachmentMenu);
+  ztoolkit.Menu.register("collection", importAttachmentMenu);
   // ztoolkit.Menu.register("item", {
   //   tag: "menuitem",
   //   label: "TEST",

@@ -218,18 +218,18 @@ function bindPrefEvents(doc: Document) {
   //     setPref("metadataSource", pvalues.join(", "));
   //   });
 
-  // doc
-  //   .querySelector(
-  //     `#zotero-prefpane-${config.addonRef}-pdf-match-folder-button`,
-  //   )
-  //   ?.addEventListener("click", async (e) => {
-  //     const path = await new ztoolkit.FilePicker(
-  //       getString("select-download-folder"),
-  //       "folder",
-  //       [],
-  //     ).open();
-  //     if (path) setPref("pdfMatchFolder", path);
-  //   });
+  doc
+    .querySelector(
+      `#zotero-prefpane-${config.addonRef}-pdf-match-folder-button`,
+    )
+    ?.addEventListener("click", async (e) => {
+      const path = await new ztoolkit.FilePicker(
+        getString("select-download-folder"),
+        "folder",
+        [],
+      ).open();
+      if (path) setPref("pdfMatchFolder", path);
+    });
 
   // doc
   //   .querySelector(

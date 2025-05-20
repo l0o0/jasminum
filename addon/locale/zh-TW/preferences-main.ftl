@@ -48,6 +48,27 @@ label-translators-force-update =
 label-translators-detail = 轉換器詳情
 label-translators-detail-click = 點擊查看
 
+# 附件設定
+pref-group-attachment = 本地附件查找設定
+attachment-folder-desc = 
+  .tooltiptext = 從下載目錄中查找附件，並匹配到缺少附件的條目中
+  此處請設定為瀏覽器的下載目錄，插件即可批次從下載目錄中匯入及查詢附件。
+label-pdf-match-folder = 附件下載資料夾
+action-after-import = 附件匹配到條目之後，如何處理原始下載的附件檔案：
+label-choose-folder =
+  .label = 選擇資料夾
+nothing-label =
+  .label = 無須處理
+backup-label =
+  .label = 備份附件
+delete-label =
+  .label = 刪除附件
+action-after-import-desc =
+  .tooltiptext = 附件成功匹配到條目之後，您可以選擇以下操作：
+  1. 無須處理：不做任何操作，下載的附件仍保留在下載目錄中；
+  2. 備份附件：將原始下載的附件檔案備份到指定目錄；
+  3. 刪除附件：刪除原始下載的附件檔案（該附件已匹配到條目並儲存到Zotero中）。
+
 # 大綱書籤設定
 pref-group-bookmark = 大綱書籤設定
 label-enableBookmark = 

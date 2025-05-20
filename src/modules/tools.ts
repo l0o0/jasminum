@@ -1,7 +1,10 @@
 import { config } from "../../package.json";
-import { isChineseTopItem } from "./menu";
+import { isChineseTopItem } from "./../utils/detect";
 import { getString } from "../utils/locale";
 import { getPref } from "../utils/prefs";
+import { CNKI } from "../modules/services/cnki";
+import { findAttachmentsInFolder } from "./attachments/localMatch";
+import { actionAfterImport } from "./attachments";
 
 // 中国稀有姓氏统计小组发布于小红书ID4975028282
 // https://www.xiaohongshu.com/discovery/item/67c017cb000000001203db3d
@@ -231,12 +234,13 @@ export async function mergeName(item: Zotero.Item): Promise<void> {
 }
 
 export async function getCNKICite(item: Zotero.Item): Promise<string> {
+  const cnki = new CNKI();
   const searchOption = {
     title: item.getField("title"),
     author: item.getCreators()[0].lastName + item.getCreators()[0].firstName,
   };
   let cite = "";
-  const searchResults = await addon.scraper.cnki?.search(searchOption);
+  const searchResults = await cnki.search(searchOption);
   if (searchResults && searchResults.length > 0) {
     cite = searchResults[0].citation as string;
     ztoolkit.log(`CNKI citation: ${cite}`);
@@ -325,5 +329,108 @@ async function renameAttachmentFromParent(attachmentItem: Zotero.Item) {
   if ([origFilename, origFilenameNoExt].includes(origTitle)) {
     attachmentItem.setField("title", newName);
     await attachmentItem.saveTx();
+  }
+}
+
+export async function importAttachmentsFromFolder(): Promise<void> {
+  let msgType = "default";
+  let msg: string = "";
+  if (addon.data.isImportingAttachments) {
+    Zotero.getMainWindow().alert(getString("importing-attachments-is-running"));
+    return;
+  }
+  try {
+    const folder = getPref("pdfMatchFolder");
+    const collectionID =
+      Zotero.getActiveZoteroPane().getSelectedCollection()!.id;
+    const attachmentFilenames = await findAttachmentsInFolder(folder);
+    ztoolkit.log(collectionID, attachmentFilenames);
+    if (attachmentFilenames.length === 0) {
+      msg = getString("no-attachments-found");
+      msgType = "success";
+    } else {
+      for (const filename of attachmentFilenames) {
+        const importOptions: _ZoteroTypes.Attachments.OptionsFromFile = {
+          collections: [collectionID],
+          file: filename,
+        };
+        await Zotero.Attachments.importFromFile(importOptions);
+        ztoolkit.log(`${filename} imported.`);
+        await actionAfterImport(filename);
+      }
+      msg = getString("import-attachments-success");
+      msgType = "success";
+    }
+  } catch (e) {
+    ztoolkit.log(e);
+    msg = String(e);
+    msgType = "fail";
+  } finally {
+    addon.data.isImportingAttachments = false;
+    new ztoolkit.ProgressWindow(config.addonName, {
+      closeOnClick: true,
+      closeTime: 1500,
+    })
+      .createLine({
+        text: msg,
+        type: msgType,
+        icon: `chrome://${config.addonRef}/content/icons/icon.png`,
+      })
+      .show();
+  }
+}
+
+/**
+ * 分类或选中的条目查找附件，从本地或远程下载。
+ * 注意，此处会过滤掉已有附件的条目。
+ * TODO: Exclude some attachment file types.
+ */
+export async function handleAttachmentMenu(menuType: "collection" | "item") {
+  let selectedItems: Zotero.Item[] = [];
+  if (menuType === "item") {
+    selectedItems = Zotero.getActiveZoteroPane().getSelectedItems();
+  } else if (menuType === "collection") {
+    const collectionID =
+      Zotero.getActiveZoteroPane().getSelectedCollection()?.id;
+    if (!collectionID) return;
+    selectedItems = Zotero.Collections.get(collectionID).getChildItems();
+  } else {
+    return;
+  }
+
+  const targetItemTypes = [
+    "journalArticle",
+    "thesis",
+    "book",
+    "bookSection",
+    "conferencePaper",
+    "report",
+    "patent",
+  ];
+  const noAttachmentItems = selectedItems.filter((item) => {
+    if (!item.isRegularItem() || !targetItemTypes.includes(item.itemType))
+      return false;
+    // Exclude snapshot attachments
+    const aItems = item
+      .getAttachments()
+      .filter((i) => !Zotero.Items.get(i).isSnapshotAttachment());
+    ztoolkit.log(aItems);
+    return aItems.length === 0;
+  });
+  if (noAttachmentItems.length === 0) {
+    new ztoolkit.ProgressWindow(config.addonName, {
+      closeOnClick: true,
+      closeTime: 1500,
+    })
+      .createLine({
+        text: getString("no-item-need-attachment"),
+        type: "default",
+        icon: `chrome://${config.addonRef}/content/icons/cite.png`,
+      })
+      .show();
+  } else {
+    for (const item of noAttachmentItems) {
+      await addon.taskRunner.createAndAddTask(item, "local");
+    }
   }
 }

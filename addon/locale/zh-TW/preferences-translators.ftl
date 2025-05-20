@@ -11,5 +11,5 @@ how-to-update-translators = 如何更新轉換器？
 translators-dashboard = 轉換器看板
 
 # Buttons
-request-new-translator = 請求新轉換器
-report-translator-bug = 報告轉換器錯誤
+request-new-translator = 請求适配
+report-translator-bug = 報告錯誤

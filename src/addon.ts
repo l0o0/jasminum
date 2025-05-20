@@ -1,10 +1,10 @@
 import hooks from "./hooks";
 import { createZToolkit } from "./utils/ztoolkit";
-import { Scraper } from "./modules/services";
 import { Progress } from "./modules/progress";
 import { VirtualizedTableHelper } from "zotero-plugin-toolkit";
 import { MyCookieSandbox } from "./utils/cookiebox";
 import { getOutlineFromPDF } from "./modules/outline/outline";
+import { TaskRunner } from "./utils/task";
 
 class Addon {
   public data: {
@@ -29,12 +29,13 @@ class Addon {
       updating?: boolean;
     };
     myCookieSandbox?: MyCookieSandbox;
+    isImportingAttachments: boolean;
   };
   // Lifecycle hooks
   public hooks: typeof hooks;
   // APIs
   public api: object;
-  public scraper: Scraper;
+  public taskRunner: TaskRunner;
 
   constructor() {
     this.data = {
@@ -49,10 +50,11 @@ class Addon {
         updating: false,
       },
       myCookieSandbox: new MyCookieSandbox(),
+      isImportingAttachments: false,
     };
     this.hooks = hooks;
     this.api = { getOutlineFromPDF };
-    this.scraper = new Scraper();
+    this.taskRunner = new TaskRunner();
   }
 }
 

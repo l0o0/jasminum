@@ -1,6 +1,7 @@
 import { requestDocument } from "../../utils/http";
 import { DocTools, jsonToFormUrlEncoded, text2HTMLDoc } from "../../utils/http";
 import { getPref } from "../../utils/prefs";
+import { ScraperTask } from "../../utils/task";
 
 /**
  * Create post data for CNKI search.
@@ -285,7 +286,7 @@ async function updateItem(
   return item;
 }
 
-export default class CNKI implements ScrapeService {
+export class CNKI implements ScrapeService {
   async search(
     searchOption: SearchOption,
   ): Promise<ScrapeSearchResult[] | null> {
@@ -332,7 +333,7 @@ export default class CNKI implements ScrapeService {
   }
 
   async translate(
-    task: ScrapeTask,
+    task: ScraperTask,
     saveAttachments: false,
   ): Promise<Zotero.Item | null> {
     let item: Zotero.Item | null = null;
@@ -408,7 +409,9 @@ export default class CNKI implements ScrapeService {
   }
 
   // CNKI webpage item or snapshot item.
-  async searchSnapshot(task: ScrapeTask): Promise<ScrapeSearchResult[] | null> {
+  async searchSnapshot(
+    task: ScraperTask,
+  ): Promise<ScrapeSearchResult[] | null> {
     ztoolkit.log("Start to search for snapshot");
     let webpageItem: Zotero.Item;
     let attachmentItem: Zotero.Item | undefined;

@@ -29,15 +29,17 @@
   },
   "dependencies": {
     "pdf-lib": "^1.17.1",
+    "string-similarity": "^4.0.4",
     "zotero-plugin-toolkit": "^4.1.2"
   },
   "devDependencies": {
-    "@eslint/js": "^9.24.0",
-    "@types/node": "^22.14.1",
-    "eslint": "^9.24.0",
+    "@eslint/js": "^9.27.0",
+    "@types/node": "^22.15.19",
+    "@types/string-similarity": "^4.0.2",
+    "eslint": "^9.27.0",
     "prettier": "^3.5.3",
     "typescript": "^5.8.3",
-    "typescript-eslint": "^8.30.1",
+    "typescript-eslint": "^8.32.1",
     "zotero-plugin-scaffold": "^0.6.0",
     "zotero-types": "^3.1.9"
   },

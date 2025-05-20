@@ -49,10 +49,10 @@
     >
     </html:input>
     <image
+      class="help-icon"
       src="chrome://jasminum/content/icons/help.svg"
-      style="margin-top: 5px; margin-bottom: 5px; width: 20px"
       data-l10n-id="namepattern-desc"
-    />
+    ></image>
   </hbox>
   <!-- <hbox align="center">
     <label
@@ -86,21 +86,6 @@
         />
       </html:div>
     </html:div>
-  </hbox> -->
-  <!-- <hbox align="center">
-    <label
-      for="zotero-prefpane-__addonRef__-pdf-match-folder"
-      data-l10n-id="label-pdf-match-folder"
-    ></label>
-    <html:input
-      type="text"
-      id="zotero-prefpane-__addonRef__-pdf-match-folder-input"
-      preference="pdfMatchFolder"
-    ></html:input>
-    <button
-      id="zotero-prefpane-__addonRef__-pdf-match-folder-button"
-      data-l10n-id="label-choose-folder"
-    ></button>
   </hbox> -->
 </groupbox>
 <!-- 转换器 -->
@@ -148,10 +133,52 @@
       </menupopup>
     </menulist>
     <image
+      class="help-icon"
       src="chrome://jasminum/content/icons/help.svg"
-      style="margin-top: 5px; margin-bottom: 5px; width: 20px"
       data-l10n-id="translatorSource-desc"
-    />
+    ></image>
+  </hbox>
+</groupbox>
+<!-- 附件 -->
+<groupbox>
+  <label><html:h2 data-l10n-id="pref-group-attachment"></html:h2></label>
+  <hbox align="center">
+    <label
+      for="zotero-prefpane-__addonRef__-pdf-match-folder"
+      data-l10n-id="label-pdf-match-folder"
+    ></label>
+    <html:input
+      type="text"
+      id="zotero-prefpane-__addonRef__-pdf-match-folder-input"
+      preference="pdfMatchFolder"
+    ></html:input>
+    <button
+      id="zotero-prefpane-__addonRef__-pdf-match-folder-button"
+      data-l10n-id="label-choose-folder"
+    ></button>
+    <image
+      class="help-icon"
+      src="chrome://jasminum/content/icons/help.svg"
+      data-l10n-id="attachment-folder-desc"
+    ></image>
+  </hbox>
+  <hbox align="center">
+    <label data-l10n-id="action-after-import"></label>
+    <menulist
+      id="zotero-prefpane-__addonRef__-source"
+      preference="actionAfterAttachmentImport"
+    >
+      <menupopup>
+        <menuitem value="nothing" data-l10n-id="nothing-label" />
+        <menuitem value="backup" data-l10n-id="backup-label" />
+        <menuitem value="delete" data-l10n-id="delete-label" />
+      </menupopup>
+    </menulist>
+    <image
+      class="help-icon"
+      src="chrome://jasminum/content/icons/help.svg"
+      data-l10n-id="action-after-import-desc"
+    ></image>
   </hbox>
 </groupbox>
 <!-- 书签 -->
@@ -165,10 +192,10 @@
       data-l10n-id="label-enableBookmark"
     />
     <image
+      class="help-icon"
       src="chrome://jasminum/content/icons/help.svg"
-      style="margin-top: 5px; margin-bottom: 5px; width: 20px"
       data-l10n-id="outline-desc"
-    />
+    ></image>
   </hbox>
 </groupbox>
 <!-- 小工具 -->
@@ -198,7 +225,10 @@
     ></html:input>
   </hbox>
   <hbox>
-    <label data-l10n-id="label-tools-info-1" style="margin-top: 8px; margin-bottom: 8px"></label>
+    <label
+      data-l10n-id="label-tools-info-1"
+      style="margin-top: 8px; margin-bottom: 8px"
+    ></label>
     <label
       data-l10n-id="label-tools-linter"
       is="zotero-text-link"
@@ -206,7 +236,10 @@
       href="https://zotero-chinese.com/user-guide/plugins/linter"
       style="margin-top: 8px; margin-bottom: 8px"
     ></label>
-    <label data-l10n-id="label-tools-info-2" style="margin-left: 0.5ch; margin-top: 8px; margin-bottom: 8px"></label>
+    <label
+      data-l10n-id="label-tools-info-2"
+      style="margin-left: 0.5ch; margin-top: 8px; margin-bottom: 8px"
+    ></label>
   </hbox>
 </groupbox>
 <!-- WPS下载 -->

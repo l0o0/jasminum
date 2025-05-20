@@ -28,6 +28,9 @@ menu-metadata = Metadata(CN)
 menuitem-retrieveMetadata = Find article metadata
 menuitem-retrieveMetadataForBook = Find book metadata
 
+menuitem-find-attachment = Find attachment in Folder
+menuitem-import-attachments = Import attachments from Folder
+
 menu-tools = Tools
 menuitem-mergeName = Concat Name
 menuitem-splitName = Split Name
@@ -44,6 +47,10 @@ update-successfully = Update successfully: { $name }
 update-failed = Update failed: { $name }
 update-skipped = Update skipped: { $name }
 update-translators-complete = Update translators completed, Success: { $successCounts }, Failed: { $failCounts }, Skipped: { $skipCounts }
+no-item-need-attachment = No item need attachment
+no-attachments-found = No attachments found (PDF, CAJ, etc.)
+import-attachments-success = Import attachments from folder successfully
+importing-attachments-is-running = An attachment import task is already running. Please try again later.
 
 # outline
 outline = Show Bookmark (By Jasminum)

@@ -5,11 +5,18 @@ href="chrome://zotero-platform/content/zotero-react-client.css"
 type="text/css"?> <?xml-stylesheet
 href="chrome://zotero-platform/content/zotero.css" type="text/css"?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml">
+<html
+  xmlns="http://www.w3.org/1999/xhtml"
+  xmlns:xul="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul"
+  xmlns:html="http://www.w3.org/1999/xhtml"
+>
   <head>
     <meta charset="UTF-8" />
+    <xul:linkset>
+      <link rel="localization" href="__addonRef__-progress.ftl" />
+    </xul:linkset>
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>抓取任务列表</title>
+    <title data-l10n-id="title"></title>
     <style>
       /* 默认样式（Light Mode） */
       html {
@@ -17,13 +24,40 @@ href="chrome://zotero-platform/content/zotero.css" type="text/css"?>
       }
 
       body {
+        display: flex;
+        flex-direction: column;
         font-family: Arial, sans-serif;
-        margin: 8px;
-        padding: 8px;
+        padding: 8px 8px 40px; /* 底部留出按钮空间 */
+        box-sizing: border-box; /* 确保尺寸计算包含padding */
         border-radius: 4px;
         background-color: #ffffff;
         color: #000000;
-        height: 334px;
+        height: 90vh; /* 使用视口高度 */
+      }
+
+      h1 {
+        flex-shrink: 0; /* 禁止标题收缩 */
+        margin: 0 0 10px 0;
+      }
+
+      /* 可滚动区域 */
+      #task-list {
+        flex: 1; /* 占据剩余空间 */
+        overflow-y: auto; /* 垂直滚动 */
+        min-height: 0; /* 允许内容压缩 */
+      }
+
+      /* 调整底部按钮定位 */
+      div.buttons {
+        position: fixed;
+        top: 332px;
+        right: 35px;
+        background: inherit; /* 继承背景色 */
+        border-radius: 4px;
+      }
+
+      div.hidden {
+        display: none;
       }
 
       .task {
@@ -64,14 +98,18 @@ href="chrome://zotero-platform/content/zotero.css" type="text/css"?>
       }
 
       .confirm-button {
-        margin-right: 10px; /* 按钮放在搜索结果左侧 */
-        padding: 5px 10px;
+        margin-right: 4px; /* 按钮放在搜索结果左侧 */
+        margin-left: -20px;
+        padding: 4px 8px;
         background: #4caf50;
         color: white;
         border: none;
         border-radius: 3px;
         cursor: pointer;
         display: none; /* 默认隐藏 */
+        font-size: 12px;
+        width: 50px;
+        margin-top: 1.5px;
       }
 
       .confirm-button:disabled {
@@ -84,8 +122,8 @@ href="chrome://zotero-platform/content/zotero.css" type="text/css"?>
       }
 
       .search-result {
-        margin-bottom: 5px;
-        padding: 5px;
+        margin-bottom: 4px;
+        padding: 4px;
         border: 1px solid #eee;
         border-radius: 3px;
         background-color: #ffffff;
@@ -94,7 +132,7 @@ href="chrome://zotero-platform/content/zotero.css" type="text/css"?>
       }
 
       .search-result input[type="radio"] {
-        margin-right: 10px;
+        margin-right: 8px;
       }
 
       .search-result .info {
@@ -115,20 +153,10 @@ href="chrome://zotero-platform/content/zotero.css" type="text/css"?>
         opacity: 0.5; /* 降低透明度 */
       }
 
-      div.buttons {
-        position: absolute;
-        bottom: 2px; /* 固定在底部 */
-        right: 20px; /* 固定在右侧 */
-        padding: 8px; /* 内边距 */
-        /* background-color: #f9f9f9; 背景色 */
-        /* border-top: 1px solid #ccc; 顶部边框 */
-        display: flex;
-        gap: 10px; /* 按钮之间的间距 */
-      }
-
       .task-msg {
-        width: 14px;
+        width: 15px;
         margin-left: 8px;
+        vertical-align: middle;
       }
 
       /* 黑暗模式样式 */
@@ -181,7 +209,10 @@ href="chrome://zotero-platform/content/zotero.css" type="text/css"?>
     </style>
   </head>
   <body>
-    <h1>抓取任务列表</h1>
+    <h1 data-l10n-id="task-list"></h1>
+    <div class="hidden">
+      <p id="msg1" data-l10n-id="confirm-close"></p>
+    </div>
     <div id="task-list"></div>
     <div class="buttons">
       <button id="button-cancel">Close</button>
@@ -213,7 +244,7 @@ href="chrome://zotero-platform/content/zotero.css" type="text/css"?>
         type: "attachment",
         item: { getField: () => "论文标题 1" },
         status: "success",
-        errorMsg: "This is error msg1",
+        message: "This is error msg1",
         searchResult: [
           {
             source: "Source A",
@@ -232,14 +263,14 @@ href="chrome://zotero-platform/content/zotero.css" type="text/css"?>
         type: "snapshot",
         item: { getField: () => "论文标题 2" },
         status: "processing",
-        errorMsg: "This is error msg2",
+        message: "This is error msg2",
       },
       {
         id: "3",
         type: "attachment",
         item: { getField: () => "论文标题 3" },
         status: "fail",
-        errorMsg: "抓取失败",
+        message: "抓取失败",
       },
     ];
 
@@ -264,7 +295,7 @@ href="chrome://zotero-platform/content/zotero.css" type="text/css"?>
               <div class="task-header">
                 <span class="task-status">${statusIcons[task.status]}</span>
                 <span class="task-title">${task.item.getField("title")}</span>
-                <span class="task-msg" id="task-msg-${task.id}" title="${task.errorMsg}">⚠️</span>
+                <span class="task-msg" id="task-msg-${task.id}" title="${task.message}">⚠️</span>
                 ${
                   task.searchResult && task.searchResult.length > 0
                     ? `<span class="toggle-icon" id="toggle-icon-${task.id}">▼</span>`
@@ -283,8 +314,9 @@ href="chrome://zotero-platform/content/zotero.css" type="text/css"?>
                               <div class="search-result">
                                 <input type="radio" name="task-${task.id}" data-task-id="${task.id}" data-result-index="${index}" />
                                 <div class="info">
-                                  <span class="source">来源: ${result.source}</span>
-                                  <span class="title">标题: ${result.title}</span>
+                                  <span class="source" data-l10n-id="result-source" data-l10n-args='{"source": "${result.source}"}'></span>
+                                  <span class="title" data-l10n-id="result-title" data-l10n-args='{"title": "${result.title}"}'></span>
+                                  <span class="score" data-l10n-id="result-score" data-l10n-args='{"score": "${result.score}"}'></span>
                                 </div>
                               </div>
                             `,
@@ -348,11 +380,7 @@ href="chrome://zotero-platform/content/zotero.css" type="text/css"?>
         if (selectedRadio) {
           const resultIndex = selectedRadio.getAttribute("data-result-index");
           console.log(`已确认选择：${taskId} (${resultIndex})`);
-          const targetTask = Zotero.Jasminum.data.progress.taskList.filter(
-            (task) => task.id === taskId,
-          )[0];
-          targetTask.resultIndex = resultIndex;
-          Zotero.Jasminum.scraper.translate(targetTask);
+          Zotero.Jasminum.taskRunner.resumeTask(taskId, resultIndex);
 
           // 标记任务为已完成
           const taskElement = confirmButton.closest(".task");
@@ -372,13 +400,14 @@ href="chrome://zotero-platform/content/zotero.css" type="text/css"?>
 
     document.getElementById("button-cancel").addEventListener("click", (e) => {
       console.log(e);
-      const unfinishedTasks = Zotero.Jasminum.data.progress.taskList.filter(
+      const unfinishedTasks = Zotero.Jasminum.taskRunner.tasks.filter(
         (t) => t.status != "fail" && t.status != "success",
       );
       if (unfinishedTasks.length > 0) {
-        const userConfirmed = confirm(
-          `还有 ${unfinishedTasks.length} 个抓取任务，是否关闭窗口？`,
-        );
+        const msg = document
+          .getElementById("msg1")
+          .textContent.replace("xxx", unfinishedTasks.length);
+        const userConfirmed = confirm(msg);
         if (userConfirmed) {
           window.close();
         }
@@ -404,6 +433,13 @@ href="chrome://zotero-platform/content/zotero.css" type="text/css"?>
         }
       });
     }
+
+    // window.addEventListener("DOMWindowClose", (e) => {
+    //   const shouldClose = confirm("确定要关闭窗口吗？");
+    //   if (!shouldClose) {
+    //     e.preventDefault(); // 阻止关闭
+    //   }
+    // });
     //]]>
   </script>
 </html>

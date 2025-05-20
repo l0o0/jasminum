@@ -14,6 +14,9 @@ pref("isMainlandChina", true);
 pref("cnkiAttachmentCookie", "");
 /* match pdf */
 pref("pdfMatchFolder", "");
+pref("actionAfterAttachmentImport", "backup")
+pref("similarityThreshold", "0.8");
+pref("topMatchCount", 3);
 /* update translators */
 pref("autoUpdateTranslators", true);
 pref("translatorUpdateTime", "0");
