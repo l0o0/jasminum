@@ -99,7 +99,19 @@ export async function updateTranslators(force = false): Promise<boolean> {
     ztoolkit.log("translators are updating, skip this update");
     return false;
   }
-  addon.data.translators.updating = true;
+  try {
+    addon.data.translators.updating = true;
+    return await _updateTranslators(force);
+  }
+  catch (error) {
+    return false;
+  }
+  finally {
+    addon.data.translators.updating = false;
+  }
+}
+
+async function _updateTranslators(force = flase): Promise<boolean> {
   await Zotero.Schema.schemaUpdatePromise;
   await mendTranslators();
   let needUpdate = false;
@@ -191,14 +203,9 @@ export async function updateTranslators(force = false): Promise<boolean> {
       });
     },
   );
-  try {
-    await Promise.all(translatorUpdateTasks);
-    // @ts-ignore Translators is missing
-    await Zotero.Translators.reinit({ fromSchemaUpdate: false });
-  }
-  finally {
-    addon.data.translators.updating = false;
-  }
+  await Promise.all(translatorUpdateTasks);
+  // @ts-ignore Translators is missing
+  await Zotero.Translators.reinit({ fromSchemaUpdate: false });
   setPref("translatorUpdateTime", now.toString());
   popupWin.changeLine({
     text: getString("update-translators-complete", {
