@@ -170,17 +170,9 @@ function createSearchPostOptions(searchOption: SearchOption) {
   };
 }
 
-function createRefPostData(searchResult: ScrapeSearchResult) {
-  // filename=CPFDLAST2020!ZGXD202011001016!1!14%2CCPFDLAST2020!ZKBD202011001034!2!14&displaymode=Refworks&orderparam=0&ordertype=desc&selectfield=&random=0.9317799522629542
-  // New multiple: FileName=CAPJ!XDTQ20231110001!1!0%2Ckd9kqNkOM8Xyu_MccKCQ5AM1UHjV0uMR_icN4IXwgicZ_CtYnuxduewAwhD5Qh2GSo4NZ_c4MLfuFbIiSMX1OrzIQ1G0iNFSWKuVwMIdPIM!%2Ckd9kqNkOM8Xyu_MccKCQ5AM1UHjV0uMR_icN4IXwgiecAKpOFogNWlYApDrbdtLwkhlBN69wm54APwSt_M517LzIQ1G0iNFSWKuVwMIdPIM!&DisplayMode=Refworks&OrderParam=0&OrderType=desc&SelectField=&PageIndex=1&PageSize=20&language=CHS&uniplatform=NZKPT&random=0.9986425284493061
-  // New single: FileName=CCNDTEMP!ZJSB20231108A060!1!0&DisplayMode=Refworks&OrderParam=0&OrderType=desc&SelectField=&PageIndex=1&PageSize=20&language=&uniplatform=NZKPT&random=0.30585230060685187
-  return `FileName=${
-    searchResult.exportID
-  }&DisplayMode=Refworks&OrderParam=0&OrderType=desc&SelectField=&PageIndex=1&PageSize=20&language=&uniplatform=NZKPT&random=${Math.random()}`;
-}
-
-async function getRefworksText(searchResult: ScrapeSearchResult) {
-  const postData = createRefPostData(searchResult);
+async function getRefworksText(
+  searchResult: ScrapeSearchResult,
+): Promise<string | null> {
   const headers = {
     Accept: "text/plain, */*; q=0.01",
     "Accept-Language": "zh-CN,en-US;q=0.7,en;q=0.3",
@@ -192,37 +184,36 @@ async function getRefworksText(searchResult: ScrapeSearchResult) {
       "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:131.0) Gecko/20100101 Firefox/131.0",
     Referer: searchResult.url,
   };
-  const apiurl = "https://kns.cnki.net/dm8/api/ShowExport";
+  const isMainlandChina = getPref("isMainlandChina");
+  const apiurl = isMainlandChina
+    ? "https://kns.cnki.net/dm8/API/GetExport"
+    : "https://kns.cnki.net/kns8/manage/APIGetExport";
+
+  // "1": row's sequence in search result page, defualt 1; "0": index of page in search result pages, defualt 0.
+  const platform = "NZKPT";
+  let postData = isMainlandChina
+    ? `filename=${searchResult.exportID}&uniplatform=${platform}`
+    : `filename=${searchResult.dbname}!${searchResult.filename}!1!0`;
+  postData += "&displaymode=GBTREFER%2Celearning%2CEndNote";
   const resp = await Zotero.HTTP.request("POST", apiurl, {
     body: postData,
     headers: headers,
     cookieSandbox: addon.data.myCookieSandbox?.refCookieBox,
   });
-  ztoolkit.log(`Refworks from CNKI: ${resp.responseText}`);
-  return resp.responseText
-    .replace(/^.*<li>\s+/, "")
-    .replace(/\s+<\/li>.*$/, "")
-    .replace("</li><li>", "") // divide results
-    .replace(/<br>|\r/g, "\n")
-    .replace(/^\s+/gm, "") // remove leading space
-    .replace(/^[a-zA-Z]{2}\s$/gm, "") // Remove empty tag
-    .replace(/vo (\d+)\n/, "VO $1\n") // Divide VO and IS to different line
-    .replace(/IS 0(\d+)\n/g, "IS $1\n") // Remove leading 0
-    .replace(/VO 0(\d+)\n/g, "VO $1\n")
-    .replace(/\n+/g, "\n")
-    .replace(/\t/g, "") // \t in abstract
-    .replace(/^RT\s+Conference Proceeding/gim, "RT Conference Proceedings")
-    .replace(/^RT\s+Dissertation\/Thesis/gim, "RT Dissertation")
-    .replace("LA 中文;", "LA zh")
-    .replace(
-      /^(A[1-4]|U2)\s*([^\r\n]+)/gm,
-      function (m: any, tag: any, authors: any) {
-        authors = authors.split(/\s*[;，,]\s*/); // that's a special comma
-        if (!authors[authors.length - 1].trim()) authors.pop();
-        return tag + " " + authors.join("\n" + tag + " ");
-      },
-    )
-    .trim();
+  ztoolkit.log(`Endnote reference text from CNKI: ${resp.responseText}`);
+  const respJson = JSON.parse(resp.responseText);
+  if (respJson.code != 1) {
+    return null;
+  } else {
+    const endnoteRef = respJson.data.find(
+      (i: Record<string, string>) => i.key === "EndNote",
+    );
+    if (endnoteRef) {
+      return endnoteRef.value[0].replace(/<br>/g, "\n");
+    } else {
+      return null;
+    }
+  }
 }
 
 async function getSnapshotItem(
@@ -352,7 +343,7 @@ export class CNKI implements ScrapeService {
         },
       });
       ztoolkit.log(`Document title: ${doc.title}`);
-      if (doc.title != "知网节超时验证") {
+      if (doc.title != "知网节超时验证" && doc.title != "captcha") {
         // @ts-ignore - Translate is not typed.
         const translator = new Zotero.Translate.Web();
         // CNKI.js
@@ -375,13 +366,16 @@ export class CNKI implements ScrapeService {
     // Another translation for CNKI.
     if (isWebTranslated == false) {
       try {
-        ztoolkit.log(
-          "知网网页出现验证码或其他异常，准备获取Refworks格式文献信息",
-        );
+        ztoolkit.log("知网网页出现验证码或其他异常，准备获取其他格式文献信息");
         const refworksText = await getRefworksText(searchResult);
+        if (!refworksText) {
+          ztoolkit.log("CNKI reference text is null.");
+          task.addMsg("CNKI reference text is null.");
+          return null;
+        }
         ztoolkit.log("Formated Refworks text: ", refworksText);
         const translate = new Zotero.Translate.Import();
-        translate.setTranslator("1a3506da-a303-4b0a-a1cd-f216e6138d86");
+        translate.setTranslator("7b6b135a-ed39-4d90-8e38-65516671c5bc");
         translate.setString(refworksText);
         translatedItems = await translate.translate({
           libraryID: task.item.libraryID,

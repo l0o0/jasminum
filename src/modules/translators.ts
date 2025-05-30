@@ -102,16 +102,14 @@ export async function updateTranslators(force = false): Promise<boolean> {
   try {
     addon.data.translators.updating = true;
     return await _updateTranslators(force);
-  }
-  catch (error) {
+  } catch (error) {
     return false;
-  }
-  finally {
+  } finally {
     addon.data.translators.updating = false;
   }
 }
 
-async function _updateTranslators(force = flase): Promise<boolean> {
+async function _updateTranslators(force = false): Promise<boolean> {
   await Zotero.Schema.schemaUpdatePromise;
   await mendTranslators();
   let needUpdate = false;
