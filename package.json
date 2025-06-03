@@ -41,7 +41,7 @@
     "typescript": "^5.8.3",
     "typescript-eslint": "^8.33.0",
     "zotero-plugin-scaffold": "^0.6.0",
-    "zotero-types": "^3.1.9"
+    "zotero-types": "^4.0.0"
   },
   "prettier": {
     "printWidth": 80,
