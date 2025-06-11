@@ -89,8 +89,8 @@ Zotero.Jasminum.Scrape = new function () {
             "Ecp_IpLoginFail=20110839.182.10.65";
         var userAgent = this.userAgent;
         var url = "https://cnki.net/";
-        this.CookieSandbox = new Zotero.CookieSandbox("", url, cookieData, userAgent);
-    };
+        Zotero.Jasminum.Scrape.CookieSandbox = new Zotero.CookieSandbox("", url, cookieData, userAgent);
+    }.bind(Zotero.Jasminum);
 
 
     // Cookie for getting Refworks data
@@ -108,8 +108,8 @@ Zotero.Jasminum.Scrape = new function () {
             "_pk_ses=*";
         var userAgent = this.userAgent;
         var url = "https://cnki.net/";
-        this.RefCookieSandbox = new Zotero.CookieSandbox("", url, cookieData, userAgent);
-    };
+        Zotero.Jasminum.Scrape.RefCookieSandbox = new Zotero.CookieSandbox("", url, cookieData, userAgent);
+    }.bind(Zotero.Jasminum);
 
 
     /**
@@ -121,19 +121,9 @@ Zotero.Jasminum.Scrape = new function () {
         var cookieData = Zotero.Prefs.get("jasminum.cnki.attachment.cookie");
         var userAgent = this.userAgent;
         var url = "https://cnki.net/";
-        this.attachmentCookieSandbox = new Zotero.CookieSandbox("", url, cookieData, userAgent);
-    }
-
-    /**
-     * Create post data for CNKI reference url
-     * @param {[id]} Array of getIDFromURL
-     * @return {String} 
-     */
-    this.createRefPostData = function (ids) {
-        const filenames = ids.map(id => id.filename);
-        return `FileName=${filenames.join(",")
-            }&DisplayMode=Refworks&OrderParam=0&OrderType=desc&SelectField=&PageIndex=1&PageSize=20&language=&uniplatform=NZKPT&random=${Math.random()}`;
+        Zotero.Jasminum.Scrape.attachmentCookieSandbox = new Zotero.CookieSandbox("", url, cookieData, userAgent);
     }.bind(Zotero.Jasminum);
+
 
     function jsonToFormUrlEncoded(json) {
         return Object.keys(json)
@@ -284,13 +274,13 @@ Zotero.Jasminum.Scrape = new function () {
 
     this.getIDFromSearchRow = function (row) {
         const input = row.querySelector("td.seq input");
-        const filename = input.getAttribute("value");
+        const exportID = input.getAttribute("value");
         const operat = row.querySelector("td.operat [data-dbname]");
         const dbname = operat.getAttribute("data-dbname");
         const dbcode = operat.getAttribute("data-filename"); // 注意此处dbcode 为 filename
 
-        if (!dbname || !filename || !dbcode) return false;
-        return { dbname: dbname, filename: filename, dbcode: dbcode };
+        if (!dbname || !exportID || !dbcode) return false;
+        return { dbname: dbname, dbcode: dbcode, exportID };
     }
 
     /**
@@ -444,53 +434,40 @@ Zotero.Jasminum.Scrape = new function () {
      * @return {String}
      */
     this.getRefText = async function (targetIDs) {
-        let postData = this.Scrape.createRefPostData(targetIDs);
-        Zotero.debug(postData);
-        let url = "https://kns.cnki.net/dm/api/ShowExport";
-        // if (!this.Scrape.RefCookieSandbox) {  // This is may be error
-        //     this.Scrape.setRefCookieSandbox();
-        // }
-        var headers = {
-            "Content-Type": "application/x-www-form-urlencoded",
-            Host: "kns.cnki.net",
-            "User-Agent":
-                "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:109.0) Gecko/20100101 Firefox/119.0",
+        let url = "https://kns.cnki.net/dm8/API/GetExport";
+        const platform = "NZKPT";
+        let postData = `filename=${targetIDs[0].exportID}&uniplatform=${platform}`;
+        postData += "&displaymode=GBTREFER%2Celearning%2CEndNote";
+        const headers = {
             Accept: "text/plain, */*; q=0.01",
             "Accept-Language": "zh-CN,en-US;q=0.7,en;q=0.3",
-            "Accept-Encoding": "gzip, deflate, br",
-            "Content-Length": postData.length,
+            "Content-Type": "application/x-www-form-urlencoded",
+            Host: "kns.cnki.net",
             Origin: "https://kns.cnki.net",
-            Connection: "keep-alive",
-            Referer: "https://kns.cnki.net/kns8s/AdvSearch?crossids=YSTT4HG0%2CLSTPFY1C%2CJUP3MUPD%2CMPMFIG1A%2CWQ0UVIAA%2CBLZOG7CK%2CEMRPGLPA%2CPWFIRAGL%2CNLBO1Z6R%2CNN3FJMUV",
+            Priority: "u=0",
+            "User-Agent":
+                "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:131.0) Gecko/20100101 Firefox/131.0",
+            Referer: targetIDs[0].url,
         };
+        if (!Zotero.Jasminum.Scrape.RefCookieSandbox) {
+            Zotero.Jasminum.Scrape.setRefCookieSandbox();
+        }
+        Zotero.debug(headers);
+        Zotero.debug(postData);
+        Zotero.debug(Zotero.Jasminum.Scrape.RefCookieSandbox);
         var resp = await Zotero.HTTP.request("POST", url, {
             headers: headers,
             body: postData,
+            cookieSandbox: Zotero.Jasminum.Scrape.RefCookieSandbox,
         });
-        return resp.responseText
-            .replace("<ul class='literature-list'><li>", "")
-            .replace("<br></li></ul>", "")
-            .replace("</li><li>", "") // divide results
-            .replace(/<br>|\r/g, "\n")
-            .replace(/vo (\d+)\n/, "VO $1\n") // Divide VO and IS to different line
-            .replace(/IS 0(\d+)\n/g, "IS $1\n")  // Remove leading 0
-            .replace(/VO 0(\d+)\n/g, "VO $1\n")
-            .replace(/\n+/g, "\n")
-            .replace(/\n([A-Z][A-Z1-9]\s)/g, "<br>$1")
-            .replace(/\n/g, "")
-            .replace(/<br>/g, "\n")
-            .replace(/\t/g, "") // \t in abstract
-            .replace(
-                /^RT\s+Conference Proceeding/gim,
-                "RT Conference Proceedings"
-            )
-            .replace(/^RT\s+Dissertation\/Thesis/gim, "RT Dissertation")
-            .replace(/^(A[1-4]|U2)\s*([^\r\n]+)/gm, function (m, tag, authors) {
-                authors = authors.split(/\s*[;，,]\s*/); // that's a special comma
-                if (!authors[authors.length - 1].trim()) authors.pop();
-                return tag + " " + authors.join("\n" + tag + " ");
-            })
-            .trim();
+        const respJson = JSON.parse(resp.responseText);
+        const endnoteRef = respJson.data.find(
+            (i) => i.key === "EndNote",
+        );
+        if (!endnoteRef) {
+            return null;
+        }
+        return endnoteRef.value[0].replace(/<br>/g, "\n");
     }.bind(Zotero.Jasminum);
 
     // Get refwork data from search target rows
@@ -505,18 +482,18 @@ Zotero.Jasminum.Scrape = new function () {
             var url = r.querySelector("a.fz14").getAttribute("href");
             var cite = Zotero.Jasminum.Scrape.getCitationFromSearch(r);
             var id = Zotero.Jasminum.Scrape.getIDFromSearchRow(r);
+            id.url = url;
+            id.cite = cite;
             targetIDs.push(id);
-            targetData.citations.push(cite);
-            targetData.targetUrls.push(url);
         });
         Zotero.debug(targetIDs);
         if (onlyUrl) {
-            return targetData.targetUrls;
+            return targetIDs.map(id => id.url);
         }
 
         var data = await this.Scrape.getRefText(targetIDs);
         Zotero.debug(data.split("\n"));
-        return [data, targetData];
+        return [data, targetIDs];
     }.bind(Zotero.Jasminum);
 
     //########################

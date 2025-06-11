@@ -30,7 +30,7 @@ Zotero.Jasminum.Utils = new function () {
      */
     this.trans2Items = async function (data, libraryID) {
         var translate = new Zotero.Translate.Import();
-        translate.setTranslator("1a3506da-a303-4b0a-a1cd-f216e6138d86");
+        translate.setTranslator("7b6b135a-ed39-4d90-8e38-65516671c5bc");
         translate.setString(data);
         var newItems = await this.Utils.promiseTranslate(
             translate,
@@ -45,7 +45,7 @@ Zotero.Jasminum.Utils = new function () {
         // 学位论文Thesis，导师 -> contributor
         for (let idx = 0; idx < newItems.length; idx++) {
             var newItem = newItems[idx];
-            if (newItem.getNotes()) {
+            if (newItem.getNotes().length > 0) {
                 if (Zotero.ItemTypes.getName(newItem.itemTypeID) == "thesis") {
                     creators = newItem.getCreators();
                     var note = Zotero.Items.get(newItem.getNotes()[0])
@@ -110,7 +110,7 @@ Zotero.Jasminum.Utils = new function () {
             // Parse page content.
             var extraString = '';
             Zotero.debug("** Jasminum get article page.");
-            var resp = await Zotero.HTTP.request("GET", targetData.targetUrls[idx]);
+            var resp = await Zotero.HTTP.request("GET", targetData[idx].url);
             var html = this.Utils.string2HTML(resp.responseText);
             // Full abstract note.
             if (newItem.getField("abstractNote").endsWith("...")) {
@@ -131,10 +131,10 @@ Zotero.Jasminum.Utils = new function () {
             if (Zotero.ItemTypes.getName(newItem.itemTypeID) != "patent") {
                 newItem.setField("libraryCatalog", "CNKI");
             }
-            newItem.setField("url", targetData.targetUrls[idx]);
-            if (targetData.citations[idx]) {  // Add citation
+            newItem.setField("url", targetData[idx].url);
+            if (targetData[idx].cite) {  // Add citation
                 var dateString = new Date().toLocaleDateString().replace(/\//g, '-');
-                var citationString = `${targetData.citations[idx]} citations(CNKI)[${dateString}]`;
+                var citationString = `${targetData[idx].cite} citations(CNKI)[${dateString}]`;
                 extraString = citationString;
             }
 
