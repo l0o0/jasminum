@@ -24,7 +24,7 @@ help-menu-csl = CSL样式下载
 help-menu-translator = 中文文献抓取异常修复
 
 # Menu
-menu-metadata = 元数据抓取
+menu-metadata = 茉莉花抓取
 menuitem-retrieveMetadata = 抓取期刊元数据
 menuitem-retrieveMetadataForBook = 抓取书籍元数据
 

@@ -42,45 +42,35 @@ export function initEventListener(
   doc: Document,
 ) {
   // Hide or show side bar
-  function hiddenMyOutlineAndBar(e: Event) {
+  function hideShowMyOutlineAndBar(e: Event) {
     const targetElement = e.target as Element;
     const button = targetElement.closest("button");
     if (!button) return;
-    ztoolkit.log("clicke to hide outline", targetElement, button);
-    doc
-      .getElementById("j-outline-viewer")
-      ?.parentElement?.classList.toggle("hidden", true);
-    doc
-      .getElementById("j-outline-toolbar")
-      ?.classList.toggle("j-outline-hidden", true);
-    doc.getElementById("j-outline-button")?.classList.toggle("active", false);
-
-    // Zotero original sidebar can not work as expected.
-    if (button.id === "viewOutline") {
+    ztoolkit.log("click to hide outline", targetElement, button);
+    // Enable j outline view
+    if (button.id === "j-outline-button") {
       doc
-        .getElementById("outlineView")
-        ?.parentElement?.classList.toggle("hidden", false);
-    } else if (button.id === "viewAnnotations") {
-      doc.getElementById("annotationsView")?.classList.toggle("hidden", false);
-    } else if (button.id === "viewThumbnail") {
-      ztoolkit.log("click thumbnail");
-      ztoolkit.log(doc.getElementById("thumbnailsView"));
+        .getElementById("j-outline-viewer")
+        ?.parentElement?.classList.remove("hidden");
       doc
-        .getElementById("thumbnailsView")
-        ?.parentElement?.classList.toggle("hidden", false);
+        .getElementById("j-outline-toolbar")
+        ?.classList.remove("j-outline-hidden");
+      button.classList.toggle("active", true);
+    } else {
+      // Hide j outline view
+      doc
+        .getElementById("j-outline-viewer")
+        ?.parentElement?.classList.toggle("hidden", true);
+      doc
+        .getElementById("j-outline-toolbar")
+        ?.classList.toggle("j-outline-hidden", true);
+      doc.getElementById("j-outline-button")?.classList.toggle("active", false);
     }
-    button.classList.toggle("active", true);
   }
   // 给默认按钮添加事件，避免切换面板时异常
   doc
-    .getElementById("viewThumbnail")
-    ?.addEventListener("click", hiddenMyOutlineAndBar);
-  doc
-    .getElementById("viewAnnotations")
-    ?.addEventListener("click", hiddenMyOutlineAndBar);
-  doc
-    .getElementById("viewOutline")
-    ?.addEventListener("click", hiddenMyOutlineAndBar);
+    .querySelector("#sidebarContainer > div.sidebar-toolbar > div.start")
+    ?.addEventListener("click", hideShowMyOutlineAndBar);
 
   const treeContainer = doc.getElementById("j-outline-viewer");
   if (!treeContainer) return;
