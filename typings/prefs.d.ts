@@ -27,6 +27,7 @@ declare namespace _ZoteroTypes {
       "translatorSource": string;
       "enableBookmark": boolean;
       "newNodeAsChild": boolean;
+      "disableZoteroOutline": boolean;
     };
   }
 }

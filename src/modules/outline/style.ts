@@ -58,7 +58,7 @@ export const outline_css = `
   --drop-indicator-color: #64b5f6;
 }
 
-.j-outline-hidden {
+.j-hidden {
 display: none !important;}
 
 #j-outline-toolbar {

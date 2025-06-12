@@ -9,6 +9,7 @@ import {
   registerThemeChange,
 } from "./outline";
 import { ICONS } from "./style";
+import { getPref } from "../../utils/prefs";
 
 export function renderTree(
   reader: _ZoteroTypes.ReaderInstance,
@@ -21,7 +22,7 @@ export function renderTree(
   const toolbar = ztoolkit.UI.createElement(doc, "div", {
     namespace: "html",
     id: "j-outline-toolbar",
-    classList: ["j-outline-hidden"], // 默认隐藏
+    classList: ["j-hidden"], // 默认隐藏
     children: [
       {
         tag: "button",
@@ -61,7 +62,8 @@ export function renderTree(
     ],
   });
   const treeContainer = ztoolkit.UI.createElement(doc, "div", {
-    classList: ["viewWrapper", "hidden"], // 默认隐藏
+    id: "jasminum-outline",
+    classList: ["hidden"], // 默认隐藏
     namespace: "html",
     children: [
       {
@@ -86,7 +88,10 @@ export function renderTree(
       },
     ],
   });
-
+  // 隐藏 Zotero 大纲按钮
+  if (getPref("disableZoteroOutline")) {
+    doc.getElementById("viewOutline")!.style.display = "none";
+  }
   // 添加工具栏
   doc
     .getElementById("sidebarContainer")!

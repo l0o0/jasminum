@@ -49,21 +49,20 @@ export function initEventListener(
     ztoolkit.log("click to hide outline", targetElement, button);
     // Enable j outline view
     if (button.id === "j-outline-button") {
-      doc
-        .getElementById("j-outline-viewer")
-        ?.parentElement?.classList.remove("hidden");
+      ztoolkit.log("jasminum show outline");
+      reader.setSidebarView("jasminum-outline");
+      doc.getElementById("jasminum-outline")?.classList.remove("hidden");
       doc
         .getElementById("j-outline-toolbar")
-        ?.classList.remove("j-outline-hidden");
+        ?.classList.toggle("j-hidden", false);
       button.classList.toggle("active", true);
     } else {
       // Hide j outline view
-      doc
-        .getElementById("j-outline-viewer")
-        ?.parentElement?.classList.toggle("hidden", true);
+      ztoolkit.log("jasminum show outline");
+      doc.getElementById("jasminum-outline")?.classList.toggle("hidden", true);
       doc
         .getElementById("j-outline-toolbar")
-        ?.classList.toggle("j-outline-hidden", true);
+        ?.classList.toggle("j-hidden", true);
       doc.getElementById("j-outline-button")?.classList.toggle("active", false);
     }
   }

@@ -24,3 +24,4 @@ pref("translatorSource", "");
 /* bookmark */
 pref("enableBookmark", true);
 pref("newNodeAsChild", false);
+pref("disableZoteroOutline", true);

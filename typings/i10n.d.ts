@@ -33,6 +33,7 @@ export type FluentMessageId =
   | 'label-choose-folder'
   | 'label-choose-namepattern'
   | 'label-choose-source'
+  | 'label-disableZoteroOutline'
   | 'label-enableBookmark'
   | 'label-install-wps-plugin-click'
   | 'label-isMainlandChina'

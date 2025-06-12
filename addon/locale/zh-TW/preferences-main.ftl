@@ -71,6 +71,8 @@ action-after-import-desc =
 
 # 大綱書籤設定
 pref-group-bookmark = 大綱書籤設定
+label-disableZoteroOutline = 
+  .label = 禁用 Zotero 自帶的大綱
 label-enableBookmark = 
   .label = 啟用大綱書籤
 outline-desc = 

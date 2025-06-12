@@ -59,51 +59,51 @@ export function addButton(doc: Document) {
         "aria-selected": "false",
         "aria-controls": "j-outline-viewer",
       },
-      listeners: [
-        {
-          type: "click",
-          listener: (e) => {
-            ztoolkit.log("Button.click");
-            ztoolkit.log(e);
-            const d = (e.target! as HTMLButtonElement).ownerDocument;
-            const viewer = d.getElementById("j-outline-viewer")?.parentElement;
-            // 显示工具栏
-            d
-              .getElementById("j-outline-toolbar")
-              ?.classList.toggle("j-outline-hidden", false);
-            if (!viewer?.classList.contains("hidden")) {
-              ztoolkit.log("Already display");
-            } else {
-              // 按钮的激活状态
-              d
-                .getElementById("viewThumbnail")
-                ?.classList.toggle("active", false);
-              d
-                .getElementById("viewOutline")
-                ?.classList.toggle("active", false);
-              d
-                .getElementById("viewAnnotations")
-                ?.classList.toggle("active", false);
-              d
-                .getElementById("j-outline-button")
-                ?.classList.toggle("active", true);
-              // 书签内容显示
-              d
-                .getElementById("thumbnailsView")
-                ?.parentElement?.classList.toggle("hidden", true);
-              d
-                .getElementById("annotationsView")
-                ?.classList.toggle("hidden", true);
-              d
-                .getElementById("outlineView")
-                ?.parentElement?.classList.toggle("hidden", true);
-              viewer?.classList.toggle("hidden", false);
+      // listeners: [
+      //   {
+      //     type: "click",
+      //     listener: (e) => {
+      //       ztoolkit.log("Button.click");
+      //       ztoolkit.log(e);
+      //       const d = (e.target! as HTMLButtonElement).ownerDocument;
+      //       const viewer = d.getElementById("j-outline-viewer")?.parentElement;
+      //       // 显示工具栏
+      //       d
+      //         .getElementById("j-outline-toolbar")
+      //         ?.classList.toggle("j-outline-hidden", false);
+      //       if (!viewer?.classList.contains("hidden")) {
+      //         ztoolkit.log("Already display");
+      //       } else {
+      //         // 按钮的激活状态
+      //         d
+      //           .getElementById("viewThumbnail")
+      //           ?.classList.toggle("active", false);
+      //         d
+      //           .getElementById("viewOutline")
+      //           ?.classList.toggle("active", false);
+      //         d
+      //           .getElementById("viewAnnotations")
+      //           ?.classList.toggle("active", false);
+      //         d
+      //           .getElementById("j-outline-button")
+      //           ?.classList.toggle("active", true);
+      //         // 书签内容显示
+      //         d
+      //           .getElementById("thumbnailsView")
+      //           ?.parentElement?.classList.toggle("hidden", true);
+      //         d
+      //           .getElementById("annotationsView")
+      //           ?.classList.toggle("hidden", true);
+      //         d
+      //           .getElementById("outlineView")
+      //           ?.parentElement?.classList.toggle("hidden", true);
+      //         viewer?.classList.toggle("hidden", false);
 
-              ztoolkit.log("Display jasminum outline.");
-            }
-          },
-        },
-      ],
+      //         ztoolkit.log("Display jasminum outline.");
+      //       }
+      //     },
+      //   },
+      // ],
     },
     doc.querySelector("#sidebarContainer div.start")!,
   );

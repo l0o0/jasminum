@@ -71,6 +71,8 @@ label-translators-detail-click = 点击查看
 
 # 大纲书签设置
 pref-group-bookmark = 大纲书签设置
+label-disableZoteroOutline = 
+  .label = 禁用 Zotero 自带的大纲
 label-enableBookmark = 
   .label = 启用大纲书签
 outline-desc = 

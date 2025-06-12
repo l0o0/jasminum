@@ -71,6 +71,8 @@ action-after-import-desc =
 
 # Outline Bookmark Settings
 pref-group-bookmark = Outline Bookmark Settings
+label-disableZoteroOutline = 
+  .label = Disable Zotero's Built-in Outline
 label-enableBookmark = 
   .label = Enable Outline Bookmark
 outline-desc = 
