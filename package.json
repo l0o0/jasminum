@@ -30,7 +30,7 @@
   "dependencies": {
     "pdf-lib": "^1.17.1",
     "string-similarity": "^4.0.4",
-    "zotero-plugin-toolkit": "^4.1.2"
+    "zotero-plugin-toolkit": "^5.0.1"
   },
   "devDependencies": {
     "@eslint/js": "^9.27.0",
