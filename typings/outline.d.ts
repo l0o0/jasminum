@@ -36,3 +36,20 @@ type PdfOutlineNode = {
   items: PdfOutlineNode[];
   location: PdfDest | PdfPosition; // 没有遇到 PdfDest 的情况
 };
+
+// 书签相关类型定义
+type BookmarkNode = {
+  id: string; // 唯一标识符
+  title: string;
+  page: number;
+  x: number;
+  y: number;
+  order: number; // 用于排序，书签没有层级关系
+  createdAt: number; // 创建时间戳
+  color: string; // 书签颜色
+};
+
+type BookmarkInfo = {
+  info: Record<string, string | number>;
+  bookmarks: BookmarkNode[];
+};

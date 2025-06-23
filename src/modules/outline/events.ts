@@ -3,6 +3,12 @@ import {
   createTreeNodes,
   getOutlineFromPDF,
 } from "./outline";
+import {
+  saveBookmarksToJSON,
+  createBookmarkNodes,
+  addNewBookmark,
+  DEFAULT_BOOKMARK_COLORS,
+} from "./bookmark";
 import { ICONS } from "./style";
 import { getString } from "../../utils/locale";
 import { getPref } from "../../utils/prefs";
@@ -46,24 +52,48 @@ export function initEventListener(
     const targetElement = e.target as Element;
     const button = targetElement.closest("button");
     if (!button) return;
-    ztoolkit.log("click to hide outline", targetElement, button);
+    ztoolkit.log("click to hide outline/bookmark", targetElement, button);
+    
     // Enable j outline view
     if (button.id === "j-outline-button") {
       ztoolkit.log("jasminum show outline");
       reader.setSidebarView("jasminum-outline");
       doc.getElementById("jasminum-outline")?.classList.remove("hidden");
+      doc.getElementById("jasminum-bookmarks")?.classList.add("hidden");
       doc
         .getElementById("j-outline-toolbar")
         ?.classList.toggle("j-hidden", false);
+      doc
+        .getElementById("j-bookmark-toolbar")
+        ?.classList.toggle("j-hidden", true);
       button.classList.toggle("active", true);
-    } else {
-      // Hide j outline view
-      ztoolkit.log("jasminum show outline");
-      doc.getElementById("jasminum-outline")?.classList.toggle("hidden", true);
+      doc.getElementById("j-bookmark-button")?.classList.toggle("active", false);
+    } else if (button.id === "j-bookmark-button") {
+      ztoolkit.log("jasminum show bookmark");
+      reader.setSidebarView("jasminum-bookmarks");
+      doc.getElementById("jasminum-bookmarks")?.classList.remove("hidden");
+      doc.getElementById("jasminum-outline")?.classList.add("hidden");
+      doc
+        .getElementById("j-bookmark-toolbar")
+        ?.classList.toggle("j-hidden", false);
       doc
         .getElementById("j-outline-toolbar")
         ?.classList.toggle("j-hidden", true);
+      button.classList.toggle("active", true);
       doc.getElementById("j-outline-button")?.classList.toggle("active", false);
+    } else {
+      // Hide both outline and bookmark views
+      ztoolkit.log("hide jasminum views");
+      doc.getElementById("jasminum-outline")?.classList.toggle("hidden", true);
+      doc.getElementById("jasminum-bookmarks")?.classList.toggle("hidden", true);
+      doc
+        .getElementById("j-outline-toolbar")
+        ?.classList.toggle("j-hidden", true);
+      doc
+        .getElementById("j-bookmark-toolbar")
+        ?.classList.toggle("j-hidden", true);
+      doc.getElementById("j-outline-button")?.classList.toggle("active", false);
+      doc.getElementById("j-bookmark-button")?.classList.toggle("active", false);
     }
   }
   // 给默认按钮添加事件，避免切换面板时异常
@@ -139,6 +169,45 @@ export function initEventListener(
   treeContainer.addEventListener("keydown", handleKeydownEvent);
 
   // 点击书签跳转到具体页码
+
+  // 书签相关事件处理
+  const bookmarkContainer = doc.getElementById("j-bookmark-viewer");
+  if (bookmarkContainer) {
+    // 书签点击选择和跳转事件
+    bookmarkContainer.addEventListener("click", async (e: Event) => {
+      const target = e.target as HTMLElement;
+      ztoolkit.log("click bookmark container", e.target);
+      
+      // 书签选择和跳转
+      if (target.closest(".bookmark-node")) {
+        selectBookmarkNode(target.closest(".bookmark-node")!);
+        clickToBookmarkPosition(target);
+      }
+    });
+
+    // 双击编辑书签
+    bookmarkContainer.addEventListener("dblclick", function (e) {
+      if ((e.target as Element).classList.contains("bookmark-title")) {
+        makeBookmarkNodeEditable(e.target as Element);
+        e.stopPropagation();
+      }
+    });
+
+    // 书签拖拽相关事件
+    bookmarkContainer.addEventListener("dragstart", handleBookmarkDragStart);
+    bookmarkContainer.addEventListener("dragover", handleBookmarkDragOver);
+    bookmarkContainer.addEventListener("dragleave", handleBookmarkDragLeave);
+    bookmarkContainer.addEventListener("drop", handleBookmarkDrop);
+    bookmarkContainer.addEventListener("dragend", handleBookmarkDragEnd);
+  }
+
+  // 书签工具栏事件
+  doc
+    .getElementById("j-bookmark-add")
+    ?.addEventListener("click", addNewBookmarkNode);
+  doc
+    .getElementById("j-bookmark-delete")
+    ?.addEventListener("click", deleteSelectedBookmarkNode);
 }
 
 // 为节点添加事件监听，以下为事件处理函数
@@ -911,5 +980,379 @@ export async function addOutlineToPDFRunner(): Promise<void> {
 
     worker.addEventListener("message", handler as EventListener);
     worker.postMessage({ action: "addOutline", jobID, filePath, outlineNodes });
+  });
+}
+
+// ========== 书签相关函数 ==========
+
+// 选择书签节点
+function selectBookmarkNode(node: Element) {
+  const doc = node.ownerDocument;
+  const selectedNode = doc.querySelector(".bookmark-selected");
+  // 取消之前的选择
+  if (selectedNode) {
+    selectedNode.classList.remove("bookmark-selected");
+  }
+  // 设置新选择
+  node.classList.add("bookmark-selected");
+}
+
+// 点击书签跳转到对应位置
+function clickToBookmarkPosition(targetElement: Element) {
+  const reader = Zotero.Reader.getByTabID(
+    ztoolkit.getGlobal("Zotero_Tabs").selectedID,
+  );
+  const bookmarkNode = targetElement.closest("div.bookmark-node");
+  if (!bookmarkNode) return;
+
+  const page = parseInt(bookmarkNode.getAttribute("page")!);
+  const x = parseInt(bookmarkNode.getAttribute("x")!);
+  const y = parseInt(bookmarkNode.getAttribute("y")!);
+  ztoolkit.log("Click to bookmark position", page, x, y);
+
+  const PDFViewerApplication = (
+    reader._internalReader._primaryView as _ZoteroTypes.Reader.PDFView
+  )._iframeWindow.PDFViewerApplication;
+  const pageView = PDFViewerApplication.pdfViewer!.getPageView(page - 1);
+  // @ts-ignore - Not typed
+  const [scrollX, scrollY] = pageView.viewport.convertToViewportPoint(x, y);
+  (
+    reader._internalReader._primaryView as _ZoteroTypes.Reader.PDFView
+  )._iframeWindow!.PDFViewerApplication.page = page;
+  const container = (
+    reader._internalReader._primaryView as _ZoteroTypes.Reader.PDFView
+  )._iframeWindow!.document.getElementById("viewerContainer")!;
+  ztoolkit.log(`Scroll to bookmark ${scrollX}, ${scrollY}`);
+  container.scrollBy(scrollX, scrollY);
+}
+
+// 编辑书签节点
+export function makeBookmarkNodeEditable(titleElement: Element) {
+  const doc = titleElement.ownerDocument;
+  const parent = titleElement.parentNode! as Element;
+  const bookmarkNode = titleElement.closest("div.bookmark-node")!;
+  // 获取当前值
+  const currentTitle = titleElement.textContent || "";
+  const currentPage = bookmarkNode.getAttribute("page")!;
+  const currentColor = bookmarkNode.getAttribute("data-color") || DEFAULT_BOOKMARK_COLORS[0];
+
+  // 创建编辑容器
+  const editContainer = doc.createElement("div");
+  editContainer.className = "bookmark-edit-container";
+
+  // 创建标题输入框
+  const titleInput = doc.createElement("input");
+  titleInput.type = "text";
+  titleInput.value = currentTitle.trim();
+  titleInput.placeholder = "书签标题";
+
+  // 创建颜色选择器容器
+  const colorContainer = doc.createElement("div");
+  colorContainer.className = "bookmark-color-picker";
+
+  let selectedColor = currentColor;
+
+  // 创建颜色选项
+  DEFAULT_BOOKMARK_COLORS.forEach((color) => {
+    const colorOption = doc.createElement("div");
+    colorOption.className = "bookmark-color-option";
+    if (color === currentColor) {
+      colorOption.classList.add("selected");
+    }
+    colorOption.style.backgroundColor = color;
+    
+    colorOption.addEventListener("click", () => {
+      // 更新选中状态
+      colorContainer.querySelectorAll("div").forEach((opt) => {
+        opt.classList.remove("selected");
+      });
+      colorOption.classList.add("selected");
+      selectedColor = color;
+      
+      // 实时更新书签的颜色显示
+      bookmarkNode.style.borderLeftColor = color;
+      bookmarkNode.setAttribute("data-color", color);
+    });
+    
+    colorContainer.appendChild(colorOption);
+  });
+
+  // 创建分隔线
+  const separator = doc.createElement("div");
+  separator.className = "bookmark-edit-separator";
+  
+  editContainer.appendChild(titleInput);
+  editContainer.appendChild(separator);
+  editContainer.appendChild(colorContainer);
+
+  // 替换原始元素
+  parent.replaceChild(editContainer, titleElement);
+
+  // 聚焦到输入框
+  titleInput.focus();
+  // 禁用拖拽功能
+  bookmarkNode.setAttribute("draggable", "false");
+
+  // 保存逻辑
+  const saveChanges = async () => {
+    const newTitle = titleInput.value.trim();
+
+    // 更新原始元素
+    titleElement.textContent = newTitle || currentTitle;
+    titleElement.setAttribute("title", `${newTitle}, Page: ${currentPage}`);
+    
+    // 更新颜色
+    bookmarkNode.setAttribute("data-color", selectedColor);
+    bookmarkNode.style.borderLeftColor = selectedColor;
+
+    // 恢复 DOM 结构
+    parent.replaceChild(titleElement, editContainer);
+    // 恢复拖拽功能
+    bookmarkNode.setAttribute("draggable", "true");
+
+    // 保存书签信息
+    await saveBookmarksToJSON();
+  };
+
+  // 事件处理
+  const handleKeyDown = (e: KeyboardEvent) => {
+    if (e.key === "Enter") {
+      saveChanges();
+      doc.getElementById("j-bookmark-viewer")!.focus();
+    } else if (e.key === "Escape") {
+      parent.replaceChild(titleElement, editContainer);
+      bookmarkNode.setAttribute("draggable", "true");
+    }
+    e.stopPropagation();
+  };
+
+  const handleBlur = (e: FocusEvent) => {
+    if (!editContainer.contains(e.relatedTarget as Node)) {
+      saveChanges();
+    }
+  };
+
+  // 绑定事件
+  titleInput.addEventListener("keydown", handleKeyDown);
+  editContainer.addEventListener("blur", handleBlur, true);
+}
+
+// 添加新书签
+export async function addNewBookmarkNode(ev: Event) {
+  const doc = (ev.target as Element).ownerDocument;
+  const newBookmark = addNewBookmark();
+  const rootList = doc.getElementById("bookmark-root-list")!;
+  
+  // 清除空提示
+  doc.querySelector(".empty-bookmark-prompt")?.remove();
+  
+  createBookmarkNodes([newBookmark], rootList, doc);
+  
+  // 保存书签信息
+  await saveBookmarksToJSON();
+}
+
+// 删除选中的书签
+export async function deleteSelectedBookmarkNode(ev: Event) {
+  const doc = (ev.target as Element).ownerDocument;
+  const selectedNode = doc.querySelector<HTMLElement>(".bookmark-selected")!;
+  const rootNode = doc.getElementById("bookmark-root-list");
+  if (!selectedNode || !rootNode) return;
+
+  const listItem = selectedNode.closest("li")!;
+  const parent = listItem.parentNode as HTMLElement;
+
+  // 移除节点
+  parent.removeChild(listItem);
+
+  // 保存书签信息
+  await saveBookmarksToJSON();
+
+  // 如果没有书签了，显示提示
+  if (!rootNode.hasChildNodes()) {
+    ztoolkit.UI.appendElement(
+      {
+        tag: "div",
+        namespace: "html",
+        classList: ["empty-bookmark-prompt"],
+        properties: { innerHTML: `请点击上方按钮${ICONS.add}创建书签` },
+      },
+      rootNode,
+    );
+  }
+  doc.getElementById("j-bookmark-viewer")?.focus();
+}
+
+// 书签拖拽开始
+export function handleBookmarkDragStart(e: DragEvent) {
+  ztoolkit.log("start to drag bookmark");
+  const target = e.target as Element;
+  if (!target.classList.contains("bookmark-node")) return;
+
+  const draggedNode = target.closest("li") as HTMLElement;
+  e.dataTransfer!.setData("text/plain", draggedNode.innerText);
+  e.dataTransfer!.effectAllowed = "move";
+
+  // 为拖拽中的元素添加样式
+  setTimeout(() => {
+    draggedNode.classList.add("dragging");
+  }, 0);
+}
+
+// 书签拖拽经过目标元素
+export function handleBookmarkDragOver(e: DragEvent) {
+  e.preventDefault();
+  e.dataTransfer!.dropEffect = "move";
+  const target = e.target as HTMLElement;
+  const doc = target.ownerDocument;
+  const draggedNode = doc.querySelector(".dragging");
+  if (!draggedNode) return;
+
+  // 找到最近的书签节点元素
+  const targetNode = target.closest(".bookmark-node");
+  if (!targetNode) {
+    hideBookmarkDropIndicator(doc);
+    return;
+  }
+
+  // 不能拖拽到自己
+  const targetLi = targetNode.closest("li") as Element;
+  if (draggedNode === targetLi) {
+    hideBookmarkDropIndicator(doc);
+    return;
+  }
+
+  // 计算拖拽位置（上方或下方）
+  const rect = targetNode.getBoundingClientRect();
+  const mouseY = e.clientY;
+  const relativeY = mouseY - rect.top;
+  const height = rect.height;
+
+  let dropPosition;
+  if (relativeY < height * 0.5) {
+    dropPosition = "before";
+  } else {
+    dropPosition = "after";
+  }
+
+  // 更新指示器
+  updateBookmarkDropIndicator(targetNode, dropPosition);
+
+  // 添加可放置样式
+  doc.querySelectorAll(".bookmark-dragover").forEach((el) => {
+    el.classList.remove("bookmark-dragover");
+  });
+  targetNode.classList.add("bookmark-dragover");
+}
+
+// 更新书签拖拽指示器
+function updateBookmarkDropIndicator(targetNode: Element, position: string) {
+  const rect = targetNode.getBoundingClientRect();
+  const doc = targetNode.ownerDocument;
+  const dropIndicator = doc.querySelector(".bookmark-drop-indicator") as HTMLElement;
+
+  dropIndicator.classList.add("visible");
+
+  if (position === "before") {
+    dropIndicator.style.left = `${rect.left}px`;
+    dropIndicator.style.top = `${rect.top - 2}px`;
+    dropIndicator.style.width = `${rect.width}px`;
+  } else {
+    // after position
+    dropIndicator.style.left = `${rect.left}px`;
+    dropIndicator.style.top = `${rect.bottom}px`;
+    dropIndicator.style.width = `${rect.width}px`;
+  }
+}
+
+// 隐藏书签拖拽指示器
+function hideBookmarkDropIndicator(doc: Document) {
+  const dropIndicator = doc.querySelector(".bookmark-drop-indicator")!;
+  dropIndicator.classList.remove("visible");
+}
+
+// 书签拖拽离开目标元素
+export function handleBookmarkDragLeave(e: DragEvent) {
+  const doc = (e.target as Element).ownerDocument;
+  if (
+    !e.relatedTarget ||
+    !(e.relatedTarget as Element).closest("#j-bookmark-viewer")
+  ) {
+    hideBookmarkDropIndicator(doc);
+  }
+
+  const targetNode = (e.target as HTMLElement).closest(".bookmark-node");
+  if (targetNode) {
+    targetNode.classList.remove("bookmark-dragover");
+  }
+}
+
+// 处理书签放置
+export async function handleBookmarkDrop(e: DragEvent) {
+  e.preventDefault();
+  const target = e.target as HTMLElement;
+  const doc = target.ownerDocument;
+  const draggedNode = doc.querySelector(".dragging");
+
+  // 隐藏指示器
+  hideBookmarkDropIndicator(doc);
+
+  if (!draggedNode) return;
+
+  // 获取目标节点
+  const targetBookmarkNode = target.closest(".bookmark-node");
+  if (!targetBookmarkNode) return;
+
+  // 移除可放置样式
+  doc.querySelectorAll(".bookmark-dragover").forEach((el) => {
+    el.classList.remove("bookmark-dragover");
+  });
+
+  // 获取目标列表项
+  const targetLi = targetBookmarkNode.closest("li")!;
+
+  // 不能将节点拖到自己上
+  if (draggedNode === targetLi) {
+    return;
+  }
+
+  // 移除拖拽的节点
+  const oldParent = draggedNode.parentNode! as HTMLElement;
+  oldParent.removeChild(draggedNode);
+
+  // 判断放置位置
+  const rect = targetBookmarkNode.getBoundingClientRect();
+  const mouseY = e.clientY;
+  const relativeY = mouseY - rect.top;
+  const height = rect.height;
+
+  const targetParent = targetLi.parentNode!;
+
+  if (relativeY < height * 0.5) {
+    // 放在前面
+    targetParent.insertBefore(draggedNode, targetLi);
+  } else {
+    // 放在后面
+    targetParent.insertBefore(draggedNode, targetLi.nextSibling);
+  }
+
+  // 保存书签信息
+  await saveBookmarksToJSON();
+}
+
+// 书签拖拽结束
+export function handleBookmarkDragEnd(e: DragEvent) {
+  const doc = (e.target as HTMLElement).ownerDocument;
+  const draggedNode = doc.querySelector(".dragging");
+  if (!draggedNode) return;
+
+  draggedNode.classList.remove("dragging");
+
+  // 隐藏指示器
+  hideBookmarkDropIndicator(doc);
+
+  // 清除所有dragover样式
+  doc.querySelectorAll(".bookmark-dragover").forEach((el) => {
+    el.classList.remove("bookmark-dragover");
   });
 }

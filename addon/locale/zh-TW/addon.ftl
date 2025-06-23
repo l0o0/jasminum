@@ -65,5 +65,10 @@ outline-delete-confirm = 該節點有子節點，是否刪除?
   {" "}
   如果刪除，則所有子節點也會被刪除。
 
+# bookmark
+bookmark = 顯示書籤（茉莉花）
+bookmark-add = 添加書籤
+bookmark-delete = 刪除書籤
+
 # Progress window
 task-already-exists = 已存在任務：{ $title }

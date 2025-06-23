@@ -8,6 +8,11 @@ import {
   registerOutlineCSS,
   registerThemeChange,
 } from "./outline";
+import {
+  addBookmarkButton,
+  createBookmarkNodes,
+  loadBookmarksFromJSON,
+} from "./bookmark";
 import { ICONS } from "./style";
 import { getPref } from "../../utils/prefs";
 
@@ -99,9 +104,76 @@ export function renderTree(
   treeContainer.appendChild(dropIndicator);
   createTreeNodes(data, treeContainer.querySelector("#root-list")!, doc);
   doc.querySelector("#sidebarContent")?.appendChild(treeContainer);
-  initEventListener(reader, doc);
 
   return treeContainer;
+}
+
+export function renderBookmarkTree(
+  reader: _ZoteroTypes.ReaderInstance,
+  doc: Document,
+  data: BookmarkNode[] | null,
+) {
+  const dropIndicator = ztoolkit.UI.createElement(doc, "div", {
+    classList: ["bookmark-drop-indicator"],
+  });
+  const toolbar = ztoolkit.UI.createElement(doc, "div", {
+    namespace: "html",
+    id: "j-bookmark-toolbar",
+    classList: ["j-hidden"], // 默认隐藏
+    children: [
+      {
+        tag: "button",
+        id: "j-bookmark-add",
+        classList: ["j-bookmark-toolbar-button", "toolbar-button"],
+        properties: { innerHTML: ICONS.add },
+        attributes: { title: getString("bookmark-add") },
+      },
+      {
+        tag: "button",
+        id: "j-bookmark-delete",
+        classList: ["j-bookmark-toolbar-button", "toolbar-button"],
+        properties: { innerHTML: ICONS.del },
+        attributes: { title: getString("bookmark-delete") },
+      },
+    ],
+  });
+  const bookmarkContainer = ztoolkit.UI.createElement(doc, "div", {
+    id: "jasminum-bookmarks",
+    classList: ["hidden"], // 默认隐藏
+    namespace: "html",
+    children: [
+      {
+        tag: "div",
+        namespace: "html",
+        id: "j-bookmark-viewer",
+        classList: ["bookmark-view"],
+        attributes: {
+          tabindex: "-1",
+          "data-tabstop": "1",
+          role: "tabpanel",
+          "aria-labelledby": "j-bookmark-button",
+        },
+        children: [
+          {
+            tag: "ul",
+            namespace: "html",
+            id: "bookmark-root-list",
+            classList: ["bookmark-list"],
+          },
+        ],
+      },
+    ],
+  });
+
+  // 添加工具栏
+  doc
+    .getElementById("sidebarContainer")!
+    .insertBefore(toolbar, doc.getElementById("sidebarContent")!);
+  bookmarkContainer.appendChild(dropIndicator);
+  createBookmarkNodes(data, bookmarkContainer.querySelector("#bookmark-root-list")!, doc);
+  doc.querySelector("#sidebarContent")?.appendChild(bookmarkContainer);
+
+  return bookmarkContainer;
 }
 
 export async function addOutlineToReader(reader: _ZoteroTypes.ReaderInstance) {
@@ -111,7 +183,6 @@ export async function addOutlineToReader(reader: _ZoteroTypes.ReaderInstance) {
     return;
   }
   // 等待元素加载
-  // ztoolkit.log(new Date().toISOString());
   await wait.waitUtilAsync(
     () => {
       return doc.querySelector("#sidebarContainer div.start") ? true : false;
@@ -119,19 +190,25 @@ export async function addOutlineToReader(reader: _ZoteroTypes.ReaderInstance) {
     5, // 减少图标出现延迟感
     5000,
   );
-  // ztoolkit.log(new Date().toISOString());
   ztoolkit.log("Sidebar container is ready.");
   addButton(doc);
+  addBookmarkButton(doc); // 同时添加书签按钮
+  
   const joutline = await getOutlineFromPDF(reader);
   if (!joutline) {
     ztoolkit.log("No outline to add.");
   }
   ztoolkit.log("++joutline", joutline);
 
+  const bookmarks = await loadBookmarksFromJSON(reader._item);
+  ztoolkit.log("++bookmarks", bookmarks);
+
   registerOutlineCSS(doc);
   registerThemeChange(reader._iframeWindow!);
 
   renderTree(reader, doc, joutline);
+  renderBookmarkTree(reader, doc, bookmarks);
+  initEventListener(reader, doc);
 }
 
 export async function registerOutline(tabID: string) {

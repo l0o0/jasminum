@@ -64,5 +64,10 @@ outline-delete-confirm = This node has child nodes, do you want to delete?
   {" "}
   If you delete, all child nodes will be deleted.
 
+# bookmark
+bookmark = Show Bookmarks (By Jasminum)
+bookmark-add = Add bookmark
+bookmark-delete = Delete bookmark
+
 # Progress window
 task-already-exists = Task already exists: { $title }
