@@ -279,17 +279,24 @@ export function createTreeNodes(
   parentElement: HTMLElement,
   doc: Document,
 ) {
-  if (nodes === null || nodes.length == 0) {
-    ztoolkit.UI.appendElement(
-      {
-        tag: "div",
-        namespace: "html",
-        classList: ["empty-outline-prompt"],
-        properties: { innerHTML: `请点击上方按钮${ICONS.add}创建书签` },
+  ztoolkit.UI.appendElement(
+    {
+      tag: "div",
+      namespace: "html",
+      id: "outline-empty-prompt",
+      classList:
+        nodes === null || nodes.length == 0
+          ? ["empty-prompt"]
+          : ["empty-prompt", "hidden"],
+      properties: {
+        innerHTML: getString("outline-empty-prompt", {
+          args: { icon: ICONS.add },
+        }),
       },
-      parentElement,
-    );
-  } else {
+    },
+    parentElement,
+  );
+  if (nodes != null && nodes.length > 0) {
     nodes.forEach((node) => {
       const li = ztoolkit.UI.createElement(doc, "li", {
         namespace: "html",

@@ -22,7 +22,9 @@ export const DEFAULT_BOOKMARK_COLORS = [
 
 // 获取随机颜色
 function getRandomBookmarkColor(): string {
-  const randomIndex = Math.floor(Math.random() * DEFAULT_BOOKMARK_COLORS.length);
+  const randomIndex = Math.floor(
+    Math.random() * DEFAULT_BOOKMARK_COLORS.length,
+  );
   return DEFAULT_BOOKMARK_COLORS[randomIndex];
 }
 
@@ -90,14 +92,16 @@ export async function loadBookmarksFromJSON(
     ztoolkit.log(`Bookmarks json is missing: ${bookmarkPath}`);
     return null;
   } else {
-    const content = (await Zotero.File.getContentsAsync(bookmarkPath)) as string;
+    const content = (await Zotero.File.getContentsAsync(
+      bookmarkPath,
+    )) as string;
     const tmp = JSON.parse(content);
     if (tmp.info.schema < BOOKMARK_SCHEMA) {
       return null;
     } else {
       const bookmarks: BookmarkNode[] = JSON.parse(content)["bookmarks"];
       // 为向后兼容性添加默认颜色
-      return bookmarks.map(bookmark => ({
+      return bookmarks.map((bookmark) => ({
         ...bookmark,
         color: bookmark.color || getRandomBookmarkColor(),
       }));
@@ -109,24 +113,29 @@ export function getBookmarksFromPage(): BookmarkNode[] {
   const reader = Zotero.Reader.getByTabID(
     ztoolkit.getGlobal("Zotero_Tabs").selectedID,
   );
-  const rootUL = reader._iframeWindow!.document.querySelector("#bookmark-root-list");
+  const rootUL = reader._iframeWindow!.document.querySelector(
+    "#bookmark-root-list",
+  );
   if (!rootUL) return [];
-  
+
   const bookmarkItems = Array.from(rootUL.querySelectorAll("li.bookmark-item"));
-  return bookmarkItems.map((li, index) => {
-    const bookmarkDiv = li.querySelector("div.bookmark-node")!;
-    const titleSpan = li.querySelector("span.bookmark-title")!;
-    return {
-      id: bookmarkDiv.getAttribute("data-id")!,
-      title: titleSpan.textContent!,
-      page: parseInt(bookmarkDiv.getAttribute("page")!),
-      x: parseFloat(bookmarkDiv.getAttribute("x")!),
-      y: parseFloat(bookmarkDiv.getAttribute("y")!),
-      order: index,
-      createdAt: parseInt(bookmarkDiv.getAttribute("data-created") || "0"),
-      color: bookmarkDiv.getAttribute("data-color") || DEFAULT_BOOKMARK_COLORS[0],
-    };
-  });
+  return bookmarkItems
+    .filter((li) => li != null)
+    .map((li, index) => {
+      const bookmarkDiv = (li as Element).querySelector("div.bookmark-node")!;
+      const titleSpan = (li as Element).querySelector("span.bookmark-title")!;
+      return {
+        id: bookmarkDiv.getAttribute("data-id")!,
+        title: titleSpan.textContent!,
+        page: parseInt(bookmarkDiv.getAttribute("page")!),
+        x: parseFloat(bookmarkDiv.getAttribute("x")!),
+        y: parseFloat(bookmarkDiv.getAttribute("y")!),
+        order: index,
+        createdAt: parseInt(bookmarkDiv.getAttribute("data-created") || "0"),
+        color:
+          bookmarkDiv.getAttribute("data-color") || DEFAULT_BOOKMARK_COLORS[0],
+      };
+    });
 }
 
 export function createBookmarkNodes(
@@ -134,17 +143,24 @@ export function createBookmarkNodes(
   parentElement: HTMLElement,
   doc: Document,
 ) {
-  if (nodes === null || nodes.length == 0) {
-    ztoolkit.UI.appendElement(
-      {
-        tag: "div",
-        namespace: "html",
-        classList: ["empty-bookmark-prompt"],
-        properties: { innerHTML: `请点击上方按钮${ICONS.add}创建书签` },
+  ztoolkit.UI.appendElement(
+    {
+      tag: "div",
+      namespace: "html",
+      id: "empty-bookmark",
+      classList:
+        nodes === null || nodes.length == 0
+          ? ["empty-prompt"]
+          : ["empty-prompt", "hidden"],
+      properties: {
+        innerHTML: getString("bookmark-empty-prompt", {
+          args: { icon: ICONS.add },
+        }),
       },
-      parentElement,
-    );
-  } else {
+    },
+    parentElement,
+  );
+  if (nodes != null && nodes.length > 0) {
     // 按order排序
     const sortedNodes = [...nodes].sort((a, b) => a.order - b.order);
     sortedNodes.forEach((node) => {
@@ -198,10 +214,10 @@ export function createBookmarkNodes(
 function generateSmartBookmarkTitle(pageNumber: number): string {
   const existingBookmarks = getBookmarksFromPage();
   const baseName = `P_${pageNumber}_`;
-  
+
   // 检查是否有重名
-  const existingTitles = existingBookmarks.map(b => b.title);
-  
+  const existingTitles = existingBookmarks.map((b) => b.title);
+
   // 找到下一个可用的数字后缀
   let counter = 1;
   let candidateName = `${baseName}${counter}`;
@@ -209,7 +225,7 @@ function generateSmartBookmarkTitle(pageNumber: number): string {
     counter++;
     candidateName = `${baseName}${counter}`;
   }
-  
+
   return candidateName;
 }
 

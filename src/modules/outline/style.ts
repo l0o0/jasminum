@@ -370,7 +370,7 @@ button:hover.j-bookmark-toolbar-button {
   width: 100%;
 }
 
-.empty-bookmark-prompt {
+.empty-prompt {
   text-align: center;
   color: #999;
   font-style: italic;

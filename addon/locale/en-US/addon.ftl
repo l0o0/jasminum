@@ -59,7 +59,7 @@ outline-collapse-all = Collapse all
 outline-add = Add bookmark
 outline-delete = Delete bookmark
 outline-save-to-pdf = Save outline to PDF
-outline-empty-prompt = Please click the button above { $icon } to create a bookmark
+outline-empty-prompt = Please click the button above { $icon } to create a outline
 outline-delete-confirm = This node has child nodes, do you want to delete?
   {" "}
   If you delete, all child nodes will be deleted.
@@ -68,6 +68,7 @@ outline-delete-confirm = This node has child nodes, do you want to delete?
 bookmark = Show Bookmarks (By Jasminum)
 bookmark-add = Add bookmark
 bookmark-delete = Delete bookmark
+bookmark-empty-prompt = Please click the button above { $icon } to create a bookmark
 
 # Progress window
 task-already-exists = Task already exists: { $title }

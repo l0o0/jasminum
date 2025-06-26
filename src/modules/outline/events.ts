@@ -53,7 +53,7 @@ export function initEventListener(
     const button = targetElement.closest("button");
     if (!button) return;
     ztoolkit.log("click to hide outline/bookmark", targetElement, button);
-    
+
     // Enable j outline view
     if (button.id === "j-outline-button") {
       ztoolkit.log("jasminum show outline");
@@ -67,7 +67,9 @@ export function initEventListener(
         .getElementById("j-bookmark-toolbar")
         ?.classList.toggle("j-hidden", true);
       button.classList.toggle("active", true);
-      doc.getElementById("j-bookmark-button")?.classList.toggle("active", false);
+      doc
+        .getElementById("j-bookmark-button")
+        ?.classList.toggle("active", false);
     } else if (button.id === "j-bookmark-button") {
       ztoolkit.log("jasminum show bookmark");
       reader.setSidebarView("jasminum-bookmarks");
@@ -85,7 +87,9 @@ export function initEventListener(
       // Hide both outline and bookmark views
       ztoolkit.log("hide jasminum views");
       doc.getElementById("jasminum-outline")?.classList.toggle("hidden", true);
-      doc.getElementById("jasminum-bookmarks")?.classList.toggle("hidden", true);
+      doc
+        .getElementById("jasminum-bookmarks")
+        ?.classList.toggle("hidden", true);
       doc
         .getElementById("j-outline-toolbar")
         ?.classList.toggle("j-hidden", true);
@@ -93,7 +97,9 @@ export function initEventListener(
         .getElementById("j-bookmark-toolbar")
         ?.classList.toggle("j-hidden", true);
       doc.getElementById("j-outline-button")?.classList.toggle("active", false);
-      doc.getElementById("j-bookmark-button")?.classList.toggle("active", false);
+      doc
+        .getElementById("j-bookmark-button")
+        ?.classList.toggle("active", false);
     }
   }
   // 给默认按钮添加事件，避免切换面板时异常
@@ -177,7 +183,7 @@ export function initEventListener(
     bookmarkContainer.addEventListener("click", async (e: Event) => {
       const target = e.target as HTMLElement;
       ztoolkit.log("click bookmark container", e.target);
-      
+
       // 书签选择和跳转
       if (target.closest(".bookmark-node")) {
         selectBookmarkNode(target.closest(".bookmark-node")!);
@@ -800,19 +806,7 @@ export async function deleteSelectedNode(ev: Event) {
   await saveOutlineToJSON();
 
   if (!rootNode.hasChildNodes()) {
-    ztoolkit.UI.appendElement(
-      {
-        tag: "div",
-        namespace: "html",
-        classList: ["empty-outline-prompt"],
-        properties: {
-          innerHTML: getString("outline-empty-prompt", {
-            args: { icon: ICONS.add },
-          }),
-        },
-      },
-      rootNode,
-    );
+    doc.getElementById("empty-outline")?.classList.remove("hidden");
   }
   if (beforeSelectedLi) {
     beforeSelectedLi
@@ -1012,7 +1006,7 @@ function clickToBookmarkPosition(targetElement: Element) {
 
   const PDFViewerApplication = (
     reader._internalReader._primaryView as _ZoteroTypes.Reader.PDFView
-  )._iframeWindow.PDFViewerApplication;
+  )._iframeWindow!.PDFViewerApplication;
   const pageView = PDFViewerApplication.pdfViewer!.getPageView(page - 1);
   // @ts-ignore - Not typed
   const [scrollX, scrollY] = pageView.viewport.convertToViewportPoint(x, y);
@@ -1034,7 +1028,8 @@ export function makeBookmarkNodeEditable(titleElement: Element) {
   // 获取当前值
   const currentTitle = titleElement.textContent || "";
   const currentPage = bookmarkNode.getAttribute("page")!;
-  const currentColor = bookmarkNode.getAttribute("data-color") || DEFAULT_BOOKMARK_COLORS[0];
+  const currentColor =
+    bookmarkNode.getAttribute("data-color") || DEFAULT_BOOKMARK_COLORS[0];
 
   // 创建编辑容器
   const editContainer = doc.createElement("div");
@@ -1060,7 +1055,7 @@ export function makeBookmarkNodeEditable(titleElement: Element) {
       colorOption.classList.add("selected");
     }
     colorOption.style.backgroundColor = color;
-    
+
     colorOption.addEventListener("click", () => {
       // 更新选中状态
       colorContainer.querySelectorAll("div").forEach((opt) => {
@@ -1068,19 +1063,19 @@ export function makeBookmarkNodeEditable(titleElement: Element) {
       });
       colorOption.classList.add("selected");
       selectedColor = color;
-      
+
       // 实时更新书签的颜色显示
-      bookmarkNode.style.borderLeftColor = color;
+      (bookmarkNode as HTMLElement).style.borderLeftColor = color;
       bookmarkNode.setAttribute("data-color", color);
     });
-    
+
     colorContainer.appendChild(colorOption);
   });
 
   // 创建分隔线
   const separator = doc.createElement("div");
   separator.className = "bookmark-edit-separator";
-  
+
   editContainer.appendChild(titleInput);
   editContainer.appendChild(separator);
   editContainer.appendChild(colorContainer);
@@ -1100,10 +1095,10 @@ export function makeBookmarkNodeEditable(titleElement: Element) {
     // 更新原始元素
     titleElement.textContent = newTitle || currentTitle;
     titleElement.setAttribute("title", `${newTitle}, Page: ${currentPage}`);
-    
+
     // 更新颜色
     bookmarkNode.setAttribute("data-color", selectedColor);
-    bookmarkNode.style.borderLeftColor = selectedColor;
+    (bookmarkNode as HTMLElement).style.borderLeftColor = selectedColor;
 
     // 恢复 DOM 结构
     parent.replaceChild(titleElement, editContainer);
@@ -1142,12 +1137,12 @@ export async function addNewBookmarkNode(ev: Event) {
   const doc = (ev.target as Element).ownerDocument;
   const newBookmark = addNewBookmark();
   const rootList = doc.getElementById("bookmark-root-list")!;
-  
+
   // 清除空提示
-  doc.querySelector(".empty-bookmark-prompt")?.remove();
-  
+  doc.querySelector("#bookmark-empty-prompt")?.remove();
+
   createBookmarkNodes([newBookmark], rootList, doc);
-  
+
   // 保存书签信息
   await saveBookmarksToJSON();
 }
@@ -1170,15 +1165,7 @@ export async function deleteSelectedBookmarkNode(ev: Event) {
 
   // 如果没有书签了，显示提示
   if (!rootNode.hasChildNodes()) {
-    ztoolkit.UI.appendElement(
-      {
-        tag: "div",
-        namespace: "html",
-        classList: ["empty-bookmark-prompt"],
-        properties: { innerHTML: `请点击上方按钮${ICONS.add}创建书签` },
-      },
-      rootNode,
-    );
+    doc.getElementById("empty-bookmark")?.classList.remove("hidden");
   }
   doc.getElementById("j-bookmark-viewer")?.focus();
 }
@@ -1249,7 +1236,9 @@ export function handleBookmarkDragOver(e: DragEvent) {
 function updateBookmarkDropIndicator(targetNode: Element, position: string) {
   const rect = targetNode.getBoundingClientRect();
   const doc = targetNode.ownerDocument;
-  const dropIndicator = doc.querySelector(".bookmark-drop-indicator") as HTMLElement;
+  const dropIndicator = doc.querySelector(
+    ".bookmark-drop-indicator",
+  ) as HTMLElement;
 
   dropIndicator.classList.add("visible");
 
