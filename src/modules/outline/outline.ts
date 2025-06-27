@@ -1,9 +1,6 @@
 import { wait } from "zotero-plugin-toolkit";
-import { version } from "../../../package.json";
 import { getString } from "../../utils/locale";
 import { outline_css, ICONS } from "./style";
-
-export const OUTLINE_SCHEMA = 1;
 
 // Register custom CSS for Jasminum outline
 export function registerOutlineCSS(doc: Document) {
@@ -186,7 +183,7 @@ export async function getOutlineFromPDF(
   return outline;
 }
 
-export function getOutlineFromPage(): OutlineNode[] {
+export function getOutlinesFromPage(): OutlineNode[] {
   function loop(ul: Element): OutlineNode[] {
     const lis = Array.from(
       ul.querySelectorAll(":scope > li.tree-item"),
@@ -215,65 +212,6 @@ export function getOutlineFromPage(): OutlineNode[] {
   return loop(rootUL);
 }
 
-// 注意SCHEMA
-// 注意打开PDF时，默认打开书签
-export async function saveOutlineToJSON(
-  item?: Zotero.Item,
-  outline?: OutlineNode[],
-) {
-  if (!outline) {
-    outline = getOutlineFromPage();
-  }
-  if (!item) {
-    const reader = Zotero.Reader.getByTabID(
-      ztoolkit.getGlobal("Zotero_Tabs").selectedID,
-    );
-    item = reader._item;
-  }
-  const outlineInfo: OutlineInfo = {
-    info: {
-      itemID: item.id,
-      schema: OUTLINE_SCHEMA,
-      jasminumVersion: version,
-    },
-    outline: outline,
-  };
-  const outlineStr = JSON.stringify(outlineInfo);
-  const outlinePath = PathUtils.join(
-    Zotero.DataDirectory.dir,
-    "storage",
-    item.key,
-    "jasminum-outline.json",
-  );
-  await Zotero.File.putContentsAsync(outlinePath, outlineStr);
-  ztoolkit.log("Save outline to JSON");
-}
-
-// 加载时要考虑JSON文件的版本信息，如果版本低，要重新从原文件加载信息
-export async function loadOutlineFromJSON(
-  item: Zotero.Item,
-): Promise<OutlineNode[] | null> {
-  const outlinePath = PathUtils.join(
-    Zotero.DataDirectory.dir,
-    "storage",
-    item.key,
-    "jasminum-outline.json",
-  );
-  const isFileExist = await IOUtils.exists(outlinePath);
-  if (!isFileExist) {
-    ztoolkit.log(`Outline json is missing: ${outlinePath}`);
-    return null;
-  } else {
-    const content = (await Zotero.File.getContentsAsync(outlinePath)) as string;
-    const tmp = JSON.parse(content);
-    if (tmp.info.schema < OUTLINE_SCHEMA) {
-      return null;
-    } else {
-      return JSON.parse(content)["outline"];
-    }
-  }
-}
-
 export function createTreeNodes(
   nodes: OutlineNode[] | null,
   parentElement: HTMLElement,
@@ -283,7 +221,7 @@ export function createTreeNodes(
     {
       tag: "div",
       namespace: "html",
-      id: "outline-empty-prompt",
+      id: "empty-outline-prompt",
       classList:
         nodes === null || nodes.length == 0
           ? ["empty-prompt"]

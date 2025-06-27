@@ -802,12 +802,13 @@ export async function deleteSelectedNode(ev: Event) {
     expander.textContent = " ";
   }
 
+  if (rootNode.querySelectorAll("li").length === 0) {
+    doc.getElementById("empty-outline-prompt")?.classList.remove("hidden");
+  }
+
   // 保存节点信息
   await saveOutlineToJSON();
 
-  if (!rootNode.hasChildNodes()) {
-    doc.getElementById("empty-outline")?.classList.remove("hidden");
-  }
   if (beforeSelectedLi) {
     beforeSelectedLi
       .querySelector("div.tree-node")
@@ -889,6 +890,10 @@ export async function addNewNode(ev: Event) {
       doc,
     );
   }
+
+  // 隐藏提示
+  doc.getElementById("empty-outline-prompt")?.classList.toggle("hidden", true);
+
   // 保存节点信息
   await saveOutlineToJSON();
 }
@@ -1139,7 +1144,7 @@ export async function addNewBookmarkNode(ev: Event) {
   const rootList = doc.getElementById("bookmark-root-list")!;
 
   // 清除空提示
-  doc.querySelector("#bookmark-empty-prompt")?.remove();
+  doc.getElementById("empty-bookmark-prompt")?.classList.toggle("hidden", true);
 
   createBookmarkNodes([newBookmark], rootList, doc);
 
@@ -1164,8 +1169,8 @@ export async function deleteSelectedBookmarkNode(ev: Event) {
   await saveBookmarksToJSON();
 
   // 如果没有书签了，显示提示
-  if (!rootNode.hasChildNodes()) {
-    doc.getElementById("empty-bookmark")?.classList.remove("hidden");
+  if (rootNode.querySelectorAll("li").length === 0) {
+    doc.getElementById("empty-bookmark-prompt")?.classList.remove("hidden");
   }
   doc.getElementById("j-bookmark-viewer")?.focus();
 }

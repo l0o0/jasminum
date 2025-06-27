@@ -11,7 +11,8 @@ type OutlineNode = {
 
 type OutlineInfo = {
   info: Record<string, string | number>;
-  outline: OutlineNode[];
+  outlines: OutlineNode[];
+  bookmarks?: BookmarkNode[];
 };
 
 // Reference of PDF object

@@ -5,6 +5,7 @@ import {
   addButton,
   createTreeNodes,
   getOutlineFromPDF,
+  getOutlinesFromPage,
   registerOutlineCSS,
   registerThemeChange,
 } from "./outline";
@@ -15,6 +16,73 @@ import {
 } from "./bookmark";
 import { ICONS } from "./style";
 import { getPref } from "../../utils/prefs";
+import { version } from "../../../package.json";
+
+// 1, init
+// 2, Add bookmark
+export const OUTLINE_SCHEMA = 2;
+
+// 注意SCHEMA
+// 注意打开PDF时，默认打开书签
+export async function saveOutlineToJSON(
+  item?: Zotero.Item,
+  outlines?: OutlineNode[],
+  s,
+) {
+  if (!outlines) {
+    outlines = getOutlinesFromPage();
+  }
+  if (!item) {
+    const reader = Zotero.Reader.getByTabID(
+      ztoolkit.getGlobal("Zotero_Tabs").selectedID,
+    );
+    item = reader._item;
+  }
+  const outlineInfo: OutlineInfo = {
+    info: {
+      itemID: item.id,
+      schema: OUTLINE_SCHEMA,
+      jasminumVersion: version,
+    },
+    outlines: outlines,
+  };
+  const outlineStr = JSON.stringify(outlineInfo);
+  const outlinePath = PathUtils.join(
+    Zotero.DataDirectory.dir,
+    "storage",
+    item.key,
+    "jasminum-outline.json",
+  );
+  await Zotero.File.putContentsAsync(outlinePath, outlineStr);
+  ztoolkit.log("Save outline to JSON");
+}
+
+// 加载时要考虑JSON文件的版本信息，如果版本低，要重新从原文件加载信息
+export async function loadOutlineFromJSON(
+  item: Zotero.Item,
+): Promise<Record<string, OutlineNode[] | undefined> | null> {
+  const outlinePath = PathUtils.join(
+    Zotero.DataDirectory.dir,
+    "storage",
+    item.key,
+    "jasminum-outline.json",
+  );
+  const isFileExist = await IOUtils.exists(outlinePath);
+  if (!isFileExist) {
+    ztoolkit.log(`Outline json is missing: ${outlinePath}`);
+    return null;
+  } else {
+    const content = (await Zotero.File.getContentsAsync(outlinePath)) as string;
+    const tmp = JSON.parse(content);
+    if (tmp.info.schema === 1) {
+      return { outlines: tmp["outline"], bookmarks: tmp["bookmarks"] };
+    } else if (tmp.info.schema >= 2) {
+      return { outlines: tmp["outlines"], bookmarks: tmp["bookmarks"] };
+    } else {
+      return null;
+    }
+  }
+}
 
 export function renderTree(
   reader: _ZoteroTypes.ReaderInstance,
@@ -170,7 +238,11 @@ export function renderBookmarkTree(
     .getElementById("sidebarContainer")!
     .insertBefore(toolbar, doc.getElementById("sidebarContent")!);
   bookmarkContainer.appendChild(dropIndicator);
-  createBookmarkNodes(data, bookmarkContainer.querySelector("#bookmark-root-list")!, doc);
+  createBookmarkNodes(
+    data,
+    bookmarkContainer.querySelector("#bookmark-root-list")!,
+    doc,
+  );
   doc.querySelector("#sidebarContent")?.appendChild(bookmarkContainer);
 
   return bookmarkContainer;
@@ -193,7 +265,7 @@ export async function addOutlineToReader(reader: _ZoteroTypes.ReaderInstance) {
   ztoolkit.log("Sidebar container is ready.");
   addButton(doc);
   addBookmarkButton(doc); // 同时添加书签按钮
-  
+
   const joutline = await getOutlineFromPDF(reader);
   if (!joutline) {
     ztoolkit.log("No outline to add.");

@@ -147,7 +147,7 @@ export function createBookmarkNodes(
     {
       tag: "div",
       namespace: "html",
-      id: "empty-bookmark",
+      id: "empty-bookmark-prompt",
       classList:
         nodes === null || nodes.length == 0
           ? ["empty-prompt"]
