@@ -12,6 +12,7 @@ import {
 import {
   addBookmarkButton,
   createBookmarkNodes,
+  getBookmarksFromPage,
   loadBookmarksFromJSON,
 } from "./bookmark";
 import { ICONS } from "./style";
@@ -27,11 +28,16 @@ export const OUTLINE_SCHEMA = 2;
 export async function saveOutlineToJSON(
   item?: Zotero.Item,
   outlines?: OutlineNode[],
-  s,
+  bookmarks?: BookmarkNode[],
 ) {
   if (!outlines) {
     outlines = getOutlinesFromPage();
   }
+
+  if (!bookmarks) {
+    bookmarks = getBookmarksFromPage();
+  }
+
   if (!item) {
     const reader = Zotero.Reader.getByTabID(
       ztoolkit.getGlobal("Zotero_Tabs").selectedID,
@@ -45,6 +51,7 @@ export async function saveOutlineToJSON(
       jasminumVersion: version,
     },
     outlines: outlines,
+    bookmarks: bookmarks,
   };
   const outlineStr = JSON.stringify(outlineInfo);
   const outlinePath = PathUtils.join(
