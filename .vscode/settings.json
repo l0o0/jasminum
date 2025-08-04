@@ -1,5 +1,8 @@
 {
-  "editor.tabSize": 2,
+  "[javascript]": {
+    "editor.defaultIndentSize": 2,
+    "editor.tabSize": 2
+  },
   "files.eol": "\n",
   "editor.formatOnType": false,
   "editor.formatOnSave": true,
@@ -8,5 +11,14 @@
   },
   "eslint.validate": ["javascript", "typescript"],
   "prettier.requireConfig": true,
-  "commentTranslate.hover.enabled": true
+  "commentTranslate.hover.enabled": true,
+  "editor.detectIndentation": false, // 关键：禁止自动检测
+  "prettier.tabWidth": 2,
+  "eslint.options": {
+    "overrideConfig": {
+      "rules": {
+        "indent": "off" // 强制禁用 ESLint 缩进规则
+      }
+    }
+  }
 }
