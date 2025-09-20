@@ -228,11 +228,6 @@ href="chrome://zotero-platform/content/zotero.css" type="text/css"?>
           this,
         );
 
-        Services.scriptloader.loadSubScript(
-          "resource://zotero/require.js",
-          this,
-        );
-
         window.arguments[0]._initPromise.resolve();
       });
     }
