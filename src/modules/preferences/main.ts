@@ -2,7 +2,7 @@ import { config } from "../../../package.json";
 import { isMainlandChina } from "../../utils/http";
 import { getString } from "../../utils/locale";
 import { getPref, setPref } from "../../utils/prefs";
-import { updateTranslators, randomBaseUrl } from ".././translators";
+import { updateTranslators, bestSpeedBaseUrl } from ".././translators";
 import type { PluginPrefsMap } from "../../utils/prefs";
 import { onShowTable } from "./translators";
 
@@ -62,7 +62,7 @@ export async function initPrefs() {
   }
 
   if (!getPref("translatorSource")) {
-    setPref("translatorSource", randomBaseUrl());
+    setPref("translatorSource", await bestSpeedBaseUrl());
   }
 
   const translatortUpdateTime = getPref("translatorUpdateTime");
@@ -184,6 +184,29 @@ function bindPrefEvents(doc: Document) {
     .querySelector(`#zotero-prefpane-${config.addonRef}-open-translator-table`)
     ?.addEventListener("click", async (event) => {
       onShowTable();
+    });
+
+  doc
+    .getElementById(`zotero-prefpane-${config.addonRef}-best-speed-button`)
+    ?.addEventListener("click", async (event) => {
+      const button = event.target as HTMLButtonElement;
+      button.disabled = true;
+      try {
+        const bestUrl = await bestSpeedBaseUrl();
+        setPref("translatorSource", bestUrl);
+        addon.data.prefs?.window.alert(
+          getString("info-best-speed-source-updated", {
+            args: { source: bestUrl },
+          }),
+        );
+      } catch (error) {
+        ztoolkit.log(`select best speed source failed: ${error}`);
+        addon.data.prefs?.window.alert(
+          getString("info-best-speed-source-failed"),
+        );
+      } finally {
+        button.disabled = false;
+      }
     });
 
   // metadata source dropdown

@@ -60,8 +60,9 @@ action-after-import-desc =
 # 转换器设置
 pref-group-translators = 中文转换器设置
 label-translator-source = 转换器下载源
+label-best-speed = 选择最快源
 translatorSource-desc =
-  .tooltiptext = 选择转换器下载源，一般情况下不用切换。如果您无法下载中文转换器，可选择尝试其他源。
+  .tooltiptext = 选择转换器下载源，一般情况下不用切换。如果您无法下载中文转换器，可选择尝试其他源或点击 选择最快源 按钮。
 label-auto-update-translators = 
   .label = 自动更新转换器
 label-translators-force-update = 

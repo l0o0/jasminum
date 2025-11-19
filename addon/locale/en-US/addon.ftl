@@ -8,6 +8,8 @@ tabpanel-reader-tab-label = Reader Tab
 select-download-folder = Select download folder
 get-Chinese-styles = Get Chinese community styles…
 info-translators-cn-updaing = Chinese translators are under updating.
+info-best-speed-source-updated = Updated to fastest source: { $source }
+info-best-speed-source-failed = Failed to select fastest source, please check network connection
 
 
 # Preference translator table

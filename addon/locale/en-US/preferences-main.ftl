@@ -39,8 +39,9 @@ namepattern-desc =
 # Transator Settings
 pref-group-translators = Chinese Translator Settings
 label-translator-source = Translator Download Source
+label-best-speed = Choose Fastest Source
 translatorSource-desc =
-  .tooltiptext = Select the translator download source. Generally, there is no need to switch. If you cannot download the Chinese translator, you can try other sources.
+  .tooltiptext = Select the translator download source. Generally, there is no need to switch. If you cannot download the Chinese translator, you can try other sources or click the "Choose Fastest Source" button.
 label-auto-update-translators =
   .label = Automatically Update Translators
 label-translators-force-update =

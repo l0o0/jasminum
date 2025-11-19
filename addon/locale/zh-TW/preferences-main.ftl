@@ -39,8 +39,9 @@ namepattern-desc =
 # 轉換器設定
 pref-group-translators = 中文轉換器設定
 label-translator-source = 轉換器下載源
+label-best-speed = 選擇最快源
 translatorSource-desc =
-  .tooltiptext = 選擇轉換器下載源，一般情況下不用切換。如果您無法下載中文轉換器，可選擇嘗試其他源。
+  .tooltiptext = 選擇轉換器下載源，一般情況下不用切換。如果您無法下載中文轉換器，可選擇嘗試其他源或點擊「選擇最快源」按鈕。
 label-auto-update-translators = 
   .label = 自動更新轉換器
 label-translators-force-update = 

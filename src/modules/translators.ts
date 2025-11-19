@@ -1,15 +1,37 @@
 import { getString } from "../utils/locale";
 import { getPref, setPref } from "../utils/prefs";
 
-export function randomBaseUrl() {
+export async function bestSpeedBaseUrl() {
   const baseUrls = [
     "https://ftp.linxingzhong.top/translators_CN",
     "https://oss.wwang.de/translators_CN",
     "https://www.wieke.cn/translators_CN",
   ];
-  const baseUrl = baseUrls[Math.floor(Math.random() * baseUrls.length)];
-  ztoolkit.log(`use base url: ${baseUrl}`);
-  return baseUrl;
+
+  const testUrl = async (
+    url: string,
+  ): Promise<{ url: string; time: number }> => {
+    const startTime = Date.now();
+    try {
+      await Zotero.HTTP.request("HEAD", `${url}/data/translators.json`, {
+        timeout: 5000,
+      });
+      const time = Date.now() - startTime;
+      ztoolkit.log(`${url} response time: ${time}ms`);
+      return { url, time };
+    } catch (error) {
+      ztoolkit.log(`${url} request failed: ${error}`);
+      return { url, time: Infinity };
+    }
+  };
+
+  const results = await Promise.all(baseUrls.map(testUrl));
+  const fastest = results.reduce((prev, curr) =>
+    curr.time < prev.time ? curr : prev,
+  );
+
+  ztoolkit.log(`use fastest base url: ${fastest.url} (${fastest.time}ms)`);
+  return fastest.url;
 }
 
 /**

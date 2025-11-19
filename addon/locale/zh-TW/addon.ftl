@@ -9,6 +9,8 @@ tabpanel-reader-tab-label = 閱讀器標籤
 select-download-folder = 選擇下載檔案儲存目錄
 get-Chinese-styles = 取得中文社群樣式…
 info-translators-cn-updaing = 中文轉換器正在更新中
+info-best-speed-source-updated = 已更新為最快源：{ $source }
+info-best-speed-source-failed = 選擇最快源失敗，請檢查網路連接
 
 # Preference translator table
 th-filename = 檔案名稱
