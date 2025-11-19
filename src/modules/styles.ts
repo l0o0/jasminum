@@ -1,3 +1,4 @@
+import { get } from "http";
 import { getString } from "../utils/locale";
 import { findWindow, observeWindowLoad, waitElmLoaded } from "../utils/window";
 
@@ -10,23 +11,28 @@ function injectToDocument(doc: Document) {
   }
   function injectToParent() {
     waitElmLoaded(doc, "#styleManager-buttons").then(() => {
-      const label = doc.createElement("label");
-      label.id = labelId;
-      label.classList.add("zotero-text-link");
-      label.setAttribute("is", "zotero-text-link");
-      label.setAttribute("role", "link");
-      label.textContent = getString("get-Chinese-styles");
-      label.addEventListener("click", function (event) {
+      const button = doc.createElement("button");
+      button.id = labelId;
+      button.setAttribute("label", getString("get-Chinese-styles"));
+      button.addEventListener("click", function (event) {
         Zotero.launchURL("https://zotero-chinese.com/styles/");
         event.preventDefault();
       });
       const firstLabel = doc.querySelector<HTMLElement>(
-        "#styleManager-buttons > label:first-child",
+        "#styleManager-buttons > button:first-child",
       );
+
       if (!firstLabel) return;
+      const hbox_copy = firstLabel
+        .querySelector("hbox")!
+        .cloneNode(true) as HTMLElement;
+      hbox_copy
+        .querySelector("label")!
+        .setAttribute("value", getString("get-Chinese-styles"));
       firstLabel.removeAttribute("flex");
       firstLabel.style.marginRight = "12px";
-      firstLabel.insertAdjacentElement("afterend", label);
+      button.appendChild(hbox_copy);
+      firstLabel.insertAdjacentElement("afterend", button);
     });
   }
   const isCitePaneSelected = doc.querySelector(
