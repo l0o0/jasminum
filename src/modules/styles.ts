@@ -1,6 +1,7 @@
 import { get } from "http";
 import { getString } from "../utils/locale";
 import { findWindow, observeWindowLoad, waitElmLoaded } from "../utils/window";
+import { setDashPattern } from "pdf-lib";
 
 function injectToDocument(doc: Document) {
   const labelId = "zotero-chinese-styles-link";
@@ -10,29 +11,51 @@ function injectToDocument(doc: Document) {
     return;
   }
   function injectToParent() {
-    waitElmLoaded(doc, "#styleManager-buttons").then(() => {
-      const button = doc.createElement("button");
-      button.id = labelId;
-      button.setAttribute("label", getString("get-Chinese-styles"));
-      button.addEventListener("click", function (event) {
-        Zotero.launchURL("https://zotero-chinese.com/styles/");
-        event.preventDefault();
-      });
-      const firstLabel = doc.querySelector<HTMLElement>(
-        "#styleManager-buttons > button:first-child",
+    // ztoolkit.log("Injecting Chinese styles link to preferences");
+    waitElmLoaded(doc, "#styleManager-buttons", 8000).then(() => {
+      //   ztoolkit.log("Preferences loaded, injecting link");
+      const firstChild = doc.querySelector<HTMLElement>(
+        "#styleManager-buttons > :nth-child(1)",
       );
-
-      if (!firstLabel) return;
-      const hbox_copy = firstLabel
-        .querySelector("hbox")!
-        .cloneNode(true) as HTMLElement;
-      hbox_copy
-        .querySelector("label")!
-        .setAttribute("value", getString("get-Chinese-styles"));
-      firstLabel.removeAttribute("flex");
-      firstLabel.style.marginRight = "12px";
-      button.appendChild(hbox_copy);
-      firstLabel.insertAdjacentElement("afterend", button);
+      const secondChild = doc.querySelector<HTMLElement>(
+        "#styleManager-buttons > :nth-child(2)",
+      );
+      //   ztoolkit.log(firstChild?.tagName);
+      if (!firstChild || !secondChild) return;
+      if (firstChild.tagName === "button") {
+        const hbox_copy = secondChild
+          .querySelector("hbox")!
+          .cloneNode(true) as HTMLElement;
+        hbox_copy
+          .querySelector("label")!
+          .setAttribute("value", getString("get-Chinese-styles"));
+        const button = doc.createElement("button");
+        button.style.padding = "0px";
+        button.id = labelId;
+        button.setAttribute("label", getString("get-Chinese-styles"));
+        button.addEventListener("click", function (event) {
+          Zotero.launchURL("https://zotero-chinese.com/styles/");
+          event.preventDefault();
+        });
+        button.appendChild(hbox_copy);
+        secondChild.insertAdjacentElement("beforebegin", button);
+      } else if (firstChild.tagName === "label") {
+        // For Zotero 7
+        const label = doc.createElement("label");
+        label.id = labelId;
+        label.classList.add("zotero-text-link");
+        label.setAttribute("is", "zotero-text-link");
+        label.setAttribute("role", "link");
+        label.textContent = getString("get-Chinese-styles");
+        label.addEventListener("click", function (event) {
+          Zotero.launchURL("https://zotero-chinese.com/styles/");
+          event.preventDefault();
+        });
+        firstChild.removeAttribute("flex");
+        firstChild.style.marginRight = "12px";
+        firstChild.insertAdjacentElement("afterend", label);
+      }
+      ztoolkit.log("Chinese styles link injected");
     });
   }
   const isCitePaneSelected = doc.querySelector(
