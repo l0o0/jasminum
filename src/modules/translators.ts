@@ -82,6 +82,9 @@ export async function getLastUpdatedMap(
   }
   try {
     const baseUrl = getPref("translatorSource");
+    if (!baseUrl || baseUrl.trim() === "") {
+      throw new Error("translatorSource is not configured");
+    }
     const contents = await Zotero.File.getContentsFromURLAsync(
       `${baseUrl}/data/translators.json`,
     );
@@ -90,7 +93,13 @@ export async function getLastUpdatedMap(
     return JSON.parse(contents);
   } catch (event) {
     ztoolkit.log(`getTranslatorsData failed: ${event}`);
-    return {};
+    // Try to use cache as fallback
+    if (await IOUtils.exists(cachePath)) {
+      ztoolkit.log("Using cached translator data as fallback");
+      const contents = await Zotero.File.getContentsAsync(cachePath, "utf8");
+      return JSON.parse(contents as string);
+    }
+    throw new Error(`Failed to get translator data: ${event}`);
   }
 }
 
@@ -157,9 +166,63 @@ async function _updateTranslators(force = false): Promise<boolean> {
 
   if (needUpdate === false) return false;
 
-  const translatorData = await getLastUpdatedMap(needUpdate);
   const baseUrl = getPref("translatorSource");
   ztoolkit.log(`update translators from base: ${baseUrl}`);
+
+  // Validate translator source is configured
+  if (!baseUrl || baseUrl.trim() === "") {
+    ztoolkit.log("translatorSource is not configured, showing error");
+    new ztoolkit.ProgressWindow(getString("plugin-name"), {
+      closeOnClick: true,
+      closeTime: 5000,
+    })
+      .createLine({
+        text: getString("error-translator-source-not-configured") ||
+              "错误：转换器下载源未配置。请在设置中选择最快源或手动配置。",
+        type: "fail",
+        progress: 100,
+      })
+      .show();
+    return false;
+  }
+
+  let translatorData: LastUpdatedMap;
+  try {
+    translatorData = await getLastUpdatedMap(needUpdate);
+  } catch (error) {
+    ztoolkit.log(`Failed to get translator data: ${error}`);
+    new ztoolkit.ProgressWindow(getString("plugin-name"), {
+      closeOnClick: true,
+      closeTime: 5000,
+    })
+      .createLine({
+        text: getString("error-get-translator-list-failed") ||
+              `错误：获取转换器列表失败。请检查网络连接和下载源设置。详情：${error}`,
+        type: "fail",
+        progress: 100,
+      })
+      .show();
+    return false;
+  }
+
+  // Check if translator data is empty
+  const translatorCount = Object.keys(translatorData).length;
+  if (translatorCount === 0) {
+    ztoolkit.log("translator data is empty, aborting update");
+    new ztoolkit.ProgressWindow(getString("plugin-name"), {
+      closeOnClick: true,
+      closeTime: 5000,
+    })
+      .createLine({
+        text: getString("error-translator-list-empty") ||
+              "错误：转换器列表为空。请检查下载源配置是否正确，或尝试选择其他下载源。",
+        type: "fail",
+        progress: 100,
+      })
+      .show();
+    return false;
+  }
+
   const popupWin = new ztoolkit.ProgressWindow(getString("plugin-name"), {
     closeOnClick: true,
     closeTime: -1,
@@ -170,7 +233,7 @@ async function _updateTranslators(force = false): Promise<boolean> {
       progress: 0,
     })
     .show();
-  const progressStep = 100 / Object.keys(translatorData).length;
+  const progressStep = 100 / translatorCount;
   let progress = 0;
   let successCounts = 0;
   let skipCounts = 0;
@@ -188,6 +251,18 @@ async function _updateTranslators(force = false): Promise<boolean> {
         try {
           const url = `${baseUrl}/${filename}`;
           const code = await Zotero.File.getContentsFromURLAsync(url);
+
+          // Validate downloaded content
+          if (!code || code.trim().length === 0) {
+            throw new Error("Downloaded content is empty");
+          }
+
+          // Validate it's a valid translator file (should start with JSON metadata)
+          const infoRe = /^\s*{[\S\s]*?}\s*?[\r\n]/;
+          if (!infoRe.test(code)) {
+            throw new Error("Downloaded content is not a valid translator file");
+          }
+
           const desPath = PathUtils.join(
             Zotero.DataDirectory.dir,
             "translators",
