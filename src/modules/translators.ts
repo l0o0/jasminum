@@ -105,17 +105,49 @@ export async function getLastUpdatedMap(
 
 async function mendTranslators() {
   const translators = Zotero.Translators.getAll();
-  // 727 is the number of translators at the time of writing
+  const translatorCount = Object.keys(translators).length;
+
+  // Check if translator files exist in the translators directory
+  // This prevents deleting user's manually installed Chinese translators
+  const translatorsDir = PathUtils.join(
+    Zotero.DataDirectory.dir,
+    "translators",
+  );
+  let hasTranslatorFiles = false;
+
+  try {
+    const children = await IOUtils.getChildren(translatorsDir);
+    // Check if there are any .js files (translator files)
+    hasTranslatorFiles = children.some((path) => path.endsWith(".js"));
+    const fileCount = children.filter((p) => p.endsWith(".js")).length;
+    ztoolkit.log(
+      `mendTranslators: found ${fileCount} translator files in directory`,
+    );
+  } catch (error) {
+    ztoolkit.log(`mendTranslators: failed to check translators directory: ${error}`);
+  }
+
+  // Only reset translators if:
+  // 1. It's not the first run
+  // 2. Translators haven't been mended before
+  // 3. There are very few translators loaded (less than 742, indicating a real problem)
+  // 4. AND there are no translator files in the directory
+  // 742 is the current number of official translators (as of 2026-01)
   if (
     !getPref("firstRun") &&
     !getPref("translatorsMended") &&
-    Object.keys(translators).length < 727
+    translatorCount < 742 &&
+    !hasTranslatorFiles
   ) {
     ztoolkit.log(
-      "jasminum has been installed, and translators seems to be missing, try to reset them",
+      `jasminum has been installed, and translators seems to be missing (only ${translatorCount} found), try to reset them`,
     );
     await Zotero.Schema.resetTranslators();
     setPref("translatorsMended", true);
+  } else {
+    ztoolkit.log(
+      `mendTranslators: skip reset. firstRun=${getPref("firstRun")}, translatorsMended=${getPref("translatorsMended")}, count=${translatorCount}, hasFiles=${hasTranslatorFiles}`,
+    );
   }
 }
 
@@ -142,7 +174,7 @@ export async function updateTranslators(force = false): Promise<boolean> {
 
 async function _updateTranslators(force = false): Promise<boolean> {
   await Zotero.Schema.schemaUpdatePromise;
-  await mendTranslators();
+
   let needUpdate = false;
   const lastUpdateTime = parseInt(getPref("translatorUpdateTime"));
   const now = Date.now();
@@ -169,7 +201,7 @@ async function _updateTranslators(force = false): Promise<boolean> {
   const baseUrl = getPref("translatorSource");
   ztoolkit.log(`update translators from base: ${baseUrl}`);
 
-  // Validate translator source is configured
+  // Validate translator source is configured BEFORE calling mendTranslators
   if (!baseUrl || baseUrl.trim() === "") {
     ztoolkit.log("translatorSource is not configured, showing error");
     new ztoolkit.ProgressWindow(getString("plugin-name"), {
@@ -177,8 +209,9 @@ async function _updateTranslators(force = false): Promise<boolean> {
       closeTime: 5000,
     })
       .createLine({
-        text: getString("error-translator-source-not-configured") ||
-              "错误：转换器下载源未配置。请在设置中选择最快源或手动配置。",
+        text:
+          getString("error-translator-source-not-configured") ||
+          "错误：转换器下载源未配置。请在设置中选择最快源或手动配置。",
         type: "fail",
         progress: 100,
       })
@@ -196,8 +229,9 @@ async function _updateTranslators(force = false): Promise<boolean> {
       closeTime: 5000,
     })
       .createLine({
-        text: getString("error-get-translator-list-failed") ||
-              `错误：获取转换器列表失败。请检查网络连接和下载源设置。详情：${error}`,
+        text:
+          getString("error-get-translator-list-failed") ||
+          `错误：获取转换器列表失败。请检查网络连接和下载源设置。详情：${error}`,
         type: "fail",
         progress: 100,
       })
@@ -214,14 +248,19 @@ async function _updateTranslators(force = false): Promise<boolean> {
       closeTime: 5000,
     })
       .createLine({
-        text: getString("error-translator-list-empty") ||
-              "错误：转换器列表为空。请检查下载源配置是否正确，或尝试选择其他下载源。",
+        text:
+          getString("error-translator-list-empty") ||
+          "错误：转换器列表为空。请检查下载源配置是否正确，或尝试选择其他下载源。",
         type: "fail",
         progress: 100,
       })
       .show();
     return false;
   }
+
+  // Only call mendTranslators AFTER we've verified the configuration and translator list
+  // This prevents resetTranslators from being called when there's a configuration issue
+  await mendTranslators();
 
   const popupWin = new ztoolkit.ProgressWindow(getString("plugin-name"), {
     closeOnClick: true,
@@ -260,7 +299,9 @@ async function _updateTranslators(force = false): Promise<boolean> {
           // Validate it's a valid translator file (should start with JSON metadata)
           const infoRe = /^\s*{[\S\s]*?}\s*?[\r\n]/;
           if (!infoRe.test(code)) {
-            throw new Error("Downloaded content is not a valid translator file");
+            throw new Error(
+              "Downloaded content is not a valid translator file",
+            );
           }
 
           const desPath = PathUtils.join(
@@ -299,6 +340,22 @@ async function _updateTranslators(force = false): Promise<boolean> {
     },
   );
   await Promise.all(translatorUpdateTasks);
+
+  // Critical safety check: only reinit if we have successfully processed some translators
+  // This prevents reinit from being called when all downloads failed, which could cause data loss
+  if (successCounts + skipCounts === 0) {
+    ztoolkit.log(
+      "No translators were successfully updated or skipped, aborting reinit to prevent data loss",
+    );
+    popupWin.changeLine({
+      text: `更新失败：所有转换器下载均失败（成功：${successCounts}, 失败：${failCounts}）。不执行 reinit 以防止数据丢失。`,
+      type: "fail",
+      progress: 100,
+    });
+    popupWin.startCloseTimer(5000);
+    return false;
+  }
+
   // @ts-ignore Translators is missing
   await Zotero.Translators.reinit({ fromSchemaUpdate: false });
   setPref("translatorUpdateTime", now.toString());
