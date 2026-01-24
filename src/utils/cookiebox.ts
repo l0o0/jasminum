@@ -89,9 +89,10 @@ export class MyCookieSandbox {
     // @ts-ignore - Not typed.
     const cookieSandbox = new Zotero.CookieSandbox();
 
+    // Note: Zotero.openInViewer actually returns a Window object, but zotero-types incorrectly defines it as returning void
     const win = Zotero.openInViewer(url, {
       cookieSandbox: cookieSandbox,
-    });
+    }) as any as Window;
 
     // 等待窗口加载完成
     win.addEventListener("load", function () {
