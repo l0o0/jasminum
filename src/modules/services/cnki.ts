@@ -38,13 +38,16 @@ function createSearchPostOptions(searchOption: SearchOption) {
     headers = {
       Host: "kns.cnki.net",
       "User-Agent":
-        "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:109.0) Gecko/20100101 Firefox/133.0",
-      Accept: "*/*",
-      "Accept-Language": "zh-CN,en-US;q=0.7,en;q=0.3",
+        "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:147.0) Gecko/20100101 Firefox/147.0",
+      Referer: "https://www.cnki.net/",
+      "Sec-Fetch-Dest": "document",
+      "Sec-Fetch-Mode": "navigate",
+      "Sec-Fetch-Site": "same-origin",
+      "Sec-Fetch-User": "?1",
+      Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+      "Accept-Language": "zh-CN,en-US;q=0.9,en;q=0.8",
       "Content-Type": "application/x-www-form-urlencoded; charset=UTF-8",
       Origin: "https://kns.cnki.net",
-      Referer:
-        "https://kns.cnki.net/kns8s/AdvSearch?crossids=YSTT4HG0%2CLSTPFY1C%2CJUP3MUPD%2CMPMFIG1A%2CWQ0UVIAA%2CBLZOG7CK%2CPWFIRAGL%2CEMRPGLPA%2CNLBO1Z6R%2CNN3FJMUV",
     };
     queryJson = {
       boolSearch: "true",
@@ -198,7 +201,7 @@ async function getRefworksText(
   const resp = await Zotero.HTTP.request("POST", apiurl, {
     body: postData,
     headers: headers,
-    cookieSandbox: addon.data.myCookieSandbox?.refCookieBox,
+    cookieSandbox: await addon.data.myCookieSandbox.getCNKIHomeCookieBox(),
   });
   ztoolkit.log(`Endnote reference text from CNKI: ${resp.responseText}`);
   const respJson = JSON.parse(resp.responseText);
@@ -286,7 +289,13 @@ export class CNKI implements ScrapeService {
     const resp = await Zotero.HTTP.request("POST", postOption.url, {
       headers: postOption.headers,
       body: postOption.data,
+      cookieSandbox: await addon.data.myCookieSandbox.getCNKIHomeCookieBox(),
     });
+    if (resp.status === 403) {
+      ztoolkit.log(
+        "CNKI access forbidden (403). This is likely due to missing or invalid cookies.",
+      );
+    }
     // TODO
     // Need to handle some HTTP request ERROR
     // ztoolkit.log(resp.responseText);

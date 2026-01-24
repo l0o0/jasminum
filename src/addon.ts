@@ -28,7 +28,7 @@ class Addon {
       selected?: string;
       updating?: boolean;
     };
-    myCookieSandbox?: MyCookieSandbox;
+    myCookieSandbox: MyCookieSandbox;
     isImportingAttachments: boolean;
   };
   // Lifecycle hooks
