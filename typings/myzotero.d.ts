@@ -1,4 +1,12 @@
 declare namespace Zotero {
+  function openInViewer(
+    uri: string,
+    options?: {
+      onLoad?: (doc: Document) => void;
+      cookieSandbox?: Zotero.CookieSandbox;
+      allowJavaScript?: boolean;
+    },
+  ): Window;
   /**
    * Cookie 对象的内部存储结构
    */
