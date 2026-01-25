@@ -4,10 +4,11 @@ export class MyCookieSandbox {
   //   public refCookieBox: Zotero.CookieSandbox | null = null;
   userAgent =
     "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/70.0.3538.77 Safari/537.36";
-  baseUrl = "https://cnki.net/";
+  baseUrl = "https://www.cnki.net";
 
   private _CNKIHomeCookieBox: Zotero.CookieSandbox | null = null;
   private _initPromise: Promise<void> | null = null;
+  private _captchaPromise: Promise<Zotero.CookieSandbox> | null = null;
 
   constructor() {}
 
@@ -25,6 +26,7 @@ export class MyCookieSandbox {
     await this._initPromise;
     return this._CNKIHomeCookieBox!;
   }
+
   async setCNKIHomeCookieBox() {
     // 导入 HiddenBrowser
     const { HiddenBrowser } = ChromeUtils.importESModule(
@@ -33,7 +35,6 @@ export class MyCookieSandbox {
 
     // 创建 CookieSandbox
     const cookieSandbox = new Zotero.CookieSandbox();
-    const url = "https://www.cnki.net/";
 
     // 创建 HiddenBrowser 并配置 cookieSandbox
     const browser = new HiddenBrowser({
@@ -42,8 +43,8 @@ export class MyCookieSandbox {
     });
 
     try {
-      ztoolkit.log("Loading URL in hidden browser: " + url);
-      const loadSuccess = await browser.load(url);
+      ztoolkit.log("Loading URL in hidden browser: " + this.baseUrl);
+      const loadSuccess = await browser.load(this.baseUrl);
       if (loadSuccess) {
         ztoolkit.log("Page loaded successfully");
         await browser.waitForDocument({ allowInteractiveAfter: 1000 });
@@ -56,6 +57,7 @@ export class MyCookieSandbox {
           cookie,
           this.userAgent,
         );
+        ztoolkit.log("CNKI Home CookieSandbox initialized.");
         //   let uri = Services.io.newURI(url);
         //   let cookies = cookieSandbox.getCookiesForURI(uri);
         //   if (cookies) {
@@ -75,223 +77,246 @@ export class MyCookieSandbox {
     } finally {
       // 清理：销毁 browser
       browser.destroy();
+      ztoolkit.log("Hidden browser destroyed.");
     }
   }
 
-  passCaptchaToCookieBox(
+  async passCaptchaToCookieBox(
     url: string,
     cookieType:
       | "CNKI:Search"
       | "CNKI:Attachment"
       | "CNKI:Reference"
       | "CNKI:Home",
-  ) {
+  ): Promise<Zotero.CookieSandbox> {
+    // 如果已经有验证码窗口在运行，等待它完成
+    if (this._captchaPromise) {
+      ztoolkit.log(
+        "Captcha window is already running, waiting for it to complete...",
+      );
+      return this._captchaPromise;
+    }
+
     // @ts-ignore - Not typed.
     const cookieSandbox = new Zotero.CookieSandbox();
 
     // Note: Zotero.openInViewer actually returns a Window object, but zotero-types incorrectly defines it as returning void
+    ztoolkit.log("Opening URL in viewer: " + url);
     const win = Zotero.openInViewer(url, {
       cookieSandbox: cookieSandbox,
     }) as any as Window;
 
-    // 等待窗口加载完成
-    win.addEventListener("load", function () {
-      Zotero.debug("Window loaded, adding button");
+    // 创建 Promise 来等待窗口关闭
+    this._captchaPromise = new Promise((resolve, reject) => {
+      let promiseSettled = false; // 标记 Promise 是否已经 settled
+      let cookieRetrieved = false;
 
-      // 创建按钮容器
-      const buttonContainer = ztoolkit.UI.createElement(win.document, "box", {
-        namespace: "html",
-        attributes: { id: "captcha-button-container" },
-        styles: {
-          position: "fixed",
-          top: "10px",
-          right: "10px", // 默认在右侧
-          zIndex: "10000",
-          padding: "15px",
-          backgroundColor: "white",
-          border: "3px solid red",
-          borderRadius: "8px",
-          boxShadow: "0 4px 8px rgba(0,0,0,0.3)",
-          cursor: "pointer",
-          userSelect: "none",
-          transition: "left 0.3s ease, right 0.3s ease", // 添加过渡动画
-        },
-      }) as HTMLElement;
-
-      // 记录当前位置状态（true=右侧，false=左侧）
-      let isOnRight = true;
-
-      // 添加标题文本
-      const titleLabel = ztoolkit.UI.createElement(win.document, "label", {
-        namespace: "html",
-        attributes: { value: "茉莉花提示：" },
-        styles: {
-          fontWeight: "bold",
-          color: "black",
-          fontSize: "14px",
-          marginBottom: "5px",
-          display: "block",
-        },
-      });
-
-      // 添加提示文本
-      const hintLabel = ztoolkit.UI.createElement(win.document, "description", {
-        namespace: "html",
-        properties: { textContent: "请完成验证码，验证成功后，点击此按钮" },
-        styles: {
-          color: "black",
-          fontSize: "12px",
-          marginBottom: "10px",
-          lineHeight: "1.5",
-          maxWidth: "250px",
-          whiteSpace: "normal",
-          wordWrap: "break-word",
-        },
-      });
-
-      // 添加位置提示
-      const positionHint = ztoolkit.UI.createElement(
-        win.document,
-        "description",
-        {
-          namespace: "html",
-          properties: { textContent: "(双击此框可切换左右位置)" },
-          styles: {
-            color: "#666",
-            fontSize: "10px",
-            marginBottom: "8px",
-            fontStyle: "italic",
-          },
-        },
-      );
-
-      // 创建按钮
-      const button = ztoolkit.UI.createElement(win.document, "button", {
-        namespace: "html",
-        attributes: { label: "确认完成验证" },
-        styles: {
-          fontSize: "14px",
-          padding: "10px 20px",
-          cursor: "pointer",
-          backgroundColor: "#4CAF50",
-          color: "white",
-          border: "none",
-          borderRadius: "5px",
-          width: "100%",
-          fontWeight: "bold",
-        },
-      });
-
-      // 鼠标悬停效果
-      button.addEventListener("mouseover", function () {
-        if (!button.disabled) {
-          button.style.backgroundColor = "#45a049";
-        }
-      });
-
-      button.addEventListener("mouseout", function () {
-        if (!button.disabled) {
-          button.style.backgroundColor = "#4CAF50";
-        }
-      });
-
-      // 绑定点击事件
-      button.addEventListener("command", function () {
-        Zotero.debug("Button clicked, getting cookies...");
-
-        try {
-          const uri = Services.io.newURI(url);
-          const cookies = cookieSandbox.getCookiesForURI(uri);
-          ztoolkit.log("Cookies retrieved from sandbox.", cookies);
-          if (cookies) {
-            Zotero.debug("成功获取 cookies:");
-            for (const name in cookies) {
-              Zotero.debug(`  ${name} = ${cookies[name]}`);
-            }
-
-            // 显示成功消息
-            button.setAttribute("label", "✓ Cookie 已获取");
-            button.style.backgroundColor = "#2196F3";
-            button.style.color = "white";
-            button.disabled = true;
-            hintLabel.textContent = "Cookie 已成功获取！窗口即将关闭...";
-            hintLabel.style.color = "#2196F3";
-            positionHint.style.display = "none";
-
-            // 在这里添加您的后续处理逻辑
-            // 例如：关闭窗口、继续下载等
-
-            // 可选：3秒后关闭窗口
-            setTimeout(() => {
-              win.close();
-            }, 2000);
+      // 监听窗口关闭事件
+      win.addEventListener("close", function () {
+        ztoolkit.log("Window closed");
+        if (!promiseSettled) {
+          promiseSettled = true;
+          if (cookieRetrieved) {
+            ztoolkit.log("Cookie sandbox returned successfully");
+            resolve(cookieSandbox);
           } else {
-            Zotero.debug("未找到 cookies");
-            button.setAttribute("label", "✗ 未找到 Cookie");
+            ztoolkit.log("Window closed without retrieving cookies");
+            reject(new Error("用户关闭窗口，未完成验证"));
+          }
+        }
+      });
+
+      // 等待窗口加载完成
+      win.addEventListener("load", function () {
+        ztoolkit.log("Window loaded, adding button");
+
+        // 创建按钮容器
+        const buttonContainer = ztoolkit.UI.createElement(win.document, "box", {
+          namespace: "html",
+          attributes: { id: "captcha-button-container" },
+          styles: {
+            position: "fixed",
+            top: "10px",
+            right: "10px",
+            zIndex: "10000",
+            padding: "15px",
+            backgroundColor: "white",
+            border: "3px solid red",
+            borderRadius: "8px",
+            boxShadow: "0 4px 8px rgba(0,0,0,0.3)",
+            cursor: "pointer",
+            userSelect: "none",
+            transition: "left 0.3s ease, right 0.3s ease",
+          },
+        });
+
+        let isOnRight = true;
+
+        const titleLabel = ztoolkit.UI.createElement(win.document, "label", {
+          namespace: "html",
+          attributes: { value: "茉莉花提示：" },
+          styles: {
+            fontWeight: "bold",
+            color: "black",
+            fontSize: "14px",
+            marginBottom: "5px",
+            display: "block",
+          },
+        });
+
+        const hintLabel = ztoolkit.UI.createElement(
+          win.document,
+          "description",
+          {
+            namespace: "html",
+            properties: { textContent: "请完成验证码，验证成功后，点击此按钮" },
+            styles: {
+              color: "black",
+              fontSize: "12px",
+              marginBottom: "10px",
+              lineHeight: "1.5",
+              maxWidth: "250px",
+              whiteSpace: "normal",
+              wordWrap: "break-word",
+            },
+          },
+        );
+
+        const positionHint = ztoolkit.UI.createElement(
+          win.document,
+          "description",
+          {
+            namespace: "html",
+            properties: { textContent: "(双击此框可切换左右位置)" },
+            styles: {
+              color: "#666",
+              fontSize: "10px",
+              marginBottom: "8px",
+              fontStyle: "italic",
+            },
+          },
+        );
+
+        const button = ztoolkit.UI.createElement(win.document, "button", {
+          namespace: "html",
+          properties: { textContent: "确认完成验证" },
+          styles: {
+            fontSize: "12px",
+            padding: "4px",
+            cursor: "pointer",
+            backgroundColor: "#4CAF50",
+            color: "white",
+            border: "none",
+            borderRadius: "5px",
+            width: "50%",
+            fontWeight: "bold",
+          },
+        });
+
+        button.addEventListener("mouseover", function () {
+          if (!button.disabled) {
+            button.style.backgroundColor = "#45a049";
+          }
+        });
+
+        button.addEventListener("mouseout", function () {
+          if (!button.disabled) {
+            button.style.backgroundColor = "#4CAF50";
+          }
+        });
+
+        // 绑定点击事件
+        button.addEventListener("click", function () {
+          try {
+            const uri = Services.io.newURI(url);
+            const cookies = cookieSandbox.getCookiesForURI(uri);
+            ztoolkit.log("Cookies retrieved from sandbox.", cookies);
+
+            if (cookies) {
+              for (const name in cookies) {
+                ztoolkit.log(`  ${name} = ${cookies[name]}`);
+              }
+
+              // 标记 cookie 已获取
+              cookieRetrieved = true;
+
+              // 根据 cookieType 设置对应的 cookieSandbox
+              switch (cookieType) {
+                case "CNKI:Home":
+                  addon.data.myCookieSandbox._CNKIHomeCookieBox = cookieSandbox;
+                  break;
+                // 其他类型...
+              }
+              // 先 resolve Promise，再关闭窗口
+              if (!promiseSettled) {
+                promiseSettled = true;
+                resolve(cookieSandbox);
+                ztoolkit.log("Promise resolved with cookieSandbox");
+              }
+              win.close();
+              ztoolkit.log("Cookies passed to addon CookieSandbox.");
+            } else {
+              ztoolkit.log("未找到 cookies");
+              button.setAttribute("label", "✗ 未找到 Cookie");
+              button.style.backgroundColor = "#f44336";
+              button.style.color = "white";
+              hintLabel.textContent = "未找到 Cookie，请确保已完成验证";
+              hintLabel.style.color = "#f44336";
+            }
+          } catch (e: any) {
+            ztoolkit.log("获取 cookie 时出错: " + e);
+            button.setAttribute("label", "✗ 出错了");
             button.style.backgroundColor = "#f44336";
             button.style.color = "white";
-            hintLabel.textContent = "未找到 Cookie，请确保已完成验证";
+            hintLabel.textContent = "出错了: " + e.message;
             hintLabel.style.color = "#f44336";
           }
-        } catch (e: any) {
-          Zotero.debug("获取 cookie 时出错: " + e);
-          button.setAttribute("label", "✗ 出错了");
-          button.style.backgroundColor = "#f44336";
-          button.style.color = "white";
-          hintLabel.textContent = "出错了: " + e.message;
-          hintLabel.style.color = "#f44336";
-        }
-      });
+        });
 
-      // 将元素添加到容器
-      buttonContainer.appendChild(titleLabel);
-      buttonContainer.appendChild(hintLabel);
-      buttonContainer.appendChild(positionHint);
-      buttonContainer.appendChild(button);
+        buttonContainer.appendChild(titleLabel);
+        buttonContainer.appendChild(hintLabel);
+        buttonContainer.appendChild(positionHint);
+        buttonContainer.appendChild(button);
 
-      // 双击切换左右位置
-      buttonContainer.addEventListener("dblclick", function (e) {
-        // 如果双击的是按钮本身，不切换位置
-        if (e.target instanceof HTMLElement) {
-          if (e.target === button || e.target.closest("button")) {
+        // 双击切换左右位置
+        buttonContainer.addEventListener("dblclick", function (e) {
+          if (
+            e.target === button ||
+            (e.target as HTMLElement).closest("button")
+          ) {
             return;
           }
-        }
 
-        if (isOnRight) {
-          // 从右侧移到左侧
-          buttonContainer.style.right = "auto";
-          buttonContainer.style.left = "10px";
-          isOnRight = false;
-          Zotero.debug("Button moved to left");
+          if (isOnRight) {
+            buttonContainer.style.right = "auto";
+            buttonContainer.style.left = "10px";
+            isOnRight = false;
+            ztoolkit.log("Button moved to left");
+          } else {
+            buttonContainer.style.left = "auto";
+            buttonContainer.style.right = "10px";
+            isOnRight = true;
+            ztoolkit.log("Button moved to right");
+          }
+        });
+
+        const browserBox = win.document.getElementById("browser");
+        if (browserBox) {
+          browserBox.appendChild(buttonContainer);
         } else {
-          // 从左侧移到右侧
-          buttonContainer.style.left = "auto";
-          buttonContainer.style.right = "10px";
-          isOnRight = true;
-          Zotero.debug("Button moved to right");
+          win.document.documentElement.appendChild(buttonContainer);
         }
+
+        ztoolkit.log("Button with position toggle added successfully");
       });
-
-      // 添加鼠标悬停提示效果
-      buttonContainer.addEventListener("mouseover", function () {
-        buttonContainer.style.boxShadow = "0 6px 12px rgba(0,0,0,0.4)";
-      });
-
-      buttonContainer.addEventListener("mouseout", function () {
-        buttonContainer.style.boxShadow = "0 4px 8px rgba(0,0,0,0.3)";
-      });
-
-      // 将容器添加到窗口
-      const browserBox = win.document.getElementById("browser");
-      if (browserBox) {
-        browserBox.appendChild(buttonContainer);
-      } else {
-        // 备用方案：添加到 document.documentElement
-        win.document.documentElement.appendChild(buttonContainer);
-      }
-
-      Zotero.debug("Button with position toggle added successfully");
     });
+
+    // 在 Promise 完成后清空，无论成功还是失败
+    this._captchaPromise.finally(() => {
+      this._captchaPromise = null;
+      ztoolkit.log("Captcha promise cleared, ready for next captcha request");
+    });
+
+    return this._captchaPromise;
   }
 }
