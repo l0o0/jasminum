@@ -28,56 +28,60 @@ export class MyCookieSandbox {
   }
 
   async setCNKIHomeCookieBox() {
-    // 导入 HiddenBrowser
-    const { HiddenBrowser } = ChromeUtils.importESModule(
-      "chrome://zotero/content/HiddenBrowser.mjs",
-    );
+    if (Zotero.version.startsWith("7")) {
+      ztoolkit.log("Zotero 7 用户不能使用这个功能");
+    } else {
+      // 导入 HiddenBrowser
+      const { HiddenBrowser } = ChromeUtils.importESModule(
+        "chrome://zotero/content/HiddenBrowser.mjs",
+      );
 
-    // 创建 CookieSandbox
-    const cookieSandbox = new Zotero.CookieSandbox();
+      // 创建 CookieSandbox
+      const cookieSandbox = new Zotero.CookieSandbox();
 
-    // 创建 HiddenBrowser 并配置 cookieSandbox
-    const browser = new HiddenBrowser({
-      cookieSandbox: cookieSandbox,
-      allowJavaScript: true, // 允许 JavaScript（默认为 true）
-    });
+      // 创建 HiddenBrowser 并配置 cookieSandbox
+      const browser = new HiddenBrowser({
+        cookieSandbox: cookieSandbox,
+        allowJavaScript: true, // 允许 JavaScript（默认为 true）
+      });
 
-    try {
-      ztoolkit.log("Loading URL in hidden browser: " + this.baseUrl);
-      const loadSuccess = await browser.load(this.baseUrl);
-      if (loadSuccess) {
-        ztoolkit.log("Page loaded successfully");
-        await browser.waitForDocument({ allowInteractiveAfter: 1000 });
-        const { cookie } = await browser.getPageData(["cookie"]);
-        ztoolkit.log("Cookies from getPageData: " + cookie);
+      try {
+        ztoolkit.log("Loading URL in hidden browser: " + this.baseUrl);
+        const loadSuccess = await browser.load(this.baseUrl);
+        if (loadSuccess) {
+          ztoolkit.log("Page loaded successfully");
+          await browser.waitForDocument({ allowInteractiveAfter: 1000 });
+          const { cookie } = await browser.getPageData(["cookie"]);
+          ztoolkit.log("Cookies from getPageData: " + cookie);
 
-        this._CNKIHomeCookieBox = new Zotero.CookieSandbox(
-          null,
-          this.baseUrl,
-          cookie,
-          this.userAgent,
-        );
-        ztoolkit.log("CNKI Home CookieSandbox initialized.");
-        //   let uri = Services.io.newURI(url);
-        //   let cookies = cookieSandbox.getCookiesForURI(uri);
-        //   if (cookies) {
-        //       ztoolkit.log("Cookies from cookieSandbox:");
-        //       for (let name in cookies) {
-        //           ztoolkit.log(`  ${name} = ${cookies[name]}`);
-        //       }
-        //       // @ts-ignore - Not typed.
-        //       let cookieString = Zotero.CookieSandbox.generateCookieString(cookies);
-        //       ztoolkit.log("Cookie string: " + cookieString);
-        //   }
-      } else {
-        ztoolkit.log("Failed to load page");
+          this._CNKIHomeCookieBox = new Zotero.CookieSandbox(
+            null,
+            this.baseUrl,
+            cookie,
+            this.userAgent,
+          );
+          ztoolkit.log("CNKI Home CookieSandbox initialized.");
+          //   let uri = Services.io.newURI(url);
+          //   let cookies = cookieSandbox.getCookiesForURI(uri);
+          //   if (cookies) {
+          //       ztoolkit.log("Cookies from cookieSandbox:");
+          //       for (let name in cookies) {
+          //           ztoolkit.log(`  ${name} = ${cookies[name]}`);
+          //       }
+          //       // @ts-ignore - Not typed.
+          //       let cookieString = Zotero.CookieSandbox.generateCookieString(cookies);
+          //       ztoolkit.log("Cookie string: " + cookieString);
+          //   }
+        } else {
+          ztoolkit.log("Failed to load page");
+        }
+      } catch (e) {
+        ztoolkit.log("Error loading page: " + e);
+      } finally {
+        // 清理：销毁 browser
+        browser.destroy();
+        ztoolkit.log("Hidden browser destroyed.");
       }
-    } catch (e) {
-      ztoolkit.log("Error loading page: " + e);
-    } finally {
-      // 清理：销毁 browser
-      browser.destroy();
-      ztoolkit.log("Hidden browser destroyed.");
     }
   }
 
@@ -204,8 +208,8 @@ export class MyCookieSandbox {
             fontSize: "12px",
             padding: "4px",
             cursor: "pointer",
-            backgroundColor: "#4CAF50",
-            color: "white",
+            backgroundColor: "#c518ae",
+            color: "black",
             border: "none",
             borderRadius: "5px",
             width: "50%",
