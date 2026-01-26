@@ -11,6 +11,9 @@ get-Chinese-styles = 获取中文社区样式…
 info-translators-cn-updaing = 中文转换器正在更新中
 info-best-speed-source-updated = 已更新为最快源：{ $source }
 info-best-speed-source-failed = 选择最快源失败，请检查网络连接
+error-translator-source-not-configured = 错误：转换器下载源未配置。请在设置中点击"选择最快源"按钮，或手动配置下载源。
+error-get-translator-list-failed = 错误：获取转换器列表失败。请检查网络连接和下载源设置。
+error-translator-list-empty = 错误：转换器列表为空。请检查下载源配置是否正确，或尝试点击"选择最快源"按钮选择其他下载源。
 
 # Preference translator table
 th-filename = 文件名

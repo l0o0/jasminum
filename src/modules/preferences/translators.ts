@@ -61,18 +61,28 @@ async function onWindowLoad(_window: Window) {
 }
 
 async function updateRowData() {
-  const map = await getLastUpdatedMap(addon.data.env !== "development");
-  ztoolkit.log("updateRowData", map);
-  const rows: TableRow[] = [];
-  for (const [filename, { label, lastUpdated }] of Object.entries(map)) {
-    rows.push({
-      filename,
-      label,
-      localUpdateTime: (await getLastUpdatedFromFile(filename)) || "--",
-      remoteUpdateTime: lastUpdated,
-    });
+  try {
+    const map = await getLastUpdatedMap(addon.data.env !== "development");
+    ztoolkit.log("updateRowData", map);
+    const rows: TableRow[] = [];
+    for (const [filename, { label, lastUpdated }] of Object.entries(map)) {
+      rows.push({
+        filename,
+        label,
+        localUpdateTime: (await getLastUpdatedFromFile(filename)) || "--",
+        remoteUpdateTime: lastUpdated,
+      });
+    }
+    addon.data.translators.allRows = rows;
+  } catch (error) {
+    ztoolkit.log(`updateRowData failed: ${error}`);
+    // Show error message to user
+    addon.data.translators.window?.alert(
+      getString("error-get-translator-list-failed") ||
+        `获取转换器列表失败：${error}\n\n请检查：\n1. 网络连接是否正常\n2. 转换器下载源是否配置正确\n3. 尝试在设置中点击"选择最快源"按钮`,
+    );
+    addon.data.translators.allRows = [];
   }
-  addon.data.translators.allRows = rows;
 }
 
 async function updateTableUI() {
