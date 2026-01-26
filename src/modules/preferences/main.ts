@@ -61,7 +61,11 @@ export async function initPrefs() {
     );
   }
 
-  if (!getPref("translatorSource")) {
+  if (
+    !getPref("translatorSource") ||
+    getPref("translatorSource") ===
+      "https://ftp.linxingzhong.top/translators_CN"
+  ) {
     setPref("translatorSource", await bestSpeedBaseUrl());
   }
 

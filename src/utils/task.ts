@@ -218,7 +218,14 @@ export class TaskRunner {
   async runScrapeTask(task: ScraperTask): Promise<void> {
     // Implement the logic to run the scrape task
     ztoolkit.log(`Running scrape task with ID: ${task.id}`);
-    await metaSearch(task);
+    try {
+      await metaSearch(task);
+    } catch (e) {
+      ztoolkit.log(`Error in metaSearch: ${e}`);
+      task.addMsg(`Error in metaSearch: ${e}`);
+      task.status = "fail";
+      return;
+    }
     // Wait for user select result.
     if (task.status === "multiple_results") {
       task.resultIndex = await task.deferred?.promise;
