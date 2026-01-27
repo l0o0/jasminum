@@ -79,26 +79,26 @@ async function onAddItem(
 }
 
 // TODO: Complete the notifier.
-async function onOpenTab(
-  event: string,
-  type: string,
-  ids: Array<string | number>,
-  extraData: { [key: string]: any },
-) {
-  const id = ids[0];
-  if (
-    (event == "select" || event == "load") &&
-    type == "tab" &&
-    extraData[id].type == "reader"
-  ) {
-    ztoolkit.log("onOpenTab", event, type, extraData);
-    if (getPref("enableBookmark")) {
-      await registerOutline(id as string);
-    } else {
-      ztoolkit.log("Jasminum bookmark is disabled");
-    }
-  }
-}
+// async function onOpenTab(
+//   event: string,
+//   type: string,
+//   ids: Array<string | number>,
+//   extraData: { [key: string]: any },
+// ) {
+//   const id = ids[0];
+//   if (
+//     (event == "select" || event == "load") &&
+//     type == "tab" &&
+//     extraData[id].type == "reader"
+//   ) {
+//     ztoolkit.log("onOpenTab", event, type, extraData);
+//     if (getPref("enableBookmark")) {
+//       await registerOutline(id as string);
+//     } else {
+//       ztoolkit.log("Jasminum bookmark is disabled");
+//     }
+//   }
+// }
 
 export async function registerExtraColumnWithCustomCell() {
   const registeredDataKey = Zotero.ItemTreeManager.registerColumn({
@@ -118,4 +118,30 @@ export async function registerExtraColumnWithCustomCell() {
     //   return span;
     // },
   });
+}
+
+// For Outline register.
+export function registerTab() {
+  Zotero.Reader.registerEventListener(
+    "renderToolbar",
+    tabRegisterCallback,
+    config.addonID,
+  );
+
+  Zotero.Reader.registerEventListener(
+    "renderTextSelectionPopup",
+    (event: any) => {
+      ztoolkit.log(event);
+      event.append("<div>Jasminum</div>");
+    },
+  );
+}
+
+async function tabRegisterCallback(event: any) {
+  if (getPref("enableBookmark")) {
+    const { reader } = event;
+    await registerOutline(reader.tabID);
+  } else {
+    ztoolkit.log("Jasminum bookmark is disabled");
+  }
 }
