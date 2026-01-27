@@ -6,8 +6,8 @@ export const ICONS = {
   add: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path fill="currentColor" d="m12 18l-4.2 1.8q-1 .425-1.9-.162T5 17.975V5q0-.825.588-1.412T7 3h5q.425 0 .713.288T13 4t-.288.713T12 5H7v12.95l5-2.15l5 2.15V12q0-.425.288-.712T18 11t.713.288T19 12v5.975q0 1.075-.9 1.663t-1.9.162zm0-13H7h6zm5 2h-1q-.425 0-.712-.288T15 6t.288-.712T16 5h1V4q0-.425.288-.712T18 3t.713.288T19 4v1h1q.425 0 .713.288T21 6t-.288.713T20 7h-1v1q0 .425-.288.713T18 9t-.712-.288T17 8z"/></svg>`,
   del: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path fill="currentColor" d="M16 7q-.425 0-.712-.288T15 6t.288-.712T16 5h4q.425 0 .713.288T21 6t-.288.713T20 7zm-4 11l-4.2 1.8q-1 .425-1.9-.162T5 17.975V5q0-.825.588-1.412T7 3h5q.425 0 .713.288T13 4t-.288.713T12 5H7v12.95l5-2.15l5 2.15V12q0-.425.288-.712T18 11t.713.288T19 12v5.975q0 1.075-.9 1.663t-1.9.162zm0-13H7h6z"/></svg>`,
   save: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path fill="currentColor" d="M5 21q-.825 0-1.412-.587T3 19V5q0-.825.588-1.412T5 3h11.175q.4 0 .763.15t.637.425l2.85 2.85q.275.275.425.638t.15.762V19q0 .825-.587 1.413T19 21zM19 7.85L16.15 5H5v14h14zM12 18q1.25 0 2.125-.875T15 15t-.875-2.125T12 12t-2.125.875T9 15t.875 2.125T12 18m-5-8h7q.425 0 .713-.288T15 9V7q0-.425-.288-.712T14 6H7q-.425 0-.712.288T6 7v2q0 .425.288.713T7 10M5 7.85V19V5z"/></svg>`,
-  down: `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 2 20 20"><g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" color="currentColor"><path d="M16 10.5s-2.946 3-4 3s-4-3-4-3"/></g></svg>`,
-  right: `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 2 20 20"><g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" color="currentColor"><path d="M10.5 8s3 2.946 3 4s-3 4-3 4"/></g></svg>`,
+  plus: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path fill="currentColor" d="M4.194 14.867L2.881 18.16q-.067.157-.189.249q-.12.091-.296.091q-.288 0-.443-.228t-.051-.49l4.9-11.994q.048-.119.16-.204t.242-.084h.357q.149 0 .254.084q.104.085.152.204l4.887 11.943q.104.28-.063.525q-.167.244-.452.244q-.173 0-.322-.097q-.15-.098-.211-.268l-1.308-3.268zm.36-.967h5.584l-2.71-6.8h-.132zm13.83-1.4h-2.5q-.212 0-.356-.144t-.143-.357t.143-.356t.357-.143h2.5V9q0-.213.143-.356t.357-.144t.356.144t.144.356v2.5h2.5q.212 0 .356.144t.143.357t-.143.356t-.357.143h-2.5V15q0 .213-.143.356q-.144.144-.357.144t-.356-.144t-.144-.356z" /></svg>`,
+  minus: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path fill="currentColor" d="m1.616 18.5l5.288-13h.962l5.288 13h-1.208l-1.448-3.633H4.194L2.746 18.5zm2.938-4.6h5.584L7.436 7.1h-.139zm10.83-1.4v-1h7v1z" /></svg>`,
 };
 
 export const outline_css = `
@@ -272,7 +272,7 @@ button:hover.j-bookmark-toolbar-button {
 
 #j-bookmark-viewer {
   max-width: 1000px;
-  margin: 0 auto;
+  margin: 0 auto 37px auto;
   background: var(--container-bg);
   border-bottom-left-radius: 4px;
   border-bottom-right-radius: 4px;
@@ -436,5 +436,20 @@ button:hover.j-bookmark-toolbar-button {
   background: linear-gradient(90deg, transparent, var(--bookmark-border-color), transparent);
   margin: 4px 0;
   opacity: 0.6;
+}
+
+/* 底部功能栏 */
+.jasminum-sidebar-bottom {
+  padding: 8px 8px;
+  border-top: var(--material-panedivider);
+  z-index: 1;
+  height: 37px;
+  overflow: hidden;
+  position: absolute;
+  bottom: 0;
+  width: 100%;
+  display: flex;
+  gap: 8px;
+  background-color: var(--background-color);
 }
 `;
