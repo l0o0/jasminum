@@ -208,7 +208,8 @@ export class MyCookieSandbox {
             fontSize: "12px",
             padding: "4px",
             cursor: "pointer",
-            backgroundColor: "#c518ae",
+            backgroundColor: "#4CAF50",
+            background: "#4CAF50",
             color: "black",
             border: "none",
             borderRadius: "5px",
@@ -220,12 +221,14 @@ export class MyCookieSandbox {
         button.addEventListener("mouseover", function () {
           if (!button.disabled) {
             button.style.backgroundColor = "#45a049";
+            button.style.background = "#45a049";
           }
         });
 
         button.addEventListener("mouseout", function () {
           if (!button.disabled) {
             button.style.backgroundColor = "#4CAF50";
+            button.style.background = "#4CAF50";
           }
         });
 
