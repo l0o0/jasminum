@@ -91,6 +91,31 @@ export function renderTree(
           },
         ],
       },
+      {
+        tag: "div",
+        namespace: "html",
+        classList: ["jasminum-sidebar-bottom"],
+        children: [
+          {
+            tag: "button",
+            namespace: "html",
+            id: "j-outline-zoom-in",
+            classList: ["j-outline-toolbar-button", "toolbar-button"],
+            properties: { innerHTML: ICONS.plus },
+            attributes: { title: "字体变大" },
+            styles: { paddingBottom: "7px" },
+          },
+          {
+            tag: "button",
+            namespace: "html",
+            id: "j-outline-zoom-out",
+            classList: ["j-outline-toolbar-button", "toolbar-button"],
+            properties: { innerHTML: ICONS.minus },
+            attributes: { title: "字体变小" },
+            styles: { paddingBottom: "7px" },
+          },
+        ],
+      },
     ],
   });
   // 隐藏 Zotero 大纲按钮
@@ -170,7 +195,11 @@ export function renderBookmarkTree(
     .getElementById("sidebarContainer")!
     .insertBefore(toolbar, doc.getElementById("sidebarContent")!);
   bookmarkContainer.appendChild(dropIndicator);
-  createBookmarkNodes(data, bookmarkContainer.querySelector("#bookmark-root-list")!, doc);
+  createBookmarkNodes(
+    data,
+    bookmarkContainer.querySelector("#bookmark-root-list")!,
+    doc,
+  );
   doc.querySelector("#sidebarContent")?.appendChild(bookmarkContainer);
 
   return bookmarkContainer;
@@ -193,7 +222,7 @@ export async function addOutlineToReader(reader: _ZoteroTypes.ReaderInstance) {
   ztoolkit.log("Sidebar container is ready.");
   addButton(doc);
   addBookmarkButton(doc); // 同时添加书签按钮
-  
+
   const joutline = await getOutlineFromPDF(reader);
   if (!joutline) {
     ztoolkit.log("No outline to add.");
