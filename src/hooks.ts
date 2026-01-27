@@ -10,11 +10,11 @@ import { registerMenu } from "./modules/menu";
 import {
   registerExtraColumnWithCustomCell,
   registerNotifiers,
+  registerTab,
 } from "./modules/notifier";
 import { injectStylesLink } from "./modules/styles";
 import { updateTranslators } from "./modules/translators";
 import { getPref } from "./utils/prefs";
-import { registerTab } from "./modules/tab";
 
 async function onStartup() {
   await Promise.all([
