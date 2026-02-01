@@ -2,12 +2,18 @@ import {
   saveOutlineToJSON,
   createTreeNodes,
   getOutlineFromPDF,
+  updateOutlineFontSize,
+  loadOutlineInfoFromJSON,
+  DEFAULT_BASE_FONT_SIZE,
 } from "./outline";
 import {
   saveBookmarksToJSON,
   createBookmarkNodes,
   addNewBookmark,
   DEFAULT_BOOKMARK_COLORS,
+  updateBookmarkFontSize,
+  loadBookmarkInfoFromJSON,
+  DEFAULT_BOOKMARK_FONT_SIZE,
 } from "./bookmark";
 import { ICONS } from "./style";
 import { getString } from "../../utils/locale";
@@ -214,6 +220,14 @@ export function initEventListener(
   doc
     .getElementById("j-bookmark-delete")
     ?.addEventListener("click", deleteSelectedBookmarkNode);
+
+  // 字体大小调整按钮事件
+  doc
+    .getElementById("j-outline-zoom-in")
+    ?.addEventListener("click", handleFontSizeIncrease);
+  doc
+    .getElementById("j-outline-zoom-out")
+    ?.addEventListener("click", handleFontSizeDecrease);
 }
 
 // 为节点添加事件监听，以下为事件处理函数
@@ -1364,4 +1378,89 @@ export function handleBookmarkDragEnd(e: DragEvent) {
   doc.querySelectorAll(".bookmark-dragover").forEach((el) => {
     el.classList.remove("bookmark-dragover");
   });
+}
+
+// ========== 字体大小调整函数 ==========
+
+const MIN_FONT_SIZE = 8;
+const MAX_FONT_SIZE = 20;
+
+// Increase font size for both outline and bookmark
+async function handleFontSizeIncrease(ev: Event) {
+  const doc = (ev.target as Element).ownerDocument;
+  const reader = Zotero.Reader.getByTabID(
+    ztoolkit.getGlobal("Zotero_Tabs").selectedID,
+  );
+  if (!reader) return;
+
+  // Get current baseFontSize for outline
+  const outlineInfo = await loadOutlineInfoFromJSON(reader._item);
+  const currentOutlineSize =
+    outlineInfo?.baseFontSize ?? DEFAULT_BASE_FONT_SIZE;
+
+  // Get current baseFontSize for bookmark
+  const bookmarkInfo = await loadBookmarkInfoFromJSON(reader._item);
+  const currentBookmarkSize =
+    bookmarkInfo?.baseFontSize ?? DEFAULT_BOOKMARK_FONT_SIZE;
+
+  // Increase by 1, max 20
+  const newOutlineSize = Math.min(currentOutlineSize + 1, MAX_FONT_SIZE);
+  const newBookmarkSize = Math.min(currentBookmarkSize + 1, MAX_FONT_SIZE);
+
+  if (
+    newOutlineSize !== currentOutlineSize ||
+    newBookmarkSize !== currentBookmarkSize
+  ) {
+    // Update CSS
+    updateOutlineFontSize(doc, newOutlineSize);
+    updateBookmarkFontSize(doc, newBookmarkSize);
+
+    // Save to JSON
+    await saveOutlineToJSON(reader._item, undefined, newOutlineSize);
+    await saveBookmarksToJSON(reader._item, undefined, newBookmarkSize);
+
+    ztoolkit.log(
+      `Font size increased: outline=${newOutlineSize}px, bookmark=${newBookmarkSize}px`,
+    );
+  }
+}
+
+// Decrease font size for both outline and bookmark
+async function handleFontSizeDecrease(ev: Event) {
+  const doc = (ev.target as Element).ownerDocument;
+  const reader = Zotero.Reader.getByTabID(
+    ztoolkit.getGlobal("Zotero_Tabs").selectedID,
+  );
+  if (!reader) return;
+
+  // Get current baseFontSize for outline
+  const outlineInfo = await loadOutlineInfoFromJSON(reader._item);
+  const currentOutlineSize =
+    outlineInfo?.baseFontSize ?? DEFAULT_BASE_FONT_SIZE;
+
+  // Get current baseFontSize for bookmark
+  const bookmarkInfo = await loadBookmarkInfoFromJSON(reader._item);
+  const currentBookmarkSize =
+    bookmarkInfo?.baseFontSize ?? DEFAULT_BOOKMARK_FONT_SIZE;
+
+  // Decrease by 1, min 8
+  const newOutlineSize = Math.max(currentOutlineSize - 1, MIN_FONT_SIZE);
+  const newBookmarkSize = Math.max(currentBookmarkSize - 1, MIN_FONT_SIZE);
+
+  if (
+    newOutlineSize !== currentOutlineSize ||
+    newBookmarkSize !== currentBookmarkSize
+  ) {
+    // Update CSS
+    updateOutlineFontSize(doc, newOutlineSize);
+    updateBookmarkFontSize(doc, newBookmarkSize);
+
+    // Save to JSON
+    await saveOutlineToJSON(reader._item, undefined, newOutlineSize);
+    await saveBookmarksToJSON(reader._item, undefined, newBookmarkSize);
+
+    ztoolkit.log(
+      `Font size decreased: outline=${newOutlineSize}px, bookmark=${newBookmarkSize}px`,
+    );
+  }
 }

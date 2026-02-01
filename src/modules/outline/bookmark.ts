@@ -1,8 +1,10 @@
 import { version } from "../../../package.json";
 import { getString } from "../../utils/locale";
 import { ICONS } from "./style";
+import { OUTLINE_SCHEMA } from "./outline";
 
-export const BOOKMARK_SCHEMA = 1;
+export const BOOKMARK_SCHEMA = OUTLINE_SCHEMA;
+export const DEFAULT_BOOKMARK_FONT_SIZE = 13; // Default font size for bookmarks
 
 // 学生友好的清新现代颜色
 export const DEFAULT_BOOKMARK_COLORS = [
@@ -49,6 +51,7 @@ function getReaderPagePosition(): PdfPosition {
 export async function saveBookmarksToJSON(
   item?: Zotero.Item,
   bookmarks?: BookmarkNode[],
+  baseFontSize?: number,
 ) {
   if (!bookmarks) {
     bookmarks = getBookmarksFromPage();
@@ -59,11 +62,17 @@ export async function saveBookmarksToJSON(
     );
     item = reader._item;
   }
+  // Get current baseFontSize if not provided
+  if (baseFontSize === undefined) {
+    const currentInfo = await loadBookmarkInfoFromJSON(item);
+    baseFontSize = currentInfo?.baseFontSize ?? DEFAULT_BOOKMARK_FONT_SIZE;
+  }
   const bookmarkInfo: BookmarkInfo = {
     info: {
       itemID: item.id,
       schema: BOOKMARK_SCHEMA,
       jasminumVersion: version,
+      baseFontSize: baseFontSize,
     },
     bookmarks: bookmarks,
   };
@@ -78,9 +87,9 @@ export async function saveBookmarksToJSON(
   ztoolkit.log("Save bookmarks to JSON");
 }
 
-export async function loadBookmarksFromJSON(
+export async function loadBookmarkInfoFromJSON(
   item: Zotero.Item,
-): Promise<BookmarkNode[] | null> {
+): Promise<{ bookmarks: BookmarkNode[]; baseFontSize: number } | null> {
   const bookmarkPath = PathUtils.join(
     Zotero.DataDirectory.dir,
     "storage",
@@ -99,14 +108,21 @@ export async function loadBookmarksFromJSON(
     if (tmp.info.schema < BOOKMARK_SCHEMA) {
       return null;
     } else {
-      const bookmarks: BookmarkNode[] = JSON.parse(content)["bookmarks"];
-      // 为向后兼容性添加默认颜色
-      return bookmarks.map((bookmark) => ({
-        ...bookmark,
-        color: bookmark.color || getRandomBookmarkColor(),
-      }));
+      const bookmarkInfo = JSON.parse(content) as BookmarkInfo;
+      return {
+        bookmarks: bookmarkInfo.bookmarks,
+        baseFontSize:
+          bookmarkInfo.info.baseFontSize ?? DEFAULT_BOOKMARK_FONT_SIZE,
+      };
     }
   }
+}
+
+export async function loadBookmarksFromJSON(
+  item: Zotero.Item,
+): Promise<BookmarkNode[] | null> {
+  const info = await loadBookmarkInfoFromJSON(item);
+  return info?.bookmarks ?? null;
 }
 
 export function getBookmarksFromPage(): BookmarkNode[] {
@@ -261,4 +277,26 @@ export function addBookmarkButton(doc: Document) {
     },
     doc.querySelector("#sidebarContainer div.start")!,
   );
+}
+
+// Update bookmark font size dynamically
+export function updateBookmarkFontSize(doc: Document, baseFontSize: number) {
+  const styleId = "jasminum-bookmark-dynamic-font-size";
+  let styleElement = doc.getElementById(styleId) as HTMLStyleElement;
+
+  if (!styleElement) {
+    styleElement = doc.createElement("style");
+    styleElement.id = styleId;
+    styleElement.type = "text/css";
+    doc.querySelector("head")!.appendChild(styleElement);
+  }
+
+  const dynamicCSS = `
+    .bookmark-node {
+      font-size: ${baseFontSize}px !important;
+    }
+  `;
+
+  styleElement.textContent = dynamicCSS;
+  ztoolkit.log(`Updated bookmark font size: ${baseFontSize}px`);
 }

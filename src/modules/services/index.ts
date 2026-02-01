@@ -44,6 +44,8 @@ export async function metaSearch(
   let scrapeSearchResults: ScrapeSearchResult[] = [];
   if (task.type == "attachment") {
     const searchOption = await getSearchOption(task.item);
+    task.addMsg(`Search pattern: ${getPref("namePattern")}`);
+    task.addMsg(`Search option: ${JSON.stringify(searchOption)}`);
     if (searchOption) {
       const cnkiSearchResult = await cnki.search(searchOption);
       ztoolkit.log("cnki results", cnkiSearchResult);

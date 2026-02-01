@@ -3,7 +3,9 @@ import { version } from "../../../package.json";
 import { getString } from "../../utils/locale";
 import { outline_css, ICONS } from "./style";
 
-export const OUTLINE_SCHEMA = 1;
+// 2 : Add base font size = 12
+export const OUTLINE_SCHEMA = 2;
+export const DEFAULT_BASE_FONT_SIZE = 12; // Default base font size for level-1
 
 // Register custom CSS for Jasminum outline
 export function registerOutlineCSS(doc: Document) {
@@ -19,6 +21,35 @@ export function registerOutlineCSS(doc: Document) {
     },
     doc.querySelector("head")!,
   );
+}
+
+// Update font size dynamically based on baseFontSize
+export function updateOutlineFontSize(doc: Document, baseFontSize: number) {
+  const styleId = "jasminum-dynamic-font-size";
+  let styleElement = doc.getElementById(styleId) as HTMLStyleElement;
+
+  if (!styleElement) {
+    styleElement = doc.createElement("style");
+    styleElement.id = styleId;
+    styleElement.type = "text/css";
+    doc.querySelector("head")!.appendChild(styleElement);
+  }
+
+  // Calculate font sizes: level-1 = base, level-2 = base-1, level-3+ = base-2
+  const level1Size = baseFontSize;
+  const level2Size = baseFontSize - 1;
+  const level3PlusSize = baseFontSize - 2;
+
+  const dynamicCSS = `
+    .level-1 { font-size: ${level1Size}px !important; }
+    .level-2 { font-size: ${level2Size}px !important; }
+    .level-3, .level-4, .level-5, .level-6, .level-7 {
+      font-size: ${level3PlusSize}px !important;
+    }
+  `;
+
+  styleElement.textContent = dynamicCSS;
+  ztoolkit.log(`Updated font size: base=${baseFontSize}px`);
 }
 
 // Register for theme update
@@ -220,6 +251,7 @@ export function getOutlineFromPage(): OutlineNode[] {
 export async function saveOutlineToJSON(
   item?: Zotero.Item,
   outline?: OutlineNode[],
+  baseFontSize?: number,
 ) {
   if (!outline) {
     outline = getOutlineFromPage();
@@ -230,11 +262,17 @@ export async function saveOutlineToJSON(
     );
     item = reader._item;
   }
+  // Get current baseFontSize if not provided
+  if (baseFontSize === undefined) {
+    const currentInfo = await loadOutlineInfoFromJSON(item);
+    baseFontSize = currentInfo?.baseFontSize ?? DEFAULT_BASE_FONT_SIZE;
+  }
   const outlineInfo: OutlineInfo = {
     info: {
       itemID: item.id,
       schema: OUTLINE_SCHEMA,
       jasminumVersion: version,
+      baseFontSize: baseFontSize,
     },
     outline: outline,
   };
@@ -250,9 +288,9 @@ export async function saveOutlineToJSON(
 }
 
 // 加载时要考虑JSON文件的版本信息，如果版本低，要重新从原文件加载信息
-export async function loadOutlineFromJSON(
+export async function loadOutlineInfoFromJSON(
   item: Zotero.Item,
-): Promise<OutlineNode[] | null> {
+): Promise<{ outline: OutlineNode[]; baseFontSize: number } | null> {
   const outlinePath = PathUtils.join(
     Zotero.DataDirectory.dir,
     "storage",
@@ -269,9 +307,20 @@ export async function loadOutlineFromJSON(
     if (tmp.info.schema < OUTLINE_SCHEMA) {
       return null;
     } else {
-      return JSON.parse(content)["outline"];
+      const outlineInfo = JSON.parse(content) as OutlineInfo;
+      return {
+        outline: outlineInfo.outline,
+        baseFontSize: outlineInfo.info.baseFontSize ?? DEFAULT_BASE_FONT_SIZE,
+      };
     }
   }
+}
+
+export async function loadOutlineFromJSON(
+  item: Zotero.Item,
+): Promise<OutlineNode[] | null> {
+  const info = await loadOutlineInfoFromJSON(item);
+  return info?.outline ?? null;
 }
 
 export function createTreeNodes(
