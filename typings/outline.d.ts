@@ -10,7 +10,9 @@ type OutlineNode = {
 };
 
 type OutlineInfo = {
-  info: Record<string, string | number>;
+  info: Record<string, string | number> & {
+    baseFontSize?: number; // Base font size for level-1, default 12
+  };
   outline: OutlineNode[];
 };
 
@@ -50,6 +52,11 @@ type BookmarkNode = {
 };
 
 type BookmarkInfo = {
-  info: Record<string, string | number>;
+  info: {
+    itemID: number;
+    schema: number;
+    jasminumVersion: string;
+    baseFontSize?: number; // outline 12, bookmark 13
+  };
   bookmarks: BookmarkNode[];
 };

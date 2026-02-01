@@ -7,11 +7,17 @@ import {
   getOutlineFromPDF,
   registerOutlineCSS,
   registerThemeChange,
+  updateOutlineFontSize,
+  loadOutlineInfoFromJSON,
+  DEFAULT_BASE_FONT_SIZE,
 } from "./outline";
 import {
   addBookmarkButton,
   createBookmarkNodes,
   loadBookmarksFromJSON,
+  updateBookmarkFontSize,
+  loadBookmarkInfoFromJSON,
+  DEFAULT_BOOKMARK_FONT_SIZE,
 } from "./bookmark";
 import { ICONS } from "./style";
 import { getPref } from "../../utils/prefs";
@@ -232,8 +238,22 @@ export async function addOutlineToReader(reader: _ZoteroTypes.ReaderInstance) {
   const bookmarks = await loadBookmarksFromJSON(reader._item);
   ztoolkit.log("++bookmarks", bookmarks);
 
+  // Load baseFontSize from JSON for outline
+  const outlineInfo = await loadOutlineInfoFromJSON(reader._item);
+  const outlineBaseFontSize =
+    outlineInfo?.baseFontSize ?? DEFAULT_BASE_FONT_SIZE;
+
+  // Load baseFontSize from JSON for bookmark
+  const bookmarkInfo = await loadBookmarkInfoFromJSON(reader._item);
+  const bookmarkBaseFontSize =
+    bookmarkInfo?.baseFontSize ?? DEFAULT_BOOKMARK_FONT_SIZE;
+
   registerOutlineCSS(doc);
   registerThemeChange(reader._iframeWindow!);
+
+  // Apply dynamic font size for both outline and bookmark
+  updateOutlineFontSize(doc, outlineBaseFontSize);
+  updateBookmarkFontSize(doc, bookmarkBaseFontSize);
 
   renderTree(reader, doc, joutline);
   renderBookmarkTree(reader, doc, bookmarks);
