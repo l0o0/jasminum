@@ -72,4 +72,5 @@ bookmark-add = Add bookmark
 bookmark-delete = Delete bookmark
 
 # Progress window
+task-msg-header = If you need help with capture issues, please screenshot the following content and contact the developer: RedBook l0o0
 task-already-exists = Task already exists: { $title }
