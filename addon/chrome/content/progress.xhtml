@@ -157,6 +157,48 @@ href="chrome://zotero-platform/content/zotero.css" type="text/css"?>
         width: 15px;
         margin-left: 8px;
         vertical-align: middle;
+        cursor: pointer;
+        display: inline-block;
+        animation: attention-shake 2s ease-in-out infinite;
+      }
+
+      /* 吸引注意力的动画：抖动 + 缩放 + 脉冲 */
+      @keyframes attention-shake {
+        0%,
+        100% {
+          transform: scale(1) rotate(0deg);
+          opacity: 1;
+        }
+        10% {
+          transform: scale(1.3) rotate(-10deg);
+        }
+        20% {
+          transform: scale(1.3) rotate(10deg);
+        }
+        30% {
+          transform: scale(1.3) rotate(-10deg);
+        }
+        40% {
+          transform: scale(1.3) rotate(10deg);
+        }
+        50% {
+          transform: scale(1.5) rotate(0deg);
+          opacity: 0.8;
+        }
+        60% {
+          transform: scale(1.2) rotate(0deg);
+        }
+        70% {
+          transform: scale(1) rotate(0deg);
+          opacity: 1;
+        }
+      }
+
+      /* 鼠标悬停时暂停动画并放大 */
+      .task-msg:hover {
+        animation-play-state: paused;
+        transform: scale(1.5);
+        filter: drop-shadow(0 0 3px rgba(255, 193, 7, 0.8));
       }
 
       /* 黑暗模式样式 */
@@ -231,6 +273,10 @@ href="chrome://zotero-platform/content/zotero.css" type="text/css"?>
         window.arguments[0]._initPromise.resolve();
       });
     }
+
+    window.addEventListener("beforeunload", (e) => {
+      Zotero.Jasminum.data.myCookieSandbox._CNKIHomeCookieBox = null;
+    });
 
     // 模拟数据
     const tasks = [

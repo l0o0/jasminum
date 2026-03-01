@@ -10,112 +10,26 @@ export class MyCookieSandbox {
   private _initPromise: Promise<void> | null = null;
   private _captchaPromise: Promise<Zotero.CookieSandbox> | null = null;
 
-  constructor() {}
-
-  public async getCNKIHomeCookieBox(): Promise<Zotero.CookieSandbox> {
-    // 如果已经有了，直接返回
-    if (this._CNKIHomeCookieBox) {
-      return this._CNKIHomeCookieBox;
-    }
-
-    if (!this._initPromise) {
-      ztoolkit.log("homeCookieBox 为空，开始初始化...");
-      // 假设 setCNKIHomeCookieBox 是一个 async 方法
-      this._initPromise = this.setCNKIHomeCookieBox();
-    }
-    await this._initPromise;
-    return this._CNKIHomeCookieBox!;
+  constructor() {
+    this._CNKIHomeCookieBox = null;
   }
 
-  async setCNKIHomeCookieBox() {
-    if (Zotero.version.startsWith("7")) {
-      ztoolkit.log("Zotero 7 用户不能使用这个功能");
-    } else {
-      // 导入 HiddenBrowser
-      const { HiddenBrowser } = ChromeUtils.importESModule(
-        "chrome://zotero/content/HiddenBrowser.mjs",
-      );
-
-      // 创建 CookieSandbox
-      const cookieSandbox = new Zotero.CookieSandbox();
-
-      // 创建 HiddenBrowser 并配置 cookieSandbox
-      const browser = new HiddenBrowser({
-        cookieSandbox: cookieSandbox,
-        allowJavaScript: true, // 允许 JavaScript（默认为 true）
-      });
-
-      try {
-        ztoolkit.log("Loading URL in hidden browser: " + this.baseUrl);
-        const loadSuccess = await browser.load(this.baseUrl);
-        if (loadSuccess) {
-          ztoolkit.log("Page loaded successfully");
-          await browser.waitForDocument({ allowInteractiveAfter: 1000 });
-          const { cookie } = await browser.getPageData(["cookie"]);
-          ztoolkit.log("Cookies from getPageData: " + cookie);
-
-          this._CNKIHomeCookieBox = new Zotero.CookieSandbox(
-            null,
-            this.baseUrl,
-            cookie,
-            this.userAgent,
-          );
-          ztoolkit.log("CNKI Home CookieSandbox initialized.");
-          //   let uri = Services.io.newURI(url);
-          //   let cookies = cookieSandbox.getCookiesForURI(uri);
-          //   if (cookies) {
-          //       ztoolkit.log("Cookies from cookieSandbox:");
-          //       for (let name in cookies) {
-          //           ztoolkit.log(`  ${name} = ${cookies[name]}`);
-          //       }
-          //       // @ts-ignore - Not typed.
-          //       let cookieString = Zotero.CookieSandbox.generateCookieString(cookies);
-          //       ztoolkit.log("Cookie string: " + cookieString);
-          //   }
-        } else {
-          ztoolkit.log("Failed to load page");
-        }
-      } catch (e) {
-        ztoolkit.log("Error loading page: " + e);
-      } finally {
-        // 清理：销毁 browser
-        browser.destroy();
-        ztoolkit.log("Hidden browser destroyed.");
-      }
-    }
-  }
-
-  async passCaptchaToCookieBox(
+  public async getCookieBoxFromUrl(
     url: string,
-    cookieType:
-      | "CNKI:Search"
-      | "CNKI:Attachment"
-      | "CNKI:Reference"
-      | "CNKI:Home",
+    hintText: string = "请完成验证码，验证成功后，点击此按钮",
   ): Promise<Zotero.CookieSandbox> {
-    // 如果已经有验证码窗口在运行，等待它完成
-    if (this._captchaPromise) {
-      ztoolkit.log(
-        "Captcha window is already running, waiting for it to complete...",
-      );
-      return this._captchaPromise;
-    }
-
     // @ts-ignore - Not typed.
     const cookieSandbox = new Zotero.CookieSandbox();
 
-    // Note: Zotero.openInViewer actually returns a Window object, but zotero-types incorrectly defines it as returning void
     ztoolkit.log("Opening URL in viewer: " + url);
     const win = Zotero.openInViewer(url, {
       cookieSandbox: cookieSandbox,
     }) as any as Window;
 
-    // 创建 Promise 来等待窗口关闭
-    this._captchaPromise = new Promise((resolve, reject) => {
-      let promiseSettled = false; // 标记 Promise 是否已经 settled
+    return new Promise((resolve, reject) => {
+      let promiseSettled = false;
       let cookieRetrieved = false;
 
-      // 监听窗口关闭事件
       win.addEventListener("close", function () {
         ztoolkit.log("Window closed");
         if (!promiseSettled) {
@@ -125,16 +39,14 @@ export class MyCookieSandbox {
             resolve(cookieSandbox);
           } else {
             ztoolkit.log("Window closed without retrieving cookies");
-            reject(new Error("用户关闭窗口，未完成验证"));
+            reject(new Error(`用户关闭窗口，未完成验证: ${url}`));
           }
         }
       });
 
-      // 等待窗口加载完成
       win.addEventListener("load", function () {
         ztoolkit.log("Window loaded, adding button");
 
-        // 创建按钮容器
         const buttonContainer = ztoolkit.UI.createElement(win.document, "box", {
           namespace: "html",
           attributes: { id: "captcha-button-container" },
@@ -173,7 +85,7 @@ export class MyCookieSandbox {
           "description",
           {
             namespace: "html",
-            properties: { textContent: "请完成验证码，验证成功后，点击此按钮" },
+            properties: { textContent: hintText },
             styles: {
               color: "black",
               fontSize: "12px",
@@ -232,7 +144,6 @@ export class MyCookieSandbox {
           }
         });
 
-        // 绑定点击事件
         button.addEventListener("click", function () {
           try {
             const uri = Services.io.newURI(url);
@@ -244,24 +155,15 @@ export class MyCookieSandbox {
                 ztoolkit.log(`  ${name} = ${cookies[name]}`);
               }
 
-              // 标记 cookie 已获取
               cookieRetrieved = true;
 
-              // 根据 cookieType 设置对应的 cookieSandbox
-              switch (cookieType) {
-                case "CNKI:Home":
-                  addon.data.myCookieSandbox._CNKIHomeCookieBox = cookieSandbox;
-                  break;
-                // 其他类型...
-              }
-              // 先 resolve Promise，再关闭窗口
               if (!promiseSettled) {
                 promiseSettled = true;
                 resolve(cookieSandbox);
                 ztoolkit.log("Promise resolved with cookieSandbox");
               }
               win.close();
-              ztoolkit.log("Cookies passed to addon CookieSandbox.");
+              ztoolkit.log("Cookies retrieved successfully.");
             } else {
               ztoolkit.log("未找到 cookies");
               button.setAttribute("label", "✗ 未找到 Cookie");
@@ -285,7 +187,6 @@ export class MyCookieSandbox {
         buttonContainer.appendChild(positionHint);
         buttonContainer.appendChild(button);
 
-        // 双击切换左右位置
         buttonContainer.addEventListener("dblclick", function (e) {
           if (
             e.target === button ||
@@ -317,6 +218,56 @@ export class MyCookieSandbox {
         ztoolkit.log("Button with position toggle added successfully");
       });
     });
+  }
+
+  public async getCNKIHomeCookieBox(): Promise<Zotero.CookieSandbox> {
+    // 如果已经有了，直接返回
+    if (this._CNKIHomeCookieBox != null) {
+      return this._CNKIHomeCookieBox;
+    }
+
+    if (!this._initPromise) {
+      ztoolkit.log("homeCookieBox 为空，开始初始化...");
+      this._initPromise = this.getCookieBoxFromUrl(
+        "https://kns.cnki.net/kns8s/defaultresult/index?crossids=YSTT4HG0%2CLSTPFY1C%2CJUP3MUPD%2CMPMFIG1A%2CWQ0UVIAA%2CBLZOG7CK%2CPWFIRAGL%2CEMRPGLPA%2CNLBO1Z6R%2CNN3FJMUV&korder=SU&kw=%E7%A7%91%E7%A0%94%E8%AE%BA%E6%96%87%E9%98%85%E8%AF%BB",
+        "请等待知网网页正常打开后，再点击下方按钮关闭",
+      ).then((cookieSandbox) => {
+        this._CNKIHomeCookieBox = cookieSandbox;
+      });
+    }
+    await this._initPromise;
+    return this._CNKIHomeCookieBox!;
+  }
+
+  async passCaptchaToCookieBox(
+    url: string,
+    cookieType:
+      | "CNKI:Search"
+      | "CNKI:Attachment"
+      | "CNKI:Reference"
+      | "CNKI:Home",
+  ): Promise<Zotero.CookieSandbox> {
+    // 如果已经有验证码窗口在运行，等待它完成
+    if (this._captchaPromise) {
+      ztoolkit.log(
+        "Captcha window is already running, waiting for it to complete...",
+      );
+      return this._captchaPromise;
+    }
+
+    this._captchaPromise = this.getCookieBoxFromUrl(url).then(
+      (cookieSandbox) => {
+        // 根据 cookieType 设置对应的 cookieSandbox
+        switch (cookieType) {
+          case "CNKI:Home":
+            addon.data.myCookieSandbox._CNKIHomeCookieBox = cookieSandbox;
+            break;
+          // 其他类型...
+        }
+        ztoolkit.log("Cookies passed to addon CookieSandbox.");
+        return cookieSandbox;
+      },
+    );
 
     // 在 Promise 完成后清空，无论成功还是失败
     this._captchaPromise.finally(() => {

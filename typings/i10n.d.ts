@@ -116,6 +116,7 @@ export type FluentMessageId =
   | 'tabpanel-reader-tab-label'
   | 'task-already-exists'
   | 'task-list'
+  | 'task-msg-header'
   | 'th-filename'
   | 'th-label'
   | 'th-local-update-time'

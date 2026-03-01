@@ -1,6 +1,7 @@
 import { metaSearch, metaTranslate } from "../modules/services";
 import { getString } from "./locale";
 import { attachmentSearch, importAttachment } from "../modules/attachments";
+import { version } from "../../package.json";
 
 // 创建 Deferred 的工厂函数
 function createDeferred<T>(): DeferredResult<T> {
@@ -200,6 +201,9 @@ export class TaskRunner {
     silent?: false,
   ): Promise<string> {
     const task = this.createTask(item, type, silent);
+    task.addMsg(getString("task-msg-header"));
+    task.addMsg(`Zotero version: ${Zotero.version}`);
+    task.addMsg(`Addon version: ${version}`);
     await this.addTask(task);
     return task.id;
   }

@@ -73,4 +73,5 @@ bookmark-add = 添加书签
 bookmark-delete = 删除书签
 
 # Progress window
+task-msg-header = 如果抓取异常需要帮助，请截图以下内容并联系开发者：小红书l0o0
 task-already-exists = 任务已存在：{ $title }

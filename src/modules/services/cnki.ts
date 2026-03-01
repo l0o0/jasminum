@@ -188,58 +188,62 @@ async function getRefworksText(
     Referer: searchResult.url,
   };
   const isMainlandChina = getPref("isMainlandChina");
-  const apiurl = isMainlandChina
-    ? "https://kns.cnki.net/dm8/API/GetExport"
-    : "https://kns.cnki.net/kns8/manage/APIGetExport";
-
-  // "1": row's sequence in search result page, defualt 1; "0": index of page in search result pages, defualt 0.
-  const platform = "NZKPT";
-  let responseText: string;
-  let postData = isMainlandChina
-    ? `filename=${searchResult.exportID}&uniplatform=${platform}`
-    : `filename=${searchResult.dbname}!${searchResult.filename}!1!0`;
-  postData += "&displaymode=GBTREFER%2Celearning%2CEndNote";
-  const resp = await Zotero.HTTP.request("POST", apiurl, {
-    body: postData,
-    headers: headers,
-    cookieSandbox: await addon.data.myCookieSandbox.getCNKIHomeCookieBox(),
-    timeout: 10000,
-    successCodes: [200, 403],
-  });
-  ztoolkit.log(`Endnote reference text from CNKI: ${resp.responseText}`);
-  responseText = resp.responseText;
-  if (resp.status === 403) {
-    ztoolkit.log(
-      "CNKI access forbidden (403). This is likely due to missing or invalid cookies.",
-    );
-    const respJson = JSON.parse(resp.responseText);
-
-    ztoolkit.log("Retrying CNKI search after updating cookies...");
-    headers["Referer"] = respJson.message;
-    const resp2 = await Zotero.HTTP.request("POST", apiurl, {
-      headers: headers,
+  if (getPref("isMainlandChina")) {
+    // "1": row's sequence in search result page, defualt 1; "0": index of page in search result pages, defualt 0.
+    const platform = "NZKPT";
+    const apiUrl = "https://kns.cnki.net/dm8/API/GetExport";
+    let responseText: string;
+    let postData = isMainlandChina
+      ? `filename=${searchResult.exportID}&uniplatform=${platform}`
+      : `filename=${searchResult.dbname}!${searchResult.filename}!1!0`;
+    postData += "&displaymode=GBTREFER%2Celearning%2CEndNote";
+    const resp = await Zotero.HTTP.request("POST", apiUrl, {
       body: postData,
-      cookieSandbox: await addon.data.myCookieSandbox.passCaptchaToCookieBox(
-        respJson.message,
-        "CNKI:Home",
-      ),
+      headers: headers,
+      cookieSandbox: await addon.data.myCookieSandbox.getCNKIHomeCookieBox(),
       timeout: 10000,
       successCodes: [200, 403],
     });
-    responseText = resp2.responseText;
-  }
-  const returnJson = JSON.parse(responseText);
-  if (returnJson.code != 1) {
-    return null;
-  } else {
-    const endnoteRef = returnJson.data.find(
-      (i: Record<string, string>) => i.key === "EndNote",
-    );
-    if (endnoteRef) {
-      return endnoteRef.value[0].replace(/<br>/g, "\n");
-    } else {
-      return null;
+    ztoolkit.log(`Endnote reference text from CNKI: ${resp.responseText}`);
+    responseText = resp.responseText;
+    if (resp.status === 403) {
+      ztoolkit.log(
+        "CNKI access forbidden (403). This is likely due to missing or invalid cookies.",
+      );
+      const respJson = JSON.parse(resp.responseText);
+
+      ztoolkit.log("Retrying CNKI search after updating cookies...");
+      headers["Referer"] = respJson.message;
+      const resp2 = await Zotero.HTTP.request("POST", apiUrl, {
+        headers: headers,
+        body: postData,
+        cookieSandbox: await addon.data.myCookieSandbox.passCaptchaToCookieBox(
+          respJson.message,
+          "CNKI:Home",
+        ),
+        timeout: 10000,
+        successCodes: [200, 403],
+      });
+      responseText = resp2.responseText;
     }
+    const returnJson = JSON.parse(responseText);
+    if (returnJson.code != 1) {
+      return null;
+    } else {
+      const endnoteRef = returnJson.data.find(
+        (i: Record<string, string>) => i.key === "EndNote",
+      );
+      if (endnoteRef) {
+        return endnoteRef.value[0].replace(/<br>/g, "\n");
+      } else {
+        return null;
+      }
+    }
+  } else {
+    ztoolkit.log("CNKI oversea export reference.");
+    const apiUrl = "https://chn.oversea.cnki.net/kns/Manage/APIGetExport";
+    // TODO: implement oversea export
+    return null;
   }
 }
 
