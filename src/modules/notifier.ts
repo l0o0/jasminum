@@ -127,14 +127,6 @@ export function registerTab() {
     tabRegisterCallback,
     config.addonID,
   );
-
-  Zotero.Reader.registerEventListener(
-    "renderTextSelectionPopup",
-    (event: any) => {
-      ztoolkit.log(event);
-      event.append("<div>Jasminum</div>");
-    },
-  );
 }
 
 async function tabRegisterCallback(event: any) {
