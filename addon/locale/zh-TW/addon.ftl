@@ -73,5 +73,5 @@ bookmark-add = 添加書籤
 bookmark-delete = 刪除書籤
 
 # Progress window
-task-msg-header = 如果抓取異常需要幫助，請截圖以下內容並聯繫開發者：小紅書l0o0
+task-msg-header = 如果抓取異常需要幫助，請截圖以下內容並聯繫開發者：[小紅書l0o0](https://www.xiaohongshu.com/user/profile/6153b4fa000000001f03ac8c)
 task-already-exists = 已存在任務：{ $title }

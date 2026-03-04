@@ -30,6 +30,27 @@ function getRandomBookmarkColor(): string {
   return DEFAULT_BOOKMARK_COLORS[randomIndex];
 }
 
+function migrateBookmarkInfo(
+  raw: any,
+  fromSchema: number,
+): { bookmarks: BookmarkNode[]; baseFontSize: number } {
+  let bookmarks: BookmarkNode[] = raw.bookmarks ?? [];
+  let baseFontSize = DEFAULT_BOOKMARK_FONT_SIZE;
+
+  // v1 → v2: add baseFontSize and bookmark color
+  if (fromSchema < 2) {
+    baseFontSize = raw.info?.baseFontSize ?? DEFAULT_BOOKMARK_FONT_SIZE;
+    bookmarks = bookmarks.map((b: any) => ({
+      ...b,
+      color: b.color || getRandomBookmarkColor(),
+    }));
+  }
+
+  // Future v2 → v3 migrations go here
+
+  return { bookmarks, baseFontSize };
+}
+
 function getReaderPagePosition(): PdfPosition {
   const reader = Zotero.Reader.getByTabID(
     ztoolkit.getGlobal("Zotero_Tabs").selectedID,
@@ -105,8 +126,16 @@ export async function loadBookmarkInfoFromJSON(
       bookmarkPath,
     )) as string;
     const tmp = JSON.parse(content);
-    if (tmp.info.schema < BOOKMARK_SCHEMA) {
-      return null;
+    const fileSchema = tmp.info?.schema ?? 1;
+    if (fileSchema < BOOKMARK_SCHEMA) {
+      // Migrate old bookmark data instead of discarding
+      const migrated = migrateBookmarkInfo(tmp, fileSchema);
+      await saveBookmarksToJSON(
+        item,
+        migrated.bookmarks,
+        migrated.baseFontSize,
+      );
+      return migrated;
     } else {
       const bookmarkInfo = JSON.parse(content) as BookmarkInfo;
       return {
