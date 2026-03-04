@@ -4,7 +4,7 @@
 
 # 茉莉花 Jasminum
 
-[![zotero target version](https://img.shields.io/badge/Zotero-7-green?style=flat-square&logo=zotero&logoColor=CC2936)](https://www.zotero.org)[![Using Zotero Plugin Template](https://img.shields.io/badge/Using-Zotero%20Plugin%20Template-blue?style=flat-square&logo=github)](https://github.com/windingwind/zotero-plugin-template)![Release](https://img.shields.io/github/release/l0o0/jasminum)
+[![zotero target version](https://img.shields.io/badge/Zotero-8/9-green?style=flat-square&logo=zotero&logoColor=CC2936)](https://www.zotero.org) [![Using Zotero Plugin Template](https://img.shields.io/badge/Using-Zotero%20Plugin%20Template-blue?style=flat-square&logo=github)](https://github.com/windingwind/zotero-plugin-template) ![Release](https://img.shields.io/github/release/l0o0/jasminum?style=flat-square)
 
 </div>
 </br>
@@ -18,7 +18,7 @@
 - 中文引用格式下载，引用格式来源于项目 Zotero中文社区 [styles](https://github.com/zotero-chinese/styles)
 - 小工具
   - 语言设置
-  - 中文姓名折合与合并
+  - 中文姓名拆分与合并
 
 ## 2.使用教程
 
@@ -71,4 +71,4 @@
 
 ## 3. ❤️致谢
 
-特别感谢[jiaojiaodubai](https://github.com/jiaojiaodubai)同学，长期以来对[translators_CN](https://github.com/l0o0/translators_CN) 和 本项目 的贡献。
+特别感谢 [jiaojiaodubai](https://github.com/jiaojiaodubai) 同学，长期以来对 [translators_CN](https://github.com/l0o0/translators_CN) 和 本项目 的贡献。
