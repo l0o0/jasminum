@@ -183,6 +183,55 @@ export class Progress {
       taskNode,
     );
   }
+  // Convert [text](url) and bare URLs in text to clickable <a> elements
+  private linkifyMessage(
+    doc: Document,
+    message: string,
+  ): DocumentFragment {
+    const fragment = doc.createDocumentFragment();
+    // Match [text](url) first, then bare URLs
+    const linkRegex = /\[([^\]]+)\]\((https?:\/\/[^)]+)\)|(https?:\/\/[^\s]+)/g;
+    const lines = message.split("\n");
+
+    lines.forEach((line, lineIndex) => {
+      let lastIndex = 0;
+      let match: RegExpExecArray | null;
+
+      linkRegex.lastIndex = 0;
+
+      while ((match = linkRegex.exec(line)) !== null) {
+        if (match.index > lastIndex) {
+          fragment.appendChild(
+            doc.createTextNode(line.slice(lastIndex, match.index)),
+          );
+        }
+        const link = doc.createElement("a");
+        link.setAttribute("href", "#");
+        if (match[1]) {
+          // [text](url) format
+          link.textContent = match[1];
+          link.setAttribute("data-url", match[2]);
+        } else {
+          // Bare URL
+          link.textContent = match[3];
+          link.setAttribute("data-url", match[3]);
+        }
+        fragment.appendChild(link);
+        lastIndex = match.index + match[0].length;
+      }
+
+      if (lastIndex < line.length) {
+        fragment.appendChild(doc.createTextNode(line.slice(lastIndex)));
+      }
+
+      if (lineIndex < lines.length - 1) {
+        fragment.appendChild(doc.createElement("br"));
+      }
+    });
+
+    return fragment;
+  }
+
   // Update task status icon. Display error msgs when task fails.
   public updateTaskStatus(task: Task, status: string): void {
     if (this.progressWindow) {
@@ -190,29 +239,76 @@ export class Progress {
       this.progressWindow.document
         .querySelector(`#task-status-${task.id}`)
         ?.setAttribute("src", this.statusIcons[status]);
-      // Display a error msg.
+      // Display a popover with error msg.
       if (status == "fail") {
-        const span = ztoolkit.UI.createElement(
-          this.progressWindow.document,
-          "img",
-          {
-            id: `task-msg-${task.id}`,
-            classList: ["task-msg"],
-            properties: {
-              src: "chrome://jasminum/content/icons/notify.svg",
-            },
-            attributes: { title: task.message },
+        const doc = this.progressWindow.document;
+
+        // Create wrapper for hover area
+        const wrapper = doc.createElement("span");
+        wrapper.className = "task-msg-wrapper";
+
+        // Create notify icon
+        const icon = ztoolkit.UI.createElement(doc, "img", {
+          id: `task-msg-${task.id}`,
+          classList: ["task-msg"],
+          properties: {
+            src: "chrome://jasminum/content/icons/notify.svg",
           },
-        );
-        // ztoolkit.log(this.progressWindow.document);
-        // ztoolkit.log(
-        //   this.progressWindow.document.querySelector(
-        //     `#task-header-${task.id} > span.task-title`,
-        //   ),
-        // );
-        this.progressWindow.document
-          .querySelector(`#task-header-${task.id} > span.task-title`)
-          ?.appendChild(span);
+        });
+
+        // Create popover container
+        const popover = doc.createElement("div");
+        popover.className = "task-msg-popover";
+        popover.id = `task-msg-popover-${task.id}`;
+
+        if (task.message) {
+          popover.appendChild(this.linkifyMessage(doc, task.message));
+        }
+
+        // Handle link clicks with Zotero.launchURL
+        popover.addEventListener("click", (e) => {
+          const target = e.target as HTMLElement;
+          if (target.tagName === "A") {
+            e.preventDefault();
+            e.stopPropagation();
+            const url = target.getAttribute("data-url");
+            if (url) {
+              Zotero.launchURL(url);
+            }
+          }
+        });
+
+        // Show popover on hover
+        wrapper.addEventListener("mouseenter", () => {
+          // Close other popovers first
+          doc.querySelectorAll(".task-msg-popover.visible").forEach((p) => {
+            p.classList.remove("visible");
+          });
+          doc.querySelectorAll(".task-msg.active").forEach((i) => {
+            i.classList.remove("active");
+          });
+          popover.classList.add("visible");
+          icon.classList.add("active");
+        });
+
+        // Close popover on click outside
+        doc.addEventListener("click", (e) => {
+          const target = e.target as HTMLElement;
+          if (
+            !target.closest(".task-msg-popover") &&
+            !target.closest(".task-msg-wrapper")
+          ) {
+            popover.classList.remove("visible");
+            icon.classList.remove("active");
+          }
+        });
+
+        wrapper.appendChild(icon);
+        wrapper.appendChild(popover);
+
+        doc.querySelector(
+          `#task-header-${task.id} > span.task-title`,
+        )?.appendChild(wrapper);
       }
     }
   }

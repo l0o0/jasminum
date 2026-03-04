@@ -72,6 +72,7 @@ href="chrome://zotero-platform/content/zotero.css" type="text/css"?>
         display: flex;
         align-items: center;
         cursor: pointer;
+        position: relative;
       }
 
       .task-status {
@@ -155,7 +156,6 @@ href="chrome://zotero-platform/content/zotero.css" type="text/css"?>
 
       .task-msg {
         width: 15px;
-        margin-left: 8px;
         vertical-align: middle;
         cursor: pointer;
         display: inline-block;
@@ -194,11 +194,94 @@ href="chrome://zotero-platform/content/zotero.css" type="text/css"?>
         }
       }
 
+      /* Wrapper for icon + popover hover area */
+      .task-msg-wrapper {
+        position: relative;
+        display: inline-block;
+        margin-left: 8px;
+        vertical-align: middle;
+      }
+
       /* 鼠标悬停时暂停动画并放大 */
-      .task-msg:hover {
+      .task-msg-wrapper:hover .task-msg,
+      .task-msg.active {
         animation-play-state: paused;
         transform: scale(1.5);
         filter: drop-shadow(0 0 3px rgba(255, 193, 7, 0.8));
+      }
+
+      /* Custom popover for task messages */
+      .task-msg-popover {
+        position: absolute;
+        left: 0;
+        top: calc(100% + 8px);
+        padding: 12px 16px;
+        background: rgba(255, 255, 255, 0.82);
+        backdrop-filter: blur(16px) saturate(180%);
+        -webkit-backdrop-filter: blur(16px) saturate(180%);
+        border: 1px solid rgba(0, 0, 0, 0.08);
+        border-radius: 10px;
+        box-shadow:
+          0 8px 32px rgba(0, 0, 0, 0.12),
+          0 2px 8px rgba(0, 0, 0, 0.06);
+        font-size: 12px;
+        font-weight: normal;
+        line-height: 1.7;
+        white-space: pre-wrap;
+        word-break: break-all;
+        max-width: 420px;
+        min-width: 240px;
+        max-height: 250px;
+        overflow-y: auto;
+        z-index: 100;
+        color: #1d1d1f;
+        /* Hover transition */
+        opacity: 0;
+        visibility: hidden;
+        transform: translateY(4px);
+        transition:
+          opacity 0.2s ease,
+          visibility 0.2s ease,
+          transform 0.2s ease;
+        pointer-events: none;
+      }
+
+      /* Arrow */
+      .task-msg-popover::before {
+        content: "";
+        position: absolute;
+        top: -6px;
+        left: 12px;
+        width: 12px;
+        height: 12px;
+        background: rgba(255, 255, 255, 0.82);
+        backdrop-filter: blur(16px) saturate(180%);
+        -webkit-backdrop-filter: blur(16px) saturate(180%);
+        border-top: 1px solid rgba(0, 0, 0, 0.08);
+        border-left: 1px solid rgba(0, 0, 0, 0.08);
+        transform: rotate(45deg);
+      }
+
+      .task-msg-popover.visible {
+        opacity: 1;
+        visibility: visible;
+        transform: translateY(0);
+        pointer-events: auto;
+      }
+
+      .task-msg-popover a {
+        color: #0066cc;
+        text-decoration: none;
+        border-bottom: 1px solid rgba(0, 102, 204, 0.3);
+        transition:
+          border-color 0.15s ease,
+          color 0.15s ease;
+        cursor: pointer;
+      }
+
+      .task-msg-popover a:hover {
+        color: #0047ab;
+        border-bottom-color: rgba(0, 71, 171, 0.6);
       }
 
       /* 黑暗模式样式 */
@@ -246,6 +329,31 @@ href="chrome://zotero-platform/content/zotero.css" type="text/css"?>
 
         .confirm-button:disabled {
           background-color: #666;
+        }
+
+        .task-msg-popover {
+          background: rgba(40, 40, 40, 0.85);
+          border-color: rgba(255, 255, 255, 0.1);
+          color: #e0e0e0;
+          box-shadow:
+            0 8px 32px rgba(0, 0, 0, 0.4),
+            0 2px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        .task-msg-popover::before {
+          background: rgba(40, 40, 40, 0.85);
+          border-top-color: rgba(255, 255, 255, 0.1);
+          border-left-color: rgba(255, 255, 255, 0.1);
+        }
+
+        .task-msg-popover a {
+          color: #8ab4f8;
+          border-bottom-color: rgba(138, 180, 248, 0.3);
+        }
+
+        .task-msg-popover a:hover {
+          color: #aecbfa;
+          border-bottom-color: rgba(174, 203, 250, 0.6);
         }
       }
     </style>
@@ -311,7 +419,8 @@ href="chrome://zotero-platform/content/zotero.css" type="text/css"?>
         type: "attachment",
         item: { getField: () => "论文标题 3" },
         status: "fail",
-        message: "抓取失败",
+        message:
+          "抓取失败\n[小红书l0o0](https://www.xiaohongshu.com/user/profile/6153b4fa000000001f03ac8c)",
       },
     ];
 
@@ -324,6 +433,24 @@ href="chrome://zotero-platform/content/zotero.css" type="text/css"?>
       fail: "❌",
     };
 
+    // Convert [text](url) and bare URLs to clickable links
+    function linkifyText(text) {
+      return text
+        .split("\n")
+        .map((line) =>
+          line
+            .replace(
+              /\[([^\]]+)\]\((https?:\/\/[^)]+)\)/g,
+              '<a href="#" data-url="$2">$1</a>',
+            )
+            .replace(
+              /(https?:\/\/[^\s<]+)(?![^<]*<\/a>)/g,
+              '<a href="#" data-url="$1">$1</a>',
+            ),
+        )
+        .join("<br>");
+    }
+
     // 渲染任务列表
     function renderTaskList(tasks) {
       const taskList = document.getElementById("task-list");
@@ -335,8 +462,12 @@ href="chrome://zotero-platform/content/zotero.css" type="text/css"?>
             <div class="task" data-task-id="${task.id}">
               <div class="task-header">
                 <span class="task-status">${statusIcons[task.status]}</span>
-                <span class="task-title">${task.item.getField("title")}</span>
-                <span class="task-msg" id="task-msg-${task.id}" title="${task.message}">⚠️</span>
+                <span class="task-title">${task.item.getField("title")}
+                  <span class="task-msg-wrapper">
+                    <span class="task-msg" id="task-msg-${task.id}">⚠️</span>
+                    <div class="task-msg-popover" id="task-msg-popover-${task.id}">${linkifyText(task.message)}</div>
+                  </span>
+                </span>
                 ${
                   task.searchResult && task.searchResult.length > 0
                     ? `<span class="toggle-icon" id="toggle-icon-${task.id}">▼</span>`
@@ -392,9 +523,60 @@ href="chrome://zotero-platform/content/zotero.css" type="text/css"?>
       }
     }
 
+    // Close all open popovers
+    function closeAllPopovers() {
+      document.querySelectorAll(".task-msg-popover.visible").forEach((p) => {
+        p.classList.remove("visible");
+      });
+      document.querySelectorAll(".task-msg.active").forEach((i) => {
+        i.classList.remove("active");
+      });
+    }
+
+    // Show popover on hover, close on click outside
+    document.getElementById("task-list").addEventListener(
+      "mouseenter",
+      (event) => {
+        const wrapper = event.target.closest(".task-msg-wrapper");
+        if (!wrapper) return;
+        closeAllPopovers();
+        const popover = wrapper.querySelector(".task-msg-popover");
+        const icon = wrapper.querySelector(".task-msg");
+        if (popover) popover.classList.add("visible");
+        if (icon) icon.classList.add("active");
+      },
+      true,
+    );
+
+    document.addEventListener("click", (event) => {
+      if (
+        !event.target.closest(".task-msg-popover") &&
+        !event.target.closest(".task-msg-wrapper")
+      ) {
+        closeAllPopovers();
+      }
+    });
+
     // 事件委托：绑定点击事件
     document.getElementById("task-list").addEventListener("click", (event) => {
       console.log("click", event.target);
+
+      // Handle popover link clicks via Zotero.launchURL
+      const link = event.target.closest(".task-msg-popover a[data-url]");
+      if (link) {
+        event.preventDefault();
+        event.stopPropagation();
+        const url = link.getAttribute("data-url");
+        if (url) {
+          if (typeof Zotero !== "undefined") {
+            Zotero.launchURL(url);
+          } else {
+            window.open(url, "_blank");
+          }
+        }
+        return;
+      }
+
       const taskHeader = event.target.closest(".task-header");
       if (taskHeader) {
         const taskId = taskHeader.closest(".task").getAttribute("data-task-id");

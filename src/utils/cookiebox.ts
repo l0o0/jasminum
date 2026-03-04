@@ -7,8 +7,10 @@ export class MyCookieSandbox {
   baseUrl = "https://www.cnki.net";
 
   private _CNKIHomeCookieBox: Zotero.CookieSandbox | null = null;
+  private _cnkiHomeCookieLastUpdateTime: number = 0;
   private _initPromise: Promise<void> | null = null;
   private _captchaPromise: Promise<Zotero.CookieSandbox> | null = null;
+  private static readonly COOKIE_EXPIRE_MS = 10 * 60 * 1000; // 10 minutes
 
   constructor() {
     this._CNKIHomeCookieBox = null;
@@ -221,9 +223,21 @@ export class MyCookieSandbox {
   }
 
   public async getCNKIHomeCookieBox(): Promise<Zotero.CookieSandbox> {
-    // 如果已经有了，直接返回
-    if (this._CNKIHomeCookieBox != null) {
+    const now = Date.now();
+    const isExpired =
+      now - this._cnkiHomeCookieLastUpdateTime >
+      MyCookieSandbox.COOKIE_EXPIRE_MS;
+
+    // If cookie exists and not expired, return directly
+    if (this._CNKIHomeCookieBox != null && !isExpired) {
       return this._CNKIHomeCookieBox;
+    }
+
+    // Cookie expired or missing, reset for re-initialization
+    if (isExpired && this._CNKIHomeCookieBox != null) {
+      ztoolkit.log("CNKI Home cookie expired, re-initializing...");
+      this._CNKIHomeCookieBox = null;
+      this._initPromise = null;
     }
 
     if (!this._initPromise) {
@@ -233,9 +247,19 @@ export class MyCookieSandbox {
         "请等待知网网页正常打开后，再点击下方按钮关闭",
       ).then((cookieSandbox) => {
         this._CNKIHomeCookieBox = cookieSandbox;
+        this._cnkiHomeCookieLastUpdateTime = Date.now();
       });
     }
     await this._initPromise;
+    // 保险起见，再次检查是否成功获取到 cookieSandbox
+    if (this._CNKIHomeCookieBox == null) {
+      ztoolkit.log("homeCookieBox 还是为空，又开始初始化...");
+      this._CNKIHomeCookieBox = await this.getCookieBoxFromUrl(
+        "https://kns.cnki.net/kns8s/defaultresult/index?crossids=YSTT4HG0%2CLSTPFY1C%2CJUP3MUPD%2CMPMFIG1A%2CWQ0UVIAA%2CBLZOG7CK%2CPWFIRAGL%2CEMRPGLPA%2CNLBO1Z6R%2CNN3FJMUV&korder=SU&kw=%E7%A7%91%E7%A0%94%E8%AE%BA%E6%96%87%E9%98%85%E8%AF%BB",
+        "请等待知网网页正常打开后，再点击下方按钮关闭",
+      );
+      this._cnkiHomeCookieLastUpdateTime = Date.now();
+    }
     return this._CNKIHomeCookieBox!;
   }
 
@@ -261,6 +285,8 @@ export class MyCookieSandbox {
         switch (cookieType) {
           case "CNKI:Home":
             addon.data.myCookieSandbox._CNKIHomeCookieBox = cookieSandbox;
+            addon.data.myCookieSandbox._cnkiHomeCookieLastUpdateTime =
+              Date.now();
             break;
           // 其他类型...
         }
