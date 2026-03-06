@@ -10,7 +10,9 @@ get-Chinese-styles = Get Chinese Styles
 info-translators-cn-updaing = Chinese translators are under updating.
 info-best-speed-source-updated = Updated to fastest source: { $source }
 info-best-speed-source-failed = Failed to select fastest source, please check network connection
-
+error-translator-source-not-configured = Error: Translator source is not configured. Please click "Select Fastest Source" button in settings, or configure it manually.
+error-get-translator-list-failed = Error: Failed to get translator list. Please check network connection and source settings.
+error-translator-list-empty = Error: Translator list is empty. Please check if the source is configured correctly, or try to select another source by clicking "Select Fastest Source" button.
 
 # Preference translator table
 th-filename = File name

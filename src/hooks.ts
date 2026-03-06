@@ -26,7 +26,7 @@ async function onStartup() {
   initLocale();
 
   registerPrefsPane();
-  initPrefs();
+  await initPrefs();
 
   registerNotifiers();
 
