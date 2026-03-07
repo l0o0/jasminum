@@ -7,7 +7,7 @@ async function getPDFTitle(itemID: number): Promise<string> {
   const docType = detectDocType(pdfData);
   ztoolkit.log("docType: ", docType);
 
-  /* 
+  /*
    * 更好的做法是，仅将属性名称语义化的 PDF 数据传递给 get*() 函数，
    * 由函数内部根据各文献类型的排版特点对数据进行重新组织。
    */

@@ -3,6 +3,10 @@
     "editor.defaultIndentSize": 2,
     "editor.tabSize": 2
   },
+  "[typescript]": {
+    "editor.defaultIndentSize": 2,
+    "editor.tabSize": 2
+  },
   "files.eol": "\n",
   "editor.formatOnType": false,
   "editor.formatOnSave": true,
