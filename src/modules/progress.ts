@@ -184,10 +184,7 @@ export class Progress {
     );
   }
   // Convert [text](url) and bare URLs in text to clickable <a> elements
-  private linkifyMessage(
-    doc: Document,
-    message: string,
-  ): DocumentFragment {
+  private linkifyMessage(doc: Document, message: string): DocumentFragment {
     const fragment = doc.createDocumentFragment();
     // Match [text](url) first, then bare URLs
     const linkRegex = /\[([^\]]+)\]\((https?:\/\/[^)]+)\)|(https?:\/\/[^\s]+)/g;
@@ -306,9 +303,9 @@ export class Progress {
         wrapper.appendChild(icon);
         wrapper.appendChild(popover);
 
-        doc.querySelector(
-          `#task-header-${task.id} > span.task-title`,
-        )?.appendChild(wrapper);
+        doc
+          .querySelector(`#task-header-${task.id} > span.task-title`)
+          ?.appendChild(wrapper);
       }
     }
   }
