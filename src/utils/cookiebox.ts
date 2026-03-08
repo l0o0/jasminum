@@ -10,7 +10,7 @@ export class MyCookieSandbox {
   private _cnkiHomeCookieLastUpdateTime: number = 0;
   private _initPromise: Promise<void> | null = null;
   private _captchaPromise: Promise<Zotero.CookieSandbox> | null = null;
-  private static readonly COOKIE_EXPIRE_MS = 10 * 60 * 1000; // 10 minutes
+  private static readonly COOKIE_EXPIRE_MS = 5 * 60 * 1000; // 10 minutes
 
   constructor() {
     this._CNKIHomeCookieBox = null;
