@@ -20,6 +20,7 @@ async function requestDocument(
     responseType?: string;
     responseCharset?: string;
     successCodes?: number[] | false;
+    cookieSandbox?: Zotero.CookieSandbox;
   },
 ): Promise<Document> {
   const xhr = await Zotero.HTTP.request(options?.method || "GET", url, {

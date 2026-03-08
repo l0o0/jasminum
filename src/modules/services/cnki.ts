@@ -367,6 +367,7 @@ export class CNKI implements ScrapeService {
         return {
           source: "CNKI",
           title: title,
+          articleTitle: dt.innerText("td.name a"),
           url: url,
           date: Zotero.Date.strToISO(dt.innerText("td.date")) || "",
           netFirst: dt.innerText("td.name > b.marktip"),
@@ -381,12 +382,11 @@ export class CNKI implements ScrapeService {
   }
 
   async translate(
-    task: ScraperTask,
+    searchResult: ScrapeSearchResult,
+    libraryID: number,
     saveAttachments: false,
-  ): Promise<Zotero.Item | null> {
-    let item: Zotero.Item | null = null;
+  ): Promise<Zotero.Item[]> {
     let translatedItems: Zotero.Item[] = [];
-    const searchResult = task.searchResults![task.resultIndex!];
     let isWebTranslated = true;
     try {
       const doc = await requestDocument(searchResult.url, {
@@ -396,8 +396,9 @@ export class CNKI implements ScrapeService {
           Referer: "https://kns.cnki.net/kns8s/AdvSearch",
           "Accept-Language": "zh-CN,en-US;q=0.7,en;q=0.3",
           "User-Agent":
-            "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:109.0) Gecko/20100101 Firefox/119.0",
+            "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:147.0) Gecko/20100101 Firefox/147.0",
         },
+        cookieSandbox: await addon.data.myCookieSandbox.getCNKIHomeCookieBox(),
       });
       ztoolkit.log(`Document title: ${doc.title}`);
       if (doc.title != "知网节超时验证" && doc.title != "captcha") {
@@ -408,7 +409,7 @@ export class CNKI implements ScrapeService {
         translator.setTranslator("5c95b67b-41c5-4f55-b71a-48d5d7183063");
         translator.setDocument(doc);
         translatedItems = await translator.translate({
-          libraryID: task.item.libraryID,
+          libraryID: libraryID,
           saveAttachments: saveAttachments,
         });
       } else {
@@ -416,7 +417,7 @@ export class CNKI implements ScrapeService {
       }
     } catch (e) {
       ztoolkit.log(`CNKI web translation failed: ${e}`);
-      task.addMsg(`CNKI web translation failed: ${e}`);
+      addon.taskRunner.runningTask?.addMsg(`CNKI web translation failed: ${e}`);
       isWebTranslated = false;
     }
 
@@ -427,36 +428,23 @@ export class CNKI implements ScrapeService {
         const refworksText = await getRefworksText(searchResult);
         if (!refworksText) {
           ztoolkit.log("CNKI reference text is null.");
-          task.addMsg("CNKI reference text is null.");
-          return null;
+          addon.taskRunner.runningTask?.addMsg("CNKI reference text is null.");
+          return [];
         }
         ztoolkit.log("Formated Refworks text: ", refworksText);
         const translate = new Zotero.Translate.Import();
         translate.setTranslator("7b6b135a-ed39-4d90-8e38-65516671c5bc");
         translate.setString(refworksText);
         translatedItems = await translate.translate({
-          libraryID: task.item.libraryID,
+          libraryID: libraryID,
           saveAttachments: false,
         });
       } catch (e) {
         ztoolkit.log(`CNKI refwork translation failed: ${e}`);
-        task.addMsg(`CNKI refwork translation failed: ${e}`);
+        throw `CNKI refwork translation failed: ${e}`;
       }
     }
-
-    if (translatedItems.length > 1) {
-      ztoolkit.log("Wired and Additional Items Appear.");
-      task.addMsg("Wired! More than one item after tranlsation.");
-      return null;
-    } else if (translatedItems.length == 1) {
-      item = translatedItems[0];
-      task.item.getCollections().forEach((cid) => item!.addToCollection(cid));
-      return updateItem(item, searchResult);
-    } else {
-      ztoolkit.log("CNKI service translated item is null.");
-      task.addMsg("CNKI service translated item is null.");
-      return null;
-    }
+    return translatedItems;
   }
 
   // CNKI webpage item or snapshot item.
