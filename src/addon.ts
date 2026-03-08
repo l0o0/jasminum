@@ -5,6 +5,7 @@ import { VirtualizedTableHelper } from "zotero-plugin-toolkit";
 import { MyCookieSandbox } from "./utils/cookiebox";
 import { getOutlineFromPDF } from "./modules/outline/outline";
 import { TaskRunner } from "./utils/task";
+import { requestDocument } from "./utils/http";
 
 class Addon {
   public data: {
@@ -53,7 +54,7 @@ class Addon {
       isImportingAttachments: false,
     };
     this.hooks = hooks;
-    this.api = { getOutlineFromPDF };
+    this.api = { getOutlineFromPDF, requestDocument };
     this.taskRunner = new TaskRunner();
   }
 }

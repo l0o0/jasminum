@@ -2,9 +2,10 @@ interface ScrapeService {
   search(searchOption: SearchOption): Promise<ScrapeSearchResult[] | null>;
   searchSnapshot?(task: ScrapeTask): Promise<ScrapeSearchResult[] | null>;
   translate(
-    task: ScrapeTask,
+    searchResult: ScrapeSearchResult,
+    libraryID: number,
     saveAttachments: false,
-  ): Promise<Zotero.Item | null | undefined>;
+  ): Promise<Zotero.Item[]>;
   translateSnapshot?(task: ScrapeTask): Promise<Zotero.Item | null | undefined>;
 }
 

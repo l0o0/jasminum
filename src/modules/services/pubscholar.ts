@@ -7,9 +7,7 @@ const BASE_URL = "https://pubscholar.cn";
 /**
  * Parse search results from PubScholar response.
  */
-function parseSearchResults(
-  doc: Document,
-): ScrapeSearchResult[] {
+function parseSearchResults(doc: Document): ScrapeSearchResult[] {
   // TODO: Update selector based on actual PubScholar page structure
   const resultRows = doc.querySelectorAll(".result-item");
   if (resultRows.length === 0) {
@@ -84,10 +82,10 @@ export class PubScholar implements ScrapeService {
   }
 
   async translate(
-    task: ScraperTask,
+    searchResult: ScrapeSearchResult,
+    libraryID: number,
     saveAttachments: false,
-  ): Promise<Zotero.Item | null> {
-    const searchResult = task.searchResults![task.resultIndex!];
+  ): Promise<Zotero.Item[]> {
     ztoolkit.log(`PubScholar translate: ${searchResult.title}`);
 
     // TODO: Implement PubScholar translation
@@ -112,6 +110,6 @@ export class PubScholar implements ScrapeService {
     // const metadata = await this.fetchDetailMetadata(searchResult.url);
     // return createItemFromMetadata(metadata, task.item.libraryID);
 
-    return null;
+    return [];
   }
 }

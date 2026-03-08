@@ -4,10 +4,14 @@ import { getPref } from "../../utils/prefs";
 import { ScraperTask } from "../../utils/task";
 import { isChineseTopAttachment, isChinsesSnapshot } from "../../utils/detect";
 import { CNKI } from "./cnki";
-import { PubScholar } from "./pubscholar";
+// import { PubScholar } from "./pubscholar";
+import { Yiigle } from "./yiigle";
+import { compareTwoStrings } from "string-similarity";
 
 const cnki = new CNKI();
-const pubscholar = new PubScholar();
+// const pubscholar = new PubScholar();
+const yiigle = new Yiigle();
+
 async function getSearchOption(
   item: Zotero.Item,
 ): Promise<SearchOption | null> {
@@ -58,15 +62,40 @@ export async function metaSearch(
         task.addMsg(`Found ${cnkiSearchResult.length} results from CNKI`);
         scrapeSearchResults = scrapeSearchResults.concat(cnkiSearchResult);
       }
-      const pubscholarSearchResult = await pubscholar.search(searchOption);
-      ztoolkit.log("pubscholar results", pubscholarSearchResult);
-      if (pubscholarSearchResult) {
-        task.addMsg(
-          `Found ${pubscholarSearchResult.length} results from PubScholar`,
-        );
-        scrapeSearchResults =
-          scrapeSearchResults.concat(pubscholarSearchResult);
+      // const pubscholarSearchResult = await pubscholar.search(searchOption);
+      // ztoolkit.log("pubscholar results", pubscholarSearchResult);
+      // if (pubscholarSearchResult) {
+      //   task.addMsg(
+      //     `Found ${pubscholarSearchResult.length} results from PubScholar`,
+      //   );
+      //   scrapeSearchResults = scrapeSearchResults.concat(
+      //     pubscholarSearchResult,
+      //   );
+      // }
+      const yiigleSearchResult = await yiigle.search(searchOption);
+      ztoolkit.log("yiigle results", yiigleSearchResult);
+      if (yiigleSearchResult) {
+        task.addMsg(`Found ${yiigleSearchResult.length} results from Yiigle`);
+        scrapeSearchResults = scrapeSearchResults.concat(yiigleSearchResult);
       }
+
+      // Filter search results
+      const filteredResults1 = scrapeSearchResults.filter((result) => {
+        return (result.articleTitle as string).includes(searchOption.title);
+      });
+
+      const filteredResults2 = scrapeSearchResults.filter((result) => {
+        const score = compareTwoStrings(
+          searchOption.title,
+          result.articleTitle as string,
+        );
+        ztoolkit.log(`Similarity score for "${result.articleTitle}": ${score}`);
+        return (
+          !(result.articleTitle as string).includes(searchOption.title) &&
+          score > 0.85
+        );
+      });
+      scrapeSearchResults = filteredResults1.concat(filteredResults2);
     } else {
       task.addMsg("Filename parsing error");
       task.status = "fail";
@@ -87,73 +116,99 @@ export async function metaSearch(
 }
 
 export async function metaTranslate(task: ScraperTask): Promise<void> {
-  if (task.searchResults) {
+  if (task.searchResults.length === 0) {
+    task.addMsg("No search results found.");
+    task.status = "fail";
+  }
+
+  try {
+    const resultIndex = task.resultIndex || 0; // default is 0
+    task.resultIndex = resultIndex;
+    const searchResult = task.searchResults[resultIndex];
+    const libraryID = task.item.libraryID;
+    ztoolkit.log(`start translate for search result: ${searchResult.title}`);
+    let translatedItems: Zotero.Item[] = [];
     try {
-      const resultIndex = task.resultIndex || 0; // default is 0
-      task.resultIndex = resultIndex;
-      const result = task.searchResults[resultIndex];
-      ztoolkit.log(`start translate for search result: ${result.title}`);
-      let newItem: Zotero.Item | null | undefined = null;
-      switch (result.source) {
+      switch (searchResult.source) {
         case "CNKI":
           ztoolkit.log("translated by CNKI");
-          newItem = await cnki.translate(task, false);
+          translatedItems = await cnki.translate(
+            searchResult,
+            libraryID,
+            false,
+          );
           break;
-        case "PubScholar":
-          ztoolkit.log("translated by PubScholar");
-          newItem = await pubscholar.translate(task, false);
+        // case "PubScholar":
+        //   ztoolkit.log("translated by PubScholar");
+        //   newItem = await pubscholar.translate(task, false);
+        //   break;
+        case "中华医学":
+          ztoolkit.log("translated by Yiigle");
+          translatedItems = await yiigle.translate(
+            searchResult,
+            libraryID,
+            false,
+          );
           break;
         default:
           break;
       }
-      ztoolkit.log(newItem);
-
-      if (newItem) {
-        // if (addon.data.env != "development")
-        newItem = await globalItemFix(newItem);
-        if (task.type == "attachment") {
-          task.item.parentID = newItem.id;
-        } else if (task.type == "snapshot") {
-          if (task.item.isTopLevelItem()) {
-            ztoolkit.log("Translate snapshot item for webpage item");
-            const tmpJSON = newItem.toJSON();
-            task.item.fromJSON(tmpJSON);
-            await newItem.eraseTx();
-          } else {
-            ztoolkit.log("Translate snapshot attachment item");
-            const oldParentItem = task.item.parentItem!;
-            const collectionIDs = oldParentItem.getCollections();
-            task.item.parentID = newItem.id;
-            // When parent item is erased, the attachment item will be erased. Set new parent item before the old parent will be earsed.
-            await task.item.saveTx();
-            await oldParentItem.eraseTx();
-            newItem.setCollections(collectionIDs);
-            await newItem.saveTx();
-          }
-        }
-        await task.item.saveTx();
-        task.status = "success";
-      } else {
-        task.addMsg("Translation error");
-        task.status = "fail";
-      }
+      ztoolkit.log(translatedItems);
     } catch (e) {
-      task.addMsg(`ERROR: ${e}`);
+      ztoolkit.log(`Translation error: ${e}`);
+      task.addMsg(`Translation error: ${e}`);
+    }
+
+    if (translatedItems.length === 1) {
+      // if (addon.data.env != "development")
+      const translatedItem = await globalItemFix(task.item, translatedItems[0]);
+      if (task.type == "attachment") {
+        task.item.parentID = translatedItem.id;
+      } else if (task.type == "snapshot") {
+        if (task.item.isTopLevelItem()) {
+          ztoolkit.log("Translate snapshot item for webpage item");
+          const tmpJSON = translatedItem.toJSON();
+          task.item.fromJSON(tmpJSON);
+          await translatedItem.eraseTx();
+        } else {
+          ztoolkit.log("Translate snapshot attachment item");
+          const oldParentItem = task.item.parentItem!;
+          const collectionIDs = oldParentItem.getCollections();
+          task.item.parentID = translatedItem.id;
+          // When parent item is erased, the attachment item will be erased. Set new parent item before the old parent will be earsed.
+          await task.item.saveTx();
+          await oldParentItem.eraseTx();
+          translatedItem.setCollections(collectionIDs);
+          await translatedItem.saveTx();
+        }
+      }
+      await task.item.saveTx();
+      task.status = "success";
+    } else if (translatedItems.length > 1) {
+      task.addMsg(
+        `Multiple items (${translatedItems.length}) translated, please check details.`,
+      );
+      task.status = "fail";
+    } else {
+      task.addMsg("Translation error");
       task.status = "fail";
     }
-  } else {
-    task.addMsg("No search results found.");
+  } catch (e) {
+    task.addMsg(`ERROR: ${e}`);
     task.status = "fail";
   }
 }
 
 // Need to update data in item returned by translator.
-async function globalItemFix(item: Zotero.Item): Promise<Zotero.Item> {
+async function globalItemFix(
+  oldItem: Zotero.Item,
+  newItem: Zotero.Item,
+): Promise<Zotero.Item> {
   if (Zotero.Prefs.get("extensions.zotero.automaticTags", true)) {
     // Keyword tag type is automatic.
     ztoolkit.log("update auto tags");
-    item.setTags(
-      item.getTags().map((t: { tag: string; type?: number }) => ({
+    newItem.setTags(
+      newItem.getTags().map((t: { tag: string; type?: number }) => ({
         tag: t.tag,
         type: 1,
       })),
@@ -161,8 +216,10 @@ async function globalItemFix(item: Zotero.Item): Promise<Zotero.Item> {
   } else {
     // Remove automatic tags
     ztoolkit.log("remove all tags");
-    item.removeAllTags();
+    newItem.removeAllTags();
   }
-  await item.saveTx();
-  return item;
+  // Preserve collections
+  oldItem.getCollections().forEach((cid) => newItem!.addToCollection(cid));
+  await newItem.saveTx();
+  return newItem;
 }

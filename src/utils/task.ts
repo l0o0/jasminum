@@ -133,6 +133,7 @@ export class AttachmentTask implements AttachmentTask {
 }
 
 export class TaskRunner {
+  public runningTask: AttachmentTask | ScraperTask | null = null;
   public tasks: (AttachmentTask | ScraperTask)[] = [];
   getTaskType(
     task: AttachmentTask | ScraperTask | string,
@@ -212,11 +213,13 @@ export class TaskRunner {
   }
 
   async runTask(task: AttachmentTask | ScraperTask): Promise<void> {
+    this.runningTask = task;
     if (this.getTaskType(task) === "attachmentScraper") {
       this.runAttachmentTask(task as AttachmentTask);
     } else {
       this.runScrapeTask(task as ScraperTask);
     }
+    this.runningTask = null;
   }
 
   async runScrapeTask(task: ScraperTask): Promise<void> {
