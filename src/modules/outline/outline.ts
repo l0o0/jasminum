@@ -287,6 +287,23 @@ export async function saveOutlineToJSON(
   ztoolkit.log("Save outline to JSON");
 }
 
+function migrateOutlineInfo(
+  raw: any,
+  fromSchema: number,
+): { outline: OutlineNode[]; baseFontSize: number } {
+  let outline: OutlineNode[] = raw.outline ?? [];
+  let baseFontSize = DEFAULT_BASE_FONT_SIZE;
+
+  // v1 → v2: add baseFontSize
+  if (fromSchema < 2) {
+    baseFontSize = raw.info?.baseFontSize ?? DEFAULT_BASE_FONT_SIZE;
+  }
+
+  // Future v2 → v3 migrations go here
+
+  return { outline, baseFontSize };
+}
+
 // 加载时要考虑JSON文件的版本信息，如果版本低，要重新从原文件加载信息
 export async function loadOutlineInfoFromJSON(
   item: Zotero.Item,
@@ -304,8 +321,12 @@ export async function loadOutlineInfoFromJSON(
   } else {
     const content = (await Zotero.File.getContentsAsync(outlinePath)) as string;
     const tmp = JSON.parse(content);
-    if (tmp.info.schema < OUTLINE_SCHEMA) {
-      return null;
+    const fileSchema = tmp.info?.schema ?? 1;
+    if (fileSchema < OUTLINE_SCHEMA) {
+      // Migrate old outline data instead of discarding
+      const migrated = migrateOutlineInfo(tmp, fileSchema);
+      await saveOutlineToJSON(item, migrated.outline, migrated.baseFontSize);
+      return migrated;
     } else {
       const outlineInfo = JSON.parse(content) as OutlineInfo;
       return {

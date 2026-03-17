@@ -12,6 +12,7 @@ pref("namePatternCustom", "{%t}");
 pref("metadataSource", "CNKI");
 pref("isMainlandChina", true);
 pref("cnkiAttachmentCookie", "");
+pref("similarityThresholdForMetaData", "0.6");
 /* match pdf */
 pref("pdfMatchFolder", "");
 pref("actionAfterAttachmentImport", "backup")

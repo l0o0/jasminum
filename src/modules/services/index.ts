@@ -92,7 +92,7 @@ export async function metaSearch(
         ztoolkit.log(`Similarity score for "${result.articleTitle}": ${score}`);
         return (
           !(result.articleTitle as string).includes(searchOption.title) &&
-          score > 0.85
+          score > parseFloat(getPref("similarityThresholdForMetaData"))
         );
       });
       scrapeSearchResults = filteredResults1.concat(filteredResults2);

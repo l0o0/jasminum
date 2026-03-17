@@ -32,16 +32,20 @@ export class LocalAttachmentService implements AttachmentService {
     const scoredItems = attachmentFilenames.map((filename) => {
       const name = PathUtils.filename(filename);
       const name_no_ext = name.replace(/\.(pdf|caj|kdh|nh)$/i, "");
+      const score = compareTwoStrings(
+        searchString.toUpperCase(),
+        name_no_ext.toUpperCase(),
+      );
       ztoolkit.log(
-        searchString,
+        searchString.toUpperCase(),
         name,
-        name_no_ext,
-        compareTwoStrings(searchString, name_no_ext),
+        name_no_ext.toUpperCase(),
+        score,
       );
       return {
         title: name,
         filename: name,
-        score: compareTwoStrings(searchString, name_no_ext),
+        score: score,
         url: filename,
         source: "local",
       };

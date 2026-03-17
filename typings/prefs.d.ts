@@ -18,6 +18,7 @@ declare namespace _ZoteroTypes {
       "metadataSource": string;
       "isMainlandChina": boolean;
       "cnkiAttachmentCookie": string;
+      "similarityThresholdForMetaData": string;
       "pdfMatchFolder": string;
       "actionAfterAttachmentImport": string;
       "similarityThreshold": string;
