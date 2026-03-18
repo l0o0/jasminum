@@ -31,7 +31,7 @@ export const outline_css = `
 
 #j-outline-viewer {
   max-width: 1000px;
-  margin: 0 auto;
+  margin: 0 auto 37px auto;
   background: var(--container-bg);
   border-bottom-left-radius: 4px;
   border-bottom-right-radius: 4px;
