@@ -4,7 +4,7 @@ import { getPref, setPref } from "../utils/prefs";
 export async function bestSpeedBaseUrl() {
   const baseUrls = [
     "https://oss.wwang.de/translators_CN",
-    "https://www.wieke.cn/translators_CN",
+    "https://oss.wieke.cn/translators_CN",
   ];
 
   const testUrl = async (
