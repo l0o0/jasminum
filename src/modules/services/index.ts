@@ -96,6 +96,9 @@ export async function metaSearch(
         );
       });
       scrapeSearchResults = filteredResults1.concat(filteredResults2);
+      task.addMsg(
+        `After filtering, ${scrapeSearchResults.length} results left.`,
+      );
     } else {
       task.addMsg("Filename parsing error");
       task.status = "fail";

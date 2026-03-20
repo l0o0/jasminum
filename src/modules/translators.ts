@@ -5,6 +5,7 @@ export async function bestSpeedBaseUrl() {
   const baseUrls = [
     "https://oss.wwang.de/translators_CN",
     "https://www.wieke.cn/translators_CN",
+    "https://ftp.zotero-chinese.com/translators_CN",
   ];
 
   const testUrl = async (
@@ -94,17 +95,22 @@ export async function getLastUpdatedMap(
 }
 
 async function mendTranslators() {
-  const translators = Zotero.Translators.getAll();
+  // Detect Endnote XML translator, if it's missing, it means the translators are broken, try to reset them.
+  // Return False if missing.
+  const endNoteTranslator = await Zotero.Translators.get(
+    "eb7059a4-35ec-4961-a915-3cf58eb9784b",
+  );
   // 727 is the number of translators at the time of writing
   if (
     !getPref("firstRun") &&
     !getPref("translatorsMended") &&
-    Object.keys(translators).length < 727
+    !endNoteTranslator
   ) {
     ztoolkit.log(
       "jasminum has been installed, and translators seems to be missing, try to reset them",
     );
-    await Zotero.Schema.resetTranslators();
+    const reset = await Zotero.Schema.resetTranslators();
+    ztoolkit.log(`reset translators ${reset ? "successfully" : "failed"}`);
     setPref("translatorsMended", true);
   }
 }
