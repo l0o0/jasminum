@@ -164,7 +164,11 @@ export async function metaTranslate(task: ScraperTask): Promise<void> {
 
     if (translatedItems.length === 1) {
       // if (addon.data.env != "development")
-      const translatedItem = await globalItemFix(task.item, translatedItems[0]);
+      const translatedItem = await globalItemFix(
+        task.item,
+        translatedItems[0],
+        task,
+      );
       if (task.type == "attachment") {
         task.item.parentID = translatedItem.id;
       } else if (task.type == "snapshot") {
@@ -203,9 +207,11 @@ export async function metaTranslate(task: ScraperTask): Promise<void> {
 }
 
 // Need to update data in item returned by translator.
+// Add some extra data.
 async function globalItemFix(
   oldItem: Zotero.Item,
   newItem: Zotero.Item,
+  task: ScraperTask,
 ): Promise<Zotero.Item> {
   if (Zotero.Prefs.get("extensions.zotero.automaticTags", true)) {
     // Keyword tag type is automatic.
@@ -224,5 +230,36 @@ async function globalItemFix(
   // Preserve collections
   oldItem.getCollections().forEach((cid) => newItem!.addToCollection(cid));
   await newItem.saveTx();
+
+  // CNKI extra data fix
+  const searchResult = task.searchResults[task.resultIndex!];
+  if (searchResult.citation) {
+    ztoolkit.ExtraField.setExtraField(
+      newItem,
+      "CNKICite",
+      `${searchResult.citation}`,
+    );
+  }
+
+  if (searchResult.netFirst) {
+    ztoolkit.ExtraField.setExtraField(
+      newItem,
+      "Status",
+      "advance online publication",
+    );
+  }
+
+  // Remove unmatched Zotero fields note.
+  if (newItem.getNotes().length > 0) {
+    newItem.getNotes().forEach(async (nid) => {
+      const nItem = Zotero.Items.get(nid);
+      await nItem.eraseTx();
+    });
+  }
+
+  if (!newItem.getField("date") && searchResult.date) {
+    newItem.setField("date", searchResult.date);
+  }
+
   return newItem;
 }

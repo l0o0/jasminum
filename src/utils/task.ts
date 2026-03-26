@@ -203,8 +203,7 @@ export class TaskRunner {
   ): Promise<string> {
     const task = this.createTask(item, type, silent);
     task.addMsg(getString("task-msg-header"));
-    task.addMsg(`Zotero version: ${Zotero.version}`);
-    task.addMsg(`Addon version: ${version}`);
+    task.addMsg(`Zotero: ${Zotero.version}, Jasminum: ${version}`);
     await this.addTask(task);
     return task.id;
   }
@@ -215,9 +214,9 @@ export class TaskRunner {
   async runTask(task: AttachmentTask | ScraperTask): Promise<void> {
     this.runningTask = task;
     if (this.getTaskType(task) === "attachmentScraper") {
-      this.runAttachmentTask(task as AttachmentTask);
+      await this.runAttachmentTask(task as AttachmentTask);
     } else {
-      this.runScrapeTask(task as ScraperTask);
+      await this.runScrapeTask(task as ScraperTask);
     }
     this.runningTask = null;
   }

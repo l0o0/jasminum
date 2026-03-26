@@ -270,44 +270,6 @@ async function getSnapshotItem(
   return undefined;
 }
 
-// Update addtional information to the item.
-// Citations from CNKI, Use keyword: CNKICite
-async function updateItem(
-  item: Zotero.Item | null,
-  searchResult: ScrapeSearchResult,
-): Promise<Zotero.Item | null> {
-  if (item) {
-    if (searchResult.citation) {
-      ztoolkit.ExtraField.setExtraField(
-        item,
-        "CNKICite",
-        `${searchResult.citation}`,
-      );
-    }
-
-    if (searchResult.netFirst) {
-      ztoolkit.ExtraField.setExtraField(
-        item,
-        "Status",
-        "advance online publication",
-      );
-    }
-
-    // Remove unmatched Zotero fields note.
-    if (item.getNotes().length > 0) {
-      item.getNotes().forEach(async (nid) => {
-        const nItem = Zotero.Items.get(nid);
-        await nItem.eraseTx();
-      });
-    }
-
-    if (!item.getField("date") && searchResult.date) {
-      item.setField("date", searchResult.date);
-    }
-  }
-  return item;
-}
-
 export class CNKI implements ScrapeService {
   async search(
     searchOption: SearchOption,
@@ -315,10 +277,16 @@ export class CNKI implements ScrapeService {
     ztoolkit.log("serch options: ", searchOption);
     const postOption = createSearchPostOptions(searchOption);
     let responseText: string;
+    const cookieBox = await addon.data.myCookieSandbox.getCNKIHomeCookieBox();
+    ztoolkit.log("Cookies in sandbox: ", cookieBox._cookies);
+    ztoolkit.log(addon.taskRunner.runningTask);
+    addon.taskRunner.runningTask?.addMsg(
+      `CNKI site info: ${Object.keys(cookieBox._cookies).length}`,
+    );
     const resp = await Zotero.HTTP.request("POST", postOption.url, {
       headers: postOption.headers,
       body: postOption.data,
-      cookieSandbox: await addon.data.myCookieSandbox.getCNKIHomeCookieBox(),
+      cookieSandbox: cookieBox,
       timeout: 10000,
       successCodes: [200, 403],
     });
