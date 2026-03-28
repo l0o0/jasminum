@@ -31,9 +31,11 @@ function createSearchPostOptions(searchOption: SearchOption) {
       .filter((i) => i.length > 4);
     searchExp =
       "(TI %= " +
-      titleParts.map((_i) => `'${_i}'`).join(" % ") +
-      " OR SU %= " +
-      titleParts.join("+") +
+      `'${searchOption.title}'` +
+      // " OR SU %= " +
+      // `${titleParts.join("+")}` +
+      // " OR TI %=" + // 保留全部的标题主题题作为标题，排除最后一个，因这个可能是作者
+      // titleParts.map((_i) => `'${_i}'`).join(" % ") +
       ")";
   } else {
     searchExp = `TI %= '${searchOption.title}'`;
