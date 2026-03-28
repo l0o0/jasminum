@@ -440,12 +440,18 @@ href="chrome://zotero-platform/content/zotero.css" type="text/css"?>
         .map((line) =>
           line
             .replace(
-              /\[([^\]]+)\]\((https?:\/\/[^)]+)\)/g,
-              '<a href="#" data-url="$2">$1</a>',
+              /\[([^\]]+)\]\(((?:https?:\/\/|jasminum:\/\/)[^)]+)\)/g,
+              (_match, text, target) =>
+                target === "jasminum://remote-help-qr"
+                  ? `<a href="#" data-action="open-remote-help-qr">${text}</a>`
+                  : `<a href="#" data-url="${target}">${text}</a>`,
             )
             .replace(
-              /(https?:\/\/[^\s<]+)(?![^<]*<\/a>)/g,
-              '<a href="#" data-url="$1">$1</a>',
+              /((?:https?:\/\/|jasminum:\/\/)[^\s<]+)(?![^<]*<\/a>)/g,
+              (_match, target) =>
+                target === "jasminum://remote-help-qr"
+                  ? '<a href="#" data-action="open-remote-help-qr">jasminum://remote-help-qr</a>'
+                  : `<a href="#" data-url="${target}">${target}</a>`,
             ),
         )
         .join("<br>");
@@ -562,6 +568,16 @@ href="chrome://zotero-platform/content/zotero.css" type="text/css"?>
       console.log("click", event.target);
 
       // Handle popover link clicks via Zotero.launchURL
+      const actionLink = event.target.closest(
+        '.task-msg-popover a[data-action="open-remote-help-qr"]',
+      );
+      if (actionLink) {
+        event.preventDefault();
+        event.stopPropagation();
+        Zotero.Jasminum.api.openRemoteHelpDialog();
+        return;
+      }
+
       const link = event.target.closest(".task-msg-popover a[data-url]");
       if (link) {
         event.preventDefault();

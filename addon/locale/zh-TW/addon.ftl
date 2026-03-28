@@ -73,5 +73,8 @@ bookmark-add = 添加書籤
 bookmark-delete = 刪除書籤
 
 # Progress window
-task-msg-header = 如果抓取異常需要幫助，請截圖以下內容並聯繫開發者：[小紅書l0o0](https://www.xiaohongshu.com/user/profile/6153b4fa000000001f03ac8c)
+task-msg-header = 
+    如果抓取異常需要幫助，請截圖以下內容並聯繫開發者：[小紅書l0o0](https://www.xiaohongshu.com/user/profile/6153b4fa000000001f03ac8c)
+    如回复未及时，可在淘宝免费远程协助，请认准官方店铺：[点击旺旺联系](https://item.taobao.com/item.htm?ft=t&id=1035769863393)
+    也可直接點擊這裡打開二維碼：[查看二維碼](jasminum://remote-help-qr)
 task-already-exists = 已存在任務：{ $title }

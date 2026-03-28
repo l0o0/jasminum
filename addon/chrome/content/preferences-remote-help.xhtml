@@ -1,0 +1,110 @@
+<?xml version="1.0"?>
+<!-- prettier-ignore -->
+<?xml-stylesheet href="chrome://global/skin/" type="text/css"?>
+<!-- prettier-ignore -->
+<?xml-stylesheet href="chrome://zotero/skin/zotero.css" type="text/css"?>
+<!-- prettier-ignore -->
+<?xml-stylesheet href="chrome://zotero-platform/content/zotero-react-client.css" type="text/css"?>
+<!-- prettier-ignore -->
+<?xml-stylesheet href="chrome://zotero-platform/content/zotero.css" type="text/css"?>
+<!-- prettier-ignore -->
+<!DOCTYPE html>
+<html
+  id="__addonRef__-remote-help"
+  xmlns="http://www.w3.org/1999/xhtml"
+  xmlns:xul="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul"
+  xmlns:html="http://www.w3.org/1999/xhtml"
+  windowtype="__addonRef__:remote-help"
+>
+  <head>
+    <title data-l10n-id="title-remote-help-qr"></title>
+    <meta charset="utf-8" />
+    <xul:linkset>
+      <link rel="localization" href="zotero.ftl" />
+      <link rel="localization" href="__addonRef__-preferences-main.ftl" />
+    </xul:linkset>
+    <xul:keyset>
+      <xul:key
+        id="key_close"
+        key="W"
+        modifiers="accel"
+        oncommand="window.close()"
+      />
+    </xul:keyset>
+    <script>
+      <![CDATA[
+            document.addEventListener("DOMContentLoaded", () => {
+              Services.scriptloader.loadSubScript(
+                "chrome://zotero/content/include.js",
+                this,
+              );
+
+              const args = window.arguments[0] || {};
+              const qrImage = document.getElementById("remote-help-qr-image");
+              const taobaoLink = document.getElementById("remote-help-link");
+
+              if (args.qrImageURL && qrImage) {
+                qrImage.setAttribute("src", args.qrImageURL);
+              }
+              if (args.remoteHelpURL && taobaoLink) {
+                taobaoLink.setAttribute("href", args.remoteHelpURL);
+              }
+
+              args._initPromise.resolve();
+            });
+
+            Services.scriptloader.loadSubScript(
+              "chrome://zotero/content/customElements.js",
+              this,
+            );
+          ]]>
+    </script>
+    <style>
+      html,
+      body {
+        margin: 0;
+        min-width: 320px;
+        min-height: 420px;
+        height: 100%;
+      }
+
+      body {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: var(--material-background);
+        color: var(--fill-primary);
+      }
+
+      main {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 12px;
+        padding: 24px;
+      }
+
+      .remote-help-title {
+        font-size: 16px;
+        font-weight: 600;
+      }
+
+      .remote-help-qr-image {
+        width: 240px;
+        height: 240px;
+        border-radius: 8px;
+        background: white;
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <div class="remote-help-title" data-l10n-id="title-remote-help-qr"></div>
+      <html:img
+        id="remote-help-qr-image"
+        class="remote-help-qr-image"
+        src="chrome://jasminum/content/icons/icon.png"
+      />
+    </main>
+  </body>
+</html>

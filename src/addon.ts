@@ -6,6 +6,7 @@ import { MyCookieSandbox } from "./utils/cookiebox";
 import { getOutlineFromPDF } from "./modules/outline/outline";
 import { TaskRunner } from "./utils/task";
 import { requestDocument } from "./utils/http";
+import { openRemoteHelpDialog } from "./modules/preferences/remoteHelp";
 
 class Addon {
   public data: {
@@ -54,7 +55,7 @@ class Addon {
       isImportingAttachments: false,
     };
     this.hooks = hooks;
-    this.api = { getOutlineFromPDF, requestDocument };
+    this.api = { getOutlineFromPDF, requestDocument, openRemoteHelpDialog };
     this.taskRunner = new TaskRunner();
   }
 }

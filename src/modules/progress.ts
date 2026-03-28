@@ -3,6 +3,7 @@ import {
   TagElementProps,
 } from "zotero-plugin-toolkit/dist/tools/ui";
 import { getString } from "../utils/locale";
+import { REMOTE_HELP_QR_ACTION } from "./preferences/remoteHelp";
 
 export class Progress {
   public progressWindow: Window | null;
@@ -186,8 +187,9 @@ export class Progress {
   // Convert [text](url) and bare URLs in text to clickable <a> elements
   private linkifyMessage(doc: Document, message: string): DocumentFragment {
     const fragment = doc.createDocumentFragment();
-    // Match [text](url) first, then bare URLs
-    const linkRegex = /\[([^\]]+)\]\((https?:\/\/[^)]+)\)|(https?:\/\/[^\s]+)/g;
+    // Match [text](url) first, then bare URLs and Jasminum internal actions.
+    const linkRegex =
+      /\[([^\]]+)\]\(((?:https?:\/\/|jasminum:\/\/)[^)]+)\)|((?:https?:\/\/|jasminum:\/\/)[^\s]+)/g;
     const lines = message.split("\n");
 
     lines.forEach((line, lineIndex) => {
@@ -204,14 +206,17 @@ export class Progress {
         }
         const link = doc.createElement("a");
         link.setAttribute("href", "#");
+        const target = match[1] ? match[2] : match[3];
         if (match[1]) {
-          // [text](url) format
           link.textContent = match[1];
-          link.setAttribute("data-url", match[2]);
         } else {
-          // Bare URL
           link.textContent = match[3];
-          link.setAttribute("data-url", match[3]);
+        }
+
+        if (target === REMOTE_HELP_QR_ACTION) {
+          link.setAttribute("data-action", "open-remote-help-qr");
+        } else {
+          link.setAttribute("data-url", target);
         }
         fragment.appendChild(link);
         lastIndex = match.index + match[0].length;
@@ -268,6 +273,12 @@ export class Progress {
           if (target.tagName === "A") {
             e.preventDefault();
             e.stopPropagation();
+            const action = target.getAttribute("data-action");
+            if (action === "open-remote-help-qr") {
+              // @ts-ignore - API shape is extended at runtime.
+              Zotero.Jasminum.api.openRemoteHelpDialog();
+              return;
+            }
             const url = target.getAttribute("data-url");
             if (url) {
               Zotero.launchURL(url);

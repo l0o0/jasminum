@@ -73,5 +73,7 @@ bookmark-add = 添加书签
 bookmark-delete = 删除书签
 
 # Progress window
-task-msg-header = 如果抓取异常需要帮助，请截图以下内容并联系开发者：[小红书l0o0](https://www.xiaohongshu.com/user/profile/6153b4fa000000001f03ac8c)
+task-msg-header = 
+    请截图该弹窗并联系开发者：[小红书l0o0](https://www.xiaohongshu.com/user/profile/6153b4fa000000001f03ac8c)
+    如回复未及时，也可直接点击这里免费呼唤远程协助：[查看二维码](jasminum://remote-help-qr)
 task-already-exists = 任务已存在：{ $title }

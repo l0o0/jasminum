@@ -72,5 +72,8 @@ bookmark-add = Add bookmark
 bookmark-delete = Delete bookmark
 
 # Progress window
-task-msg-header = If you need help with capture issues, please screenshot the following content and contact the developer: [RedBook l0o0](https://www.xiaohongshu.com/user/profile/6153b4fa000000001f03ac8c)
+task-msg-header = 
+    Please screenshot the following content and contact the developer: [RedBook l0o0](https://www.xiaohongshu.com/user/profile/6153b4fa000000001f03ac8c)
+    If you don't get a timely response, you can get free remote assistance on Taobao. Please look for the official store: [Contact via WangWang](https://item.taobao.com/item.htm?ft=t&id=1035769863393)
+    You can also open the QR dialog directly here: [Show QR Code](jasminum://remote-help-qr)
 task-already-exists = Task already exists: { $title }

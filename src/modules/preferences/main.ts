@@ -5,6 +5,7 @@ import { getPref, setPref } from "../../utils/prefs";
 import { updateTranslators, bestSpeedBaseUrl } from ".././translators";
 import type { PluginPrefsMap } from "../../utils/prefs";
 import { onShowTable } from "./translators";
+import { openRemoteHelpDialog } from "./remoteHelp";
 
 export function registerPrefsPane() {
   Zotero.PreferencePanes.register({
@@ -256,6 +257,12 @@ function bindPrefEvents(doc: Document) {
         [],
       ).open();
       if (path) setPref("pdfMatchFolder", path);
+    });
+
+  doc
+    .querySelector(`#zotero-prefpane-${config.addonRef}-show-remote-help-qr`)
+    ?.addEventListener("click", async () => {
+      await openRemoteHelpDialog();
     });
 
   // doc
