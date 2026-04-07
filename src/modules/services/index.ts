@@ -7,10 +7,12 @@ import { CNKI } from "./cnki";
 // import { PubScholar } from "./pubscholar";
 import { Yiigle } from "./yiigle";
 import { compareTwoStrings } from "string-similarity";
+import { WanfangData } from "./wanfangdata";
 
 const cnki = new CNKI();
 // const pubscholar = new PubScholar();
 const yiigle = new Yiigle();
+const wanfangData = new WanfangData();
 
 async function getSearchOption(
   item: Zotero.Item,
@@ -32,6 +34,24 @@ async function getSearchOption(
     if (namepattern == "custom") namepattern = getPref("namePatternCustom");
     return getArgsFromPattern(item.attachmentFilename, namepattern);
   }
+}
+
+// Calculate similarity for search results
+function calculateSimilarity(
+  results: ScrapeSearchResult[],
+  searchTitle: string,
+): void {
+  results.forEach((result) => {
+    result.similarity = compareTwoStrings(
+      searchTitle,
+      result.articleTitle as string,
+    );
+  });
+}
+
+// Check if there is an exact match (similarity === 1)
+function hasExactMatch(results: ScrapeSearchResult[]): boolean {
+  return results.some((r) => r.similarity === 1);
 }
 
 export async function metaSearch(
@@ -56,39 +76,62 @@ export async function metaSearch(
     task.addMsg(`Search pattern: ${getPref("namePattern")}`);
     task.addMsg(`Search option: ${JSON.stringify(searchOption)}`);
     if (searchOption) {
-      const cnkiSearchResult = await cnki.search(searchOption);
-      ztoolkit.log("cnki results", cnkiSearchResult);
-      if (cnkiSearchResult) {
-        task.addMsg(`Found ${cnkiSearchResult.length} results from CNKI`);
-        scrapeSearchResults = scrapeSearchResults.concat(cnkiSearchResult);
-      }
-      // const pubscholarSearchResult = await pubscholar.search(searchOption);
-      // ztoolkit.log("pubscholar results", pubscholarSearchResult);
-      // if (pubscholarSearchResult) {
-      //   task.addMsg(
-      //     `Found ${pubscholarSearchResult.length} results from PubScholar`,
-      //   );
-      //   scrapeSearchResults = scrapeSearchResults.concat(
-      //     pubscholarSearchResult,
-      //   );
-      // }
-      const yiigleSearchResult = await yiigle.search(searchOption);
-      ztoolkit.log("yiigle results", yiigleSearchResult);
-      if (yiigleSearchResult) {
-        task.addMsg(`Found ${yiigleSearchResult.length} results from Yiigle`);
-        scrapeSearchResults = scrapeSearchResults.concat(yiigleSearchResult);
+      let hasExactMatchFound = false;
+      const metadataSources = getPref("metadataSource");
+
+      // WanFang Data (first priority)
+      if (metadataSources.includes("WanFangData")) {
+        const wanfangDataSearchResult = await wanfangData.search(searchOption);
+        if (wanfangDataSearchResult) {
+          calculateSimilarity(wanfangDataSearchResult, searchOption.title);
+          task.addMsg(
+            `Found ${wanfangDataSearchResult.length} results from Wanfang Data`,
+          );
+          scrapeSearchResults = scrapeSearchResults.concat(
+            wanfangDataSearchResult,
+          );
+          if (hasExactMatch(wanfangDataSearchResult)) {
+            task.addMsg(
+              "Exact match found in Wanfang Data, skipping other services",
+            );
+            hasExactMatchFound = true;
+          }
+        }
       }
 
-      // Filter search results
+      // Yiigle 中华医学网 (second priority)
+      if (!hasExactMatchFound && metadataSources.includes("Yiigle")) {
+        const yiigleSearchResult = await yiigle.search(searchOption);
+        ztoolkit.log("yiigle results", yiigleSearchResult);
+        if (yiigleSearchResult) {
+          calculateSimilarity(yiigleSearchResult, searchOption.title);
+          task.addMsg(`Found ${yiigleSearchResult.length} results from Yiigle`);
+          scrapeSearchResults = scrapeSearchResults.concat(yiigleSearchResult);
+          if (hasExactMatch(yiigleSearchResult)) {
+            task.addMsg("Exact match found in Yiigle, skipping CNKI");
+            hasExactMatchFound = true;
+          }
+        }
+      }
+
+      // CNKI (fallback, last priority)
+      if (!hasExactMatchFound && metadataSources.includes("CNKI")) {
+        const cnkiSearchResult = await cnki.search(searchOption);
+        ztoolkit.log("cnki results", cnkiSearchResult);
+        if (cnkiSearchResult) {
+          calculateSimilarity(cnkiSearchResult, searchOption.title);
+          task.addMsg(`Found ${cnkiSearchResult.length} results from CNKI`);
+          scrapeSearchResults = scrapeSearchResults.concat(cnkiSearchResult);
+        }
+      }
+
+      // Filter search results based on pre-calculated similarity
       const filteredResults1 = scrapeSearchResults.filter((result) => {
         return (result.articleTitle as string).includes(searchOption.title);
       });
 
       const filteredResults2 = scrapeSearchResults.filter((result) => {
-        const score = compareTwoStrings(
-          searchOption.title,
-          result.articleTitle as string,
-        );
+        const score = result.similarity as number;
         ztoolkit.log(`Similarity score for "${result.articleTitle}": ${score}`);
         return (
           !(result.articleTitle as string).includes(searchOption.title) &&
@@ -141,10 +184,14 @@ export async function metaTranslate(task: ScraperTask): Promise<void> {
             false,
           );
           break;
-        // case "PubScholar":
-        //   ztoolkit.log("translated by PubScholar");
-        //   newItem = await pubscholar.translate(task, false);
-        //   break;
+        case "万方数据":
+          ztoolkit.log("translated by WanfangData");
+          translatedItems = await wanfangData.translate(
+            searchResult,
+            libraryID,
+            false,
+          );
+          break;
         case "中华医学":
           ztoolkit.log("translated by Yiigle");
           translatedItems = await yiigle.translate(

@@ -15,6 +15,10 @@ import {
 import { injectStylesLink } from "./modules/styles";
 import { updateTranslators } from "./modules/translators";
 import { getPref } from "./utils/prefs";
+import {
+  registerHeadlessActor,
+  unregisterHeadlessActor,
+} from "./utils/headlessBrowser";
 
 async function onStartup() {
   await Promise.all([
@@ -24,6 +28,8 @@ async function onStartup() {
   ]);
 
   initLocale();
+  ztoolkit.log("Jasminum.onStartup: begin");
+  registerHeadlessActor();
 
   registerPrefsPane();
   initPrefs();
@@ -59,6 +65,7 @@ async function onMainWindowLoad(win: Window): Promise<void> {
 }
 
 function onShutdown(): void {
+  unregisterHeadlessActor();
   ztoolkit.unregisterAll();
   // Remove addon object
   addon.data.alive = false;

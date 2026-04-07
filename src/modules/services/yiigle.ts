@@ -1,4 +1,3 @@
-import { compareTwoStrings } from "string-similarity";
 import { DocTools, requestDocument } from "../../utils/http";
 const { HiddenBrowser } = ChromeUtils.importESModule(
   "chrome://zotero/content/HiddenBrowser.mjs",
@@ -50,10 +49,10 @@ export class Yiigle implements ScrapeService {
     };
     try {
       await browser.load(url);
-      await browser.waitForDocument({ allowInteractiveAfter: 5000 });
-      setTimeout(() => {
-        ztoolkit.log("1秒延迟到了！");
-      }, 1000);
+      await browser.waitForDocument({
+        allowInteractiveAfter: 500,
+        requireSuccessfulStatus: true,
+      });
       const doc = await browser.getDocument();
       ztoolkit.log(`Yiigle search document title: ${doc.title}`);
       const items = doc.querySelectorAll("div.s_searchResult_li.el-row");

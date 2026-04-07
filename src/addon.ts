@@ -7,6 +7,20 @@ import { getOutlineFromPDF } from "./modules/outline/outline";
 import { TaskRunner } from "./utils/task";
 import { requestDocument } from "./utils/http";
 import { openRemoteHelpDialog } from "./modules/preferences/remoteHelp";
+import {
+  HeadlessBrowserOptions,
+  HeadlessBrowserService,
+} from "./utils/headlessBrowser";
+
+export type AddonAPI = {
+  getOutlineFromPDF: typeof getOutlineFromPDF;
+  requestDocument: typeof requestDocument;
+  openRemoteHelpDialog: typeof openRemoteHelpDialog;
+  HeadlessBrowserService: typeof HeadlessBrowserService;
+  createHeadlessBrowser: (
+    options?: HeadlessBrowserOptions,
+  ) => HeadlessBrowserService;
+};
 
 class Addon {
   public data: {
@@ -36,7 +50,7 @@ class Addon {
   // Lifecycle hooks
   public hooks: typeof hooks;
   // APIs
-  public api: object;
+  public api: AddonAPI;
   public taskRunner: TaskRunner;
 
   constructor() {
@@ -55,7 +69,14 @@ class Addon {
       isImportingAttachments: false,
     };
     this.hooks = hooks;
-    this.api = { getOutlineFromPDF, requestDocument, openRemoteHelpDialog };
+    this.api = {
+      getOutlineFromPDF,
+      requestDocument,
+      openRemoteHelpDialog,
+      HeadlessBrowserService,
+      createHeadlessBrowser: (options?: HeadlessBrowserOptions) =>
+        new HeadlessBrowserService(options),
+    };
     this.taskRunner = new TaskRunner();
   }
 }

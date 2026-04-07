@@ -28,8 +28,13 @@ label-choose-source =
   .label = Select Data Source
 label-metadata-source-cnki =
   .label = CNKI (China National Knowledge Infrastructure)
-label-metadata-source-cvip =
-  .label = VIP Journals (Chinese VIP Information)
+label-metadata-source-wanfangdata =
+  .label = Wanfang Data
+label-metadata-source-yiigle =
+  .label = Yiigle (Chinese Medical Journals)
+metadata-source-desc =
+  .tooltiptext = Select the source for metadata retrieval. Generally, there is no need to switch. If you find some data sources unnecessary, you can uncheck them.
+
 label-pdf-match-folder = Attachment Matching Folder
 label-choose-folder =
   .label = Select Folder

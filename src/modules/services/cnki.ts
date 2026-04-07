@@ -292,7 +292,7 @@ export class CNKI implements ScrapeService {
       timeout: 10000,
       successCodes: [200, 403],
     });
-    ztoolkit.log("CNKI search response: ", resp);
+    // ztoolkit.log("CNKI search response: ", resp);
     responseText = resp.responseText;
     if (resp.status === 403) {
       ztoolkit.log(

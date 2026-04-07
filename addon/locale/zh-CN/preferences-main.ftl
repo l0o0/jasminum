@@ -28,8 +28,13 @@ label-choose-source =
   .label = 选择数据源
 label-metadata-source-cnki =
   .label = 中国知网CNKI
-label-metadata-source-cvip =
-  .label = 维普期刊CVIP
+label-metadata-source-wanfangdata =
+  .label = 万方数据WanfangData
+label-metadata-source-yiigle =
+  .label = 中华医学期刊Yiigle
+metadata-source-desc =
+  .tooltiptext = 选择元数据抓取来源，一般情况下不用切换。如果你觉得有些数据源不需要，可以取消勾选。
+
 
 namepattern-desc = 
   .tooltiptext = 根据文件名抓取知网元数据，文件名格式设置:

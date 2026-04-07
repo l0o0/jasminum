@@ -28,8 +28,13 @@ label-choose-source =
   .label = 選擇資料來源
 label-metadata-source-cnki =
   .label = 中國知網CNKI
-label-metadata-source-cvip =
-  .label = 維普期刊CVIP
+label-metadata-source-wanfangdata =
+  .label = 万方数据WanfangData
+label-metadata-source-yiigle =
+  .label = 中华医学期刊Yiigle
+metadata-source-desc =
+  .tooltiptext = 選擇元數據抓取來源，一般情況下不用切換。如果你覺得有些資料來源不需要，可以取消勾選。
+
 label-pdf-match-folder = 附件匹配資料夾
 label-choose-folder =
   .label = 選擇資料夾
