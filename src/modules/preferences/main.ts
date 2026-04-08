@@ -214,37 +214,39 @@ function bindPrefEvents(doc: Document) {
       }
     });
 
-  // metadata source dropdown
-  doc
-    .querySelector(`#zotero-prefpane-${config.addonRef}-metadata-source-button`)
-    ?.addEventListener("click", (e) => {
-      e.stopPropagation(); // 阻止事件冒泡
-      const pvalues = (getPref("metadataSource") as string).split(", ");
-      doc.querySelectorAll("checkbox.metadata-drop-item")!.forEach((e: any) => {
-        e.checked = pvalues.includes(e.getAttribute("value")!);
-      });
-      doc.querySelector("#metadata-source-dropdown")?.classList.toggle("show");
-    });
+  // metadata source panel
+  const metadataButton = doc.querySelector(
+    `#zotero-prefpane-${config.addonRef}-metadata-source-button`,
+  );
+  const metadataPanel = doc.querySelector("#metadata-source-panel");
 
-  doc
-    .querySelector("#metadata-source-dropdown")
-    ?.addEventListener("click", (e) => {
-      const checkbox = (e.target as HTMLElement).closest(
-        ".metadata-drop-item",
-      )!;
-      let pvalues = getPref("metadataSource").split(", ") || ["CNKI"];
-      if (checkbox.getAttribute("checked") == "true") {
-        const checkedSource = checkbox.getAttribute("value")!;
-        if (!pvalues.includes(checkedSource)) {
-          pvalues.push(checkedSource);
-        }
-      } else {
-        pvalues = pvalues.filter(
-          (option) => option !== checkbox.getAttribute("value")!,
-        );
-      }
-      setPref("metadataSource", pvalues.join(", "));
+  // Update checkbox states when panel opens
+  metadataPanel?.addEventListener("popupshowing", () => {
+    const pvalues = (getPref("metadataSource") as string).split(", ");
+    doc.querySelectorAll("checkbox.metadata-drop-item")!.forEach((e: any) => {
+      e.checked = pvalues.includes(e.getAttribute("value")!);
     });
+  });
+
+  // Handle checkbox changes
+  metadataPanel?.addEventListener("command", (e) => {
+    const checkbox = (e.target as HTMLElement).closest(
+      ".metadata-drop-item",
+    ) as any;
+    if (!checkbox) return;
+
+    let pvalues = getPref("metadataSource").split(", ") || ["CNKI"];
+    const value = checkbox.getAttribute("value")!;
+
+    if (checkbox.checked) {
+      if (!pvalues.includes(value)) {
+        pvalues.push(value);
+      }
+    } else {
+      pvalues = pvalues.filter((option) => option !== value);
+    }
+    setPref("metadataSource", pvalues.join(", "));
+  });
 
   doc
     .querySelector(

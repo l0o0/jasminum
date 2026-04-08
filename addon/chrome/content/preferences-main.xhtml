@@ -65,33 +65,39 @@
       preference="metadataSource"
       disabled="true"
     ></html:input>
-    <html:div>
-      <button
-        id="zotero-prefpane-__addonRef__-metadata-source-button"
-        data-l10n-id="label-choose-source"
-      ></button>
-      <html:div id="metadata-source-dropdown" class="dropdown-content">
-        <checkbox
-          disabled="true"
-          native="true"
-          class="metadata-drop-item"
-          value="CNKI"
-          data-l10n-id="label-metadata-source-cnki"
-        />
-        <checkbox
-          class="metadata-drop-item"
-          native="true"
-          value="WanFangData"
-          data-l10n-id="label-metadata-source-wanfangdata"
-        />
-        <checkbox
-          class="metadata-drop-item"
-          native="true"
-          value="Yiigle"
-          data-l10n-id="label-metadata-source-yiigle"
-        />
-      </html:div>
-    </html:div>
+    <button
+      id="zotero-prefpane-__addonRef__-metadata-source-button"
+      type="menu"
+      data-l10n-id="label-choose-source"
+    >
+      <panel
+        id="metadata-source-panel"
+        position="after_start"
+        noautohide="false"
+      >
+        <vbox style="padding: 8px;">
+          <checkbox
+            disabled="true"
+            native="true"
+            class="metadata-drop-item"
+            value="CNKI"
+            data-l10n-id="label-metadata-source-cnki"
+          />
+          <checkbox
+            class="metadata-drop-item"
+            native="true"
+            value="WanFangData"
+            data-l10n-id="label-metadata-source-wanfangdata"
+          />
+          <checkbox
+            class="metadata-drop-item"
+            native="true"
+            value="Yiigle"
+            data-l10n-id="label-metadata-source-yiigle"
+          />
+        </vbox>
+      </panel>
+    </button>
     <image
       class="help-icon"
       src="chrome://jasminum/content/icons/help.svg"

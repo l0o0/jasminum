@@ -12,28 +12,6 @@
     --dropdown-shadow-color: rgba(255, 255, 255, 0.2);
   }
 }
-.dropdown-content {
-  display: none;
-  position: absolute;
-  background-color: var(--dropdown-bg-color);
-  border: 1px solid var(--dropdown-border-color);
-  box-shadow: 0px 8px 16px var(--dropdown-shadow-color);
-  z-index: 1;
-  padding: 8px 16px;
-  font-size: 12px;
-  cursor: pointer;
-  border-radius: 4px;
-  color: var(--dropdown-text-color);
-}
-.dropdown-content label {
-  display: block;
-  margin: 5px 0;
-  cursor: pointer;
-  color: var(--dropdown-text-color);
-}
-.show {
-  display: block;
-}
 
 .hidden {
   display: none;
