@@ -192,7 +192,9 @@ async function _updateTranslators(force = false): Promise<boolean> {
       ) {
         try {
           const url = `${baseUrl}/${filename}`;
-          const code = await Zotero.File.getContentsFromURLAsync(url);
+          const code = await Zotero.File.getContentsFromURLAsync(url, {
+            noCache: true,
+          });
           const desPath = PathUtils.join(
             Zotero.DataDirectory.dir,
             "translators",
