@@ -85,7 +85,7 @@ export class PubScholar implements ScrapeService {
     searchResult: ScrapeSearchResult,
     libraryID: number,
     saveAttachments: false,
-  ): Promise<Zotero.Item[]> {
+  ): Promise<ScrapeTranslateResult> {
     ztoolkit.log(`PubScholar translate: ${searchResult.title}`);
 
     // TODO: Implement PubScholar translation
@@ -110,6 +110,6 @@ export class PubScholar implements ScrapeService {
     // const metadata = await this.fetchDetailMetadata(searchResult.url);
     // return createItemFromMetadata(metadata, task.item.libraryID);
 
-    return [];
+    return { status: "empty", items: [] };
   }
 }

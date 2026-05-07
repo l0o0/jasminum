@@ -72,7 +72,7 @@ export class WanfangData implements ScrapeService {
     searchResult: ScrapeSearchResult,
     libraryID: number,
     saveAttachments: false,
-  ): Promise<Zotero.Item[]> {
+  ): Promise<ScrapeTranslateResult> {
     ztoolkit.log("WanfangData translate started for: ", searchResult);
     const browser = addon.api.createHeadlessBrowser({
       allowJavaScript: true,
@@ -95,10 +95,16 @@ export class WanfangData implements ScrapeService {
         saveAttachments: saveAttachments,
       });
       ztoolkit.log("WanfangData translate created item: ", translatedItems[0]);
-      return [translatedItems[0]];
+      if (translatedItems.length === 0) {
+        return { status: "empty", items: [] };
+      }
+      return { status: "success", items: translatedItems };
     } catch (error) {
       ztoolkit.log("Error during WanfangData translate: ", error);
-      throw `WanfangData translation failed: ${error}`;
+      return {
+        status: "error",
+        error: `WanfangData translation failed: ${error}`,
+      };
     } finally {
       browser.destroy();
     }

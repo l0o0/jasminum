@@ -76,27 +76,35 @@ export class Yiigle implements ScrapeService {
     searchResult: ScrapeSearchResult,
     libraryID: number,
     saveAttachments: false,
-  ): Promise<Zotero.Item[]> {
+  ): Promise<ScrapeTranslateResult> {
     ztoolkit.log("Yiigle translate started.");
-    const doc = await requestDocument(searchResult.url, {
-      headers: {
-        Accept:
-          "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
-        "Accept-Encoding": "gzip, deflate, br",
-        "Accept-Language": "zh-CN,en-US;q=0.9,en;q=0.8",
-        Referer: "https://www.yiigle.com/",
-        "User-Agent":
-          "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:147.0) Gecko/20100101 Firefox/147.0",
-      },
-    });
-    ztoolkit.log(`Document title: ${doc.title}`);
-    const translator = new Zotero.Translate.Web();
-    translator.setTranslator("f5189d31-18ea-4e84-bdec-f1d0e75b818b");
-    translator.setDocument(doc);
-    const translatedItems = await translator.translate({
-      libraryID: libraryID,
-      saveAttachments: saveAttachments,
-    });
-    return translatedItems;
+    try {
+      const doc = await requestDocument(searchResult.url, {
+        headers: {
+          Accept:
+            "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+          "Accept-Encoding": "gzip, deflate, br",
+          "Accept-Language": "zh-CN,en-US;q=0.9,en;q=0.8",
+          Referer: "https://www.yiigle.com/",
+          "User-Agent":
+            "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:147.0) Gecko/20100101 Firefox/147.0",
+        },
+      });
+      ztoolkit.log(`Document title: ${doc.title}`);
+      const translator = new Zotero.Translate.Web();
+      translator.setTranslator("f5189d31-18ea-4e84-bdec-f1d0e75b818b");
+      translator.setDocument(doc);
+      const translatedItems = await translator.translate({
+        libraryID: libraryID,
+        saveAttachments: saveAttachments,
+      });
+      if (translatedItems.length === 0) {
+        return { status: "empty", items: [] };
+      }
+      return { status: "success", items: translatedItems };
+    } catch (error) {
+      ztoolkit.log(`Yiigle translate error: ${error}`);
+      return { status: "error", error: `Yiigle translation failed: ${error}` };
+    }
   }
 }

@@ -202,7 +202,8 @@ async function getRefworksText(
     const resp = await Zotero.HTTP.request("POST", apiUrl, {
       body: postData,
       headers: headers,
-      cookieSandbox: await addon.data.myCookieSandbox.getCNKIHomeCookieBox(),
+      // @ts-ignore Not typed
+      userContextId: await addon.data.myCookieSandbox.getCNKIHomeCookieId(),
       timeout: 10000,
       successCodes: [200, 403],
     });
@@ -219,7 +220,8 @@ async function getRefworksText(
       const resp2 = await Zotero.HTTP.request("POST", apiUrl, {
         headers: headers,
         body: postData,
-        cookieSandbox: await addon.data.myCookieSandbox.passCaptchaToCookieBox(
+        // @ts-ignore Not typed
+        userContextId: await addon.data.myCookieSandbox.passCaptchaToCookieBox(
           respJson.message,
           "CNKI:Home",
         ),
@@ -279,16 +281,15 @@ export class CNKI implements ScrapeService {
     ztoolkit.log("serch options: ", searchOption);
     const postOption = createSearchPostOptions(searchOption);
     let responseText: string;
-    const cookieBox = await addon.data.myCookieSandbox.getCNKIHomeCookieBox();
-    ztoolkit.log("Cookies in sandbox: ", cookieBox._cookies);
+    const cookieBoxId = await addon.data.myCookieSandbox.getCNKIHomeCookieId();
+    ztoolkit.log("Cookie id in sandbox: ", cookieBoxId);
     ztoolkit.log(addon.taskRunner.runningTask);
-    addon.taskRunner.runningTask?.addMsg(
-      `CNKI site info: ${Object.keys(cookieBox._cookies).length}`,
-    );
+    addon.taskRunner.runningTask?.addMsg(`CNKI site info: ${cookieBoxId}`);
     const resp = await Zotero.HTTP.request("POST", postOption.url, {
       headers: postOption.headers,
       body: postOption.data,
-      cookieSandbox: cookieBox,
+      // @ts-ignore Not typed
+      userContextId: cookieBoxId,
       timeout: 10000,
       successCodes: [200, 403],
     });
@@ -309,7 +310,8 @@ export class CNKI implements ScrapeService {
       const resp2 = await Zotero.HTTP.request("POST", postOption.url, {
         headers: postOption.headers,
         body: postOption.data,
-        cookieSandbox: await addon.data.myCookieSandbox.getCNKIHomeCookieBox(),
+        // @ts-ignore Not typed
+        userContextId: await addon.data.myCookieSandbox.getCNKIHomeCookieId(),
         timeout: 10000,
         successCodes: [200, 403],
       });
@@ -355,7 +357,7 @@ export class CNKI implements ScrapeService {
     searchResult: ScrapeSearchResult,
     libraryID: number,
     saveAttachments: false,
-  ): Promise<Zotero.Item[]> {
+  ): Promise<ScrapeTranslateResult> {
     let translatedItems: Zotero.Item[] = [];
     let isWebTranslated = true;
     try {
@@ -368,7 +370,8 @@ export class CNKI implements ScrapeService {
           "User-Agent":
             "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:147.0) Gecko/20100101 Firefox/147.0",
         },
-        cookieSandbox: await addon.data.myCookieSandbox.getCNKIHomeCookieBox(),
+        // @ts-ignore Not typed
+        userContextId: await addon.data.myCookieSandbox.getCNKIHomeCookieId(),
       });
       ztoolkit.log(`Document title: ${doc.title}`);
       if (doc.title != "知网节超时验证" && doc.title != "captcha") {
@@ -399,7 +402,7 @@ export class CNKI implements ScrapeService {
         if (!refworksText) {
           ztoolkit.log("CNKI reference text is null.");
           addon.taskRunner.runningTask?.addMsg("CNKI reference text is null.");
-          return [];
+          return { status: "empty", items: [] };
         }
         ztoolkit.log("Formated Refworks text: ", refworksText);
         const translate = new Zotero.Translate.Import();
@@ -411,10 +414,16 @@ export class CNKI implements ScrapeService {
         });
       } catch (e) {
         ztoolkit.log(`CNKI refwork translation failed: ${e}`);
-        throw `CNKI refwork translation failed: ${e}`;
+        return {
+          status: "error",
+          error: `CNKI refwork translation failed: ${e}`,
+        };
       }
     }
-    return translatedItems;
+    if (translatedItems.length === 0) {
+      return { status: "empty", items: [] };
+    }
+    return { status: "success", items: translatedItems };
   }
 
   // CNKI webpage item or snapshot item.

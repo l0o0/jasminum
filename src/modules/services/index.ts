@@ -3,12 +3,14 @@ import { getPDFTitle } from "../../utils/pdfParser";
 import { getPref } from "../../utils/prefs";
 import { ScraperTask } from "../../utils/task";
 import { isChineseTopAttachment, isChinsesSnapshot } from "../../utils/detect";
+// import { ChinaDOI } from "./chinadoi";
 import { CNKI } from "./cnki";
 // import { PubScholar } from "./pubscholar";
 import { Yiigle } from "./yiigle";
 import { compareTwoStrings } from "string-similarity";
 import { WanfangData } from "./wanfangdata";
 
+// const chinaDOI = new ChinaDOI();
 const cnki = new CNKI();
 // const pubscholar = new PubScholar();
 const yiigle = new Yiigle();
@@ -54,6 +56,21 @@ function hasExactMatch(results: ScrapeSearchResult[]): boolean {
   return results.some((r) => r.similarity === 1);
 }
 
+async function searchWithTaskMessage(
+  task: ScraperTask,
+  serviceName: string,
+  search: () => Promise<ScrapeSearchResult[] | null>,
+): Promise<ScrapeSearchResult[] | null> {
+  try {
+    return await search();
+  } catch (error) {
+    const message = `${serviceName} search error: ${error}`;
+    ztoolkit.log(message);
+    task.addMsg(message);
+    return null;
+  }
+}
+
 export async function metaSearch(
   task: ScraperTask,
   options?: any,
@@ -81,7 +98,11 @@ export async function metaSearch(
 
       // WanFang Data (first priority)
       if (metadataSources.includes("WanFangData")) {
-        const wanfangDataSearchResult = await wanfangData.search(searchOption);
+        const wanfangDataSearchResult = await searchWithTaskMessage(
+          task,
+          "WanfangData",
+          () => wanfangData.search(searchOption),
+        );
         if (wanfangDataSearchResult) {
           calculateSimilarity(wanfangDataSearchResult, searchOption.title);
           task.addMsg(
@@ -101,7 +122,11 @@ export async function metaSearch(
 
       // Yiigle 中华医学网 (second priority)
       if (!hasExactMatchFound && metadataSources.includes("Yiigle")) {
-        const yiigleSearchResult = await yiigle.search(searchOption);
+        const yiigleSearchResult = await searchWithTaskMessage(
+          task,
+          "Yiigle",
+          () => yiigle.search(searchOption),
+        );
         ztoolkit.log("yiigle results", yiigleSearchResult);
         if (yiigleSearchResult) {
           calculateSimilarity(yiigleSearchResult, searchOption.title);
@@ -114,9 +139,33 @@ export async function metaSearch(
         }
       }
 
+      // ChinaDOI is temporarily disabled while its redirect/translation flow is fixed.
+      // if (!hasExactMatchFound && metadataSources.includes("ChinaDOI")) {
+      //   const chinaDOISearchResult = await searchWithTaskMessage(
+      //     task,
+      //     "ChinaDOI",
+      //     () => chinaDOI.search(searchOption),
+      //   );
+      //   ztoolkit.log("chinaDOI results", chinaDOISearchResult);
+      //   if (chinaDOISearchResult) {
+      //     calculateSimilarity(chinaDOISearchResult, searchOption.title);
+      //     task.addMsg(
+      //       `Found ${chinaDOISearchResult.length} results from ChinaDOI`,
+      //     );
+      //     scrapeSearchResults =
+      //       scrapeSearchResults.concat(chinaDOISearchResult);
+      //     if (hasExactMatch(chinaDOISearchResult)) {
+      //       task.addMsg("Exact match found in ChinaDOI, skipping CNKI");
+      //       hasExactMatchFound = true;
+      //     }
+      //   }
+      // }
+
       // CNKI (fallback, last priority)
       if (!hasExactMatchFound && metadataSources.includes("CNKI")) {
-        const cnkiSearchResult = await cnki.search(searchOption);
+        const cnkiSearchResult = await searchWithTaskMessage(task, "CNKI", () =>
+          cnki.search(searchOption),
+        );
         ztoolkit.log("cnki results", cnkiSearchResult);
         if (cnkiSearchResult) {
           calculateSimilarity(cnkiSearchResult, searchOption.title);
@@ -165,6 +214,7 @@ export async function metaTranslate(task: ScraperTask): Promise<void> {
   if (task.searchResults.length === 0) {
     task.addMsg("No search results found.");
     task.status = "fail";
+    return;
   }
 
   try {
@@ -173,41 +223,59 @@ export async function metaTranslate(task: ScraperTask): Promise<void> {
     const searchResult = task.searchResults[resultIndex];
     const libraryID = task.item.libraryID;
     ztoolkit.log(`start translate for search result: ${searchResult.title}`);
-    let translatedItems: Zotero.Item[] = [];
-    try {
-      switch (searchResult.source) {
-        case "CNKI":
-          ztoolkit.log("translated by CNKI");
-          translatedItems = await cnki.translate(
-            searchResult,
-            libraryID,
-            false,
-          );
-          break;
-        case "万方数据":
-          ztoolkit.log("translated by WanfangData");
-          translatedItems = await wanfangData.translate(
-            searchResult,
-            libraryID,
-            false,
-          );
-          break;
-        case "中华医学":
-          ztoolkit.log("translated by Yiigle");
-          translatedItems = await yiigle.translate(
-            searchResult,
-            libraryID,
-            false,
-          );
-          break;
-        default:
-          break;
-      }
-      ztoolkit.log(translatedItems);
-    } catch (e) {
-      ztoolkit.log(`Translation error: ${e}`);
-      task.addMsg(`Translation error: ${e}`);
+    let translateResult: ScrapeTranslateResult;
+    switch (searchResult.source) {
+      case "CNKI":
+        ztoolkit.log("translated by CNKI");
+        translateResult = await cnki.translate(searchResult, libraryID, false);
+        break;
+      case "万方数据":
+        ztoolkit.log("translated by WanfangData");
+        translateResult = await wanfangData.translate(
+          searchResult,
+          libraryID,
+          false,
+        );
+        break;
+      case "中华医学":
+        ztoolkit.log("translated by Yiigle");
+        translateResult = await yiigle.translate(
+          searchResult,
+          libraryID,
+          false,
+        );
+        break;
+      // ChinaDOI is temporarily disabled while its redirect/translation flow is fixed.
+      // case "ChinaDOI":
+      //   ztoolkit.log("translated by ChinaDOI");
+      //   translateResult = await chinaDOI.translate(
+      //     searchResult,
+      //     libraryID,
+      //     false,
+      //   );
+      //   break;
+      default:
+        translateResult = {
+          status: "error",
+          error: `Unsupported source: ${searchResult.source}`,
+        };
+        break;
     }
+
+    if (translateResult.status === "error") {
+      task.addMsg(translateResult.error);
+      task.status = "fail";
+      return;
+    }
+
+    if (translateResult.status === "empty") {
+      task.addMsg("Translation returned no item.");
+      task.status = "fail";
+      return;
+    }
+
+    const translatedItems = translateResult.items;
+    ztoolkit.log(translatedItems);
 
     if (translatedItems.length === 1) {
       // if (addon.data.env != "development")

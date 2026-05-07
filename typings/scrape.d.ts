@@ -5,7 +5,7 @@ interface ScrapeService {
     searchResult: ScrapeSearchResult,
     libraryID: number,
     saveAttachments: false,
-  ): Promise<Zotero.Item[]>;
+  ): Promise<ScrapeTranslateResult>;
   translateSnapshot?(task: ScrapeTask): Promise<Zotero.Item | null | undefined>;
 }
 
@@ -20,6 +20,20 @@ type ScrapeSearchResult = {
   url: string;
   [key: string]: string | number | null;
 };
+
+type ScrapeTranslateResult =
+  | {
+      status: "success";
+      items: Zotero.Item[];
+    }
+  | {
+      status: "empty";
+      items: [];
+    }
+  | {
+      status: "error";
+      error: string;
+    };
 
 type TaskStatus =
   | "waiting"
