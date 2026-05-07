@@ -6,6 +6,7 @@ label-autoupdate-metadata =
   .label = Automatically retrieve metadata from CNKI when adding Chinese PDF/CAJ files
 label-rename =
   .label = Rename attachments based on metadata (requires Attanger or zotmoov plugin)
+label-filename-pattern = Filename Parsing Template
 label-namepattern = Filename Parsing Template
 label-namepattern-auto =
   .label = Smart Recognition
@@ -32,6 +33,8 @@ label-metadata-source-wanfangdata =
   .label = Wanfang Data
 label-metadata-source-yiigle =
   .label = Yiigle (Chinese Medical Journals)
+label-metadata-source-chinadoi =
+  .label = ChinaDOI
 metadata-source-desc =
   .tooltiptext = Select the source for metadata retrieval. Generally, there is no need to switch. If you find some data sources unnecessary, you can uncheck them.
 

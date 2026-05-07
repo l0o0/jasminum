@@ -6,6 +6,7 @@ label-autoupdate-metadata =
   .label = 新增中文PDF/CAJ時自動從知網抓取元數據
 label-rename = 
   .label = 根據元數據重新命名附件（依賴Attanger或zotmoov插件）
+label-filename-pattern = 檔案名稱解析範本
 label-namepattern = 檔案名稱解析範本
 label-namepattern-auto = 
   .label = 智能識別
@@ -32,6 +33,8 @@ label-metadata-source-wanfangdata =
   .label = 万方数据WanfangData
 label-metadata-source-yiigle =
   .label = 中华医学期刊Yiigle
+label-metadata-source-chinadoi =
+  .label = 中文DOI ChinaDOI
 metadata-source-desc =
   .tooltiptext = 選擇元數據抓取來源，一般情況下不用切換。如果你覺得有些資料來源不需要，可以取消勾選。
 
@@ -50,7 +53,7 @@ translatorSource-desc =
 label-auto-update-translators = 
   .label = 自動更新轉換器
 label-translators-force-update = 
-  .label = 立即更新
+  .label = 立即更新轉換器
 label-translators-detail = 轉換器詳情
 label-translators-detail-click = 點擊查看
 

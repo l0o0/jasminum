@@ -21,7 +21,8 @@
     preference="autoUpdateMetadata"
     data-l10n-id="label-autoupdate-metadata"
   />
-  <hbox flex="2" class="inputbox">
+  <hbox flex="2" class="inputbox" align="center">
+    <label data-l10n-id="label-filename-pattern"></label>
     <menulist
       id="zotero-prefpane-__addonRef__-namepattern-menulist"
       native="true"
@@ -75,7 +76,7 @@
         position="after_start"
         noautohide="false"
       >
-        <vbox style="padding: 8px;">
+        <vbox style="padding: 8px">
           <checkbox
             disabled="true"
             native="true"
@@ -95,6 +96,15 @@
             value="Yiigle"
             data-l10n-id="label-metadata-source-yiigle"
           />
+          <!--
+          ChinaDOI is temporarily disabled while its redirect/translation flow is fixed.
+            <checkbox
+              class="metadata-drop-item"
+              native="true"
+              value="ChinaDOI"
+              data-l10n-id="label-metadata-source-chinadoi"
+            />
+          -->
         </vbox>
       </panel>
     </button>

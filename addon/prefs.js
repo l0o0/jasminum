@@ -15,7 +15,7 @@ pref("cnkiAttachmentCookie", "");
 pref("similarityThresholdForMetaData", "0.6");
 /* match pdf */
 pref("pdfMatchFolder", "");
-pref("actionAfterAttachmentImport", "backup")
+pref("actionAfterAttachmentImport", "backup");
 pref("similarityThreshold", "0.8");
 pref("topMatchCount", 3);
 /* update translators */
