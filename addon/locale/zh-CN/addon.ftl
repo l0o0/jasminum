@@ -55,7 +55,7 @@ import-attachments-success = 从文件夹中导入附件成功
 importing-attachments-is-running = 已有一个附件导入任务正在运行，请稍后再试。
 
 # outline
-outline = 显示书签大纲（茉莉花）
+outline = 显示大纲（茉莉花）
 outline-expand-all = 展开所有
 outline-collapse-all = 收起所有
 outline-add = 添加书签

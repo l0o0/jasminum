@@ -1,49 +1,59 @@
 export class MyCookieSandbox {
-  public searchCookieBox: Zotero.CookieSandbox | null = null;
+  public searchCookieBox: number | null = null;
   //   public attachmentCookieBox: Zotero.CookieSandbox | null = null;
   //   public refCookieBox: Zotero.CookieSandbox | null = null;
   userAgent =
     "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/70.0.3538.77 Safari/537.36";
   baseUrl = "https://www.cnki.net";
 
-  private _CNKIHomeCookieBox: Zotero.CookieSandbox | null = null;
+  private _CNKIHomeCookieId: number | null = null;
   private _cnkiHomeCookieLastUpdateTime: number = 0;
   private _initPromise: Promise<void> | null = null;
-  private _captchaPromise: Promise<Zotero.CookieSandbox> | null = null;
+  private _captchaPromise: Promise<number> | null = null;
   private static readonly COOKIE_EXPIRE_MS = 5 * 60 * 1000; // 10 minutes
 
   constructor() {
-    this._CNKIHomeCookieBox = null;
+    this._CNKIHomeCookieId = null;
   }
 
   public async getCookieBoxFromUrl(
     url: string,
     hintText: string = "请完成验证码，验证成功后，点击此按钮",
-  ): Promise<Zotero.CookieSandbox> {
-    // @ts-ignore - Not typed.
-    const cookieSandbox = new Zotero.CookieSandbox();
+  ): Promise<number> {
+    // @ts-ignore Not typed
+    const cookieContext = Zotero.HTTP.newCookieContext();
 
     ztoolkit.log("Opening URL in viewer: " + url);
     const win = Zotero.openInViewer(url, {
-      cookieSandbox: cookieSandbox,
+      // @ts-ignore Not typed
+      userContextId: cookieContext.id,
     }) as any as Window;
 
     return new Promise((resolve, reject) => {
       let promiseSettled = false;
-      let cookieRetrieved = false;
+
+      const settleResolve = () => {
+        if (promiseSettled) {
+          return;
+        }
+        promiseSettled = true;
+        ztoolkit.log(
+          `Cookie context returned successfully: ${cookieContext.id}`,
+        );
+        resolve(cookieContext.id);
+      };
+
+      const settleReject = (err: Error) => {
+        if (promiseSettled) {
+          return;
+        }
+        promiseSettled = true;
+        reject(err);
+      };
 
       win.addEventListener("close", function () {
         ztoolkit.log("Window closed");
-        if (!promiseSettled) {
-          promiseSettled = true;
-          if (cookieRetrieved) {
-            ztoolkit.log("Cookie sandbox returned successfully");
-            resolve(cookieSandbox);
-          } else {
-            ztoolkit.log("Window closed without retrieving cookies");
-            reject(new Error(`用户关闭窗口，未完成验证: ${url}`));
-          }
-        }
+        settleReject(new Error(`用户关闭窗口，未完成验证: ${url}`));
       });
 
       win.addEventListener("load", function () {
@@ -149,21 +159,15 @@ export class MyCookieSandbox {
         button.addEventListener("click", function () {
           try {
             const uri = Services.io.newURI(url);
-            const cookies = cookieSandbox.getCookiesForURI(uri);
-            ztoolkit.log("Cookies retrieved from sandbox.", cookies);
+            const cookies = cookieContext.getCookies(uri.host);
+            ztoolkit.log("Cookies retrieved from cookie context.", cookies);
 
-            if (cookies) {
-              for (const name in cookies) {
-                ztoolkit.log(`  ${name} = ${cookies[name]}`);
+            if (cookies && cookies.length) {
+              for (const cookie of cookies) {
+                ztoolkit.log(`  ${cookie.name} = ${cookie.value}`);
               }
 
-              cookieRetrieved = true;
-
-              if (!promiseSettled) {
-                promiseSettled = true;
-                resolve(cookieSandbox);
-                ztoolkit.log("Promise resolved with cookieSandbox");
-              }
+              settleResolve();
               win.close();
               ztoolkit.log("Cookies retrieved successfully.");
             } else {
@@ -222,7 +226,7 @@ export class MyCookieSandbox {
     });
   }
 
-  public async getCNKIHomeCookieBox(): Promise<Zotero.CookieSandbox> {
+  public async getCNKIHomeCookieId(): Promise<number> {
     const now = Date.now();
     const isExpired =
       now - this._cnkiHomeCookieLastUpdateTime >
@@ -231,47 +235,36 @@ export class MyCookieSandbox {
     // If cookie exists and not expired, return directly
     // Valid cookie has more than 1 cookie item.
     if (
-      this._CNKIHomeCookieBox != null &&
+      this._CNKIHomeCookieId != null &&
       !isExpired &&
-      Object.keys(this._CNKIHomeCookieBox._cookies).length > 1
+      this._CNKIHomeCookieId !== null
     ) {
-      return this._CNKIHomeCookieBox;
+      return this._CNKIHomeCookieId;
     }
 
     // Cookie expired or missing, reset for re-initialization
     if (
       isExpired ||
-      this._CNKIHomeCookieBox === null ||
-      Object.keys(this._CNKIHomeCookieBox._cookies).length <= 1
+      this._CNKIHomeCookieId === null ||
+      this._CNKIHomeCookieId === null
     ) {
       ztoolkit.log("CNKI Home cookie expired or invalid, re-initializing...");
-      this._CNKIHomeCookieBox = null;
+      this._CNKIHomeCookieId = null;
       this._initPromise = null;
     }
 
     if (!this._initPromise) {
-      ztoolkit.log("homeCookieBox 为空，开始初始化...");
+      ztoolkit.log("homeCookieId 为空，开始初始化...");
       this._initPromise = this.getCookieBoxFromUrl(
         "https://kns.cnki.net/kns8s/defaultresult/index?crossids=YSTT4HG0%2CLSTPFY1C%2CJUP3MUPD%2CMPMFIG1A%2CWQ0UVIAA%2CBLZOG7CK%2CPWFIRAGL%2CEMRPGLPA%2CNLBO1Z6R%2CNN3FJMUV&korder=SU&kw=%E7%A7%91%E7%A0%94%E8%AE%BA%E6%96%87%E9%98%85%E8%AF%BB",
         "请等待知网网页正常打开后，再点击下方按钮关闭",
-      ).then((cookieSandbox) => {
-        this._CNKIHomeCookieBox = cookieSandbox;
+      ).then((cookieBoxId) => {
+        this._CNKIHomeCookieId = cookieBoxId;
         this._cnkiHomeCookieLastUpdateTime = Date.now();
       });
     }
     await this._initPromise;
-    // 保险起见，再次检查是否成功获取到 cookieSandbox
-    // if (
-    //   this._CNKIHomeCookieBox == null
-    // ) {
-    //   ztoolkit.log("homeCookieBox 还是为空，又开始初始化...");
-    //   this._CNKIHomeCookieBox = await this.getCookieBoxFromUrl(
-    //     "https://kns.cnki.net/kns8s/defaultresult/index?crossids=YSTT4HG0%2CLSTPFY1C%2CJUP3MUPD%2CMPMFIG1A%2CWQ0UVIAA%2CBLZOG7CK%2CPWFIRAGL%2CEMRPGLPA%2CNLBO1Z6R%2CNN3FJMUV&korder=SU&kw=%E7%A7%91%E7%A0%94%E8%AE%BA%E6%96%87%E9%98%85%E8%AF%BB",
-    //     "请等待知网网页正常打开后，再点击下方按钮关闭",
-    //   );
-    //   this._cnkiHomeCookieLastUpdateTime = Date.now();
-    // }
-    return this._CNKIHomeCookieBox!;
+    return this._CNKIHomeCookieId!;
   }
 
   async passCaptchaToCookieBox(
@@ -281,7 +274,7 @@ export class MyCookieSandbox {
       | "CNKI:Attachment"
       | "CNKI:Reference"
       | "CNKI:Home",
-  ): Promise<Zotero.CookieSandbox> {
+  ): Promise<number> {
     // 如果已经有验证码窗口在运行，等待它完成
     if (this._captchaPromise) {
       ztoolkit.log(
@@ -290,21 +283,18 @@ export class MyCookieSandbox {
       return this._captchaPromise;
     }
 
-    this._captchaPromise = this.getCookieBoxFromUrl(url).then(
-      (cookieSandbox) => {
-        // 根据 cookieType 设置对应的 cookieSandbox
-        switch (cookieType) {
-          case "CNKI:Home":
-            addon.data.myCookieSandbox._CNKIHomeCookieBox = cookieSandbox;
-            addon.data.myCookieSandbox._cnkiHomeCookieLastUpdateTime =
-              Date.now();
-            break;
-          // 其他类型...
-        }
-        ztoolkit.log("Cookies passed to addon CookieSandbox.");
-        return cookieSandbox;
-      },
-    );
+    this._captchaPromise = this.getCookieBoxFromUrl(url).then((cookieBoxId) => {
+      // 根据 cookieType 设置对应的 cookie id
+      switch (cookieType) {
+        case "CNKI:Home":
+          addon.data.myCookieSandbox._CNKIHomeCookieId = cookieBoxId;
+          addon.data.myCookieSandbox._cnkiHomeCookieLastUpdateTime = Date.now();
+          break;
+        // 其他类型...
+      }
+      ztoolkit.log("Cookies passed to addon cookie context id.");
+      return cookieBoxId;
+    });
 
     // 在 Promise 完成后清空，无论成功还是失败
     this._captchaPromise.finally(() => {

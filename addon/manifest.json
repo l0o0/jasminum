@@ -13,8 +13,8 @@
         "zotero": {
             "id": "__addonID__",
             "update_url": "__updateURL__",
-            "strict_min_version": "7.999",
-            "strict_max_version": "100.*.*"
+            "strict_min_version": "9.0.3",
+            "strict_max_version": "10.*.*"
         }
     }
 }
