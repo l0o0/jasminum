@@ -97,28 +97,28 @@ export async function metaSearch(
       const metadataSources = getPref("metadataSource");
 
       // WanFang Data (first priority)
-      if (metadataSources.includes("WanFangData")) {
-        const wanfangDataSearchResult = await searchWithTaskMessage(
-          task,
-          "WanfangData",
-          () => wanfangData.search(searchOption),
-        );
-        if (wanfangDataSearchResult) {
-          calculateSimilarity(wanfangDataSearchResult, searchOption.title);
-          task.addMsg(
-            `Found ${wanfangDataSearchResult.length} results from Wanfang Data`,
-          );
-          scrapeSearchResults = scrapeSearchResults.concat(
-            wanfangDataSearchResult,
-          );
-          if (hasExactMatch(wanfangDataSearchResult)) {
-            task.addMsg(
-              "Exact match found in Wanfang Data, skipping other services",
-            );
-            hasExactMatchFound = true;
-          }
-        }
-      }
+      // if (metadataSources.includes("WanFangData")) {
+      //   const wanfangDataSearchResult = await searchWithTaskMessage(
+      //     task,
+      //     "WanfangData",
+      //     () => wanfangData.search(searchOption),
+      //   );
+      //   if (wanfangDataSearchResult) {
+      //     calculateSimilarity(wanfangDataSearchResult, searchOption.title);
+      //     task.addMsg(
+      //       `Found ${wanfangDataSearchResult.length} results from Wanfang Data`,
+      //     );
+      //     scrapeSearchResults = scrapeSearchResults.concat(
+      //       wanfangDataSearchResult,
+      //     );
+      //     if (hasExactMatch(wanfangDataSearchResult)) {
+      //       task.addMsg(
+      //         "Exact match found in Wanfang Data, skipping other services",
+      //       );
+      //       hasExactMatchFound = true;
+      //     }
+      //   }
+      // }
 
       // Yiigle 中华医学网 (second priority)
       if (!hasExactMatchFound && metadataSources.includes("Yiigle")) {
