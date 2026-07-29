@@ -37,6 +37,7 @@ label-metadata-source-chinadoi =
   .label = ChinaDOI
 metadata-source-desc =
   .tooltiptext = Select the source for metadata retrieval. Generally, there is no need to switch. If you find some data sources unnecessary, you can uncheck them.
+info-metadata-source-required = At least one metadata retrieval source must be selected.
 
 label-pdf-match-folder = Attachment Matching Folder
 label-choose-folder =

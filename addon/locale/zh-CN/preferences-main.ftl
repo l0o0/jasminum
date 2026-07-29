@@ -37,6 +37,7 @@ label-metadata-source-chinadoi =
   .label = 中文DOI ChinaDOI
 metadata-source-desc =
   .tooltiptext = 选择元数据抓取来源，一般情况下不用切换。如果你觉得有些数据源不需要，可以取消勾选。
+info-metadata-source-required = 至少要选择一个检索数据源。
 
 
 namepattern-desc = 

@@ -26,6 +26,7 @@ export type FluentMessageId =
   | 'importing-attachments-is-running'
   | 'info-best-speed-source-failed'
   | 'info-best-speed-source-updated'
+  | 'info-metadata-source-required'
   | 'info-translators-cn-updaing'
   | 'item-section-example1-head-text'
   | 'item-section-example1-sidenav-tooltip'

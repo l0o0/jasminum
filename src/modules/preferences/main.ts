@@ -6,6 +6,10 @@ import { updateTranslators, bestSpeedBaseUrl } from ".././translators";
 import type { PluginPrefsMap } from "../../utils/prefs";
 import { onShowTable } from "./translators";
 import { openRemoteHelpDialog } from "./remoteHelp";
+import {
+  MetadataSourceSelectionError,
+  updateMetadataSources,
+} from "./metadataSource";
 
 export function registerPrefsPane() {
   Zotero.PreferencePanes.register({
@@ -235,17 +239,26 @@ function bindPrefEvents(doc: Document) {
     ) as any;
     if (!checkbox) return;
 
-    let pvalues = getPref("metadataSource").split(", ") || ["CNKI"];
+    const pvalues = getPref("metadataSource").split(", ").filter(Boolean);
     const value = checkbox.getAttribute("value")!;
 
-    if (checkbox.checked) {
-      if (!pvalues.includes(value)) {
-        pvalues.push(value);
+    try {
+      const nextValues = updateMetadataSources(
+        pvalues,
+        value,
+        checkbox.checked,
+      );
+      setPref("metadataSource", nextValues.join(", "));
+    } catch (error) {
+      if (error instanceof MetadataSourceSelectionError) {
+        checkbox.checked = true;
+        addon.data.prefs?.window.alert(
+          getString("info-metadata-source-required"),
+        );
+        return;
       }
-    } else {
-      pvalues = pvalues.filter((option) => option !== value);
+      throw error;
     }
-    setPref("metadataSource", pvalues.join(", "));
   });
 
   doc

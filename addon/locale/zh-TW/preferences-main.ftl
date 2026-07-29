@@ -37,6 +37,7 @@ label-metadata-source-chinadoi =
   .label = 中文DOI ChinaDOI
 metadata-source-desc =
   .tooltiptext = 選擇元數據抓取來源，一般情況下不用切換。如果你覺得有些資料來源不需要，可以取消勾選。
+info-metadata-source-required = 至少要選擇一個檢索資料來源。
 
 label-pdf-match-folder = 附件匹配資料夾
 label-choose-folder =
