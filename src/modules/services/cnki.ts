@@ -2,6 +2,7 @@ import { requestDocument } from "../../utils/http";
 import { DocTools, jsonToFormUrlEncoded, text2HTMLDoc } from "../../utils/http";
 import { getPref } from "../../utils/prefs";
 import { ScraperTask } from "../../utils/task";
+import { getCookieInfo } from "../../utils/cookiebox";
 
 /**
  * Create post data for CNKI search.
@@ -284,7 +285,9 @@ export class CNKI implements ScrapeService {
     const cookieBoxId = await addon.data.myCookieSandbox.getCNKIHomeCookieId();
     ztoolkit.log("Cookie id in sandbox: ", cookieBoxId);
     ztoolkit.log(addon.taskRunner.runningTask);
-    addon.taskRunner.runningTask?.addMsg(`CNKI site info: ${cookieBoxId}`);
+    addon.taskRunner.runningTask?.addMsg(
+      `CNKI site info: ${getCookieInfo(cookieBoxId, "kns.cnki.net")}`,
+    );
     const resp = await Zotero.HTTP.request("POST", postOption.url, {
       headers: postOption.headers,
       body: postOption.data,
@@ -293,7 +296,6 @@ export class CNKI implements ScrapeService {
       timeout: 10000,
       successCodes: [200, 403],
     });
-    // ztoolkit.log("CNKI search response: ", resp);
     responseText = resp.responseText;
     if (resp.status === 403) {
       ztoolkit.log(

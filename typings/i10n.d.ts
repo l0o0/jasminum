@@ -49,6 +49,7 @@ export type FluentMessageId =
   | 'label-metadata-source'
   | 'label-metadata-source-chinadoi'
   | 'label-metadata-source-cnki'
+  | 'label-metadata-source-pubscholar'
   | 'label-metadata-source-wanfangdata'
   | 'label-metadata-source-yiigle'
   | 'label-namepattern'

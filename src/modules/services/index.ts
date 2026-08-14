@@ -5,14 +5,14 @@ import { ScraperTask } from "../../utils/task";
 import { isChineseTopAttachment, isChinsesSnapshot } from "../../utils/detect";
 // import { ChinaDOI } from "./chinadoi";
 import { CNKI } from "./cnki";
-// import { PubScholar } from "./pubscholar";
+import { PubScholar } from "./pubscholar";
 import { Yiigle } from "./yiigle";
 import { compareTwoStrings } from "string-similarity";
 import { WanfangData } from "./wanfangdata";
 
 // const chinaDOI = new ChinaDOI();
 const cnki = new CNKI();
-// const pubscholar = new PubScholar();
+const pubscholar = new PubScholar();
 const yiigle = new Yiigle();
 const wanfangData = new WanfangData();
 
@@ -49,6 +49,22 @@ function calculateSimilarity(
       result.articleTitle as string,
     );
   });
+}
+
+function normalizeTitleTokens(title: string): string[] {
+  return title
+    .replace(/\.{2,}|…+/g, " ")
+    .replace(/[_＿]+/g, " ")
+    .replace(/[《》“”"':：,，.。;；()[\]（）【】]/g, " ")
+    .split(/\s+/g)
+    .map((token) => token.trim())
+    .filter((token) => token.length >= 2);
+}
+
+function isTokenCovered(searchTitle: string, resultTitle: string): boolean {
+  const tokens = normalizeTitleTokens(searchTitle);
+  if (tokens.length < 2) return false;
+  return tokens.every((token) => resultTitle.includes(token));
 }
 
 // Check if there is an exact match (similarity === 1)
@@ -120,6 +136,29 @@ export async function metaSearch(
       //   }
       // }
 
+      // PubScholar 公益学术平台
+      if (!hasExactMatchFound && metadataSources.includes("PubScholar")) {
+        const pubScholarSearchResult = await searchWithTaskMessage(
+          task,
+          "PubScholar",
+          () => pubscholar.search(searchOption),
+        );
+        ztoolkit.log("pubscholar results", pubScholarSearchResult);
+        if (pubScholarSearchResult) {
+          calculateSimilarity(pubScholarSearchResult, searchOption.title);
+          task.addMsg(
+            `Found ${pubScholarSearchResult.length} results from PubScholar`,
+          );
+          scrapeSearchResults = scrapeSearchResults.concat(
+            pubScholarSearchResult,
+          );
+          if (hasExactMatch(pubScholarSearchResult)) {
+            task.addMsg("Exact match found in PubScholar, skipping CNKI");
+            hasExactMatchFound = true;
+          }
+        }
+      }
+
       // Yiigle 中华医学网 (second priority)
       if (!hasExactMatchFound && metadataSources.includes("Yiigle")) {
         const yiigleSearchResult = await searchWithTaskMessage(
@@ -184,7 +223,8 @@ export async function metaSearch(
         ztoolkit.log(`Similarity score for "${result.articleTitle}": ${score}`);
         return (
           !(result.articleTitle as string).includes(searchOption.title) &&
-          score > parseFloat(getPref("similarityThresholdForMetaData"))
+          (score > parseFloat(getPref("similarityThresholdForMetaData")) ||
+            isTokenCovered(searchOption.title, result.articleTitle as string))
         );
       });
       scrapeSearchResults = filteredResults1.concat(filteredResults2);
@@ -240,6 +280,14 @@ export async function metaTranslate(task: ScraperTask): Promise<void> {
       case "中华医学":
         ztoolkit.log("translated by Yiigle");
         translateResult = await yiigle.translate(
+          searchResult,
+          libraryID,
+          false,
+        );
+        break;
+      case "PubScholar":
+        ztoolkit.log("translated by PubScholar");
+        translateResult = await pubscholar.translate(
           searchResult,
           libraryID,
           false,
