@@ -115,64 +115,38 @@ export function mapNCPSSDSearchResponse(
   return results;
 }
 
-interface NCPSSDWebTranslator {
-  setTranslator(id: string): void;
-  setDocument(document: Document): void;
-  translate(options: {
-    libraryID: number;
-    saveAttachments: false;
-  }): Promise<Zotero.Item[]>;
+async function requestNCPSSDSearch(body: string): Promise<string> {
+  const response = await Zotero.HTTP.request("POST", NCPSSD_SEARCH_URL, {
+    body,
+    headers: {
+      Accept: "application/json, text/javascript, */*; q=0.01",
+      "Accept-Language": "zh-CN,zh;q=0.9",
+      "Content-Type": "application/x-www-form-urlencoded; charset=UTF-8",
+      Origin: NCPSSD_BASE_URL,
+      Referer: `${NCPSSD_BASE_URL}/Literature/articlelist`,
+      "User-Agent":
+        "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:147.0) Gecko/20100101 Firefox/147.0",
+      "X-Requested-With": "XMLHttpRequest",
+    },
+    successCodes: [200],
+    timeout: 10000,
+  });
+  return response.responseText;
 }
 
-export interface NCPSSDDependencies {
-  requestSearch(body: string): Promise<string>;
-  loadDocument(url: string): Promise<Document>;
-  createTranslator(): NCPSSDWebTranslator;
-}
-
-function createDefaultDependencies(): NCPSSDDependencies {
-  return {
-    async requestSearch(body) {
-      const response = await Zotero.HTTP.request("POST", NCPSSD_SEARCH_URL, {
-        body,
-        headers: {
-          Accept: "application/json, text/javascript, */*; q=0.01",
-          "Accept-Language": "zh-CN,zh;q=0.9",
-          "Content-Type": "application/x-www-form-urlencoded; charset=UTF-8",
-          Origin: NCPSSD_BASE_URL,
-          Referer: `${NCPSSD_BASE_URL}/Literature/articlelist`,
-          "User-Agent":
-            "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:147.0) Gecko/20100101 Firefox/147.0",
-          "X-Requested-With": "XMLHttpRequest",
-        },
-        successCodes: [200],
-        timeout: 10000,
-      });
-      return response.responseText;
+function loadNCPSSDDocument(url: string): Promise<Document> {
+  return requestDocument(url, {
+    headers: {
+      Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+      "Accept-Language": "zh-CN,zh;q=0.9",
+      Referer: NCPSSD_BASE_URL,
+      "User-Agent":
+        "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:147.0) Gecko/20100101 Firefox/147.0",
     },
-    loadDocument(url) {
-      return requestDocument(url, {
-        headers: {
-          Accept:
-            "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
-          "Accept-Language": "zh-CN,zh;q=0.9",
-          Referer: NCPSSD_BASE_URL,
-          "User-Agent":
-            "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:147.0) Gecko/20100101 Firefox/147.0",
-        },
-      });
-    },
-    createTranslator() {
-      return new Zotero.Translate.Web() as NCPSSDWebTranslator;
-    },
-  };
+  });
 }
 
 export class NCPSSD implements ScrapeService {
-  constructor(
-    private readonly dependencies: NCPSSDDependencies = createDefaultDependencies(),
-  ) {}
-
   async search(
     searchOption: SearchOption,
   ): Promise<ScrapeSearchResult[] | null> {
@@ -188,7 +162,7 @@ export class NCPSSD implements ScrapeService {
       ajaxKeys: searchOption.title.trim(),
       customShowCondition: `题名="${searchOption.title.trim()}"`,
     });
-    const responseText = await this.dependencies.requestSearch(body);
+    const responseText = await requestNCPSSDSearch(body);
 
     let response: unknown;
     try {
@@ -208,8 +182,8 @@ export class NCPSSD implements ScrapeService {
     saveAttachments: false,
   ): Promise<ScrapeTranslateResult> {
     try {
-      const document = await this.dependencies.loadDocument(searchResult.url);
-      const translator = this.dependencies.createTranslator();
+      const document = await loadNCPSSDDocument(searchResult.url);
+      const translator = new Zotero.Translate.Web();
       translator.setTranslator(NCPSSD_TRANSLATOR_ID);
       translator.setDocument(document);
       const items = await translator.translate({ libraryID, saveAttachments });
