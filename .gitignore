@@ -7,3 +7,4 @@ yarn.lock
 .env
 .scaffold
 tmp/
+.worktrees/
