@@ -128,6 +128,28 @@ async function main() {
     items: [],
   });
 
+  const rejectionService = new NCPSSD(
+    baseDependencies({
+      createTranslator() {
+        return {
+          setTranslator() {},
+          setDocument() {},
+          async translate() {
+            throw new Error("translator rejected");
+          },
+        };
+      },
+    }),
+  );
+  const rejected = await rejectionService.translate(searchResults[0], 1, false);
+  assert.equal(rejected.status, "error");
+  assert.ok(rejected.error.includes("NCPSSD translation failed"));
+  assert.ok(rejected.error.includes("translator rejected"));
+
+  translatedItem.fields.DOI = "   ";
+  await translateService.translate(searchResults[0], 12, false);
+  assert.equal(translatedItem.fields.DOI, articleRow().doi);
+
   const errorService = new NCPSSD(
     baseDependencies({
       async loadDocument() {

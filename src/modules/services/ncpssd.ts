@@ -115,7 +115,7 @@ export class NCPSSD implements ScrapeService {
         typeof searchResult.doi === "string" ? searchResult.doi.trim() : "";
       if (doi) {
         for (const item of items) {
-          if (!item.getField("DOI")) item.setField("DOI", doi);
+          if (!item.getField("DOI").trim()) item.setField("DOI", doi);
         }
       }
 

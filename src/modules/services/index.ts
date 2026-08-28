@@ -10,6 +10,7 @@ import { NCPSSD } from "./ncpssd";
 import { Yiigle } from "./yiigle";
 import { compareTwoStrings } from "string-similarity";
 import { WanfangData } from "./wanfangdata";
+import { runSequentialSearchChain } from "./searchChain";
 
 // const chinaDOI = new ChinaDOI();
 const cnki = new CNKI();
@@ -74,21 +75,6 @@ function hasExactMatch(results: ScrapeSearchResult[]): boolean {
   return results.some((r) => r.similarity === 1);
 }
 
-async function searchWithTaskMessage(
-  task: ScraperTask,
-  serviceName: string,
-  search: () => Promise<ScrapeSearchResult[] | null>,
-): Promise<ScrapeSearchResult[] | null> {
-  try {
-    return await search();
-  } catch (error) {
-    const message = `${serviceName} search error: ${error}`;
-    ztoolkit.log(message);
-    task.addMsg(message);
-    return null;
-  }
-}
-
 export async function metaSearch(
   task: ScraperTask,
   options?: any,
@@ -111,7 +97,6 @@ export async function metaSearch(
     task.addMsg(`Search pattern: ${getPref("namePattern")}`);
     task.addMsg(`Search option: ${JSON.stringify(searchOption)}`);
     if (searchOption) {
-      let hasExactMatchFound = false;
       const metadataSources = getPref("metadataSource");
 
       // WanFang Data (first priority)
@@ -138,66 +123,28 @@ export async function metaSearch(
       //   }
       // }
 
-      // PubScholar 公益学术平台
-      if (!hasExactMatchFound && metadataSources.includes("PubScholar")) {
-        const pubScholarSearchResult = await searchWithTaskMessage(
-          task,
-          "PubScholar",
-          () => pubscholar.search(searchOption),
-        );
-        ztoolkit.log("pubscholar results", pubScholarSearchResult);
-        if (pubScholarSearchResult) {
-          calculateSimilarity(pubScholarSearchResult, searchOption.title);
-          task.addMsg(
-            `Found ${pubScholarSearchResult.length} results from PubScholar`,
-          );
-          scrapeSearchResults = scrapeSearchResults.concat(
-            pubScholarSearchResult,
-          );
-          if (hasExactMatch(pubScholarSearchResult)) {
-            task.addMsg("Exact match found in PubScholar, skipping CNKI");
-            hasExactMatchFound = true;
-          }
-        }
-      }
-
-      // 国家哲学社会科学文献中心
-      if (!hasExactMatchFound && metadataSources.includes("NCPSSD")) {
-        const ncpssdSearchResult = await searchWithTaskMessage(
-          task,
-          "NCPSSD",
-          () => ncpssd.search(searchOption),
-        );
-        ztoolkit.log("NCPSSD results", ncpssdSearchResult);
-        if (ncpssdSearchResult) {
-          calculateSimilarity(ncpssdSearchResult, searchOption.title);
-          task.addMsg(`Found ${ncpssdSearchResult.length} results from NCPSSD`);
-          scrapeSearchResults = scrapeSearchResults.concat(ncpssdSearchResult);
-          if (hasExactMatch(ncpssdSearchResult)) {
-            task.addMsg("Exact match found in NCPSSD, skipping later services");
-            hasExactMatchFound = true;
-          }
-        }
-      }
-
-      // Yiigle 中华医学网 (second priority)
-      if (!hasExactMatchFound && metadataSources.includes("Yiigle")) {
-        const yiigleSearchResult = await searchWithTaskMessage(
-          task,
-          "Yiigle",
-          () => yiigle.search(searchOption),
-        );
-        ztoolkit.log("yiigle results", yiigleSearchResult);
-        if (yiigleSearchResult) {
-          calculateSimilarity(yiigleSearchResult, searchOption.title);
-          task.addMsg(`Found ${yiigleSearchResult.length} results from Yiigle`);
-          scrapeSearchResults = scrapeSearchResults.concat(yiigleSearchResult);
-          if (hasExactMatch(yiigleSearchResult)) {
-            task.addMsg("Exact match found in Yiigle, skipping CNKI");
-            hasExactMatchFound = true;
-          }
-        }
-      }
+      const searchStages = [
+        {
+          name: "PubScholar",
+          enabled: metadataSources.includes("PubScholar"),
+          search: () => pubscholar.search(searchOption),
+        },
+        {
+          name: "NCPSSD",
+          enabled: metadataSources.includes("NCPSSD"),
+          search: () => ncpssd.search(searchOption),
+        },
+        {
+          name: "Yiigle",
+          enabled: metadataSources.includes("Yiigle"),
+          search: () => yiigle.search(searchOption),
+        },
+        {
+          name: "CNKI",
+          enabled: metadataSources.includes("CNKI"),
+          search: () => cnki.search(searchOption),
+        },
+      ];
 
       // ChinaDOI is temporarily disabled while its redirect/translation flow is fixed.
       // if (!hasExactMatchFound && metadataSources.includes("ChinaDOI")) {
@@ -221,18 +168,34 @@ export async function metaSearch(
       //   }
       // }
 
-      // CNKI (fallback, last priority)
-      if (!hasExactMatchFound && metadataSources.includes("CNKI")) {
-        const cnkiSearchResult = await searchWithTaskMessage(task, "CNKI", () =>
-          cnki.search(searchOption),
-        );
-        ztoolkit.log("cnki results", cnkiSearchResult);
-        if (cnkiSearchResult) {
-          calculateSimilarity(cnkiSearchResult, searchOption.title);
-          task.addMsg(`Found ${cnkiSearchResult.length} results from CNKI`);
-          scrapeSearchResults = scrapeSearchResults.concat(cnkiSearchResult);
-        }
-      }
+      scrapeSearchResults = await runSequentialSearchChain(
+        searchStages,
+        searchOption.title,
+        {
+          scoreResults: calculateSimilarity,
+          hasExactMatch,
+          onResult(serviceName, results) {
+            ztoolkit.log(`${serviceName} results`, results);
+            task.addMsg(`Found ${results.length} results from ${serviceName}`);
+          },
+          onError(serviceName, error) {
+            const message = `${serviceName} search error: ${error}`;
+            ztoolkit.log(message);
+            task.addMsg(message);
+          },
+          onExactMatch(serviceName) {
+            if (serviceName === "PubScholar") {
+              task.addMsg(
+                "Exact match found in PubScholar, skipping later services",
+              );
+            } else if (serviceName !== "CNKI") {
+              task.addMsg(
+                `Exact match found in ${serviceName}, skipping later services`,
+              );
+            }
+          },
+        },
+      );
 
       // Filter search results based on pre-calculated similarity
       const filteredResults1 = scrapeSearchResults.filter((result) => {
