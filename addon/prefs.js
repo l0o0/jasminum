@@ -9,7 +9,10 @@ pref("language", "zh");
 pref("autoUpdateMetadata", true);
 pref("namePattern", "{%t}_{%g}");
 pref("namePatternCustom", "{%t}");
-pref("metadataSource", "PubScholar, CNKI, WanFangData, Yiigle");
+pref(
+  "metadataSource",
+  "PubScholar, NCPSSD, CNKI, WanFangData, Yiigle",
+);
 pref("isMainlandChina", true);
 pref("cnkiAttachmentCookie", "");
 pref("similarityThresholdForMetaData", "0.6");

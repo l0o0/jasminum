@@ -6,6 +6,7 @@ import { isChineseTopAttachment, isChinsesSnapshot } from "../../utils/detect";
 // import { ChinaDOI } from "./chinadoi";
 import { CNKI } from "./cnki";
 import { PubScholar } from "./pubscholar";
+import { NCPSSD } from "./ncpssd";
 import { Yiigle } from "./yiigle";
 import { compareTwoStrings } from "string-similarity";
 import { WanfangData } from "./wanfangdata";
@@ -13,6 +14,7 @@ import { WanfangData } from "./wanfangdata";
 // const chinaDOI = new ChinaDOI();
 const cnki = new CNKI();
 const pubscholar = new PubScholar();
+const ncpssd = new NCPSSD();
 const yiigle = new Yiigle();
 const wanfangData = new WanfangData();
 
@@ -159,6 +161,25 @@ export async function metaSearch(
         }
       }
 
+      // 国家哲学社会科学文献中心
+      if (!hasExactMatchFound && metadataSources.includes("NCPSSD")) {
+        const ncpssdSearchResult = await searchWithTaskMessage(
+          task,
+          "NCPSSD",
+          () => ncpssd.search(searchOption),
+        );
+        ztoolkit.log("NCPSSD results", ncpssdSearchResult);
+        if (ncpssdSearchResult) {
+          calculateSimilarity(ncpssdSearchResult, searchOption.title);
+          task.addMsg(`Found ${ncpssdSearchResult.length} results from NCPSSD`);
+          scrapeSearchResults = scrapeSearchResults.concat(ncpssdSearchResult);
+          if (hasExactMatch(ncpssdSearchResult)) {
+            task.addMsg("Exact match found in NCPSSD, skipping later services");
+            hasExactMatchFound = true;
+          }
+        }
+      }
+
       // Yiigle 中华医学网 (second priority)
       if (!hasExactMatchFound && metadataSources.includes("Yiigle")) {
         const yiigleSearchResult = await searchWithTaskMessage(
@@ -292,6 +313,10 @@ export async function metaTranslate(task: ScraperTask): Promise<void> {
           libraryID,
           false,
         );
+        break;
+      case "NCPSSD":
+        ztoolkit.log("translated by NCPSSD");
+        translateResult = await ncpssd.translate(searchResult, libraryID, false);
         break;
       // ChinaDOI is temporarily disabled while its redirect/translation flow is fixed.
       // case "ChinaDOI":
