@@ -316,7 +316,11 @@ export async function metaTranslate(task: ScraperTask): Promise<void> {
         break;
       case "NCPSSD":
         ztoolkit.log("translated by NCPSSD");
-        translateResult = await ncpssd.translate(searchResult, libraryID, false);
+        translateResult = await ncpssd.translate(
+          searchResult,
+          libraryID,
+          false,
+        );
         break;
       // ChinaDOI is temporarily disabled while its redirect/translation flow is fixed.
       // case "ChinaDOI":

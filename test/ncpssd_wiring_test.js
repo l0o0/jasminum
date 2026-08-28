@@ -25,15 +25,12 @@ assert.ok(ncpssdIndex < yiigleIndex);
 const prefs = read("addon/prefs.js");
 assert.match(
   prefs,
-  /pref\(\s*"metadataSource",\s*"PubScholar, NCPSSD, CNKI, WanFangData, Yiigle",\s*\);/,
+  /pref\(\s*"metadataSource",\s*"PubScholar, NCPSSD, CNKI, WanFangData, Yiigle",?\s*\);/,
 );
 
 const preferencePane = read("addon/chrome/content/preferences-main.xhtml");
 assert.match(preferencePane, /value="NCPSSD"/);
-assert.match(
-  preferencePane,
-  /data-l10n-id="label-metadata-source-ncpssd"/,
-);
+assert.match(preferencePane, /data-l10n-id="label-metadata-source-ncpssd"/);
 
 for (const locale of ["en-US", "zh-CN", "zh-TW"]) {
   const messages = read(`addon/locale/${locale}/preferences-main.ftl`);

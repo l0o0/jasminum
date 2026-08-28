@@ -65,8 +65,7 @@ function createDefaultDependencies(): NCPSSDDependencies {
 
 export class NCPSSD implements ScrapeService {
   constructor(
-    private readonly dependencies: NCPSSDDependencies =
-      createDefaultDependencies(),
+    private readonly dependencies: NCPSSDDependencies = createDefaultDependencies(),
   ) {}
 
   async search(

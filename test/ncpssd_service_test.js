@@ -5,8 +5,10 @@ const assert = require("node:assert/strict");
 global.ChromeUtils = { importESModule: () => ({ HiddenBrowser: class {} }) };
 global.ztoolkit = { log() {} };
 
-const { NCPSSD, NCPSSD_TRANSLATOR_ID } =
-  require("../tmp/ncpssd-test/src/modules/services/ncpssd");
+const {
+  NCPSSD,
+  NCPSSD_TRANSLATOR_ID,
+} = require("../tmp/ncpssd-test/src/modules/services/ncpssd");
 
 function articleRow() {
   return {
@@ -41,7 +43,11 @@ async function main() {
     baseDependencies({
       async requestSearch(body) {
         requestBody = body;
-        return JSON.stringify({ result: true, code: 200, data: { rows: [articleRow()] } });
+        return JSON.stringify({
+          result: true,
+          code: 200,
+          data: { rows: [articleRow()] },
+        });
       },
     }),
   );
@@ -57,20 +63,42 @@ async function main() {
   const document = { location: { href: searchResults[0].url } };
   const translatedItem = {
     fields: { DOI: "" },
-    getField(name) { return this.fields[name] || ""; },
-    setField(name, value) { this.fields[name] = value; },
+    getField(name) {
+      return this.fields[name] || "";
+    },
+    setField(name, value) {
+      this.fields[name] = value;
+    },
   };
   const calls = {};
   const translator = {
-    setTranslator(id) { calls.translatorID = id; },
-    setDocument(value) { calls.document = value; },
-    async translate(options) { calls.options = options; return [translatedItem]; },
+    setTranslator(id) {
+      calls.translatorID = id;
+    },
+    setDocument(value) {
+      calls.document = value;
+    },
+    async translate(options) {
+      calls.options = options;
+      return [translatedItem];
+    },
   };
-  const translateService = new NCPSSD(baseDependencies({
-    async loadDocument(url) { calls.url = url; return document; },
-    createTranslator() { return translator; },
-  }));
-  const translated = await translateService.translate(searchResults[0], 12, false);
+  const translateService = new NCPSSD(
+    baseDependencies({
+      async loadDocument(url) {
+        calls.url = url;
+        return document;
+      },
+      createTranslator() {
+        return translator;
+      },
+    }),
+  );
+  const translated = await translateService.translate(
+    searchResults[0],
+    12,
+    false,
+  );
   assert.equal(translated.status, "success");
   assert.equal(calls.translatorID, NCPSSD_TRANSLATOR_ID);
   assert.equal(calls.document, document);
@@ -82,18 +110,38 @@ async function main() {
   await translateService.translate(searchResults[0], 12, false);
   assert.equal(translatedItem.fields.DOI, "10.1000/translator-doi");
 
-  const emptyService = new NCPSSD(baseDependencies({
-    createTranslator() { return { setTranslator() {}, setDocument() {}, async translate() { return []; } }; },
-  }));
-  assert.deepEqual(await emptyService.translate(searchResults[0], 1, false), { status: "empty", items: [] });
+  const emptyService = new NCPSSD(
+    baseDependencies({
+      createTranslator() {
+        return {
+          setTranslator() {},
+          setDocument() {},
+          async translate() {
+            return [];
+          },
+        };
+      },
+    }),
+  );
+  assert.deepEqual(await emptyService.translate(searchResults[0], 1, false), {
+    status: "empty",
+    items: [],
+  });
 
-  const errorService = new NCPSSD(baseDependencies({
-    async loadDocument() { throw new Error("page unavailable"); },
-  }));
+  const errorService = new NCPSSD(
+    baseDependencies({
+      async loadDocument() {
+        throw new Error("page unavailable");
+      },
+    }),
+  );
   const failed = await errorService.translate(searchResults[0], 1, false);
   assert.equal(failed.status, "error");
   assert.ok(failed.error.includes("NCPSSD translation failed"));
   console.log("NCPSSD service test passed");
 }
 
-main().catch((error) => { console.error(error); process.exitCode = 1; });
+main().catch((error) => {
+  console.error(error);
+  process.exitCode = 1;
+});
