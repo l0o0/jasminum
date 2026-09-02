@@ -77,20 +77,7 @@ export function mapNCPSSDSearchResponse(
     const journal = stringValue(row.cbw_name);
     const date = stringValue(row.date) || stringValue(row.years);
     const year = stringValue(row.years);
-    const volume = stringValue(row.vol);
-    const issue = stringValue(row.num);
-    const pages = getPages(row);
-    const issn = stringValue(row.issn);
-    const doi = stringValue(row.doi);
-    const displayTitle = [
-      articleTitle,
-      author,
-      journal,
-      year,
-      volume,
-      issue,
-      pages,
-    ]
+    const displayTitle = [articleTitle, author, journal, year]
       .filter(Boolean)
       .join(" ");
 
@@ -102,13 +89,6 @@ export function mapNCPSSDSearchResponse(
       articleTitle,
       author,
       date,
-      doi,
-      issue,
-      issn,
-      journal,
-      pages,
-      volume,
-      year,
     });
   }
 

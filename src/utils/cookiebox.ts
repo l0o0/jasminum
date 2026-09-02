@@ -263,8 +263,8 @@ export class MyCookieSandbox {
     if (!this._initPromise) {
       ztoolkit.log("homeCookieId 为空，开始初始化...");
       this._initPromise = this.getCookieBoxFromUrl(
-        //"https://kns.cnki.net/kns8s/defaultresult/index?crossids=YSTT4HG0%2CLSTPFY1C%2CJUP3MUPD%2CMPMFIG1A%2CWQ0UVIAA%2CBLZOG7CK%2CPWFIRAGL%2CEMRPGLPA%2CNLBO1Z6R%2CNN3FJMUV&korder=SU&kw=%E7%A7%91%E7%A0%94%E8%AE%BA%E6%96%87%E9%98%85%E8%AF%BB",
-        "https://kns.cnki.net/kns8s/defaultresult/index",
+        "https://kns.cnki.net/kns8s/defaultresult/index?crossids=YSTT4HG0%2CLSTPFY1C%2CJUP3MUPD%2CMPMFIG1A%2CWQ0UVIAA%2CBLZOG7CK%2CPWFIRAGL%2CEMRPGLPA%2CNLBO1Z6R%2CNN3FJMUV&korder=SU&kw=%E7%A7%91%E7%A0%94%E8%AE%BA%E6%96%87%E9%98%85%E8%AF%BB",
+        //"https://kns.cnki.net/kns8s/defaultresult/index",
         "请等待知网网页正常打开后，再点击下方按钮关闭",
       ).then((cookieBoxId) => {
         this._CNKIHomeCookieId = cookieBoxId;
