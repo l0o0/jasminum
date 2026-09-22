@@ -19,6 +19,9 @@ declare namespace _ZoteroTypes {
       "isMainlandChina": boolean;
       "cnkiAttachmentCookie": string;
       "similarityThresholdForMetaData": string;
+      "llmBaseURL": string;
+      "llmApiKey": string;
+      "llmModel": string;
       "pdfMatchFolder": string;
       "actionAfterAttachmentImport": string;
       "similarityThreshold": string;

@@ -77,3 +77,13 @@ task-msg-header =
     If you don't get a timely response, you can get free consultation on Taobao. Please look for the official store: [Contact via WangWang](https://item.taobao.com/item.htm?ft=t&id=1035769863393)
     You can also open the QR dialog directly here: [Show QR Code](jasminum://remote-help-qr)
 task-already-exists = Task already exists: { $title }
+ai-config-required = Configure Base URL, API Key, and model under AI recognition in Jasminum settings first.
+ai-config-invalid-url = Base URL must be a valid HTTP(S) API root without credentials, query parameters, or fragments.
+ai-recognition-start = No reliable search results; recognizing the first three PDF pages with AI.
+ai-recognition-empty = AI could not identify a reliable title or item type.
+ai-recognition-failed = AI recognition failed. Check the API configuration, model image/JSON Object support, and Zotero version (10 required).
+ai-recognition-save-failed = Failed to save AI metadata.
+llm-test-running = Testing the entered API and model…
+llm-test-success = Connection and JSON output test passed. Image recognition was not tested.
+llm-test-invalid-response = The API responded but did not return the expected JSON result.
+llm-test-failed = Test failed or timed out. Check Base URL, API Key, model, and JSON Object support.

@@ -77,3 +77,13 @@ task-msg-header =
     请截图该弹窗并联系开发者：[小红书l0o0](https://www.xiaohongshu.com/user/profile/6153b4fa000000001f03ac8c)
     如回复未及时，也可直接点击这里免费咨询：[查看二维码](jasminum://remote-help-qr)
 task-already-exists = 任务已存在：{ $title }
+ai-config-required = 请先在茉莉花设置的 AI 识别中填写 Base URL、API Key 和模型。
+ai-config-invalid-url = Base URL 必须是有效的 HTTP(S) 接口根地址，不应包含账号、查询参数或片段。
+ai-recognition-start = 未找到可靠检索结果，开始 AI 识别 PDF 前三页。
+ai-recognition-empty = AI 未识别到可靠的标题或条目类型。
+ai-recognition-failed = AI 识别失败，请检查 LLM 接口配置、模型图片/JSON Object 支持及 Zotero 版本（需 10）。
+ai-recognition-save-failed = AI 元数据保存失败。
+llm-test-running = 正在测试当前填写的接口和模型…
+llm-test-success = 连接及 JSON 输出测试通过（图片识别能力未测试）。
+llm-test-invalid-response = 接口已响应，但未返回预期的 JSON 结果。
+llm-test-failed = 测试失败或超时，请检查 Base URL、API Key、模型及 JSON Object 支持。

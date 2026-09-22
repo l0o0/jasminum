@@ -78,3 +78,13 @@ task-msg-header =
     如回复未及时，可在淘宝免费咨询，请认准官方店铺：[点击旺旺联系](https://item.taobao.com/item.htm?ft=t&id=1035769863393)
     也可直接點擊這裡打開二維碼：[查看二維碼](jasminum://remote-help-qr)
 task-already-exists = 已存在任務：{ $title }
+ai-config-required = 請先在茉莉花設定的 AI 識別中填寫 Base URL、API Key 和模型。
+ai-config-invalid-url = Base URL 必須是有效的 HTTP(S) 介面根位址，不應包含帳號、查詢參數或片段。
+ai-recognition-start = 未找到可靠檢索結果，開始 AI 識別 PDF 前三頁。
+ai-recognition-empty = AI 未識別到可靠的標題或條目類型。
+ai-recognition-failed = AI 識別失敗，請檢查 LLM 介面設定、模型圖片/JSON Object 支援及 Zotero 版本（需 10）。
+ai-recognition-save-failed = AI 中繼資料儲存失敗。
+llm-test-running = 正在測試目前填寫的介面和模型…
+llm-test-success = 連線及 JSON 輸出測試通過（圖片識別能力未測試）。
+llm-test-invalid-response = 介面已回應，但未傳回預期的 JSON 結果。
+llm-test-failed = 測試失敗或逾時，請檢查 Base URL、API Key、模型及 JSON Object 支援。

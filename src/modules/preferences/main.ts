@@ -6,10 +6,8 @@ import { updateTranslators, bestSpeedBaseUrl } from ".././translators";
 import type { PluginPrefsMap } from "../../utils/prefs";
 import { onShowTable } from "./translators";
 import { openRemoteHelpDialog } from "./remoteHelp";
-import {
-  MetadataSourceSelectionError,
-  updateMetadataSources,
-} from "./metadataSource";
+import { renderMetadataSources } from "./metadataSource";
+import { getConfiguredLLMClient } from "../../utils/llm";
 
 export function registerPrefsPane() {
   Zotero.PreferencePanes.register({
@@ -218,49 +216,78 @@ function bindPrefEvents(doc: Document) {
       }
     });
 
-  // metadata source panel
-  const metadataButton = doc.querySelector(
-    `#zotero-prefpane-${config.addonRef}-metadata-source-button`,
-  );
-  const metadataPanel = doc.querySelector("#metadata-source-panel");
-
-  // Update checkbox states when panel opens
-  metadataPanel?.addEventListener("popupshowing", () => {
-    const pvalues = (getPref("metadataSource") as string).split(", ");
-    doc.querySelectorAll("checkbox.metadata-drop-item")!.forEach((e: any) => {
-      e.checked = pvalues.includes(e.getAttribute("value")!);
-    });
-  });
-
-  // Handle checkbox changes
-  metadataPanel?.addEventListener("command", (e) => {
-    const checkbox = (e.target as HTMLElement).closest(
-      ".metadata-drop-item",
-    ) as any;
-    if (!checkbox) return;
-
-    const pvalues = getPref("metadataSource").split(", ").filter(Boolean);
-    const value = checkbox.getAttribute("value")!;
-
+  renderMetadataSources(doc);
+  const testButton = doc.getElementById(
+    "jasminum-llm-test",
+  ) as HTMLButtonElement;
+  testButton.addEventListener("click", async () => {
+    if (testButton.disabled) return;
+    const status = doc.getElementById("jasminum-llm-test-result")!;
+    const value = (id: string) =>
+      (doc.getElementById(id) as HTMLInputElement).value;
+    const apiKey = value("jasminum-llm-api-key").trim();
+    const baseURL = value("jasminum-llm-base-url").trim().replace(/\/+$/, "");
+    const model = value("jasminum-llm-model").trim();
+    let client;
     try {
-      const nextValues = updateMetadataSources(
-        pvalues,
-        value,
-        checkbox.checked,
-      );
-      setPref("metadataSource", nextValues.join(", "));
+      client = getConfiguredLLMClient({
+        baseURL,
+        apiKey,
+        model,
+      });
     } catch (error) {
-      if (error instanceof MetadataSourceSelectionError) {
-        checkbox.checked = true;
-        addon.data.prefs?.window.alert(
-          getString("info-metadata-source-required"),
-        );
-        return;
+      status.textContent = (error as Error).message;
+      return;
+    }
+    testButton.disabled = true;
+    status.textContent = getString("llm-test-running");
+    try {
+      const result = await client.createJSONCompletion<{ ok: boolean }>({
+        systemPrompt: 'This is a connection test. Return {"ok":true}.',
+        prompt: 'Return {"ok":true}.',
+        responseFormat: {
+          name: "connection_test",
+          schema: {
+            type: "object",
+            properties: { ok: { type: "boolean" } },
+            required: ["ok"],
+            additionalProperties: false,
+          },
+        },
+      });
+      status.textContent = getString(
+        result?.ok === true ? "llm-test-success" : "llm-test-invalid-response",
+      );
+    } catch (error) {
+      const failure = error as {
+        message?: string;
+        status?: number;
+        xmlhttp?: { status?: number; responseText?: string };
+      } | null;
+      const httpStatus = failure?.status ?? failure?.xmlhttp?.status;
+      let detail = failure?.message || String(error);
+      const responseText = failure?.xmlhttp?.responseText;
+      if (responseText) {
+        try {
+          const body = JSON.parse(responseText);
+          const message = body?.error?.message ?? body?.message;
+          if (typeof message === "string") detail += `\n${message}`;
+        } catch {
+          // Keep the original exception when the response is not JSON.
+        }
       }
-      throw error;
+      if (httpStatus) detail = `HTTP ${httpStatus}\n${detail}`;
+      if (apiKey) detail = detail.split(apiKey).join("[REDACTED]");
+      status.textContent = `${getString("llm-test-failed")}\n${detail}`;
+    } finally {
+      testButton.disabled = false;
     }
   });
-
+  doc
+    .getElementById("jasminum-metadata-source-panel")
+    ?.addEventListener("popupshowing", (event) => {
+      if (event.target === event.currentTarget) renderMetadataSources(doc);
+    });
   doc
     .querySelector(
       `#zotero-prefpane-${config.addonRef}-pdf-match-folder-button`,

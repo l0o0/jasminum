@@ -11,6 +11,9 @@ import { Yiigle } from "./yiigle";
 import { compareTwoStrings } from "string-similarity";
 import { WanfangData } from "./wanfangdata";
 import { runSequentialSearchChain } from "./searchChain";
+import { getConfiguredLLMClient } from "../../utils/llm";
+import { recognizePDFAttachment } from "../../utils/pdfMetadata";
+import { getString } from "../../utils/locale";
 
 // const chinaDOI = new ChinaDOI();
 const cnki = new CNKI();
@@ -87,144 +90,105 @@ export async function metaSearch(
 
   ztoolkit.log("search task", task);
   task.status = "processing";
+  task.aiMetadata = undefined;
   // Searching by different scrape services
   let scrapeSearchResults: ScrapeSearchResult[] = [];
   if (task.type == "attachment") {
-    const searchOption = await getSearchOption(task.item);
-    task.addMsg(
-      `Region: ${getPref("isMainlandChina") ? "Mainland China" : "Overseas"}`,
-    );
-    task.addMsg(`Search pattern: ${getPref("namePattern")}`);
-    task.addMsg(`Search option: ${JSON.stringify(searchOption)}`);
-    if (searchOption) {
-      const metadataSources = getPref("metadataSource");
-
-      // WanFang Data (first priority)
-      // if (metadataSources.includes("WanFangData")) {
-      //   const wanfangDataSearchResult = await searchWithTaskMessage(
-      //     task,
-      //     "WanfangData",
-      //     () => wanfangData.search(searchOption),
-      //   );
-      //   if (wanfangDataSearchResult) {
-      //     calculateSimilarity(wanfangDataSearchResult, searchOption.title);
-      //     task.addMsg(
-      //       `Found ${wanfangDataSearchResult.length} results from Wanfang Data`,
-      //     );
-      //     scrapeSearchResults = scrapeSearchResults.concat(
-      //       wanfangDataSearchResult,
-      //     );
-      //     if (hasExactMatch(wanfangDataSearchResult)) {
-      //       task.addMsg(
-      //         "Exact match found in Wanfang Data, skipping other services",
-      //       );
-      //       hasExactMatchFound = true;
-      //     }
-      //   }
-      // }
-
-      const searchStages = [
-        {
-          name: "PubScholar",
-          enabled: metadataSources.includes("PubScholar"),
-          search: () => pubscholar.search(searchOption),
-        },
-        {
-          name: "NCPSSD",
-          enabled: metadataSources.includes("NCPSSD"),
-          search: () => ncpssd.search(searchOption),
-        },
-        {
-          name: "Yiigle",
-          enabled: metadataSources.includes("Yiigle"),
-          search: () => yiigle.search(searchOption),
-        },
-        {
-          name: "CNKI",
-          enabled: metadataSources.includes("CNKI"),
-          search: () => cnki.search(searchOption),
-        },
-      ];
-
-      // ChinaDOI is temporarily disabled while its redirect/translation flow is fixed.
-      // if (!hasExactMatchFound && metadataSources.includes("ChinaDOI")) {
-      //   const chinaDOISearchResult = await searchWithTaskMessage(
-      //     task,
-      //     "ChinaDOI",
-      //     () => chinaDOI.search(searchOption),
-      //   );
-      //   ztoolkit.log("chinaDOI results", chinaDOISearchResult);
-      //   if (chinaDOISearchResult) {
-      //     calculateSimilarity(chinaDOISearchResult, searchOption.title);
-      //     task.addMsg(
-      //       `Found ${chinaDOISearchResult.length} results from ChinaDOI`,
-      //     );
-      //     scrapeSearchResults =
-      //       scrapeSearchResults.concat(chinaDOISearchResult);
-      //     if (hasExactMatch(chinaDOISearchResult)) {
-      //       task.addMsg("Exact match found in ChinaDOI, skipping CNKI");
-      //       hasExactMatchFound = true;
-      //     }
-      //   }
-      // }
-
-      scrapeSearchResults = await runSequentialSearchChain(
-        searchStages,
-        searchOption.title,
+    const metadataSources = [
+      ...new Set(
+        getPref("metadataSource")
+          .split(",")
+          .map((source) => source.trim())
+          .filter(Boolean),
+      ),
+    ];
+    const services: Record<string, ScrapeService> = {
+      PubScholar: pubscholar,
+      NCPSSD: ncpssd,
+      Yiigle: yiigle,
+      CNKI: cnki,
+    };
+    let searchOption: SearchOption | null | undefined;
+    task.addMsg(`Source order: ${metadataSources.join(", ")}`);
+    for (const source of metadataSources) {
+      if (source === "AI") {
+        // AI is used at its configured position only if earlier sources have no reliable results.
+        if (scrapeSearchResults.length || !task.item.isPDFAttachment())
+          continue;
+        let client;
+        try {
+          client = getConfiguredLLMClient();
+        } catch (error) {
+          task.addMsg((error as Error).message);
+          continue;
+        }
+        try {
+          task.addMsg(getString("ai-recognition-start"));
+          const result = await recognizePDFAttachment(client, task.item.id);
+          if (result) {
+            task.aiMetadata = result.metadata;
+            task.searchResults = [];
+            return;
+          }
+          task.addMsg(getString("ai-recognition-empty"));
+        } catch {
+          // Avoid exposing API credentials or response bodies through task logs.
+          task.addMsg(getString("ai-recognition-failed"));
+        }
+        continue;
+      }
+      const service = services[source];
+      if (!Object.hasOwn(services, source)) {
+        task.addMsg(`Skipping unavailable source: ${source}`);
+        continue;
+      }
+      // Parse only when a website needs search terms; AI uses the PDF directly.
+      if (searchOption === undefined) {
+        try {
+          searchOption = await getSearchOption(task.item);
+        } catch {
+          searchOption = null;
+        }
+        task.addMsg(`Search option: ${JSON.stringify(searchOption)}`);
+        if (!searchOption) task.addMsg("Filename parsing error");
+      }
+      if (!searchOption) continue;
+      const option = searchOption;
+      const results = await runSequentialSearchChain(
+        [{ name: source, enabled: true, search: () => service.search(option) }],
+        option.title,
         {
           scoreResults: calculateSimilarity,
           hasExactMatch,
-          onResult(serviceName, results) {
-            ztoolkit.log(`${serviceName} results`, results);
-            task.addMsg(`Found ${results.length} results from ${serviceName}`);
+          onResult(name, results) {
+            task.addMsg(`Found ${results.length} results from ${name}`);
           },
-          onError(serviceName, error) {
-            const message = `${serviceName} search error: ${error}`;
-            ztoolkit.log(message);
-            task.addMsg(message);
-          },
-          onExactMatch(serviceName) {
-            if (serviceName === "PubScholar") {
-              task.addMsg(
-                "Exact match found in PubScholar, skipping later services",
-              );
-            } else if (serviceName !== "CNKI") {
-              task.addMsg(
-                `Exact match found in ${serviceName}, skipping later services`,
-              );
-            }
+          onError(name, error) {
+            task.addMsg(`${name} search error: ${error}`);
           },
         },
       );
-
-      // Filter search results based on pre-calculated similarity
-      const filteredResults1 = scrapeSearchResults.filter((result) => {
-        return (result.articleTitle as string).includes(searchOption.title);
-      });
-
-      const filteredResults2 = scrapeSearchResults.filter((result) => {
-        const score = result.similarity as number;
-        ztoolkit.log(`Similarity score for "${result.articleTitle}": ${score}`);
-        return (
-          !(result.articleTitle as string).includes(searchOption.title) &&
-          (score > parseFloat(getPref("similarityThresholdForMetaData")) ||
-            isTokenCovered(searchOption.title, result.articleTitle as string))
-        );
-      });
-      scrapeSearchResults = filteredResults1.concat(filteredResults2);
-      task.addMsg(
-        `After filtering, ${scrapeSearchResults.length} results left.`,
+      const reliableResults = results.filter(
+        (result) =>
+          (result.articleTitle as string).includes(option.title) ||
+          (result.similarity as number) >
+            parseFloat(getPref("similarityThresholdForMetaData")) ||
+          isTokenCovered(option.title, result.articleTitle as string),
       );
-    } else {
-      task.addMsg("Filename parsing error");
-      task.status = "fail";
+      scrapeSearchResults.push(...reliableResults);
+      task.addMsg(
+        `After filtering, ${reliableResults.length} results left from ${source}.`,
+      );
+      if (hasExactMatch(reliableResults)) {
+        task.addMsg(`Exact match found in ${source}, skipping later services`);
+        break;
+      }
     }
   } else if (task.type == "snapshot") {
     const tmp = await cnki.searchSnapshot!(task);
     if (tmp) scrapeSearchResults = scrapeSearchResults.concat(tmp);
   }
 
-  ztoolkit.log("all results: ", scrapeSearchResults);
   if (scrapeSearchResults.length == 0) {
     task.addMsg("No search results");
     task.status = "fail";
@@ -235,6 +199,25 @@ export async function metaSearch(
 }
 
 export async function metaTranslate(task: ScraperTask): Promise<void> {
+  if (task.aiMetadata) {
+    try {
+      await Zotero.DB.executeTransaction(async () => {
+        const item = new Zotero.Item(task.aiMetadata!.itemType);
+        item.libraryID = task.item.libraryID;
+        item.fromJSON(task.aiMetadata!);
+        item.setCollections(task.item.getCollections());
+        await item.save();
+        task.item.parentID = item.id;
+        await task.item.save();
+      });
+      task.status = "success";
+    } catch {
+      await task.item.reload(["primaryData"], true);
+      task.addMsg(getString("ai-recognition-save-failed"));
+      task.status = "fail";
+    }
+    return;
+  }
   if (task.searchResults.length === 0) {
     task.addMsg("No search results found.");
     task.status = "fail";

@@ -13,6 +13,10 @@ pref("metadataSource", "PubScholar, NCPSSD, CNKI, WanFangData, Yiigle");
 pref("isMainlandChina", true);
 pref("cnkiAttachmentCookie", "");
 pref("similarityThresholdForMetaData", "0.6");
+/* AI recognition (OpenAI-compatible API) */
+pref("llmBaseURL", "");
+pref("llmApiKey", "");
+pref("llmModel", "");
 /* match pdf */
 pref("pdfMatchFolder", "");
 pref("actionAfterAttachmentImport", "backup");

@@ -56,79 +56,80 @@
     ></image>
   </hbox>
   <hbox align="center">
-    <label
-      for="zotero-prefpane-__addonRef__-metadata-source"
-      data-l10n-id="label-metadata-source"
-    ></label>
-    <html:input
-      type="text"
-      id="zotero-prefpane-__addonRef__-metadata-source-input"
-      preference="metadataSource"
-      disabled="true"
-    ></html:input>
-    <button
-      id="zotero-prefpane-__addonRef__-metadata-source-button"
-      type="menu"
-      data-l10n-id="label-choose-source"
-    >
-      <panel
-        id="metadata-source-panel"
-        position="after_start"
-        noautohide="false"
-      >
-        <vbox style="padding: 8px">
-          <checkbox
-            class="metadata-drop-item"
-            native="true"
-            value="PubScholar"
-            data-l10n-id="label-metadata-source-pubscholar"
-          />
-          <checkbox
-            class="metadata-drop-item"
-            native="true"
-            value="NCPSSD"
-            data-l10n-id="label-metadata-source-ncpssd"
-          />
-          <checkbox
-            native="true"
-            class="metadata-drop-item"
-            value="CNKI"
-            data-l10n-id="label-metadata-source-cnki"
-          />
-          <checkbox
-            class="metadata-drop-item"
-            native="true"
-            value="WanFangData"
-            data-l10n-id="label-metadata-source-wanfangdata"
-          />
-          <checkbox
-            class="metadata-drop-item"
-            native="true"
-            value="Yiigle"
-            data-l10n-id="label-metadata-source-yiigle"
-          />
-          <!-- <checkbox
-            class="metadata-drop-item"
-            native="true"
-            value="ChinaDOI"
-            data-l10n-id="label-metadata-source-chinadoi"
-          /> -->
-          <!--
-          ChinaDOI is temporarily disabled while its redirect/translation flow is fixed.
-            <checkbox
-              class="metadata-drop-item"
-              native="true"
-              value="ChinaDOI"
-              data-l10n-id="label-metadata-source-chinadoi"
+    <label data-l10n-id="label-metadata-source" />
+    <button id="jasminum-metadata-source-button" type="menu">
+      <panel id="jasminum-metadata-source-panel" position="after_start">
+        <html:div class="metadata-source-panel">
+          <html:h3 data-l10n-id="metadata-source-enabled" />
+          <html:div id="jasminum-metadata-source-list" />
+          <html:h3 data-l10n-id="metadata-source-other" />
+          <html:div id="jasminum-metadata-source-add" />
+        </html:div>
+      </panel>
+    </button>
+    <image
+      class="help-icon"
+      src="chrome://jasminum/content/icons/help.svg"
+      data-l10n-id="metadata-source-order-description"
+      data-l10n-attrs="tooltiptext"
+    ></image>
+  </hbox>
+  <!-- AI 接口 -->
+  <hbox align="center">
+    <label data-l10n-id="pref-group-ai" />
+    <button type="menu" data-l10n-id="label-configure-llm">
+      <panel id="jasminum-llm-config-panel" position="after_start">
+        <vbox class="llm-config-panel">
+          <label><html:h3 data-l10n-id="pref-group-ai" /></label>
+          <hbox align="center">
+            <label for="jasminum-llm-base-url" value="Base URL" />
+            <html:input
+              id="jasminum-llm-base-url"
+              type="url"
+              class="auto_width"
+              preference="llmBaseURL"
+              placeholder="https://api.example.com/v1"
             />
-          -->
+          </hbox>
+          <hbox align="center">
+            <label for="jasminum-llm-api-key" value="API Key" />
+            <html:input
+              id="jasminum-llm-api-key"
+              type="password"
+              class="auto_width"
+              preference="llmApiKey"
+              autocomplete="off"
+            />
+          </hbox>
+          <hbox align="center">
+            <label for="jasminum-llm-model" data-l10n-id="label-llm-model" />
+            <html:input
+              id="jasminum-llm-model"
+              type="text"
+              class="auto_width"
+              preference="llmModel"
+            />
+          </hbox>
+          <hbox align="center">
+            <html:button
+              id="jasminum-llm-test"
+              type="button"
+              data-l10n-id="llm-test-button"
+            />
+          </hbox>
+          <html:p
+            id="jasminum-llm-test-result"
+            role="status"
+            aria-live="polite"
+          />
         </vbox>
       </panel>
     </button>
     <image
       class="help-icon"
       src="chrome://jasminum/content/icons/help.svg"
-      data-l10n-id="metadata-source-desc"
+      data-l10n-id="ai-recognition-description"
+      data-l10n-attrs="tooltiptext"
     ></image>
   </hbox>
 </groupbox>

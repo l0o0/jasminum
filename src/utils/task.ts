@@ -2,6 +2,7 @@ import { metaSearch, metaTranslate } from "../modules/services";
 import { getString } from "./locale";
 import { attachmentSearch, importAttachment } from "../modules/attachments";
 import { version } from "../../package.json";
+import type { ZoteroItemMetadata } from "./pdfMetadata";
 
 // 创建 Deferred 的工厂函数
 function createDeferred<T>(): DeferredResult<T> {
@@ -17,6 +18,7 @@ function createDeferred<T>(): DeferredResult<T> {
 }
 
 export class ScraperTask implements ScraperTask {
+  public aiMetadata?: ZoteroItemMetadata;
   public id: string;
   public item: Zotero.Item;
   public type: ScraperTaskType;

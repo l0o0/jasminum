@@ -17,6 +17,55 @@
   display: none;
 }
 
+.metadata-source-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 0;
+}
+.metadata-source-name {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex: 1;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.metadata-source-panel {
+  padding: 12px;
+  width: min(520px, 80vw);
+  max-height: 70vh;
+  overflow-y: auto;
+}
+
+.llm-config-panel {
+  padding: 12px;
+  width: min(520px, 80vw);
+}
+.llm-config-panel hbox {
+  margin-block: 6px;
+  gap: 8px;
+}
+.llm-config-panel hbox > label {
+  min-width: 80px;
+}
+.llm-config-panel input {
+  flex: 1;
+  min-width: 0;
+}
+.llm-config-panel p {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+.metadata-source-panel h3 {
+  margin: 8px 0;
+}
+.metadata-source-panel p {
+  max-width: 65ch;
+  line-height: 1.5;
+}
+
 .help-icon {
   margin-top: 5px;
   margin-bottom: 5px;
