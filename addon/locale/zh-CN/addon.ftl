@@ -26,17 +26,25 @@ help-menu-csl = CSL样式下载
 help-menu-translator = 中文文献抓取异常修复
 
 # Menu
-menu-metadata = 茉莉花抓取
-menuitem-retrieveMetadata = 抓取期刊元数据
+menu-metadata =
+    .label = 茉莉花抓取
+menuitem-retrieveMetadata =
+    .label = 抓取期刊元数据
 menuitem-retrieveMetadataForBook = 抓取书籍元数据
 
-menuitem-find-attachment = 在下载文件夹中查找附件
-menuitem-import-attachments = 从下载文件夹中导入附件
+menuitem-find-attachment =
+    .label = 在下载文件夹中查找附件
+menuitem-import-attachments =
+    .label = 从下载文件夹中导入附件
 
-menu-tools = 小工具
-menuitem-mergeName = 合并姓名
-menuitem-splitName = 拆分姓名
-menuitem-updateCNKICite = 更新知网引用数
+menu-tools =
+    .label = 小工具
+menuitem-mergeName =
+    .label = 合并姓名
+menuitem-splitName =
+    .label = 拆分姓名
+menuitem-updateCNKICite =
+    .label = 更新知网引用数
 
 # ui
 CNKIcitation = 知网引用数

@@ -26,17 +26,25 @@ help-menu-csl = Donwload more CSL
 help-menu-translator = Help with Chinese literature capture
 
 # Menu
-menu-metadata = Metadata(CN)
-menuitem-retrieveMetadata = Find article metadata
+menu-metadata =
+    .label = Metadata(CN)
+menuitem-retrieveMetadata =
+    .label = Find article metadata
 menuitem-retrieveMetadataForBook = Find book metadata
 
-menuitem-find-attachment = Find attachment in Folder
-menuitem-import-attachments = Import attachments from Folder
+menuitem-find-attachment =
+    .label = Find attachment in Folder
+menuitem-import-attachments =
+    .label = Import attachments from Folder
 
-menu-tools = Tools
-menuitem-mergeName = Concat Name
-menuitem-splitName = Split Name
-menuitem-updateCNKICite = Update CNKI citation
+menu-tools =
+    .label = Tools
+menuitem-mergeName =
+    .label = Concat Name
+menuitem-splitName =
+    .label = Split Name
+menuitem-updateCNKICite =
+    .label = Update CNKI citation
 
 # ui
 CNKIcitation = CNKICite

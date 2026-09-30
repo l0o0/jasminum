@@ -1,7 +1,4 @@
-import {
-  ElementProps,
-  TagElementProps,
-} from "zotero-plugin-toolkit/dist/tools/ui";
+import { ElementProps, TagElementProps } from "zotero-plugin-toolkit";
 import { getString } from "../utils/locale";
 import { REMOTE_HELP_QR_ACTION } from "./preferences/remoteHelp";
 

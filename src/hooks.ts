@@ -5,8 +5,7 @@ import {
   onPrefsWindowLoad,
   initPrefs,
 } from "./modules/preferences/main";
-import { createZToolkit } from "./utils/ztoolkit";
-import { registerMenu } from "./modules/menu";
+import { registerMenu, unregisterMenu } from "./modules/menu";
 import {
   registerExtraColumnWithCustomCell,
   registerNotifiers,
@@ -50,8 +49,7 @@ async function onStartup() {
 }
 
 async function onMainWindowLoad(win: Window): Promise<void> {
-  // Create ztoolkit for every window
-  addon.data.ztoolkit = createZToolkit();
+  win.MozXULElement.insertFTLIfNeeded(`${config.addonRef}-addon.ftl`);
 
   // @ts-ignore - Not typed.
   await Zotero.Promise.delay(1000);
@@ -65,6 +63,7 @@ async function onMainWindowLoad(win: Window): Promise<void> {
 }
 
 function onShutdown(): void {
+  unregisterMenu();
   unregisterHeadlessActor();
   ztoolkit.unregisterAll();
   // Remove addon object

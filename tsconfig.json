@@ -1,7 +1,8 @@
 {
   "compilerOptions": {
     "experimentalDecorators": true,
-    "module": "commonjs",
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
     "target": "ES2016",
     "resolveJsonModule": true,
     "skipLibCheck": true,
