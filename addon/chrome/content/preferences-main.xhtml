@@ -59,11 +59,51 @@
     <label data-l10n-id="label-metadata-source" />
     <button id="jasminum-metadata-source-button" type="menu">
       <panel id="jasminum-metadata-source-panel" position="after_start">
-        <html:div class="metadata-source-panel">
-          <html:h3 data-l10n-id="metadata-source-enabled" />
-          <html:div id="jasminum-metadata-source-list" />
-          <html:h3 data-l10n-id="metadata-source-other" />
-          <html:div id="jasminum-metadata-source-add" />
+        <html:div class="pref-popup metadata-source-panel">
+          <html:header class="pref-popup-header">
+            <html:h3 data-l10n-id="metadata-source-title" />
+            <html:p data-l10n-id="metadata-source-description" />
+          </html:header>
+          <html:div class="pref-popup-body metadata-source-body">
+            <html:section aria-labelledby="jasminum-metadata-source-enabled">
+              <html:h4 class="metadata-source-heading">
+                <html:span
+                  id="jasminum-metadata-source-enabled"
+                  data-l10n-id="metadata-source-enabled"
+                />
+                <html:span
+                  id="jasminum-metadata-source-count"
+                  class="metadata-source-count"
+                  aria-hidden="true"
+                />
+              </html:h4>
+              <html:ol
+                id="jasminum-metadata-source-list"
+                class="metadata-source-list"
+              />
+            </html:section>
+            <html:section aria-labelledby="jasminum-metadata-source-other">
+              <html:h4
+                id="jasminum-metadata-source-other"
+                class="metadata-source-heading"
+                data-l10n-id="metadata-source-other"
+              />
+              <html:ul
+                id="jasminum-metadata-source-add"
+                class="metadata-source-list"
+              />
+            </html:section>
+          </html:div>
+          <html:footer class="pref-popup-footer">
+            <html:span
+              class="pref-popup-autosave"
+              data-l10n-id="pref-popup-autosave"
+            />
+            <html:span
+              id="jasminum-metadata-source-minimum"
+              data-l10n-id="metadata-source-minimum"
+            />
+          </html:footer>
         </html:div>
       </panel>
     </button>
@@ -79,50 +119,111 @@
     <label data-l10n-id="pref-group-ai" />
     <button type="menu" data-l10n-id="label-configure-llm">
       <panel id="jasminum-llm-config-panel" position="after_start">
-        <vbox class="llm-config-panel">
-          <label><html:h3 data-l10n-id="pref-group-ai" /></label>
-          <hbox align="center">
-            <label for="jasminum-llm-base-url" value="Base URL" />
-            <html:input
-              id="jasminum-llm-base-url"
-              type="url"
-              class="auto_width"
-              preference="llmBaseURL"
-              placeholder="https://api.example.com/v1"
+        <html:div class="pref-popup llm-config-panel">
+          <html:header class="pref-popup-header">
+            <html:h3 data-l10n-id="llm-config-title" />
+            <html:p data-l10n-id="llm-config-description" />
+          </html:header>
+          <html:div class="pref-popup-body">
+            <html:div class="llm-config-row">
+              <html:label
+                for="jasminum-llm-provider"
+                data-l10n-id="label-llm-provider"
+              />
+              <html:select
+                id="jasminum-llm-provider"
+                aria-describedby="jasminum-llm-provider-help"
+              >
+                <html:option
+                  value="custom"
+                  data-l10n-id="llm-provider-custom"
+                />
+              </html:select>
+            </html:div>
+            <html:p
+              id="jasminum-llm-provider-help"
+              class="llm-config-help"
+              data-l10n-id="llm-provider-help"
             />
-          </hbox>
-          <hbox align="center">
-            <label for="jasminum-llm-api-key" value="API Key" />
-            <html:input
-              id="jasminum-llm-api-key"
-              type="password"
-              class="auto_width"
-              preference="llmApiKey"
-              autocomplete="off"
+            <html:section
+              id="jasminum-llm-magiczotero-guide"
+              class="llm-config-guide"
+              aria-labelledby="jasminum-llm-magiczotero-guide-title"
+              hidden="hidden"
+            >
+              <html:h4
+                id="jasminum-llm-magiczotero-guide-title"
+                data-l10n-id="llm-magiczotero-guide-title"
+              />
+              <html:ol>
+                <html:li data-l10n-id="llm-magiczotero-guide-install" />
+                <html:li data-l10n-id="llm-magiczotero-guide-copy">
+                  <html:a data-l10n-name="model-store" href="#" />
+                </html:li>
+              </html:ol>
+              <html:p data-l10n-id="llm-magiczotero-guide-paste" />
+              <html:p
+                id="jasminum-llm-magiczotero-store-status"
+                role="status"
+                aria-live="polite"
+              />
+            </html:section>
+            <html:div class="llm-config-row">
+              <html:label for="jasminum-llm-base-url">Base URL</html:label>
+              <html:input
+                id="jasminum-llm-base-url"
+                type="url"
+                preference="llmBaseURL"
+                placeholder="https://api.example.com/v1"
+              />
+            </html:div>
+            <html:div class="llm-config-row">
+              <html:label for="jasminum-llm-api-key">API Key</html:label>
+              <html:input
+                id="jasminum-llm-api-key"
+                type="password"
+                preference="llmApiKey"
+                autocomplete="off"
+              />
+            </html:div>
+            <html:div class="llm-config-row">
+              <html:label
+                for="jasminum-llm-model"
+                data-l10n-id="label-llm-model"
+              />
+              <html:input
+                id="jasminum-llm-model"
+                type="text"
+                preference="llmModel"
+                data-l10n-id="llm-model-placeholder"
+                aria-describedby="jasminum-llm-model-help"
+              />
+            </html:div>
+            <html:p
+              id="jasminum-llm-model-help"
+              class="llm-config-help"
+              data-l10n-id="llm-model-help"
             />
-          </hbox>
-          <hbox align="center">
-            <label for="jasminum-llm-model" data-l10n-id="label-llm-model" />
-            <html:input
-              id="jasminum-llm-model"
-              type="text"
-              class="auto_width"
-              preference="llmModel"
+            <html:p
+              id="jasminum-llm-test-result"
+              class="llm-config-result"
+              role="status"
+              aria-live="polite"
             />
-          </hbox>
-          <hbox align="center">
+          </html:div>
+          <html:footer class="pref-popup-footer">
+            <html:span
+              class="pref-popup-autosave"
+              data-l10n-id="pref-popup-autosave"
+            />
             <html:button
               id="jasminum-llm-test"
+              class="pref-popup-button"
               type="button"
               data-l10n-id="llm-test-button"
             />
-          </hbox>
-          <html:p
-            id="jasminum-llm-test-result"
-            role="status"
-            aria-live="polite"
-          />
-        </vbox>
+          </html:footer>
+        </html:div>
       </panel>
     </button>
     <image

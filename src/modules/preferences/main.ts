@@ -7,6 +7,7 @@ import type { PluginPrefsMap } from "../../utils/prefs";
 import { onShowTable } from "./translators";
 import { openRemoteHelpDialog } from "./remoteHelp";
 import { renderMetadataSources } from "./metadataSource";
+import { bindLLMProviderEvents } from "./llmProviders";
 import { getConfiguredLLMClient } from "../../utils/llm";
 
 export function registerPrefsPane() {
@@ -217,12 +218,31 @@ function bindPrefEvents(doc: Document) {
     });
 
   renderMetadataSources(doc);
+  bindLLMProviderEvents(doc);
   const testButton = doc.getElementById(
     "jasminum-llm-test",
   ) as HTMLButtonElement;
+  const status = doc.getElementById("jasminum-llm-test-result")!;
+  let testVersion = 0;
+  function invalidateTest() {
+    // Pending requests belong to the configuration they started with.
+    testVersion++;
+    status.textContent = "";
+    testButton.disabled = false;
+  }
+  for (const id of [
+    "jasminum-llm-base-url",
+    "jasminum-llm-api-key",
+    "jasminum-llm-model",
+  ]) {
+    doc.getElementById(id)!.addEventListener("input", invalidateTest);
+  }
+  doc
+    .getElementById("jasminum-llm-provider")!
+    .addEventListener("change", invalidateTest);
   testButton.addEventListener("click", async () => {
     if (testButton.disabled) return;
-    const status = doc.getElementById("jasminum-llm-test-result")!;
+    const version = ++testVersion;
     const value = (id: string) =>
       (doc.getElementById(id) as HTMLInputElement).value;
     const apiKey = value("jasminum-llm-api-key").trim();
@@ -236,7 +256,8 @@ function bindPrefEvents(doc: Document) {
         model,
       });
     } catch (error) {
-      status.textContent = (error as Error).message;
+      if (version === testVersion)
+        status.textContent = (error as Error).message;
       return;
     }
     testButton.disabled = true;
@@ -255,10 +276,12 @@ function bindPrefEvents(doc: Document) {
           },
         },
       });
+      if (version !== testVersion) return;
       status.textContent = getString(
         result?.ok === true ? "llm-test-success" : "llm-test-invalid-response",
       );
     } catch (error) {
+      if (version !== testVersion) return;
       const failure = error as {
         message?: string;
         status?: number;
@@ -280,7 +303,7 @@ function bindPrefEvents(doc: Document) {
       if (apiKey) detail = detail.split(apiKey).join("[REDACTED]");
       status.textContent = `${getString("llm-test-failed")}\n${detail}`;
     } finally {
-      testButton.disabled = false;
+      if (version === testVersion) testButton.disabled = false;
     }
   });
   doc
