@@ -17,6 +17,14 @@
   display: none;
 }
 
+/* The inner popup supplies the surface; retain the native panel's shadow. */
+#jasminum-metadata-source-panel::part(content),
+#jasminum-llm-config-panel::part(content) {
+  padding: 0;
+  border: 0;
+  background: transparent;
+}
+
 .pref-popup {
   --popup-bg: #fff;
   --popup-section-bg: #f1f5fb;
