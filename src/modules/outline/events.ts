@@ -226,6 +226,12 @@ export function initEventListener(
       }
     });
 
+    // Keep Zotero FocusManager from cancelling pointerdown before native drag starts.
+    bookmarkContainer.addEventListener(
+      "pointerdown",
+      handleBookmarkPointerDown,
+    );
+
     // 书签拖拽相关事件
     bookmarkContainer.addEventListener("dragstart", handleBookmarkDragStart);
     bookmarkContainer.addEventListener("dragover", handleBookmarkDragOver);
@@ -438,9 +444,7 @@ export function handleDragStart(e: DragEvent) {
   e.dataTransfer!.effectAllowed = "move";
 
   // 为拖拽中的元素添加样式
-  setTimeout(() => {
-    draggedNode.classList.add("dragging");
-  }, 0);
+  draggedNode.classList.add("dragging");
 }
 
 // 拖拽经过目标元素
@@ -1217,6 +1221,15 @@ export async function deleteSelectedBookmarkNode(ev: Event) {
   doc.getElementById("j-bookmark-viewer")?.focus();
 }
 
+export function handleBookmarkPointerDown(e: PointerEvent) {
+  if (
+    e.button === 0 &&
+    (e.target as Element).closest('.bookmark-node[draggable="true"]')
+  ) {
+    e.stopPropagation();
+  }
+}
+
 // 书签拖拽开始
 export function handleBookmarkDragStart(e: DragEvent) {
   ztoolkit.log("start to drag bookmark");
@@ -1228,9 +1241,34 @@ export function handleBookmarkDragStart(e: DragEvent) {
   e.dataTransfer!.effectAllowed = "move";
 
   // 为拖拽中的元素添加样式
-  setTimeout(() => {
-    draggedNode.classList.add("dragging");
-  }, 0);
+  draggedNode.classList.add("dragging");
+}
+
+// Use the same target and midpoint for the preview and the actual drop, including row gaps.
+function getBookmarkDropTarget(
+  target: HTMLElement,
+  clientY: number,
+  draggedNode: Element,
+) {
+  const node = target.closest(".bookmark-node");
+  if (node) {
+    if (node.closest("li") === draggedNode) return null;
+    const rect = node.getBoundingClientRect();
+    return { node, before: clientY < rect.top + rect.height / 2 };
+  }
+  const viewer = target.closest("#j-bookmark-viewer");
+  if (!viewer) return null;
+  const nodes = (
+    Array.from(
+      viewer.querySelectorAll<HTMLElement>(".bookmark-node"),
+    ) as HTMLElement[]
+  ).filter((item) => item.closest("li") !== draggedNode);
+  const next = nodes.find((item) => {
+    const rect = item.getBoundingClientRect();
+    return clientY < rect.top + rect.height / 2;
+  });
+  const destination = next ?? nodes[nodes.length - 1];
+  return destination ? { node: destination, before: !!next } : null;
 }
 
 // 书签拖拽经过目标元素
@@ -1242,35 +1280,16 @@ export function handleBookmarkDragOver(e: DragEvent) {
   const draggedNode = doc.querySelector(".dragging");
   if (!draggedNode) return;
 
-  // 找到最近的书签节点元素
-  const targetNode = target.closest(".bookmark-node");
-  if (!targetNode) {
+  const destination = getBookmarkDropTarget(target, e.clientY, draggedNode);
+  if (!destination) {
     hideBookmarkDropIndicator(doc);
     return;
   }
-
-  // 不能拖拽到自己
-  const targetLi = targetNode.closest("li") as Element;
-  if (draggedNode === targetLi) {
-    hideBookmarkDropIndicator(doc);
-    return;
-  }
-
-  // 计算拖拽位置（上方或下方）
-  const rect = targetNode.getBoundingClientRect();
-  const mouseY = e.clientY;
-  const relativeY = mouseY - rect.top;
-  const height = rect.height;
-
-  let dropPosition;
-  if (relativeY < height * 0.5) {
-    dropPosition = "before";
-  } else {
-    dropPosition = "after";
-  }
-
-  // 更新指示器
-  updateBookmarkDropIndicator(targetNode, dropPosition);
+  const targetNode = destination.node;
+  updateBookmarkDropIndicator(
+    targetNode,
+    destination.before ? "before" : "after",
+  );
 
   // 添加可放置样式
   doc.querySelectorAll(".bookmark-dragover").forEach((el) => {
@@ -1289,16 +1308,20 @@ function updateBookmarkDropIndicator(targetNode: Element, position: string) {
 
   dropIndicator.classList.add("visible");
 
-  if (position === "before") {
-    dropIndicator.style.left = `${rect.left}px`;
-    dropIndicator.style.top = `${rect.top - 2}px`;
-    dropIndicator.style.width = `${rect.width}px`;
-  } else {
-    // after position
-    dropIndicator.style.left = `${rect.left}px`;
-    dropIndicator.style.top = `${rect.bottom}px`;
-    dropIndicator.style.width = `${rect.width}px`;
-  }
+  // DOMRect uses viewport coordinates; absolute positioning uses the offset parent.
+  const parent = dropIndicator.offsetParent as HTMLElement | null;
+  const parentRect = parent?.getBoundingClientRect();
+  const left =
+    (parentRect?.left ?? 0) +
+    (parent?.clientLeft ?? 0) -
+    (parent?.scrollLeft ?? 0);
+  const top =
+    (parentRect?.top ?? 0) +
+    (parent?.clientTop ?? 0) -
+    (parent?.scrollTop ?? 0);
+  dropIndicator.style.left = `${rect.left - left}px`;
+  dropIndicator.style.top = `${(position === "before" ? rect.top - 2 : rect.bottom) - top}px`;
+  dropIndicator.style.width = `${rect.width}px`;
 }
 
 // 隐藏书签拖拽指示器
@@ -1335,39 +1358,19 @@ export async function handleBookmarkDrop(e: DragEvent) {
 
   if (!draggedNode) return;
 
-  // 获取目标节点
-  const targetBookmarkNode = target.closest(".bookmark-node");
-  if (!targetBookmarkNode) return;
+  const destination = getBookmarkDropTarget(target, e.clientY, draggedNode);
+  if (!destination) return;
 
-  // 移除可放置样式
   doc.querySelectorAll(".bookmark-dragover").forEach((el) => {
     el.classList.remove("bookmark-dragover");
   });
-
-  // 获取目标列表项
-  const targetLi = targetBookmarkNode.closest("li")!;
-
-  // 不能将节点拖到自己上
-  if (draggedNode === targetLi) {
-    return;
-  }
-
-  // Measure before removing the dragged row, which shifts the target's position.
-  const rect = targetBookmarkNode.getBoundingClientRect();
-  const mouseY = e.clientY;
-  const relativeY = mouseY - rect.top;
-  const height = rect.height;
-
+  const targetLi = destination.node.closest("li")!;
   const targetParent = targetLi.parentNode!;
   draggedNode.parentNode!.removeChild(draggedNode);
-
-  if (relativeY < height * 0.5) {
-    // 放在前面
-    targetParent.insertBefore(draggedNode, targetLi);
-  } else {
-    // 放在后面
-    targetParent.insertBefore(draggedNode, targetLi.nextSibling);
-  }
+  targetParent.insertBefore(
+    draggedNode,
+    destination.before ? targetLi : targetLi.nextSibling,
+  );
 
   // 保存书签信息
   await saveBookmarksToJSON();

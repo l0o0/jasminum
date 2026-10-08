@@ -114,6 +114,46 @@ async function main() {
     },
     { ztoolkit: { log() {} } },
   );
+  // Zotero's window pointerdown handler cancels native drag outside its built-in views.
+  // Isolate left drags, while preserving right-click and inline editing behavior.
+  for (const [button, draggable, expected] of [
+    [0, true, true],
+    [2, true, false],
+    [0, false, false],
+  ]) {
+    let stopped = false;
+    events.handleBookmarkPointerDown({
+      button,
+      target: { closest: () => (draggable ? {} : null) },
+      stopPropagation() {
+        stopped = true;
+      },
+    });
+    assert.equal(stopped, expected);
+  }
+  // The plugin sandbox has no global setTimeout. Drag state must be set immediately.
+  for (const kind of ["bookmark", "tree"]) {
+    const classes = new Set();
+    const row = {
+      innerText: "Drag me",
+      classList: { add: (name) => classes.add(name) },
+    };
+    const target = {
+      classList: { contains: (name) => name === `${kind}-node` },
+      closest: () => row,
+    };
+    const transfer = {
+      setData(type, value) {
+        assert.equal(type, "text/plain");
+        assert.equal(value, "Drag me");
+      },
+    };
+    events[kind === "bookmark" ? "handleBookmarkDragStart" : "handleDragStart"](
+      { target, dataTransfer: transfer },
+    );
+    assert.equal(transfer.effectAllowed, "move");
+    assert.equal(classes.has("dragging"), true);
+  }
   for (const kind of ["bookmark", "outline"]) {
     for (const [drag, targetIndex, y, expected] of [
       [0, 2, 65, "BAC"],
@@ -166,6 +206,71 @@ async function main() {
       });
       assert.equal(list.map((n) => n.id).join(""), expected);
     }
+  }
+  // Preview lines must use the positioned parent's coordinates, including scrolling.
+  // Dropping in a row gap must perform the same move as the preview.
+  for (const [y, expectedTop, expected] of [
+    [137, "75px", "BA"],
+    [101, "39px", "AB"],
+  ]) {
+    const list = [{ id: "A" }, { id: "B" }];
+    const dragged = list[0],
+      destination = list[1];
+    const parent = {
+      removeChild(node) {
+        list.splice(list.indexOf(node), 1);
+      },
+      insertBefore(node, reference) {
+        list.splice(reference ? list.indexOf(reference) : list.length, 0, node);
+      },
+    };
+    for (const row of list) {
+      row.parentNode = parent;
+      Object.defineProperty(row, "nextSibling", {
+        get: () => list[list.indexOf(row) + 1] ?? null,
+      });
+    }
+    const indicator = {
+      classList: { add() {}, remove() {} },
+      style: {},
+      offsetParent: {
+        getBoundingClientRect: () => ({ left: 20, top: 80 }),
+        clientLeft: 2,
+        clientTop: 2,
+        scrollLeft: 5,
+        scrollTop: 25,
+      },
+    };
+    const doc = {
+      querySelector: (selector) =>
+        selector === ".dragging" ? dragged : indicator,
+      querySelectorAll: () => [],
+    };
+    const node = {
+      ownerDocument: doc,
+      closest: () => destination,
+      classList: { add() {}, remove() {} },
+      getBoundingClientRect: () => ({
+        left: 30,
+        top: 98,
+        bottom: 132,
+        height: 34,
+        width: 200,
+      }),
+    };
+    const viewer = { querySelectorAll: () => [node] };
+    const target = {
+      ownerDocument: doc,
+      closest: (selector) =>
+        selector === "#j-bookmark-viewer" ? viewer : null,
+    };
+    const event = { target, clientY: y, dataTransfer: {}, preventDefault() {} };
+    events.handleBookmarkDragOver(event);
+    assert.equal(indicator.style.left, "13px");
+    assert.equal(indicator.style.top, expectedTop);
+    assert.equal(indicator.style.width, "200px");
+    await events.handleBookmarkDrop(event);
+    assert.equal(list.map((row) => row.id).join(""), expected);
   }
   // Every terminal worker outcome must restore the save button and release the worker.
   for (const mode of [
