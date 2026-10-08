@@ -34,3 +34,21 @@ export function setPref<K extends keyof PluginPrefsMap>(
 export function clearPref(key: string) {
   return Zotero.Prefs.clear(`${PREFS_PREFIX}.${key}`, true);
 }
+
+export function getMetadataSources(): string[] {
+  const savedSources = [
+    ...new Set(
+      getPref("metadataSource")
+        .split(",")
+        .map((source) => source.trim())
+        .filter(Boolean),
+    ),
+  ];
+  const sources = savedSources.filter((source) => source !== "WanFangData");
+  if (sources.length !== savedSources.length) {
+    // Older versions enabled this unfinished source by default.
+    if (!sources.length) sources.push("CNKI");
+    setPref("metadataSource", sources.join(", "));
+  }
+  return sources;
+}

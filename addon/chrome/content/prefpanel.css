@@ -18,6 +18,9 @@
 }
 
 .pref-popup {
+  --popup-bg: #fff;
+  --popup-section-bg: #f1f5fb;
+  --popup-outline: #c5cfdd;
   --popup-field-bg: #fff;
   --popup-hover: #f0f4fb;
   --popup-border: #dfe3e9;
@@ -30,8 +33,13 @@
   --popup-success-bg: #eaf4ed;
   display: flex;
   flex-direction: column;
+  box-sizing: border-box;
   width: min(420px, 80vw);
   max-height: min(520px, 80vh);
+  overflow: hidden;
+  border: 1px solid var(--popup-outline);
+  border-radius: 6px;
+  background-color: var(--popup-bg);
   color: var(--popup-text);
   font-size: 12px;
   line-height: 1.5;
@@ -39,6 +47,9 @@
 
 @media (prefers-color-scheme: dark) {
   .pref-popup {
+    --popup-bg: #292c33;
+    --popup-section-bg: #323844;
+    --popup-outline: #596476;
     --popup-field-bg: #303238;
     --popup-hover: #363e4c;
     --popup-border: #484c55;
@@ -56,6 +67,7 @@
   flex-shrink: 0;
   padding: 10px 12px 8px;
   border-bottom: 1px solid var(--popup-border);
+  background-color: var(--popup-section-bg);
 }
 .pref-popup-header h3 {
   margin: 0 0 2px;
@@ -241,6 +253,7 @@
   gap: 4px 12px;
   padding: 6px 12px;
   border-top: 1px solid var(--popup-border);
+  background-color: var(--popup-section-bg);
   color: var(--popup-muted);
   font-size: 11px;
 }
@@ -251,6 +264,9 @@
 
 @media (forced-colors: active) {
   .pref-popup {
+    --popup-bg: Canvas;
+    --popup-section-bg: Canvas;
+    --popup-outline: ButtonBorder;
     --popup-field-bg: Field;
     --popup-hover: Canvas;
     --popup-border: ButtonBorder;
@@ -296,13 +312,6 @@
 .llm-config-row input::placeholder {
   color: var(--popup-muted);
   opacity: 1;
-}
-.llm-config-help {
-  margin: 4px 0 8px;
-  color: var(--popup-muted);
-  font-size: 11px;
-  line-height: 1.5;
-  overflow-wrap: anywhere;
 }
 .llm-config-guide {
   margin: 8px 0;

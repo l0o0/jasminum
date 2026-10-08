@@ -1,6 +1,6 @@
 import { getArgsFromPattern } from "../../utils/pattern";
 import { getPDFTitle } from "../../utils/pdfParser";
-import { getPref } from "../../utils/prefs";
+import { getMetadataSources, getPref } from "../../utils/prefs";
 import { ScraperTask } from "../../utils/task";
 import { isChineseTopAttachment, isChinsesSnapshot } from "../../utils/detect";
 // import { ChinaDOI } from "./chinadoi";
@@ -94,14 +94,7 @@ export async function metaSearch(
   // Searching by different scrape services
   let scrapeSearchResults: ScrapeSearchResult[] = [];
   if (task.type == "attachment") {
-    const metadataSources = [
-      ...new Set(
-        getPref("metadataSource")
-          .split(",")
-          .map((source) => source.trim())
-          .filter(Boolean),
-      ),
-    ];
+    const metadataSources = getMetadataSources();
     const services: Record<string, ScrapeService> = {
       PubScholar: pubscholar,
       NCPSSD: ncpssd,

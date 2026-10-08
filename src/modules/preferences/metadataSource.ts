@@ -1,4 +1,4 @@
-import { getPref, setPref } from "../../utils/prefs";
+import { getMetadataSources, getPref, setPref } from "../../utils/prefs";
 import { getLocaleID } from "../../utils/locale";
 
 export function renderMetadataSources(
@@ -10,14 +10,7 @@ export function renderMetadataSources(
   const add = doc.getElementById("jasminum-metadata-source-add")!;
   const body = doc.querySelector<HTMLElement>(".metadata-source-body");
   const scrollTop = body?.scrollTop ?? 0;
-  const sources = [
-    ...new Set(
-      getPref("metadataSource")
-        .split(",")
-        .map((s) => s.trim())
-        .filter(Boolean),
-    ),
-  ];
+  const sources = getMetadataSources();
   const available = ["PubScholar", "NCPSSD", "CNKI", "Yiigle", "AI"];
   const summary = doc.getElementById("jasminum-metadata-source-button")!;
   summary.setAttribute("data-l10n-id", getLocaleID("metadata-source-summary"));
@@ -218,11 +211,13 @@ export function updateMetadataSources(
   value: string,
   checked: boolean,
 ): string[] {
-  const nextSources = checked
-    ? currentSources.includes(value)
-      ? currentSources
-      : [...currentSources, value]
-    : currentSources.filter((source) => source !== value);
+  currentSources = currentSources.filter((source) => source !== "WanFangData");
+  const nextSources =
+    checked && value !== "WanFangData"
+      ? currentSources.includes(value)
+        ? currentSources
+        : [...currentSources, value]
+      : currentSources.filter((source) => source !== value);
 
   if (nextSources.length === 0) {
     throw new MetadataSourceSelectionError();

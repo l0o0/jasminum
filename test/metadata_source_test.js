@@ -17,5 +17,16 @@ assert.deepEqual(updateMetadataSources(["CNKI"], "Yiigle", true), [
   "CNKI",
   "Yiigle",
 ]);
+assert.deepEqual(updateMetadataSources(["CNKI"], "WanFangData", true), [
+  "CNKI",
+]);
+assert.deepEqual(
+  updateMetadataSources(["Yiigle", "WanFangData", "CNKI"], "AI", true),
+  ["Yiigle", "CNKI", "AI"],
+);
+assert.throws(
+  () => updateMetadataSources(["CNKI", "WanFangData"], "CNKI", false),
+  MetadataSourceSelectionError,
+);
 
 console.log("metadata source test passed");

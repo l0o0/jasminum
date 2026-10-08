@@ -43,7 +43,6 @@ export function bindLLMProviderEvents(doc: Document) {
   ) as HTMLInputElement;
   const apiKey = doc.getElementById("jasminum-llm-api-key") as HTMLInputElement;
   const model = doc.getElementById("jasminum-llm-model") as HTMLInputElement;
-  const modelHelp = doc.getElementById("jasminum-llm-model-help")!;
   const magicZoteroGuide = doc.getElementById(
     "jasminum-llm-magiczotero-guide",
   )!;
@@ -112,33 +111,16 @@ export function bindLLMProviderEvents(doc: Document) {
     select.append(option);
   }
 
-  function updateModelHelp(url: string, modelID: string) {
-    const provider = findLLMProvider(url);
+  function syncProvider(value: string) {
+    const provider = findLLMProvider(value);
+    select.value = provider?.id ?? "custom";
     magicZoteroGuide.hidden = provider?.id !== "magiczotero";
-    modelHelp.setAttribute(
-      "data-l10n-id",
-      getLocaleID(
-        provider?.id === "siliconflow" && modelID.trim() === provider.model
-          ? "llm-model-help-siliconflow"
-          : "llm-model-help",
-      ),
-    );
-  }
-  function syncProvider(value: string, modelID = model.value) {
-    select.value = findLLMProvider(value)?.id ?? "custom";
-    updateModelHelp(value, modelID);
   }
   // Zotero fills preference-bound inputs after the pane's load handler.
-  syncProvider(getPref("llmBaseURL"), getPref("llmModel"));
+  syncProvider(getPref("llmBaseURL"));
   baseURL.addEventListener("input", () => syncProvider(baseURL.value));
   baseURL.addEventListener("syncfrompreference", () =>
-    syncProvider(getPref("llmBaseURL"), getPref("llmModel")),
-  );
-  model.addEventListener("input", () =>
-    updateModelHelp(baseURL.value, model.value),
-  );
-  model.addEventListener("syncfrompreference", () =>
-    updateModelHelp(getPref("llmBaseURL"), getPref("llmModel")),
+    syncProvider(getPref("llmBaseURL")),
   );
 
   select.addEventListener("change", () => {
@@ -154,6 +136,6 @@ export function bindLLMProviderEvents(doc: Document) {
     setPref("llmBaseURL", provider.baseURL);
     model.value = provider.model;
     setPref("llmModel", provider.model);
-    updateModelHelp(provider.baseURL, provider.model);
+    syncProvider(provider.baseURL);
   });
 }
