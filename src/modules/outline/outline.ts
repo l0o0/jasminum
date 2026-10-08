@@ -217,7 +217,7 @@ export async function getOutlineFromPDF(
   return outline;
 }
 
-export function getOutlineFromPage(): OutlineNode[] {
+export function getOutlineFromPage(doc?: Document): OutlineNode[] {
   function loop(ul: Element): OutlineNode[] {
     const lis = Array.from(
       ul.querySelectorAll(":scope > li.tree-item"),
@@ -238,10 +238,13 @@ export function getOutlineFromPage(): OutlineNode[] {
       };
     });
   }
-  const reader = Zotero.Reader.getByTabID(
-    ztoolkit.getGlobal("Zotero_Tabs").selectedID,
-  );
-  const rootUL = reader._iframeWindow!.document.querySelector("#root-list ");
+  if (!doc) {
+    const reader = Zotero.Reader.getByTabID(
+      ztoolkit.getGlobal("Zotero_Tabs").selectedID,
+    );
+    doc = reader._iframeWindow!.document;
+  }
+  const rootUL = doc.querySelector("#root-list");
   if (!rootUL) return [];
   return loop(rootUL);
 }
@@ -291,7 +294,7 @@ function migrateOutlineInfo(
   raw: any,
   fromSchema: number,
 ): { outline: OutlineNode[]; baseFontSize: number } {
-  let outline: OutlineNode[] = raw.outline ?? [];
+  const outline: OutlineNode[] = raw.outline ?? [];
   let baseFontSize = DEFAULT_BASE_FONT_SIZE;
 
   // v1 → v2: add baseFontSize

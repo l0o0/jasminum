@@ -154,13 +154,14 @@ export async function loadBookmarksFromJSON(
   return info?.bookmarks ?? null;
 }
 
-export function getBookmarksFromPage(): BookmarkNode[] {
-  const reader = Zotero.Reader.getByTabID(
-    ztoolkit.getGlobal("Zotero_Tabs").selectedID,
-  );
-  const rootUL = reader._iframeWindow!.document.querySelector(
-    "#bookmark-root-list",
-  );
+export function getBookmarksFromPage(doc?: Document): BookmarkNode[] {
+  if (!doc) {
+    const reader = Zotero.Reader.getByTabID(
+      ztoolkit.getGlobal("Zotero_Tabs").selectedID,
+    );
+    doc = reader._iframeWindow!.document;
+  }
+  const rootUL = doc.querySelector("#bookmark-root-list");
   if (!rootUL) return [];
 
   const bookmarkItems = Array.from(rootUL.querySelectorAll("li.bookmark-item"));

@@ -1,7 +1,7 @@
 import {
   saveOutlineToJSON,
   createTreeNodes,
-  getOutlineFromPDF,
+  getOutlineFromPage,
   updateOutlineFontSize,
   loadOutlineInfoFromJSON,
   DEFAULT_BASE_FONT_SIZE,
@@ -57,7 +57,22 @@ export function initEventListener(
   function hideShowMyOutlineAndBar(e: Event) {
     const targetElement = e.target as Element;
     const button = targetElement.closest("button");
-    if (!button) return;
+    if (
+      !button ||
+      ![
+        "j-outline-button",
+        "j-bookmark-button",
+        "viewThumbnail",
+        "viewAnnotations",
+        "viewOutline",
+      ].includes(button.id)
+    )
+      return;
+    for (const id of ["j-outline-button", "j-bookmark-button"]) {
+      doc
+        .getElementById(id)
+        ?.setAttribute("aria-selected", String(button.id === id));
+    }
     ztoolkit.log("click to hide outline/bookmark", targetElement, button);
 
     // Enable j outline view
@@ -166,8 +181,14 @@ export function initEventListener(
     ?.addEventListener("click", async (ev: Event) => {
       const button = ev.currentTarget as HTMLButtonElement;
       button.disabled = true;
-      await addOutlineToPDFRunner();
-      button.disabled = false;
+      try {
+        await addOutlineToPDFRunner(reader);
+      } catch (error) {
+        ztoolkit.log("Failed to save PDF outline", error);
+        reader._iframeWindow!.alert(getString("outline-save-failed"));
+      } finally {
+        button.disabled = false;
+      }
     });
 
   // 拖拽相关事件
@@ -566,12 +587,10 @@ export async function handleDrop(e: DragEvent) {
     return;
   }
 
-  // 移除拖拽的节点
+  // Measure before removing the dragged row, which shifts the target's position.
+  const dropPosition = determineDropPosition(e, targetTreeNode);
   const oldParent = draggedNode.parentNode! as HTMLElement;
   oldParent.removeChild(draggedNode);
-
-  // 判断放置位置：是作为子节点还是兄弟节点
-  const dropPosition = determineDropPosition(e, targetTreeNode);
 
   if (dropPosition === "child") {
     // 作为子节点
@@ -662,13 +681,13 @@ function determineDropPosition(event: DragEvent, targetNode: Element) {
   const rect = targetNode.getBoundingClientRect();
   const mouseY = event.clientY;
 
-  // 上三分之一区域放在前面，下三分之一区域放在后面，中间放在内部
+  // Keep the drop zones consistent with the preview indicator.
   const relativeY = mouseY - rect.top;
   const height = rect.height;
 
-  if (relativeY < height / 3) {
+  if (relativeY < height * 0.25) {
     return "before";
-  } else if (relativeY > (height * 2) / 3) {
+  } else if (relativeY > height * 0.75) {
     return "after";
   } else {
     return "child";
@@ -952,55 +971,49 @@ function clickToPosition(targetElement: Element) {
 }
 
 // Use worker to add outline to PDF
-export async function addOutlineToPDFRunner(): Promise<void> {
-  const reader = Zotero.Reader.getByTabID(
-    ztoolkit.getGlobal("Zotero_Tabs").selectedID,
-  );
-  if (!reader) {
-    ztoolkit.log("No reader found");
-    return;
-  }
-  const outlineNodes = await getOutlineFromPDF(reader);
-  if (!outlineNodes) {
-    ztoolkit.log("No outline nodes found");
-    return;
-  }
-  const filePath = reader._item.getFilePath();
+export async function addOutlineToPDFRunner(
+  reader: _ZoteroTypes.ReaderInstance,
+): Promise<void> {
+  const outlineNodes = getOutlineFromPage(reader._iframeWindow!.document);
+  await saveOutlineToJSON(reader._item, outlineNodes);
+  const filePath = await reader._item.getFilePathAsync();
+  if (!filePath) throw new Error("PDF file is missing");
   const worker = new Worker(
     "chrome://jasminum/content/scripts/jasminum-worker.js",
   );
-  worker.onmessage = (event) => {
-    // @ts-ignore - event.data is not typed
-    const data = event.data;
-    ztoolkit.log("data", data);
-    if (data && data.action === "addOutlineReturn") {
-      ztoolkit.log("Add outline to PDF return", data);
-    }
-  };
-
-  return new Promise((resolve, reject) => {
-    ztoolkit.log(filePath, outlineNodes);
-    const jobID = Zotero.Utilities.randomString();
-
-    // 消息处理器
-    const handler = (event: MessageEvent<any>) => {
-      const data = event.data;
-      ztoolkit.log("Main handler", data);
-      // 仅处理匹配 jobID 和 action 的消息
-      if (data?.action !== "addOutlineReturn" || data?.jobID !== jobID) return;
-
-      worker.removeEventListener("message", handler as EventListener);
-
-      if (data.status === "success") {
-        resolve(data);
-      } else {
-        reject(new Error(data.error || "Unknown error"));
-      }
-    };
-
-    worker.addEventListener("message", handler as EventListener);
-    worker.postMessage({ action: "addOutline", jobID, filePath, outlineNodes });
-  });
+  try {
+    await new Promise<void>((resolve, reject) => {
+      const jobID = Zotero.Utilities.randomString();
+      worker.onmessage = (event: Event) => {
+        const data = (event as MessageEvent).data;
+        if (data?.action !== "addOutlineReturn" || data?.jobID !== jobID)
+          return;
+        if (data.status === "success") resolve();
+        else reject(new Error(data.error || "Failed to save PDF outline"));
+      };
+      worker.onerror = (event: ErrorEvent) => {
+        event.preventDefault();
+        reject(new Error(event.message || "PDF worker failed"));
+      };
+      worker.onmessageerror = () =>
+        reject(new Error("Invalid PDF worker response"));
+      worker.postMessage({
+        action: "addOutline",
+        jobID,
+        filePath,
+        outlineNodes,
+      });
+    });
+  } finally {
+    worker.terminate();
+  }
+  // Reload the updated file so Zotero's native outline reflects the saved tree.
+  try {
+    await (reader.reload as () => Promise<void>)();
+  } catch (error) {
+    ztoolkit.log("PDF outline saved, but reader refresh failed", error);
+    reader._iframeWindow!.alert(getString("outline-refresh-failed"));
+  }
 }
 
 // ========== 书签相关函数 ==========
@@ -1339,17 +1352,14 @@ export async function handleBookmarkDrop(e: DragEvent) {
     return;
   }
 
-  // 移除拖拽的节点
-  const oldParent = draggedNode.parentNode! as HTMLElement;
-  oldParent.removeChild(draggedNode);
-
-  // 判断放置位置
+  // Measure before removing the dragged row, which shifts the target's position.
   const rect = targetBookmarkNode.getBoundingClientRect();
   const mouseY = e.clientY;
   const relativeY = mouseY - rect.top;
   const height = rect.height;
 
   const targetParent = targetLi.parentNode!;
+  draggedNode.parentNode!.removeChild(draggedNode);
 
   if (relativeY < height * 0.5) {
     // 放在前面

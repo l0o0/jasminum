@@ -3,6 +3,7 @@ import { getString } from "../utils/locale";
 import { getPref } from "../utils/prefs";
 import { isChineseTopAttachment } from "../utils/detect";
 import { registerOutline } from "./outline";
+import { onSelectionContextMenu } from "./outline/selection";
 import { splitName } from "./tools";
 
 /**
@@ -128,13 +129,11 @@ export function registerTab() {
     config.addonID,
   );
 
-  //   Zotero.Reader.registerEventListener(
-  //     "renderTextSelectionPopup",
-  //     (event: any) => {
-  //       ztoolkit.log(event);
-  //       event.append("<div>Jasminum</div>");
-  //     },
-  //   );
+  Zotero.Reader.registerEventListener(
+    "createViewContextMenu",
+    onSelectionContextMenu,
+    config.addonID,
+  );
 }
 
 async function tabRegisterCallback(event: any) {

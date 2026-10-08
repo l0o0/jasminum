@@ -28,15 +28,21 @@ function prepareData(
   outlineNodes: OutlineNode[],
   pdfDoc: PDFDocument,
 ): [OutlineNode[], number] {
-  let counts = 0;
   outlineNodes.forEach((node: OutlineNode) => {
     node.ref = pdfDoc.context.nextRef();
     if (node.children && node.children.length > 0) {
       node.children = prepareData(node.children, pdfDoc)[0];
-      counts = counts + 1;
     }
   });
-  return [outlineNodes, counts];
+  return [outlineNodes, countVisibleNodes(outlineNodes)];
+}
+
+function countVisibleNodes(nodes: OutlineNode[]): number {
+  return nodes.reduce(
+    (count, node) =>
+      count + 1 + (node.collapsed ? 0 : countVisibleNodes(node.children ?? [])),
+    0,
+  );
 }
 
 function createOutlineItem(
@@ -59,7 +65,9 @@ function createOutlineItem(
     );
     outlineItemDictMap.set(
       PDFName.of("Count"),
-      PDFNumber.of(node.children.length),
+      PDFNumber.of(
+        countVisibleNodes(node.children) * (node.collapsed ? -1 : 1),
+      ),
     );
   }
 
@@ -113,6 +121,29 @@ export async function addOutlineToPDF(
     if (kid instanceof PDFPageLeaf) pageRefs.push(ref);
   });
 
+  const validate = (nodes: OutlineNode[]) => {
+    for (const node of nodes) {
+      if (
+        !Number.isInteger(node.page) ||
+        node.page < 1 ||
+        node.page > pageRefs.length ||
+        !Number.isFinite(node.x) ||
+        !Number.isFinite(node.y)
+      ) {
+        throw new Error(`Invalid outline destination: ${node.title}`);
+      }
+      validate(node.children ?? []);
+    }
+  };
+  validate(outlineNodes);
+  if (!outlineNodes.length) {
+    pdfDoc.catalog.delete(PDFName.of("Outlines"));
+    await IOUtils.write(pdfPath, await pdfDoc.save(), {
+      tmpPath: `${pdfPath}.jasminum.tmp`,
+    });
+    return;
+  }
+
   const rootRef = pdfDoc.context.nextRef();
   const [preparedOutlineNodes, totalCounts] = prepareData(outlineNodes, pdfDoc);
   // Create outline item dict
@@ -128,27 +159,29 @@ export async function addOutlineToPDF(
 
   console.log("Prepared outline nodes: ", preparedOutlineNodes);
   // Add outline item dict
-  const loop = (nodes: OutlineNode[]) => {
+  const loop = (nodes: OutlineNode[], parentRef: PDFRef) => {
     nodes.forEach((node: OutlineNode, idx: number) => {
       // Create outline item dict
       createOutlineItem(
         pdfDoc,
         node,
-        node.level === 1 ? rootRef : node.ref,
+        parentRef,
         idx > 0 ? nodes[idx - 1].ref : null,
         idx < nodes.length - 1 ? nodes[idx + 1].ref : null,
         pageRefs[node.page - 1],
       );
       if (node.children && node.children.length > 0) {
         const children = node.children;
-        loop(children);
+        loop(children, node.ref!);
       }
     });
   };
 
-  loop(preparedOutlineNodes);
+  loop(preparedOutlineNodes, rootRef);
 
   const pdfBytesWithOutline = await pdfDoc.save();
-  await IOUtils.write(pdfPath, pdfBytesWithOutline);
+  await IOUtils.write(pdfPath, pdfBytesWithOutline, {
+    tmpPath: `${pdfPath}.jasminum.tmp`,
+  });
   console.log("Add outline to pdf complete.");
 }

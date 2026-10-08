@@ -13,11 +13,20 @@ self.onmessage = async (e) => {
     });
   } else if (data && data.action === "addOutline") {
     const { filePath, outlineNodes } = data;
-    await addOutlineToPDF(filePath, outlineNodes);
-    self.postMessage({
-      action: "addOutlineReturn",
-      jobID: data.jobID,
-      status: "success",
-    });
+    try {
+      await addOutlineToPDF(filePath, outlineNodes);
+      self.postMessage({
+        action: "addOutlineReturn",
+        jobID: data.jobID,
+        status: "success",
+      });
+    } catch (error) {
+      self.postMessage({
+        action: "addOutlineReturn",
+        jobID: data.jobID,
+        status: "error",
+        error: error instanceof Error ? error.message : String(error),
+      });
+    }
   }
 };

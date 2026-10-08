@@ -95,3 +95,10 @@ llm-test-running = 正在测试当前填写的接口和模型…
 llm-test-success = 连接及 JSON 输出测试通过（图片识别能力未测试）。
 llm-test-invalid-response = 接口已响应，但未返回预期的 JSON 结果。
 llm-test-failed = 测试失败或超时，请检查 Base URL、API Key、模型及 JSON Object 支持。
+
+outline-save-failed = 目录保存失败，请检查 PDF 文件是否可写后重试。
+
+selection-add-bookmark = 将选中文字添加为书签
+selection-add-outline = 将选中文字添加为目录
+selection-add-failed = 添加失败，请重试。
+outline-refresh-failed = 目录已保存，但阅读器刷新失败。请重新打开 PDF 查看。

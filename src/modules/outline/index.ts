@@ -211,7 +211,24 @@ export function renderBookmarkTree(
   return bookmarkContainer;
 }
 
-export async function addOutlineToReader(reader: _ZoteroTypes.ReaderInstance) {
+const pendingReaders = new WeakMap<
+  _ZoteroTypes.ReaderInstance,
+  Promise<void>
+>();
+
+export function addOutlineToReader(
+  reader: _ZoteroTypes.ReaderInstance,
+): Promise<void> {
+  const pending = pendingReaders.get(reader);
+  if (pending) return pending;
+  const operation = initializeOutline(reader).finally(() =>
+    pendingReaders.delete(reader),
+  );
+  pendingReaders.set(reader, operation);
+  return operation;
+}
+
+async function initializeOutline(reader: _ZoteroTypes.ReaderInstance) {
   const doc = reader._iframeWindow!.document;
   if (doc.querySelector("#j-outline-button")) {
     ztoolkit.log("Outline is already added, skip.");
@@ -226,8 +243,6 @@ export async function addOutlineToReader(reader: _ZoteroTypes.ReaderInstance) {
     5000,
   );
   ztoolkit.log("Sidebar container is ready.");
-  addButton(doc);
-  addBookmarkButton(doc); // 同时添加书签按钮
 
   const joutline = await getOutlineFromPDF(reader);
   if (!joutline) {
@@ -247,6 +262,9 @@ export async function addOutlineToReader(reader: _ZoteroTypes.ReaderInstance) {
   const bookmarkInfo = await loadBookmarkInfoFromJSON(reader._item);
   const bookmarkBaseFontSize =
     bookmarkInfo?.baseFontSize ?? DEFAULT_BOOKMARK_FONT_SIZE;
+
+  addButton(doc);
+  addBookmarkButton(doc);
 
   registerOutlineCSS(doc);
   registerThemeChange(reader._iframeWindow!);
@@ -290,14 +308,16 @@ export async function registerOutline(tabID: string) {
     ztoolkit.log("Sidebar toggle button is ready.");
     // Sidebar is already opened, add outline.
     if (doc && doc.getElementById("sidebarContainer")) {
-      addOutlineToReader(reader);
+      await addOutlineToReader(reader);
     }
     // Click toggle button to open sidebar.
     doc
       ?.getElementById("sidebarToggle")
       ?.addEventListener("click", (ev: Event) => {
         ztoolkit.log("outline is added by toggle click");
-        addOutlineToReader(reader);
+        void addOutlineToReader(reader).catch((error) =>
+          ztoolkit.log("Unable to initialize outline", error),
+        );
       });
   } catch (e) {
     Zotero.debug(

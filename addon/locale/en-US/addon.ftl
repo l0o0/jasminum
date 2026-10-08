@@ -95,3 +95,10 @@ llm-test-running = Testing the entered API and model…
 llm-test-success = Connection and JSON output test passed. Image recognition was not tested.
 llm-test-invalid-response = The API responded but did not return the expected JSON result.
 llm-test-failed = Test failed or timed out. Check Base URL, API Key, model, and JSON Object support.
+
+outline-save-failed = Could not save the outline. Check that the PDF is writable and try again.
+
+selection-add-bookmark = Add Selected Text as Bookmark
+selection-add-outline = Add Selected Text to Outline
+selection-add-failed = Could not add the selection. Please try again.
+outline-refresh-failed = The outline was saved, but the reader could not refresh. Reopen the PDF to view it.
