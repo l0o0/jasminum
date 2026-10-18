@@ -185,3 +185,120 @@ export async function addOutlineToPDF(
   });
   console.log("Add outline to pdf complete.");
 }
+
+// Read-only geometry for outline recognition; avoids cross-window PDF.js objects.
+export async function getPageGeometries(pdfPath: string) {
+  const doc = await PDFDocument.load(await IOUtils.read(pdfPath));
+  return doc.getPages().map((page) => {
+    const media = page.getMediaBox();
+    const crop = page.getCropBox();
+    const x = Math.max(media.x, crop.x),
+      y = Math.max(media.y, crop.y);
+    const width = Math.min(media.x + media.width, crop.x + crop.width) - x;
+    const height = Math.min(media.y + media.height, crop.y + crop.height) - y;
+    return {
+      ...(width > 0 && height > 0 ? { x, y, width, height } : media),
+      rotation: ((page.getRotation().angle % 360) + 360) % 360,
+    };
+  });
+}
+
+export async function extractTextPDF(pdfPath: string, pageIndexes: number[]) {
+  const source = await PDFDocument.load(await IOUtils.read(pdfPath));
+  const target = await PDFDocument.create();
+  for (const page of await target.copyPages(source, pageIndexes))
+    target.addPage(page);
+  return (await target.save()).buffer;
+}
+
+/** Resolve native PDF outlines without a reader, including named destinations. */
+export async function readNativeOutline(
+  pdfPath: string,
+): Promise<OutlineNode[]> {
+  const pdf = await PDFDocument.load(await IOUtils.read(pdfPath));
+  const context = pdf.context;
+  const resolve = (value: any): any =>
+    value instanceof PDFRef ? context.lookup(value) : value;
+  const get = (dict: any, key: string): any =>
+    resolve(dict)?.get?.(PDFName.of(key));
+  const text = (value: any): string => resolve(value)?.decodeText?.() ?? "";
+  const names = new Map<string, any>();
+  const visitedNames = new Set<any>();
+  const walkNames = (value: any) => {
+    const dict = resolve(value);
+    if (!dict || visitedNames.has(dict)) return;
+    visitedNames.add(dict);
+    const entries = resolve(get(dict, "Names"));
+    if (entries instanceof PDFArray)
+      for (let i = 0; i + 1 < entries.size(); i += 2)
+        names.set(text(entries.get(i)), entries.get(i + 1));
+    const kids = resolve(get(dict, "Kids"));
+    if (kids instanceof PDFArray)
+      for (let i = 0; i < kids.size(); i++) walkNames(kids.get(i));
+  };
+  walkNames(get(resolve(get(pdf.catalog, "Names")), "Dests"));
+  const legacy = resolve(get(pdf.catalog, "Dests"));
+  const pages = pdf.getPages();
+  const seen = new Set<any>();
+  const walk = (first: any, level: number): OutlineNode[] => {
+    const result: OutlineNode[] = [];
+    for (let value = first; value; ) {
+      const dict = resolve(value);
+      if (!(dict instanceof PDFDict) || seen.has(dict)) break;
+      seen.add(dict);
+      let dest = resolve(
+        get(dict, "Dest") ?? get(resolve(get(dict, "A")), "D"),
+      );
+      if (
+        dest instanceof PDFName ||
+        dest instanceof PDFHexString ||
+        typeof dest?.decodeText === "function"
+      )
+        dest = resolve(names.get(text(dest)) ?? get(legacy, text(dest)));
+      if (dest instanceof PDFDict) dest = resolve(get(dest, "D"));
+      let page = 1,
+        x = 0,
+        y = pages[0]?.getHeight() ?? 0;
+      if (dest instanceof PDFArray) {
+        const ref = dest.get(0);
+        const index =
+          ref instanceof PDFNumber
+            ? ref.asNumber()
+            : pages.findIndex((p) => p.ref.toString() === ref?.toString());
+        if (index >= 0 && index < pages.length) {
+          page = index + 1;
+          const box = pages[index].getCropBox();
+          x = box.x;
+          y = box.y + box.height;
+          const mode = text(dest.get(1));
+          const number = (i: number, fallback: number) => {
+            const n = i < dest.size() ? resolve(dest.get(i)) : null;
+            return n instanceof PDFNumber ? n.asNumber() : fallback;
+          };
+          if (mode === "XYZ") {
+            x = number(2, x);
+            y = number(3, y);
+          } else if (mode === "FitH" || mode === "FitBH") y = number(2, y);
+          else if (mode === "FitV" || mode === "FitBV") x = number(2, x);
+          else if (mode === "FitR") {
+            x = number(2, x);
+            y = number(5, y);
+          }
+        }
+      }
+      const count = resolve(get(dict, "Count"));
+      result.push({
+        title: text(get(dict, "Title")),
+        level,
+        page,
+        x,
+        y,
+        collapsed: count instanceof PDFNumber && count.asNumber() < 0,
+        children: walk(get(dict, "First"), level + 1),
+      });
+      value = get(dict, "Next");
+    }
+    return result;
+  };
+  return walk(get(resolve(get(pdf.catalog, "Outlines")), "First"), 1);
+}

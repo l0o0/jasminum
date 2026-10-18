@@ -127,6 +127,33 @@
           <html:div class="pref-popup-body">
             <html:div class="llm-config-row">
               <html:label
+                for="jasminum-llm-profile"
+                data-l10n-id="llm-profile-list"
+              />
+              <html:div style="display: flex; gap: 6px; min-width: 0">
+                <html:select
+                  id="jasminum-llm-profile"
+                  style="flex: 1; min-width: 0"
+                />
+                <html:button
+                  id="jasminum-llm-profile-add"
+                  data-l10n-id="llm-profile-add"
+                />
+                <html:button
+                  id="jasminum-llm-profile-delete"
+                  data-l10n-id="llm-profile-delete"
+                />
+              </html:div>
+            </html:div>
+            <html:div class="llm-config-row">
+              <html:label
+                for="jasminum-llm-profile-name"
+                data-l10n-id="llm-profile-name"
+              />
+              <html:input id="jasminum-llm-profile-name" type="text" />
+            </html:div>
+            <html:div class="llm-config-row">
+              <html:label
                 for="jasminum-llm-provider"
                 data-l10n-id="label-llm-provider"
               />
@@ -165,7 +192,6 @@
               <html:input
                 id="jasminum-llm-base-url"
                 type="url"
-                preference="llmBaseURL"
                 placeholder="https://api.example.com/v1"
               />
             </html:div>
@@ -174,7 +200,6 @@
               <html:input
                 id="jasminum-llm-api-key"
                 type="password"
-                preference="llmApiKey"
                 autocomplete="off"
               />
             </html:div>
@@ -186,7 +211,6 @@
               <html:input
                 id="jasminum-llm-model"
                 type="text"
-                preference="llmModel"
                 data-l10n-id="llm-model-placeholder"
               />
             </html:div>

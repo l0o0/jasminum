@@ -67,6 +67,11 @@ async function main() {
     parentRef = ref;
     ref = entry.get(name("First"));
   }
+  const native = await worker.readNativeOutline("memory.pdf");
+  assert.equal(native[0].title, "A");
+  assert.equal(native[0].x, 10);
+  assert.equal(native[0].y, 100);
+  assert.equal(native[0].children[0].children[0].level, 3);
   const before = bytes;
   await assert.rejects(
     worker.addOutlineToPDF("memory.pdf", [{ ...node("Invalid"), page: 2 }]),
@@ -106,6 +111,7 @@ async function main() {
   const events = load(
     "src/modules/outline/events.ts",
     {
+      "./savePDF": {},
       "./outline": { saveOutlineToJSON: async () => {} },
       "./bookmark": { saveBookmarksToJSON: async () => {} },
       "./style": {},
@@ -333,9 +339,18 @@ async function main() {
           });
       }
     }
+    const pdfWriter = load(
+      "src/modules/outline/savePDF.ts",
+      {},
+      {
+        Worker: FakeWorker,
+        Zotero: { Utilities: { randomString: () => "test" } },
+      },
+    );
     const runner = load(
       "src/modules/outline/events.ts",
       {
+        "./savePDF": pdfWriter,
         "./outline": {
           getOutlineFromPage: (d) => {
             assert.equal(d, doc);

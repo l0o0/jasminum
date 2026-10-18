@@ -1,0 +1,298 @@
+<?xml version="1.0"?>
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta charset="utf-8" />
+    <title>Jasminum</title>
+    <style>
+      :root {
+        color-scheme: light dark;
+        font:
+          14px system-ui,
+          sans-serif;
+        background: #f1f5fb;
+        color: #242b36;
+      }
+      body {
+        margin: 0;
+        height: 100vh;
+        display: flex;
+        flex-direction: column;
+      }
+      header {
+        padding: 16px 24px 12px;
+        display: flex;
+        align-items: center;
+        gap: 18px;
+      }
+      h1 {
+        font-size: 18px;
+        margin: 0;
+        flex-shrink: 0;
+      }
+      #edit-hint {
+        flex: 1;
+        font-size: 12px;
+        line-height: 1.5;
+        color: #657084;
+        overflow-wrap: anywhere;
+      }
+      main {
+        flex: 1;
+        min-height: 0;
+        margin: 0 20px;
+        padding: 12px;
+        overflow: auto;
+        background: #fff;
+        border: 1px solid #d3dbe7;
+        border-radius: 8px;
+      }
+      main p {
+        margin: 0 0 12px;
+        color: #657084;
+        font-size: 12px;
+        line-height: 1.6;
+      }
+      main button {
+        color: inherit;
+        cursor: pointer;
+        font: inherit;
+      }
+      .outline-entry {
+        display: flex;
+        align-items: center;
+        gap: 3px;
+      }
+      .outline-jump {
+        flex-shrink: 0;
+        width: 28px;
+        height: 28px;
+        padding: 0;
+        border: 1px solid #ccd5e1;
+        border-radius: 5px;
+        background: transparent;
+        font-size: 18px;
+      }
+      .outline-row {
+        flex: 1;
+        min-width: 0;
+        display: flex;
+        align-items: stretch;
+        gap: 12px;
+        width: 100%;
+        text-align: start;
+        margin: 0;
+        padding: 0 2px 0 8px;
+        border: 0;
+        border-top: 2px solid transparent;
+        border-bottom: 2px solid transparent;
+        border-radius: 0;
+        background: transparent;
+        box-shadow: none;
+      }
+      .outline-heading {
+        position: relative;
+        flex: 1;
+        min-width: 0;
+        padding-block: 7px;
+        line-height: 1.5;
+        overflow-wrap: anywhere;
+      }
+      .outline-page {
+        width: 5ch;
+        padding: 3px 4px;
+        border: 1px solid transparent;
+        border-radius: 4px;
+        background: transparent;
+        font: inherit;
+        appearance: textfield;
+        flex-shrink: 0;
+        text-align: right;
+        font-variant-numeric: tabular-nums;
+        align-self: center;
+        color: #657084;
+      }
+      .outline-page:hover,
+      .outline-page:focus {
+        border-color: #90abd0;
+      }
+      .outline-confidence {
+        align-self: center;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 18px;
+        height: 18px;
+        flex-shrink: 0;
+        border-radius: 50%;
+        font-size: 12px;
+        font-weight: 700;
+      }
+      .outline-confidence.exact {
+        color: #167346;
+      }
+      .outline-confidence.approx {
+        color: #b38300;
+      }
+      .outline-guide {
+        position: absolute;
+        top: -2px;
+        bottom: -2px;
+        border-inline-start: 1px solid #ccd5e1;
+        pointer-events: none;
+      }
+      .outline-guide-branch::after {
+        content: "";
+        position: absolute;
+        top: 50%;
+        width: 10px;
+        border-top: 1px solid #ccd5e1;
+      }
+      main button:hover {
+        background: #edf3fc !important;
+      }
+      main button:focus {
+        background: #e3edfc !important;
+        outline: 2px solid #4084db;
+        outline-offset: -2px;
+      }
+      footer {
+        padding: 12px 24px 16px;
+      }
+      #status {
+        color: #657084;
+        font-size: 12px;
+        line-height: 1.5;
+        min-height: 18px;
+        margin: 0 0 12px;
+        overflow-wrap: anywhere;
+      }
+      #actions {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+      #actions button {
+        appearance: none;
+        box-sizing: border-box;
+        min-height: 34px;
+        padding: 6px 14px;
+        margin: 0;
+        border: 1px solid transparent;
+        border-radius: 7px;
+        font: inherit;
+        font-size: 13px;
+        line-height: 20px;
+        cursor: pointer;
+        transition:
+          background-color 0.12s,
+          border-color 0.12s;
+      }
+      #actions .quiet {
+        color: #56657a;
+        background: transparent;
+        padding-inline: 10px;
+      }
+      #actions .quiet:hover:not(:disabled) {
+        background: #e4ebf5;
+        color: #243b5a;
+      }
+      #actions .secondary {
+        margin-inline-start: auto;
+        background: #fff;
+        color: #344055;
+        border-color: #cdd6e3;
+      }
+      #actions .secondary:hover:not(:disabled) {
+        background: #edf2f9;
+        border-color: #aebed3;
+      }
+      #actions .primary {
+        background: #2869c4;
+        color: white;
+        border-color: #2869c4;
+        font-weight: 600;
+        min-width: 104px;
+      }
+      #actions .primary:hover:not(:disabled) {
+        background: #2059aa;
+        border-color: #2059aa;
+      }
+      #actions button:focus-visible {
+        outline: 2px solid #4084db;
+        outline-offset: 2px;
+      }
+      @media (max-width: 540px) {
+        #actions {
+          flex-wrap: wrap;
+        }
+      }
+      button:disabled {
+        opacity: 0.5;
+        cursor: default !important;
+      }
+      @media (prefers-color-scheme: dark) {
+        :root {
+          background: #252a33;
+          color: #e6e9ef;
+        }
+        #status {
+          color: #aeb9ca;
+        }
+        #actions .quiet {
+          color: #b7c6db;
+        }
+        #actions .quiet:hover:not(:disabled) {
+          background: #354153;
+          color: #eef4ff;
+        }
+        #actions .secondary {
+          background: #303640;
+          color: #e6e9ef;
+          border-color: #586170;
+        }
+        #actions .secondary:hover:not(:disabled) {
+          background: #3b4655;
+          border-color: #7b8da5;
+        }
+        main {
+          background: #303640;
+          border-color: #586170;
+        }
+        .outline-page,
+        #edit-hint,
+        main p {
+          color: #aeb9ca;
+        }
+        .outline-guide {
+          border-color: #586a80;
+        }
+        .outline-guide-branch::after {
+          border-color: #586a80;
+        }
+        main button:hover {
+          background: #3a4657 !important;
+        }
+        main button:focus {
+          background: #354d6b !important;
+        }
+      }
+    </style>
+    <script>
+      <![CDATA[
+          window.addEventListener("DOMContentLoaded", () => window.arguments[0].init(window), { once: true });
+        ]]>
+    </script>
+  </head>
+  <body>
+    <header>
+      <h1 id="title"></h1>
+      <div id="edit-hint"></div>
+    </header>
+    <main id="results" tabindex="-1"></main>
+    <footer>
+      <div id="status" role="status"></div>
+      <div id="actions"></div>
+    </footer>
+  </body>
+</html>

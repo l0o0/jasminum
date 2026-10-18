@@ -14,6 +14,7 @@ pref("isMainlandChina", true);
 pref("cnkiAttachmentCookie", "");
 pref("similarityThresholdForMetaData", "0.6");
 /* AI recognition (OpenAI-compatible API) */
+pref("llmProfiles", "");
 pref("llmBaseURL", "");
 pref("llmApiKey", "");
 pref("llmModel", "");

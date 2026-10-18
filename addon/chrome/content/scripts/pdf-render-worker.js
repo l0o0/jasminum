@@ -14,6 +14,24 @@ self.document = {
 
 self.onmessage = async ({ data }) => {
   try {
+    if (data.action === "text") {
+      const result = await self.worker.pdf.getRecognizerData(
+        data.buf,
+        undefined,
+        async (path) => {
+          const response = await fetch(
+            path.startsWith("wasm/")
+              ? `resource://zotero/document-worker/${path}`
+              : `resource://zotero/reader/pdf/web/${path}`,
+          );
+          if (!response.ok)
+            throw new Error(`Unable to load PDF font resource: ${path}`);
+          return new Uint8Array(await response.arrayBuffer());
+        },
+      );
+      self.postMessage({ textPages: result.pages });
+      return;
+    }
     const images = [];
     for (const pageIndex of data.pageIndexes) {
       const canvas = await self.worker.pdf.renderArea(

@@ -36,6 +36,7 @@ type ScrapeTranslateResult =
     };
 
 type TaskStatus =
+  | "paused"
   | "waiting"
   | "processing"
   | "multiple_results"

@@ -1,0 +1,98 @@
+<?xml version="1.0"?>
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta charset="utf-8" />
+    <title>Jasminum</title>
+    <style>
+      :root {
+        color-scheme: light dark;
+        font:
+          14px system-ui,
+          sans-serif;
+        background: #f1f5fb;
+        color: #242b36;
+      }
+      body {
+        margin: 0;
+        padding: 20px;
+      }
+      h1 {
+        font-size: 20px;
+        margin: 0 0 12px;
+      }
+      p {
+        line-height: 1.5;
+        overflow-wrap: anywhere;
+      }
+      select {
+        max-width: 100%;
+        padding: 6px;
+      }
+      button {
+        padding: 7px 14px;
+        margin: 8px 8px 8px 0;
+        cursor: pointer;
+      }
+      button:disabled {
+        cursor: default;
+      }
+      .panel {
+        background: white;
+        border: 1px solid #cdd5e1;
+        border-radius: 8px;
+        padding: 12px;
+        margin: 12px 0;
+      }
+      table {
+        width: 100%;
+        table-layout: fixed;
+        border-collapse: collapse;
+      }
+      th,
+      td {
+        text-align: left;
+        vertical-align: top;
+        padding: 9px;
+        border-bottom: 1px solid #dce2eb;
+        overflow-wrap: anywhere;
+        white-space: pre-wrap;
+      }
+      th:first-child {
+        width: 24px;
+      }
+      th:nth-child(2) {
+        width: 95px;
+      }
+      #changes {
+        max-height: 440px;
+        overflow: auto;
+      }
+      #status {
+        min-height: 1.5em;
+      }
+      @media (prefers-color-scheme: dark) {
+        :root {
+          background: #252a33;
+          color: #e6e9ef;
+        }
+        .panel {
+          background: #303640;
+          border-color: #586170;
+        }
+        th,
+        td {
+          border-color: #586170;
+        }
+      }
+    </style>
+    <script>
+      <![CDATA[
+      window.addEventListener("DOMContentLoaded", () => window.arguments[0].init(window), { once: true });
+      ]]>
+    </script>
+  </head>
+  <body>
+    <main id="root"></main>
+  </body>
+</html>

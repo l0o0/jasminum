@@ -133,7 +133,7 @@ llm-provider-siliconflow = 硅基流動
 llm-provider-deepseek = DeepSeek
 llm-magiczotero-guide-title = 取得 MagicZotero API Key
 llm-magiczotero-guide-install = 在外掛程式商店安裝 Garden 外掛程式，並註冊帳號。
-llm-magiczotero-guide-copy = <a data-l10n-name="model-store">開啟模型商店</a>，點選 deepseek-v4-1-flash 模型，在右下角依序選擇「查看詳情」→「顯示設定」，複製 API Key。
+llm-magiczotero-guide-copy = <a data-l10n-name="model-store">開啟模型商店</a>，點選 deepseek-v4-flash 模型，在右下角依序選擇「查看詳情」→「顯示設定」，複製 API Key。
 llm-magiczotero-guide-paste = 將 API Key 貼到下方，然後點選「測試連線」。
 llm-magiczotero-store-unavailable = 請先安裝或更新 Garden 外掛程式，並啟用後重試。
 llm-magiczotero-store-failed = 模型商店開啟失敗，請在 Garden 外掛程式中重試。
@@ -184,3 +184,8 @@ metadata-source-configured = 已填寫介面設定
 metadata-source-unconfigured = 未設定介面
 metadata-source-all-enabled = 所有可用來源均已啟用。
 llm-test-button = 測試連線
+
+llm-profile-list = 已儲存介面
+llm-profile-add = 新增
+llm-profile-delete = 刪除
+llm-profile-name = 設定名稱

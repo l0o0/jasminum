@@ -111,6 +111,7 @@ interface StructuredResponseFormat {
 }
 
 interface JSONCompletionOptions {
+  signal?: AbortSignal;
   timeout?: number;
   systemPrompt: string;
   prompt: string;
@@ -388,36 +389,54 @@ class OpenAIClient {
           ...options.images.map(imageToContentPart),
         ]
       : options.prompt;
-    const response = await Zotero.HTTP.request(
-      "POST",
-      `${this.baseURL}/chat/completions`,
-      {
-        headers: {
-          Authorization: `Bearer ${this.apiKey}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          model: this.model,
-          messages: [
-            { role: "system", content: systemPrompt },
-            { role: "user", content: userContent },
-          ],
-          response_format: { type: "json_object" },
+    let xhr: XMLHttpRequest | undefined;
+    let rejectAbort: ((error: Error) => void) | undefined;
+    const abort = () => {
+      rejectAbort?.(new Error("Request cancelled"));
+      xhr?.abort();
+    };
+    if (options.signal?.aborted) throw new Error("Request cancelled");
+    const cancelled = new Promise<never>((_resolve, reject) => {
+      rejectAbort = reject;
+    });
+    options.signal?.addEventListener("abort", abort, { once: true });
+    try {
+      const response = await Promise.race([
+        cancelled,
+        Zotero.HTTP.request("POST", `${this.baseURL}/chat/completions`, {
+          headers: {
+            Authorization: `Bearer ${this.apiKey}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            model: this.model,
+            messages: [
+              { role: "system", content: systemPrompt },
+              { role: "user", content: userContent },
+            ],
+            response_format: { type: "json_object" },
+          }),
+          responseType: "text",
+          requestObserver: (request: XMLHttpRequest) => {
+            xhr = request;
+            if (options.signal?.aborted) abort();
+          },
+          timeout: options.timeout ?? 120000,
         }),
-        responseType: "text",
-        timeout: options.timeout ?? 120000,
-      },
-    );
-    const responseBody = JSON.parse(
-      response.responseText,
-    ) as ChatCompletionResponse;
-    const content = responseBody.choices?.[0]?.message?.content;
-    if (!content) {
-      throw new Error("LLM response does not contain message content");
+      ]);
+      const responseBody = JSON.parse(
+        response.responseText,
+      ) as ChatCompletionResponse;
+      const content = responseBody.choices?.[0]?.message?.content;
+      if (!content) {
+        throw new Error("LLM response does not contain message content");
+      }
+      const result = parseJSONContent<T>(content);
+      validateJSON(result, options.responseFormat.schema);
+      return result;
+    } finally {
+      options.signal?.removeEventListener("abort", abort);
     }
-    const result = parseJSONContent<T>(content);
-    validateJSON(result, options.responseFormat.schema);
-    return result;
   }
 
   async parsePDFFilename(filename: string): Promise<SearchOption | null> {

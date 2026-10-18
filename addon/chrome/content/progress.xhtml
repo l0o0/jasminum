@@ -356,6 +356,16 @@ href="chrome://zotero-platform/content/zotero.css" type="text/css"?>
           border-bottom-color: rgba(174, 203, 250, 0.6);
         }
       }
+      button.outline-stop:focus:not(:focus-visible) {
+        outline: none;
+      }
+      button.outline-stop:focus-visible {
+        outline: 2px solid #4084db;
+        outline-offset: 2px;
+      }
+      button.outline-stop:hover {
+        background: rgba(128, 128, 128, 0.12) !important;
+      }
     </style>
   </head>
   <body>

@@ -1,10 +1,14 @@
-import { getLocaleID } from "../../utils/locale";
-import { getPref, setPref } from "../../utils/prefs";
+import { getLocaleID, getString } from "../../utils/locale";
+import {
+  loadLLMProfiles,
+  saveLLMProfiles,
+  type LLMProfile,
+} from "./llmProfiles";
 
 const MAGICZOTERO_PROVIDER = {
   id: "magiczotero",
   baseURL: "https://gpt.magiczotero.top/v1",
-  model: "deepseek-v4-1-flash",
+  model: "deepseek-v4-flash",
 } as const;
 
 // Provider-specific model IDs; users can replace these with their own models.
@@ -86,18 +90,6 @@ export function bindLLMProviderEvents(doc: Document) {
     }
   });
 
-  // Only initialize unused settings; an existing key must keep its destination.
-  if (
-    !getPref("llmBaseURL").trim() &&
-    !getPref("llmApiKey").trim() &&
-    !getPref("llmModel").trim()
-  ) {
-    baseURL.value = MAGICZOTERO_PROVIDER.baseURL;
-    model.value = MAGICZOTERO_PROVIDER.model;
-    setPref("llmBaseURL", MAGICZOTERO_PROVIDER.baseURL);
-    setPref("llmModel", MAGICZOTERO_PROVIDER.model);
-  }
-
   for (const provider of LLM_PROVIDERS) {
     const option = doc.createElementNS(
       "http://www.w3.org/1999/xhtml",
@@ -116,26 +108,118 @@ export function bindLLMProviderEvents(doc: Document) {
     select.value = provider?.id ?? "custom";
     magicZoteroGuide.hidden = provider?.id !== "magiczotero";
   }
-  // Zotero fills preference-bound inputs after the pane's load handler.
-  syncProvider(getPref("llmBaseURL"));
-  baseURL.addEventListener("input", () => syncProvider(baseURL.value));
-  baseURL.addEventListener("syncfrompreference", () =>
-    syncProvider(getPref("llmBaseURL")),
-  );
-
+  const state = loadLLMProfiles(MAGICZOTERO_PROVIDER);
+  const profiles = doc.getElementById(
+    "jasminum-llm-profile",
+  ) as HTMLSelectElement;
+  const name = doc.getElementById(
+    "jasminum-llm-profile-name",
+  ) as HTMLInputElement;
+  const remove = doc.getElementById(
+    "jasminum-llm-profile-delete",
+  ) as HTMLButtonElement;
+  const active = () => state.profiles.find((p) => p.id === state.activeId)!;
+  const refreshList = () => {
+    profiles.replaceChildren();
+    for (const profile of state.profiles) {
+      const option = doc.createElementNS(
+        "http://www.w3.org/1999/xhtml",
+        "option",
+      ) as HTMLOptionElement;
+      option.value = profile.id;
+      option.textContent =
+        profile.name || profile.baseURL || profile.model || "API";
+      profiles.append(option);
+    }
+    profiles.value = state.activeId;
+    remove.disabled = state.profiles.length === 1;
+  };
+  const show = () => {
+    const profile = active();
+    baseURL.value = profile.baseURL;
+    apiKey.value = profile.apiKey;
+    model.value = profile.model;
+    name.value = profile.name;
+    refreshList();
+    syncProvider(profile.baseURL);
+    saveLLMProfiles(state);
+    // Invalidate connection results even for switches made by add/delete buttons.
+    profiles.dispatchEvent(
+      new doc.defaultView!.Event("change", { bubbles: true }),
+    );
+  };
+  const save = () => {
+    Object.assign(active(), {
+      name: name.value,
+      baseURL: baseURL.value,
+      apiKey: apiKey.value,
+      model: model.value,
+    });
+    saveLLMProfiles(state);
+    refreshList();
+    syncProvider(baseURL.value);
+  };
+  for (const input of [baseURL, apiKey, model, name])
+    input.addEventListener("input", save);
+  profiles.addEventListener("change", () => {
+    if (state.activeId === profiles.value) return;
+    state.activeId = profiles.value;
+    show();
+  });
+  const create = (values: Omit<LLMProfile, "id">) => {
+    const profile = { ...values, id: Zotero.Utilities.randomString(16) };
+    state.profiles.push(profile);
+    state.activeId = profile.id;
+    show();
+  };
+  doc
+    .getElementById("jasminum-llm-profile-add")!
+    .addEventListener("click", () => {
+      create({
+        name: getString("llm-profile-new"),
+        baseURL: "",
+        apiKey: "",
+        model: "",
+      });
+    });
+  remove.addEventListener("click", () => {
+    if (state.profiles.length < 2) return;
+    const index = state.profiles.findIndex((p) => p.id === state.activeId);
+    state.profiles.splice(index, 1);
+    state.activeId =
+      state.profiles[Math.min(index, state.profiles.length - 1)].id;
+    show();
+  });
   select.addEventListener("change", () => {
     const provider = LLM_PROVIDERS.find(({ id }) => id === select.value);
-    // Selecting Custom preserves the current editable settings.
-    if (!provider) return;
-    if (findLLMProvider(baseURL.value)?.id === provider.id) return;
-
-    // Clear credentials before changing the destination, including saved prefs.
-    apiKey.value = "";
-    setPref("llmApiKey", "");
-    baseURL.value = provider.baseURL;
-    setPref("llmBaseURL", provider.baseURL);
-    model.value = provider.model;
-    setPref("llmModel", provider.model);
-    syncProvider(provider.baseURL);
+    if (!provider) {
+      if (findLLMProvider(active().baseURL))
+        create({
+          name: getString("llm-profile-new"),
+          baseURL: "",
+          apiKey: "",
+          model: "",
+        });
+      return;
+    }
+    if (findLLMProvider(active().baseURL)?.id === provider.id) return;
+    const previous = state.profiles.find(
+      (p) => findLLMProvider(p.baseURL)?.id === provider.id,
+    );
+    if (previous) {
+      state.activeId = previous.id;
+      show();
+    } else
+      create({
+        name: {
+          magiczotero: "MagicZotero",
+          siliconflow: "SiliconFlow",
+          deepseek: "DeepSeek",
+        }[provider.id],
+        baseURL: provider.baseURL,
+        model: provider.model,
+        apiKey: "",
+      });
   });
+  show();
 }

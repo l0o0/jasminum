@@ -133,7 +133,7 @@ llm-provider-siliconflow = SiliconFlow
 llm-provider-deepseek = DeepSeek
 llm-magiczotero-guide-title = Get a MagicZotero API key
 llm-magiczotero-guide-install = Install the Garden plugin from the plugin store and create an account.
-llm-magiczotero-guide-copy = <a data-l10n-name="model-store">Open the model store</a> and select deepseek-v4-1-flash. In the lower-right corner, choose “查看详情” (View details), then “显示配置” (Show configuration), and copy the API key.
+llm-magiczotero-guide-copy = <a data-l10n-name="model-store">Open the model store</a> and select deepseek-v4-flash. In the lower-right corner, choose “查看详情” (View details), then “显示配置” (Show configuration), and copy the API key.
 llm-magiczotero-guide-paste = Paste the API key below, then click “Test connection”.
 llm-magiczotero-store-unavailable = Install or update the Garden plugin, enable it, and try again.
 llm-magiczotero-store-failed = The model store could not be opened. Try again from the Garden plugin.
@@ -184,3 +184,8 @@ metadata-source-configured = API settings filled in
 metadata-source-unconfigured = API not configured
 metadata-source-all-enabled = All available sources are enabled.
 llm-test-button = Test connection
+
+llm-profile-list = Saved connections
+llm-profile-add = Add
+llm-profile-delete = Delete
+llm-profile-name = Name

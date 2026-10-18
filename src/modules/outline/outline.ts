@@ -1,4 +1,4 @@
-import { wait } from "zotero-plugin-toolkit";
+import { outlineJob } from "./background";
 import { version } from "../../../package.json";
 import { getString } from "../../utils/locale";
 import { outline_css, ICONS } from "./style";
@@ -143,76 +143,14 @@ export function addButton(doc: Document) {
 // 有 JSON 文件优先读取JSON文件
 // 然后再获取PDF自带书签
 export async function getOutlineFromPDF(
-  reader: _ZoteroTypes.ReaderInstance,
+  source: Zotero.Item | _ZoteroTypes.ReaderInstance,
 ): Promise<OutlineNode[] | null> {
-  const item = reader._item;
-  // 优先从JSON缓存中读取书签信息
-  const outlineJson = await loadOutlineFromJSON(item);
-  if (outlineJson) return outlineJson;
-  // 如果上面没有返回Outline信息，重新读取
-  await wait.waitUtilAsync(
-    () => {
-      return (reader._primaryView as _ZoteroTypes.Reader.PDFView)
-        ._iframeWindow &&
-        (reader._primaryView as _ZoteroTypes.Reader.PDFView)._iframeWindow!
-          .PDFViewerApplication.pdfDocument
-        ? true
-        : false;
-    },
-    200,
-    5000,
-  );
-  ztoolkit.log("PDFViewerApplication is ready");
-  const PDFViewerApplication = (
-    reader._primaryView as _ZoteroTypes.Reader.PDFView
-  )._iframeWindow!.PDFViewerApplication;
-  await PDFViewerApplication.init;
-  const pdfDocument = PDFViewerApplication.pdfDocument;
-  if (!pdfDocument) {
-    ztoolkit.log("No pdfDocument");
-    return null;
-  }
-  // @ts-ignore - Not typed
-  const originOutline: PdfOutlineNode[] = await pdfDocument.getOutline2();
-
-  if (originOutline.length == 0) return null;
-  ztoolkit.log(originOutline);
-  async function convert(
-    node: PdfOutlineNode,
-    level = 0,
-  ): Promise<OutlineNode> {
-    level += 1;
-    const title = node.title;
-    // Default position
-    const outlineNode: OutlineNode = {
-      level,
-      title,
-      page: 1,
-      x: 100,
-      y: 100,
-      children: [],
-    };
-    // Some pdf missing dest, position instead.
-    if (node.location && "dest" in node.location) {
-      // @ts-ignore - Not typed
-      const page = await pdfDocument.getPageIndex(node.location.dest);
-      outlineNode.page = page;
-    } else if (node.location && "position" in node.location) {
-      outlineNode.page = node.location.position.pageIndex + 1;
-      outlineNode.x = node.location.position.rects[0][0];
-      outlineNode.y = node.location.position.rects[0][1];
-    }
-
-    if (node.items.length > 0) {
-      outlineNode.children = await Promise.all(
-        node.items.map((n) => convert(n, level)),
-      );
-    }
-    return outlineNode;
-  }
-  const outline = await Promise.all(
-    originOutline.map((node) => convert(node, 0)),
-  );
+  const item = "_item" in source ? source._item : source;
+  const cached = await loadOutlineFromJSON(item);
+  if (cached !== null) return cached;
+  const path = await item.getFilePathAsync();
+  if (!path) throw new Error("PDF attachment file is missing");
+  const outline = await outlineJob<OutlineNode[]>("nativeOutline", path);
   await saveOutlineToJSON(item, outline);
   return outline;
 }

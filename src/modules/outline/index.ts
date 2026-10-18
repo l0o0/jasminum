@@ -1,3 +1,4 @@
+import { openOutlineTask } from "./taskView";
 import { wait } from "zotero-plugin-toolkit";
 import { getString } from "../../utils/locale";
 import { initEventListener } from "./events";
@@ -62,6 +63,16 @@ export function renderTree(
         classList: ["j-outline-toolbar-button", "toolbar-button"],
         properties: { innerHTML: ICONS.del },
         attributes: { title: getString("outline-delete") },
+      },
+      {
+        tag: "button",
+        id: "j-outline-ai",
+        classList: ["j-outline-toolbar-button", "toolbar-button"],
+        properties: { textContent: "AI" },
+        attributes: {
+          title: getString("outline-ai-title"),
+          "aria-label": getString("outline-ai-title"),
+        },
       },
       {
         tag: "button",
@@ -133,6 +144,9 @@ export function renderTree(
     .getElementById("sidebarContainer")!
     .insertBefore(toolbar, doc.getElementById("sidebarContent")!);
   treeContainer.appendChild(dropIndicator);
+  toolbar
+    .querySelector("#j-outline-ai")
+    ?.addEventListener("click", () => openOutlineTask(reader._item));
   createTreeNodes(data, treeContainer.querySelector("#root-list")!, doc);
   doc.querySelector("#sidebarContent")?.appendChild(treeContainer);
 

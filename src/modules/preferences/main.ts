@@ -9,6 +9,7 @@ import { openRemoteHelpDialog } from "./remoteHelp";
 import { renderMetadataSources } from "./metadataSource";
 import { bindLLMProviderEvents } from "./llmProviders";
 import { getConfiguredLLMClient } from "../../utils/llm";
+import { testImageConnection } from "./llmConnectionTest";
 
 export function registerPrefsPane() {
   Zotero.PreferencePanes.register({
@@ -240,6 +241,9 @@ function bindPrefEvents(doc: Document) {
   doc
     .getElementById("jasminum-llm-provider")!
     .addEventListener("change", invalidateTest);
+  doc
+    .getElementById("jasminum-llm-profile")!
+    .addEventListener("change", invalidateTest);
   testButton.addEventListener("click", async () => {
     if (testButton.disabled) return;
     const version = ++testVersion;
@@ -263,22 +267,10 @@ function bindPrefEvents(doc: Document) {
     testButton.disabled = true;
     status.textContent = getString("llm-test-running");
     try {
-      const result = await client.createJSONCompletion<{ ok: boolean }>({
-        systemPrompt: 'This is a connection test. Return {"ok":true}.',
-        prompt: 'Return {"ok":true}.',
-        responseFormat: {
-          name: "connection_test",
-          schema: {
-            type: "object",
-            properties: { ok: { type: "boolean" } },
-            required: ["ok"],
-            additionalProperties: false,
-          },
-        },
-      });
+      const passed = await testImageConnection(client);
       if (version !== testVersion) return;
       status.textContent = getString(
-        result?.ok === true ? "llm-test-success" : "llm-test-invalid-response",
+        passed ? "llm-test-success" : "llm-test-invalid-response",
       );
     } catch (error) {
       if (version !== testVersion) return;

@@ -1,3 +1,5 @@
+import { OutlineTask } from "./outline/task";
+import { addOutlineControls, updateOutlineControls } from "./outline/taskView";
 import { ElementProps, TagElementProps } from "zotero-plugin-toolkit";
 import { getString } from "../utils/locale";
 import { REMOTE_HELP_QR_ACTION } from "./preferences/remoteHelp";
@@ -9,6 +11,7 @@ export class Progress {
   constructor() {
     this.progressWindow = null;
     this.statusIcons = {
+      paused: "chrome://jasminum/content/icons/wait.svg",
       waiting: "chrome://jasminum/content/icons/loading-loop.svg",
       processing: "chrome://jasminum/content/icons/loading-loop.svg",
       multiple_results: "chrome://jasminum/content/icons/loading-loop.svg",
@@ -17,9 +20,26 @@ export class Progress {
     };
   }
 
+  private opening?: Promise<void>;
   public async openProgressWindow(): Promise<void> {
+    if (this.opening) return this.opening;
+    if (this.progressWindow && !this.progressWindow.closed) {
+      this.progressWindow.focus();
+      return;
+    }
+    this.opening = this.initializeProgressWindow()
+      .then(async () => {
+        for (const task of addon.taskRunner.tasks) this.renderTask(task);
+      })
+      .finally(() => {
+        this.opening = undefined;
+      });
+    return this.opening;
+  }
+
+  private async initializeProgressWindow(): Promise<void> {
     ztoolkit.log(`Open progress window.`);
-    const win = Services.wm.getMostRecentWindow("navigator:browser") as Window;
+    const win = Zotero.getMainWindow();
     const htmlUrl = "chrome://jasminum/content/progress.xhtml";
     const chromeArgs =
       "chrome,centerscreen,width=960,height=400,dialog=yes,resizable=no,status=no";
@@ -30,18 +50,19 @@ export class Progress {
       this.progressWindow = win.openDialog(htmlUrl, "", chromeArgs, windowArgs);
       this.progressWindow!.onbeforeunload = (e) => {
         this.progressWindow = null;
-        addon.taskRunner.tasks = [];
+        // Tasks survive window closure; reopened windows restore their rows.
       };
       // For close button in header bar
       this.progressWindow!.onclose = (e) => {
         this.progressWindow = null;
-        addon.taskRunner.tasks = [];
+        // Tasks survive window closure; reopened windows restore their rows.
       };
       let t = 0;
       // Wait for window
       while (
         t < 500 &&
-        this.progressWindow!.document.readyState !== "complete"
+        this.progressWindow &&
+        this.progressWindow.document.readyState !== "complete"
       ) {
         // @ts-ignore -- Delay is not typed.
         await ztoolkit.getGlobal("Zotero").Promise.delay(10);
@@ -118,10 +139,18 @@ export class Progress {
   public async addTaskToProgressWindow(task: Task): Promise<void> {
     if (task.silent === true) return;
 
-    if (this.progressWindow == null) {
-      await this.openProgressWindow();
-    }
+    await this.openProgressWindow();
+    this.renderTask(task);
+  }
 
+  private renderTask(task: Task): void {
+    if (
+      !this.progressWindow ||
+      this.progressWindow.closed ||
+      task.silent ||
+      this.progressWindow.document.getElementById(`task-header-${task.id}`)
+    )
+      return;
     ztoolkit.log("Add task to progress window.");
     const taskNodeProps: ElementProps = {
       classList: ["task"],
@@ -180,6 +209,10 @@ export class Progress {
     this.progressWindow!.document.querySelector("#task-list")?.appendChild(
       taskNode,
     );
+    if (task instanceof OutlineTask) addOutlineControls(task, taskNode);
+    else if (task.status === "multiple_results" && task.searchResults)
+      this.updateTaskSearchResult(task, task.searchResults);
+    this.updateTaskStatus(task, task.status);
   }
   // Convert [text](url) and bare URLs in text to clickable <a> elements
   private linkifyMessage(doc: Document, message: string): DocumentFragment {
@@ -234,12 +267,24 @@ export class Progress {
   // Update task status icon. Display error msgs when task fails.
   public updateTaskStatus(task: Task, status: string): void {
     if (this.progressWindow) {
+      if (task instanceof OutlineTask) {
+        updateOutlineControls(task, this.progressWindow.document);
+      }
+      const existingMessage = this.progressWindow.document.getElementById(
+        `task-msg-${task.id}`,
+      );
+      const showMessage =
+        status === "fail" || (task instanceof OutlineTask && !!task.message);
+      const sameMessage =
+        showMessage &&
+        existingMessage?.getAttribute("data-message") === (task.message ?? "");
+      if (!sameMessage) existingMessage?.parentElement?.remove();
       ztoolkit.log(`Progress windows update task status: ${task.id} ${status}`);
       this.progressWindow.document
         .querySelector(`#task-status-${task.id}`)
         ?.setAttribute("src", this.statusIcons[status]);
       // Display a popover with error msg.
-      if (status == "fail") {
+      if (showMessage && !sameMessage) {
         const doc = this.progressWindow.document;
 
         // Create wrapper for hover area
@@ -254,6 +299,8 @@ export class Progress {
             src: "chrome://jasminum/content/icons/notify.svg",
           },
         });
+
+        icon.setAttribute("data-message", task.message ?? "");
 
         // Create popover container
         const popover = doc.createElement("div");
@@ -284,7 +331,7 @@ export class Progress {
         });
 
         // Show popover on hover
-        wrapper.addEventListener("mouseenter", () => {
+        const showPopover = () => {
           // Close other popovers first
           doc.querySelectorAll(".task-msg-popover.visible").forEach((p) => {
             p.classList.remove("visible");
@@ -294,7 +341,9 @@ export class Progress {
           });
           popover.classList.add("visible");
           icon.classList.add("active");
-        });
+        };
+        wrapper.addEventListener("mouseenter", showPopover);
+        icon.addEventListener("click", showPopover);
 
         // Close popover on click outside
         doc.addEventListener("click", (e) => {

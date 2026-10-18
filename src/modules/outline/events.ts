@@ -1,3 +1,4 @@
+import { writePDFOutline } from "./savePDF";
 import {
   saveOutlineToJSON,
   createTreeNodes,
@@ -151,7 +152,7 @@ export function initEventListener(
       // 节点选择
       if (target.closest(".tree-node")) {
         selectNode(target.closest(".tree-node")!);
-        clickToPosition(target);
+        clickToPosition(target, reader);
       }
     });
 
@@ -942,36 +943,27 @@ export async function addNewNode(ev: Event) {
   await saveOutlineToJSON();
 }
 
-function clickToPosition(targetElement: Element) {
-  const reader = Zotero.Reader.getByTabID(
-    ztoolkit.getGlobal("Zotero_Tabs").selectedID,
-  );
+function clickToPosition(
+  targetElement: Element,
+  reader: _ZoteroTypes.ReaderInstance,
+) {
   const treeNode = targetElement.closest("div.tree-node");
   if (!treeNode) return;
-
-  const page = parseInt(treeNode.getAttribute("page")!);
-  const x = parseInt(treeNode.getAttribute("x")!);
-  const y = parseInt(treeNode.getAttribute("y")!);
-  ztoolkit.log("Click to position", page, x, y);
-  // const location = {
-  //   position: { pageIndex: page - 1, rects: [[x, y, x, y]] },
-  // };
-  // @ts-ignore - not typed
-  // reader.navigate(location);
-  const PDFViewerApplication = (
-    reader._internalReader._primaryView as _ZoteroTypes.Reader.PDFView
-  )._iframeWindow.PDFViewerApplication;
-  const pageView = PDFViewerApplication.pdfViewer!.getPageView(page - 1);
-  // @ts-ignore - Not typed
-  const [scrollX, scrollY] = pageView.viewport.convertToViewportPoint(x, y);
-  (
-    reader._internalReader._primaryView as _ZoteroTypes.Reader.PDFView
-  )._iframeWindow!.PDFViewerApplication.page = page;
-  const container = (
-    reader._internalReader._primaryView as _ZoteroTypes.Reader.PDFView
-  )._iframeWindow!.document.getElementById("viewerContainer")!;
-  ztoolkit.log(`Scroll to ${scrollX}, ${scrollY}`);
-  container.scrollBy(scrollX, scrollY);
+  const page = Number(treeNode.getAttribute("page"));
+  const x = Number(treeNode.getAttribute("x"));
+  const y = Number(treeNode.getAttribute("y"));
+  if (
+    !Number.isInteger(page) ||
+    page < 1 ||
+    !Number.isFinite(x) ||
+    !Number.isFinite(y)
+  )
+    return;
+  void reader
+    .navigate({ position: { pageIndex: page - 1, rects: [[x, y, x, y]] } })
+    .catch((error) =>
+      ztoolkit.log("Unable to navigate to outline heading", error),
+    );
 }
 
 // Use worker to add outline to PDF
@@ -980,37 +972,7 @@ export async function addOutlineToPDFRunner(
 ): Promise<void> {
   const outlineNodes = getOutlineFromPage(reader._iframeWindow!.document);
   await saveOutlineToJSON(reader._item, outlineNodes);
-  const filePath = await reader._item.getFilePathAsync();
-  if (!filePath) throw new Error("PDF file is missing");
-  const worker = new Worker(
-    "chrome://jasminum/content/scripts/jasminum-worker.js",
-  );
-  try {
-    await new Promise<void>((resolve, reject) => {
-      const jobID = Zotero.Utilities.randomString();
-      worker.onmessage = (event: Event) => {
-        const data = (event as MessageEvent).data;
-        if (data?.action !== "addOutlineReturn" || data?.jobID !== jobID)
-          return;
-        if (data.status === "success") resolve();
-        else reject(new Error(data.error || "Failed to save PDF outline"));
-      };
-      worker.onerror = (event: ErrorEvent) => {
-        event.preventDefault();
-        reject(new Error(event.message || "PDF worker failed"));
-      };
-      worker.onmessageerror = () =>
-        reject(new Error("Invalid PDF worker response"));
-      worker.postMessage({
-        action: "addOutline",
-        jobID,
-        filePath,
-        outlineNodes,
-      });
-    });
-  } finally {
-    worker.terminate();
-  }
+  await writePDFOutline(reader._item, outlineNodes);
   // Reload the updated file so Zotero's native outline reflects the saved tree.
   try {
     await (reader.reload as () => Promise<void>)();

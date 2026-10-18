@@ -1,4 +1,5 @@
 interface RenderPDFPagesOptions {
+  saveDiagnostics?: boolean;
   scale?: number;
   password?: string;
   isPriority?: boolean;
@@ -122,6 +123,8 @@ async function renderPDFPagesAsPNG(
       renderer.terminate();
     }
   }, options.isPriority ?? true);
+
+  if (options.saveDiagnostics === false) return images;
 
   // Temporary diagnostic copies of the exact PNG bytes sent to recognition.
   // Keep each run separate so repeated attempts can be compared.

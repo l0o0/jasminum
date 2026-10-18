@@ -19,6 +19,7 @@ declare namespace _ZoteroTypes {
       "isMainlandChina": boolean;
       "cnkiAttachmentCookie": string;
       "similarityThresholdForMetaData": string;
+      "llmProfiles": string;
       "llmBaseURL": string;
       "llmApiKey": string;
       "llmModel": string;

@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+	<g fill="none">
+		<circle cx="12" cy="12" r="10.18" fill="currentColor" opacity=".2" transform="rotate(90 12 12)" />
+		<circle cx="12" cy="12" r="10.18" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" transform="rotate(90 12 12)" />
+		<path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M10.6 10.67h.4c.47 0 .7 0 .85.14s.15.39.15.86v5.76m-1.74 0h3.48" />
+		<path fill="currentColor" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12.57 7.08a.57.57 0 1 1-1.14 0a.57.57 0 0 1 1.14 0" />
+	</g>
+</svg>

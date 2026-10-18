@@ -19,6 +19,10 @@ import {
   unregisterHeadlessActor,
 } from "./utils/headlessBrowser";
 
+import { closeMetadataUpdates } from "./modules/metadata/updateDialog";
+
+import { stopOutlineTasks } from "./modules/outline/taskView";
+
 async function onStartup() {
   await Promise.all([
     Zotero.initializationPromise,
@@ -63,6 +67,8 @@ async function onMainWindowLoad(win: Window): Promise<void> {
 }
 
 function onShutdown(): void {
+  stopOutlineTasks();
+  closeMetadataUpdates();
   unregisterMenu();
   unregisterHeadlessActor();
   ztoolkit.unregisterAll();
