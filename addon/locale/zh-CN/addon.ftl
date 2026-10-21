@@ -99,7 +99,7 @@ llm-test-failed = 测试失败或超时，请检查接口配置以及模型的�
 outline-save-failed = 目录保存失败，请检查 PDF 文件是否可写后重试。
 
 selection-add-bookmark = 将选中文字添加为书签
-selection-add-outline = 将选中文字添加为目录
+selection-add-outline = 将选中文字添加为大纲
 selection-add-failed = 添加失败，请重试。
 outline-refresh-failed = 目录已保存，但阅读器刷新失败。请重新打开 PDF 查看。
 
@@ -187,3 +187,6 @@ outline-ai-promote = 提升一级
 outline-ai-demote = 降低一级
 
 outline-ai-save-outline = 保存
+
+selection-popup-add-bookmark = 添加书签
+selection-popup-add-outline = 添加大纲

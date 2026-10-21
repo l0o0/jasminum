@@ -100,7 +100,7 @@ llm-test-failed = 測試失敗或逾時，請檢查介面設定以及模型的�
 outline-save-failed = 目錄儲存失敗，請檢查 PDF 檔案是否可寫入後重試。
 
 selection-add-bookmark = 將選取文字新增為書籤
-selection-add-outline = 將選取文字新增為目錄
+selection-add-outline = 將選取文字新增為大綱
 selection-add-failed = 新增失敗，請重試。
 outline-refresh-failed = 目錄已儲存，但閱讀器重新整理失敗。請重新開啟 PDF 查看。
 
@@ -188,3 +188,6 @@ outline-ai-promote = 提升一級
 outline-ai-demote = 降低一級
 
 outline-ai-save-outline = 儲存
+
+selection-popup-add-bookmark = 新增書籤
+selection-popup-add-outline = 新增大綱

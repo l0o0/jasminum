@@ -22,31 +22,31 @@ import { getPref } from "../../utils/prefs";
 
 const MAX_LEVEL = 7;
 
-function getReaderPagePosition(): PdfPosition {
-  const reader = Zotero.Reader.getByTabID(
-    ztoolkit.getGlobal("Zotero_Tabs").selectedID,
+// Store PDF coordinates, matching the XYZ destinations written into the PDF.
+export function getReaderPagePosition(
+  reader: _ZoteroTypes.ReaderInstance,
+): PdfPosition {
+  const internal = reader._internalReader as unknown as {
+    _lastView?: _ZoteroTypes.Reader.PDFView;
+    _primaryView: _ZoteroTypes.Reader.PDFView;
+  };
+  const view = internal._lastView || internal._primaryView;
+  const app = view._iframeWindow!.PDFViewerApplication;
+  const container =
+    view._iframeWindow!.document.getElementById("viewerContainer")!;
+  const pageIndex = app.pdfViewer!.currentPageNumber - 1;
+  const pageView = app.pdfViewer!.getPageView(pageIndex);
+  // Ignore the gutter outside the page, as native XYZ navigation does.
+  // Include the page border, just as PDF.js scrollPageIntoView does.
+  const scrollX = Math.max(
+    0,
+    container.scrollLeft - pageView.div.offsetLeft - pageView.div.clientLeft,
   );
-  const primaryView = reader._internalReader
-    ._primaryView as _ZoteroTypes.Reader.PDFView;
-  const PDFViewerApplication = primaryView._iframeWindow!.PDFViewerApplication;
-  const doc = primaryView._iframeWindow!.document;
-  const container = doc.getElementById("viewerContainer")!;
-  const pageIndex = PDFViewerApplication.pdfViewer!.currentPageNumber - 1;
-  const pageView = PDFViewerApplication.pdfViewer!.getPageView(pageIndex);
-  const viewport = pageView.viewport;
-  // const scrollX = container.scrollLeft - pageView.div.offsetLeft;
-  const scrollX = 0;
-  const scrollY = container.scrollTop - pageView.div.offsetTop;
-  const [x, y] = viewport.convertToPdfPoint(scrollX, scrollY);
-  ztoolkit.log(
-    "get position",
-    pageIndex + 1,
-    container.scrollTop,
-    scrollX,
-    scrollY,
-    x,
-    y,
+  const scrollY = Math.max(
+    0,
+    container.scrollTop - pageView.div.offsetTop - pageView.div.clientTop,
   );
+  const [x, y] = pageView.viewport.convertToPdfPoint(scrollX, scrollY);
   return { position: { pageIndex, rects: [[x, y, x, y]] } };
 }
 
@@ -173,7 +173,7 @@ export function initEventListener(
     ?.addEventListener("click", collapseAll);
   doc
     .getElementById("j-outline-add-node")
-    ?.addEventListener("click", addNewNode);
+    ?.addEventListener("click", (ev) => void addNewNode(ev, reader));
   doc
     .getElementById("j-outline-delete-node")
     ?.addEventListener("click", deleteSelectedNode);
@@ -200,7 +200,10 @@ export function initEventListener(
   treeContainer.addEventListener("dragend", handleDragEnd);
 
   // 处理键盘事件
-  treeContainer.addEventListener("keydown", handleKeydownEvent);
+  treeContainer.addEventListener(
+    "keydown",
+    (ev) => void handleKeydownEvent(ev, reader),
+  );
 
   // 点击书签跳转到具体页码
 
@@ -319,7 +322,10 @@ function selectNode(node: Element) {
 }
 
 // Key events for the outline panel.
-export async function handleKeydownEvent(ev: KeyboardEvent) {
+export async function handleKeydownEvent(
+  ev: KeyboardEvent,
+  reader?: _ZoteroTypes.ReaderInstance,
+) {
   const newPanel = (ev.target! as Element).ownerDocument.getElementById(
     "root-list",
   )!;
@@ -430,7 +436,7 @@ export async function handleKeydownEvent(ev: KeyboardEvent) {
   // Add new node
   if (ev.key === "\\") {
     // ztoolkit.log("\\ key pressed");
-    addNewNode(ev);
+    if (reader) await addNewNode(ev, reader);
   }
 }
 
@@ -872,11 +878,14 @@ export async function deleteSelectedNode(ev: Event) {
 
 // 添加新节点。选中节点的子节点还是下一个同级节点
 // 默认设置为添加节点的同级节点
-export async function addNewNode(ev: Event) {
+export async function addNewNode(
+  ev: Event,
+  reader: _ZoteroTypes.ReaderInstance,
+) {
   const doc = (ev.target as Element).ownerDocument;
   const newTitle = "新书签";
   const selectedNode = doc.querySelector(".node-selected");
-  const location = getReaderPagePosition();
+  const location = getReaderPagePosition(reader);
 
   // 如果没有选中节点，添加到根
   if (!selectedNode) {
@@ -940,10 +949,10 @@ export async function addNewNode(ev: Event) {
     );
   }
   // 保存节点信息
-  await saveOutlineToJSON();
+  await saveOutlineToJSON(reader._item, getOutlineFromPage(doc));
 }
 
-function clickToPosition(
+export function clickToPosition(
   targetElement: Element,
   reader: _ZoteroTypes.ReaderInstance,
 ) {
@@ -959,8 +968,12 @@ function clickToPosition(
     !Number.isFinite(y)
   )
     return;
+  // Zotero supports PDF destinations, but zotero-types only declares position.
+  const location = {
+    dest: [page - 1, { name: "XYZ" }, x, y, null],
+  } as unknown as Parameters<typeof reader.navigate>[0];
   void reader
-    .navigate({ position: { pageIndex: page - 1, rects: [[x, y, x, y]] } })
+    .navigate(location)
     .catch((error) =>
       ztoolkit.log("Unable to navigate to outline heading", error),
     );

@@ -255,6 +255,8 @@ export type FluentMessageId =
   | 'selection-add-bookmark'
   | 'selection-add-failed'
   | 'selection-add-outline'
+  | 'selection-popup-add-bookmark'
+  | 'selection-popup-add-outline'
   | 'tabpanel-lib-tab-label'
   | 'tabpanel-reader-tab-label'
   | 'task-already-exists'

@@ -117,3 +117,92 @@ export const onSelectionContextMenu: _ZoteroTypes.Reader.EventHandler<
     });
   }
 };
+
+let popupIconURL: Promise<string> | undefined;
+function getPopupIconURL(): Promise<string> {
+  return (popupIconURL ??= Zotero.HTTP.request(
+    "GET",
+    "chrome://jasminum/content/icons/icon.png",
+    { responseType: "arraybuffer", successCodes: [0, 200] },
+  )
+    .then((response) => {
+      const bytes = new Uint8Array(response.response);
+      let binary = "";
+      for (const byte of bytes) binary += String.fromCharCode(byte);
+      return `data:image/png;base64,${Zotero.getMainWindow().btoa(binary)}`;
+    })
+    .catch((error) => {
+      popupIconURL = undefined;
+      throw error;
+    }));
+}
+
+// Keep a snapshot before clicking the popup moves focus away from the PDF.
+export const onSelectionPopup: _ZoteroTypes.Reader.EventHandler<
+  "renderTextSelectionPopup"
+> = ({ reader, doc, append }) => {
+  if (
+    !getPref("enableBookmark") ||
+    reader._item.attachmentContentType !== "application/pdf"
+  )
+    return;
+  const selection = getSelectedPDFText(reader);
+  if (!selection) return;
+  if (!doc.getElementById("jasminum-selection-actions-style")) {
+    const style = doc.createElement("style");
+    style.id = "jasminum-selection-actions-style";
+    style.textContent = `
+      .jasminum-selection-actions button {
+        border-radius: 4px;
+        transition: background-color 120ms ease;
+      }
+      .jasminum-selection-actions button:not(:disabled):hover {
+        background-color: color-mix(in srgb, currentColor 12%, transparent);
+        cursor: pointer;
+      }
+      .jasminum-selection-actions button:not(:disabled):active {
+        background-color: color-mix(in srgb, currentColor 20%, transparent);
+      }
+      .jasminum-selection-actions button:focus-visible {
+        outline: 2px solid Highlight;
+        outline-offset: 1px;
+      }
+    `;
+    doc.head.append(style);
+  }
+  const row = doc.createElement("div");
+  row.className = "jasminum-selection-actions";
+  row.style.cssText =
+    "display:flex;align-items:center;gap:6px;padding:4px 6px;";
+  const icon = doc.createElement("img");
+  icon.style.cssText = "width:18px;height:18px;flex:none;object-fit:contain;";
+  void getPopupIconURL()
+    .then((url) => {
+      icon.src = url;
+    })
+    .catch((error) => {
+      ztoolkit.log("Unable to load selection popup icon", error);
+    });
+  icon.alt = "茉莉花";
+  icon.title = "Jasminum";
+  icon.width = 18;
+  icon.height = 18;
+  row.append(icon);
+  for (const kind of ["bookmark", "outline"] as const) {
+    const button = doc.createElement("button");
+    button.type = "button";
+    button.textContent = getString(`selection-popup-add-${kind}`);
+    button.title = getString(`selection-add-${kind}`);
+    button.style.cssText = "width:auto;padding:4px 6px;white-space:nowrap;";
+    button.addEventListener("click", () => {
+      button.disabled = true;
+      void addSelectionEntry(reader, selection, kind).catch((error) => {
+        button.disabled = false;
+        ztoolkit.log("Failed to add selected text", error);
+        reader._iframeWindow!.alert(getString("selection-add-failed"));
+      });
+    });
+    row.append(button);
+  }
+  append(row);
+};

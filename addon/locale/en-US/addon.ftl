@@ -187,3 +187,6 @@ outline-ai-promote = Promote one level
 outline-ai-demote = Demote one level
 
 outline-ai-save-outline = Save
+
+selection-popup-add-bookmark = Add Bookmark
+selection-popup-add-outline = Add Outline

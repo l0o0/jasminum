@@ -3,7 +3,7 @@ import { getString } from "../utils/locale";
 import { getPref } from "../utils/prefs";
 import { isChineseTopAttachment } from "../utils/detect";
 import { registerOutline } from "./outline";
-import { onSelectionContextMenu } from "./outline/selection";
+import { onSelectionContextMenu, onSelectionPopup } from "./outline/selection";
 import { splitName } from "./tools";
 
 /**
@@ -123,6 +123,12 @@ export async function registerExtraColumnWithCustomCell() {
 
 // For Outline register.
 export function registerTab() {
+  Zotero.Reader.registerEventListener(
+    "renderTextSelectionPopup",
+    onSelectionPopup,
+    config.addonID,
+  );
+
   Zotero.Reader.registerEventListener(
     "renderToolbar",
     tabRegisterCallback,

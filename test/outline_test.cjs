@@ -120,6 +120,70 @@ async function main() {
     },
     { ztoolkit: { log() {} } },
   );
+  // Capture from the bound reader's active split pane, not the global tab.
+  // Round-trip PDF points at different zoom levels and page rotations.
+  for (const scale of [0.75, 2]) {
+    for (const rotated of [false, true]) {
+      const scroll = { scrollLeft: 135, scrollTop: 940 };
+      const page = {
+        offsetLeft: 20,
+        offsetTop: 700,
+        clientLeft: 1,
+        clientTop: 1,
+      };
+      const toPDF = (x, y) =>
+        rotated ? [y / scale, x / scale] : [x / scale, 800 - y / scale];
+      const toView = (x, y) =>
+        rotated ? [y * scale, x * scale] : [x * scale, (800 - y) * scale];
+      let destination;
+      const active = {
+        _iframeWindow: {
+          document: { getElementById: () => scroll },
+          PDFViewerApplication: {
+            pdfViewer: {
+              currentPageNumber: 3,
+              getPageView(index) {
+                assert.equal(index, 2);
+                return { div: page, viewport: { convertToPdfPoint: toPDF } };
+              },
+            },
+          },
+        },
+      };
+      const reader = {
+        _internalReader: { _lastView: active, _primaryView: {} },
+        async navigate(location) {
+          destination = location.dest;
+        },
+      };
+      const { position } = events.getReaderPagePosition(reader);
+      const [x, y] = position.rects[0];
+      const attrs = { page: "3", x: String(x), y: String(y) };
+      events.clickToPosition(
+        { closest: () => ({ getAttribute: (k) => attrs[k] }) },
+        reader,
+      );
+      assert.equal(destination[0], 2);
+      assert.equal(destination[1].name, "XYZ");
+      assert.equal(destination[4], null); // Preserve current zoom.
+      const [left, top] = toView(destination[2], destination[3]);
+      assert.ok(
+        Math.abs(left + page.offsetLeft + page.clientLeft - scroll.scrollLeft) <
+          1e-8,
+      );
+      assert.ok(
+        Math.abs(top + page.offsetTop + page.clientTop - scroll.scrollTop) <
+          1e-8,
+      );
+      // Older readers without _lastView still use their own primary view.
+      reader._internalReader = { _primaryView: active };
+      assert.equal(events.getReaderPagePosition(reader).position.pageIndex, 2);
+      scroll.scrollLeft = 0;
+      scroll.scrollTop = 0;
+      const origin = events.getReaderPagePosition(reader).position.rects[0];
+      assert.deepEqual(Array.from(origin).slice(0, 2), toPDF(0, 0));
+    }
+  }
   // Zotero's window pointerdown handler cancels native drag outside its built-in views.
   // Isolate left drags, while preserving right-click and inline editing behavior.
   for (const [button, draggable, expected] of [
