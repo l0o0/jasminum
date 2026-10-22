@@ -89,6 +89,9 @@ label-disableZoteroOutline =
   .label = 禁用 Zotero 自带的大纲
 label-enableBookmark = 
   .label = 启用大纲书签
+label-showSelectionPopupActions =
+  .label = 在划词弹窗中显示添加书签和大纲按钮
+  .tooltiptext = 关闭后仍可通过右键菜单添加书签和大纲。重新划词后生效。
 outline-desc = 
   .tooltiptext = 请注意，当您修改大纲或书签时，需要点击保存按钮才会保存到PDF文件中。默认将书签大纲信息与PDF文件分开保存。
 

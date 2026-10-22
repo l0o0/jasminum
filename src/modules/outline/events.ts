@@ -857,7 +857,7 @@ export async function deleteSelectedNode(ev: Event) {
         classList: ["empty-outline-prompt"],
         properties: {
           innerHTML: getString("outline-empty-prompt", {
-            args: { icon: ICONS.add },
+            args: { icon: ICONS.outlineAdd },
           }),
         },
       },
@@ -883,7 +883,7 @@ export async function addNewNode(
   reader: _ZoteroTypes.ReaderInstance,
 ) {
   const doc = (ev.target as Element).ownerDocument;
-  const newTitle = "新书签";
+  const newTitle = "新大纲";
   const selectedNode = doc.querySelector(".node-selected");
   const location = getReaderPagePosition(reader);
 

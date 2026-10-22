@@ -143,6 +143,7 @@ export const onSelectionPopup: _ZoteroTypes.Reader.EventHandler<
 > = ({ reader, doc, append }) => {
   if (
     !getPref("enableBookmark") ||
+    !getPref("showSelectionPopupActions") ||
     reader._item.attachmentContentType !== "application/pdf"
   )
     return;

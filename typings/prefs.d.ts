@@ -31,6 +31,7 @@ declare namespace _ZoteroTypes {
       "translatorUpdateTime": string;
       "translatorSource": string;
       "enableBookmark": boolean;
+      "showSelectionPopupActions": boolean;
       "newNodeAsChild": boolean;
       "disableZoteroOutline": boolean;
     };

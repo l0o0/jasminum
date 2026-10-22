@@ -66,11 +66,11 @@ importing-attachments-is-running = 已有一个附件导入任务正在运行，
 outline = 显示大纲（茉莉花）
 outline-expand-all = 展开所有
 outline-collapse-all = 收起所有
-outline-add = 添加书签
-outline-delete = 删除书签
-outline-save-to-pdf = 将大纲保存到PDF文件
+outline-add = 添加大纲
+outline-delete = 删除大纲
+outline-save-to-pdf = 保存大纲到PDF
 outline-edit-placeholder = 请输入书签
-outline-empty-prompt = 请点击上方按钮{ $icon }创建书签
+outline-empty-prompt = 请点击上方按钮{ $icon }创建大纲
 outline-delete-confirm = 该节点有子节点，是否删除?
   {" "}
   如果删除，则所有子节点也会被删除。
@@ -190,3 +190,5 @@ outline-ai-save-outline = 保存
 
 selection-popup-add-bookmark = 添加书签
 selection-popup-add-outline = 添加大纲
+
+outline-more-actions = 更多操作

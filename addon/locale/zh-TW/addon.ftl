@@ -66,11 +66,11 @@ no-attachments-found = 未找到可匯入的附件（PDF、CAJ等）
 outline = 顯示書籤大纲（茉莉花）
 outline-expand-all = 展開所有
 outline-collapse-all = 收起所有
-outline-add = 添加書籤
-outline-delete = 刪除書籤
-outline-save-to-pdf = 將大纲儲存到PDF檔案
+outline-add = 新增大綱
+outline-delete = 刪除大綱
+outline-save-to-pdf = 儲存大綱到PDF
 outline-edit-placeholder = 請輸入書籤
-outline-empty-prompt = 請點擊上方按鈕{ $icon }創建書籤
+outline-empty-prompt = 請點擊上方按鈕{ $icon }創建大綱
 outline-delete-confirm = 該節點有子節點，是否刪除?
   {" "}
   如果刪除，則所有子節點也會被刪除。
@@ -191,3 +191,5 @@ outline-ai-save-outline = 儲存
 
 selection-popup-add-bookmark = 新增書籤
 selection-popup-add-outline = 新增大綱
+
+outline-more-actions = 更多操作

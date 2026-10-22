@@ -296,7 +296,7 @@ export function createTreeNodes(
         tag: "div",
         namespace: "html",
         classList: ["empty-outline-prompt"],
-        properties: { innerHTML: `请点击上方按钮${ICONS.add}创建书签` },
+        properties: { innerHTML: `请点击上方按钮${ICONS.outlineAdd}创建大纲` },
       },
       parentElement,
     );

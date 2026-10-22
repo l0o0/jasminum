@@ -468,10 +468,16 @@ async function main() {
       },
     },
   };
+  let showSelectionPopupActions = true;
   const selection = load(
     "src/modules/outline/selection.ts",
     {
-      "../../utils/prefs": { getPref: () => true },
+      "../../utils/prefs": {
+        getPref: (key) =>
+          key === "showSelectionPopupActions"
+            ? showSelectionPopupActions
+            : true,
+      },
       "../../utils/locale": { getString: (x) => x },
       "./index": {
         addOutlineToReader: async (reader) => {
@@ -499,6 +505,25 @@ async function main() {
     },
     { Zotero: { Utilities: { randomString: () => "test" } } },
   );
+  // Turning off popup actions must not remove the two context-menu actions.
+  showSelectionPopupActions = false;
+  selectedReader._item.attachmentContentType = "application/pdf";
+  selection.onSelectionPopup({
+    reader: selectedReader,
+    append() {
+      assert.fail("Popup must be hidden");
+    },
+  });
+  const menuActions = [];
+  selection.onSelectionContextMenu({
+    reader: selectedReader,
+    append: (action) => menuActions.push(action),
+  });
+  assert.deepEqual(
+    menuActions.map((action) => action.label),
+    ["selection-add-bookmark", "selection-add-outline"],
+  );
+  showSelectionPopupActions = true;
   const snapshot = selection.getSelectedPDFText(selectedReader);
   assert.equal(snapshot.text, "Heading one");
   selectedReader._internalReader._lastView._selectionRanges[0].position.rects[0][3] = 999;

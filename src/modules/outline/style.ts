@@ -1,11 +1,15 @@
 export const ICONS = {
-  outline: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path fill="currentColor" d="M12 7.8q-.3-.375-.775-.587T10.2 7q-.9 0-1.55.65T8 9.2q0 .475.137.875t.563.95q.35.45.975 1.075t1.6 1.525q.15.15.337.225t.388.075t.387-.075t.338-.225q.95-.875 1.575-1.487t.975-1.088q.425-.55.575-.963T16 9.2q0-.9-.65-1.55T13.8 7q-.525 0-1.013.212T12 7.8M12 18l-4.2 1.8q-1 .425-1.9-.162T5 17.975V5q0-.825.588-1.412T7 3h10q.825 0 1.413.588T19 5v12.975q0 1.075-.9 1.663t-1.9.162zm0-2.2l5 2.15V5H7v12.95zM12 5H7h10z"/></svg>`,
-  bookmark: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path fill="currentColor" d="M17 3H7c-1.1 0-2 .9-2 2v16l7-3 7 3V5c0-1.1-.9-2-2-2m0 15l-5-2.18L7 18V5h10z"/></svg>`,
-  expand: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path fill="currentColor" d="M12 12.675L9.625 10.3q-.275-.275-.687-.275t-.713.275q-.3.3-.3.713t.3.712L11.3 14.8q.3.3.7.3t.7-.3l3.1-3.1q.3-.3.287-.7t-.312-.7q-.3-.275-.7-.288t-.7.288zM12 22q-2.075 0-3.9-.788t-3.175-2.137T2.788 15.9T2 12t.788-3.9t2.137-3.175T8.1 2.788T12 2t3.9.788t3.175 2.137T21.213 8.1T22 12t-.788 3.9t-2.137 3.175t-3.175 2.138T12 22m0-2q3.35 0 5.675-2.325T20 12t-2.325-5.675T12 4T6.325 6.325T4 12t2.325 5.675T12 20m0-8"/></svg>`,
-  collapse: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path fill="currentColor" d="M12.675 12L10.3 14.375q-.275.275-.275.688t.275.712q.3.3.713.3t.712-.3L14.8 12.7q.3-.3.3-.7t-.3-.7l-3.1-3.1q-.3-.3-.7-.287t-.7.312q-.275.3-.288.7t.288.7zM12 22q-2.075 0-3.9-.788t-3.175-2.137T2.788 15.9T2 12t.788-3.9t2.137-3.175T8.1 2.788T12 2t3.9.788t3.175 2.137T21.213 8.1T22 12t-.788 3.9t-2.137 3.175t-3.175 2.138T12 22m0-2q3.35 0 5.675-2.325T20 12t-2.325-5.675T12 4T6.325 6.325T4 12t2.325 5.675T12 20m0-8"/></svg>`,
-  add: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path fill="currentColor" d="m12 18l-4.2 1.8q-1 .425-1.9-.162T5 17.975V5q0-.825.588-1.412T7 3h5q.425 0 .713.288T13 4t-.288.713T12 5H7v12.95l5-2.15l5 2.15V12q0-.425.288-.712T18 11t.713.288T19 12v5.975q0 1.075-.9 1.663t-1.9.162zm0-13H7h6zm5 2h-1q-.425 0-.712-.288T15 6t.288-.712T16 5h1V4q0-.425.288-.712T18 3t.713.288T19 4v1h1q.425 0 .713.288T21 6t-.288.713T20 7h-1v1q0 .425-.288.713T18 9t-.712-.288T17 8z"/></svg>`,
-  del: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path fill="currentColor" d="M16 7q-.425 0-.712-.288T15 6t.288-.712T16 5h4q.425 0 .713.288T21 6t-.288.713T20 7zm-4 11l-4.2 1.8q-1 .425-1.9-.162T5 17.975V5q0-.825.588-1.412T7 3h5q.425 0 .713.288T13 4t-.288.713T12 5H7v12.95l5-2.15l5 2.15V12q0-.425.288-.712T18 11t.713.288T19 12v5.975q0 1.075-.9 1.663t-1.9.162zm0-13H7h6z"/></svg>`,
-  save: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path fill="currentColor" d="M5 21q-.825 0-1.412-.587T3 19V5q0-.825.588-1.412T5 3h11.175q.4 0 .763.15t.637.425l2.85 2.85q.275.275.425.638t.15.762V19q0 .825-.587 1.413T19 21zM19 7.85L16.15 5H5v14h14zM12 18q1.25 0 2.125-.875T15 15t-.875-2.125T12 12t-2.125.875T9 15t.875 2.125T12 18m-5-8h7q.425 0 .713-.288T15 9V7q0-.425-.288-.712T14 6H7q-.425 0-.712.288T6 7v2q0 .425.288.713T7 10M5 7.85V19V5z"/></svg>`,
+  outlineDelete: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5h3m3 0h3M4 5v14m0-7h5m3 0h2M4 19h5m3 0h2"/><path d="M16 6h6"/></svg>`,
+  outlineAdd: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5h3m3 0h3M4 5v14m0-7h5m3 0h2M4 19h5m3 0h2"/><path d="M19 3v6m-3-3h6"/></svg>`,
+  more: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-hidden="true"><g fill="currentColor"><circle cx="12" cy="5" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="12" cy="19" r="1.5"/></g></svg>`,
+  ai: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"><path d="m10 3 2.3 6.7L19 12l-6.7 2.3L10 21l-2.3-6.7L1 12l6.7-2.3Z"/><path d="m19 2 1 3 3 1-3 1-1 3-1-3-3-1 3-1Z"/></svg>`,
+  outline: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5h3m3 0h10M4 5v14m0-7h5m3 0h8M4 19h5m3 0h8"/></svg>`,
+  bookmark: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 4.5A1.5 1.5 0 0 1 7.5 3h9A1.5 1.5 0 0 1 18 4.5V21l-6-4-6 4Z"/></svg>`,
+  expand: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="m8 10 4 4 4-4"/></svg>`,
+  collapse: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="m10 8 4 4-4 4"/></svg>`,
+  add: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M13 3H7.5A1.5 1.5 0 0 0 6 4.5V21l6-4 6 4v-7"/><path d="M19 3v6m-3-3h6"/></svg>`,
+  del: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M13 3H7.5A1.5 1.5 0 0 0 6 4.5V21l6-4 6 4v-7"/><path d="M16 6h6"/></svg>`,
+  save: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 3h11l5 5v12a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1Z"/><path d="M7 3v6h9V3M7 21v-8h10v8"/></svg>`,
   down: `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 2 20 20"><g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" color="currentColor"><path d="M16 10.5s-2.946 3-4 3s-4-3-4-3"/></g></svg>`,
   right: `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 2 20 20"><g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" color="currentColor"><path d="M10.5 8s3 2.946 3 4s-3 4-3 4"/></g></svg>`,
   plus: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path fill="currentColor" d="M4.194 14.867L2.881 18.16q-.067.157-.189.249q-.12.091-.296.091q-.288 0-.443-.228t-.051-.49l4.9-11.994q.048-.119.16-.204t.242-.084h.357q.149 0 .254.084q.104.085.152.204l4.887 11.943q.104.28-.063.525q-.167.244-.452.244q-.173 0-.322-.097q-.15-.098-.211-.268l-1.308-3.268zm.36-.967h5.584l-2.71-6.8h-.132zm13.83-1.4h-2.5q-.212 0-.356-.144t-.143-.357t.143-.356t.357-.143h2.5V9q0-.213.143-.356t.357-.144t.356.144t.144.356v2.5h2.5q.212 0 .356.144t.143.357t-.143.356t-.357.143h-2.5V15q0 .213-.143.356q-.144.144-.357.144t-.356-.144t-.144-.356z" /></svg>`,
@@ -65,8 +69,9 @@ export const outline_css = `
 display: none !important;}
 
 #j-outline-toolbar {
-  display: inline-flex;
-  gap: 6px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
   padding: 4px 4px 4px 8px;
   border-top: 1px solid #ddd;
   border-bottom: 1px solid #ddd;
@@ -82,13 +87,57 @@ display: none !important;}
 
 .j-outline-toolbar-button svg {
   display: block;
-  width: 24px;
-  height: 24px;
+  width: 20px;
+  height: 20px;
 }
 
 button:hover.j-outline-toolbar-button {
-  background: var(--button-hover-bg);
+  background: var(--fill-quinary, var(--button-hover-bg));
 }
+
+#j-outline-toolbar > button { flex: 0 0 28px; border-radius: 4px; }
+#j-outline-toolbar #j-outline-more { margin-inline-start: auto; }
+#j-outline-more-menu {
+  position: fixed;
+  margin: 0;
+  padding: 4px;
+  min-width: 180px;
+  max-width: calc(100vw - 16px);
+  box-sizing: border-box;
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  background: var(--container-bg);
+  color: var(--text-color);
+  box-shadow: 0 4px 16px var(--shadow-color);
+}
+#j-outline-more-menu button {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  box-sizing: border-box;
+  gap: 8px;
+  width: 100%;
+  padding: 7px 10px;
+  border-radius: 4px;
+  text-align: start;
+  color: inherit;
+}
+/* Match Zotero's 20px icons: 1.5 SVG units on a 24-unit viewBox = 1.25px. */
+#j-outline-button svg,
+#j-bookmark-button svg,
+.j-outline-toolbar-button svg,
+.j-bookmark-toolbar-button svg {
+  width: 20px;
+  height: 20px;
+  color: var(--fill-secondary, #808080);
+}
+#j-outline-more-menu button svg { flex: none; width: 20px; height: 20px; }
+#j-outline-toolbar > button:active,
+#j-bookmark-toolbar > button:active {
+  background: var(--fill-quarternary, var(--selected-node-bg));
+}
+#j-outline-more-menu button:focus-visible,
+#j-outline-more:focus-visible { outline: 2px solid Highlight; outline-offset: -2px; }
 
 .tree-container {
   border: 1px solid var(--border-color);
@@ -264,12 +313,12 @@ button:hover.j-outline-toolbar-button {
 
 .j-bookmark-toolbar-button svg {
   display: block;
-  width: 24px;
-  height: 24px;
+  width: 20px;
+  height: 20px;
 }
 
 button:hover.j-bookmark-toolbar-button {
-  background: var(--button-hover-bg);
+  background: var(--fill-quinary, var(--button-hover-bg));
 }
 
 #j-bookmark-viewer {

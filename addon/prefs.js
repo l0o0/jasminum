@@ -29,5 +29,6 @@ pref("translatorUpdateTime", "0");
 pref("translatorSource", "");
 /* bookmark */
 pref("enableBookmark", true);
+pref("showSelectionPopupActions", true);
 pref("newNodeAsChild", false);
 pref("disableZoteroOutline", true);

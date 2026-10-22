@@ -54,21 +54,21 @@ export function renderTree(
         tag: "button",
         id: "j-outline-add-node",
         classList: ["j-outline-toolbar-button", "toolbar-button"],
-        properties: { innerHTML: ICONS.add },
+        properties: { innerHTML: ICONS.outlineAdd },
         attributes: { title: getString("outline-add") },
       },
       {
         tag: "button",
         id: "j-outline-delete-node",
         classList: ["j-outline-toolbar-button", "toolbar-button"],
-        properties: { innerHTML: ICONS.del },
+        properties: { innerHTML: ICONS.outlineDelete },
         attributes: { title: getString("outline-delete") },
       },
       {
         tag: "button",
         id: "j-outline-ai",
         classList: ["j-outline-toolbar-button", "toolbar-button"],
-        properties: { textContent: "AI" },
+        properties: { innerHTML: ICONS.ai },
         attributes: {
           title: getString("outline-ai-title"),
           "aria-label": getString("outline-ai-title"),
@@ -82,6 +82,75 @@ export function renderTree(
         attributes: { title: getString("outline-save-to-pdf") },
       },
     ],
+  });
+  const more = doc.createElement("button");
+  more.id = "j-outline-more";
+  more.type = "button";
+  more.className = "j-outline-toolbar-button toolbar-button";
+  more.innerHTML = ICONS.more;
+  more.title = getString("outline-more-actions");
+  more.setAttribute("aria-label", more.title);
+  more.setAttribute("aria-haspopup", "menu");
+  more.setAttribute("aria-expanded", "false");
+  more.setAttribute("aria-controls", "j-outline-more-menu");
+  const menu = doc.createElement("div");
+  menu.id = "j-outline-more-menu";
+  menu.setAttribute("popover", "auto");
+  menu.setAttribute("role", "menu");
+  menu.setAttribute("aria-label", more.title);
+  for (const id of ["j-outline-ai", "j-outline-save-pdf"]) {
+    const button = toolbar.querySelector<HTMLButtonElement>(`#${id}`)!;
+    button.setAttribute("role", "menuitem");
+    const label = doc.createElement("span");
+    label.textContent = button.title;
+    button.append(label);
+    button.addEventListener("click", () => menu.hidePopover());
+    menu.append(button);
+  }
+  toolbar.append(more, menu);
+  more.addEventListener("click", (event) => {
+    if (menu.matches(":popover-open")) {
+      menu.hidePopover();
+      return;
+    }
+    menu.showPopover();
+    const anchor = more.getBoundingClientRect();
+    const bounds = menu.getBoundingClientRect();
+    const win = doc.defaultView!;
+    menu.style.left = `${Math.max(8, Math.min(anchor.right - bounds.width, win.innerWidth - bounds.width - 8))}px`;
+    menu.style.top = `${Math.max(8, Math.min(anchor.bottom + 4, win.innerHeight - bounds.height - 8))}px`;
+    // Keyboard activation has no pointer click count. Mouse users keep focus
+    // on the trigger instead of immediately highlighting the first menu item.
+    if (event.detail === 0) {
+      menu.querySelector<HTMLButtonElement>("button")?.focus();
+    }
+  });
+  more.addEventListener("keydown", (event) => {
+    if (event.key !== "ArrowDown" && event.key !== "ArrowUp") return;
+    event.preventDefault();
+    if (!menu.matches(":popover-open")) more.click();
+    const selector =
+      event.key === "ArrowDown" ? "button:first-child" : "button:last-child";
+    menu.querySelector<HTMLButtonElement>(selector)?.focus();
+  });
+  menu.addEventListener("toggle", () => {
+    more.setAttribute("aria-expanded", String(menu.matches(":popover-open")));
+  });
+  menu.addEventListener("keydown", (event) => {
+    if (!["ArrowDown", "ArrowUp", "Home", "End"].includes(event.key)) return;
+    event.preventDefault();
+    const buttons = Array.from(
+      menu.querySelectorAll<HTMLButtonElement>("button"),
+    );
+    const index = buttons.indexOf(doc.activeElement as HTMLButtonElement);
+    const next =
+      event.key === "Home"
+        ? 0
+        : event.key === "End"
+          ? buttons.length - 1
+          : (index + (event.key === "ArrowDown" ? 1 : -1) + buttons.length) %
+            buttons.length;
+    (buttons[next] as HTMLButtonElement | undefined)?.focus();
   });
   const treeContainer = ztoolkit.UI.createElement(doc, "div", {
     id: "jasminum-outline",

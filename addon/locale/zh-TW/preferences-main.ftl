@@ -89,6 +89,9 @@ label-disableZoteroOutline =
   .label = 禁用 Zotero 自帶的大綱
 label-enableBookmark = 
   .label = 啟用大綱書籤
+label-showSelectionPopupActions =
+  .label = 在選取文字彈窗中顯示新增書籤和大綱按鈕
+  .tooltiptext = 關閉後仍可透過右鍵選單新增書籤和大綱。重新選取文字後生效。
 outline-desc = 
   .tooltiptext = 請注意，當您修改大綱或書籤時，需要點擊「儲存」按鈕才會將變更保存至PDF檔案中。預設情況下，書籤與大綱資訊會與PDF檔案分開儲存。
 

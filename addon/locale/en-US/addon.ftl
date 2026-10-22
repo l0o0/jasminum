@@ -66,10 +66,10 @@ importing-attachments-is-running = An attachment import task is already running.
 outline = Show Bookmark (By Jasminum)
 outline-expand-all = Expand all
 outline-collapse-all = Collapse all
-outline-add = Add bookmark
-outline-delete = Delete bookmark
+outline-add = Add outline
+outline-delete = Delete outline
 outline-save-to-pdf = Save outline to PDF
-outline-empty-prompt = Please click the button above { $icon } to create a bookmark
+outline-empty-prompt = Please click the button above { $icon } to create a outline
 outline-delete-confirm = This node has child nodes, do you want to delete?
   {" "}
   If you delete, all child nodes will be deleted.
@@ -190,3 +190,5 @@ outline-ai-save-outline = Save
 
 selection-popup-add-bookmark = Add Bookmark
 selection-popup-add-outline = Add Outline
+
+outline-more-actions = More actions

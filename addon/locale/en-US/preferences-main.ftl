@@ -89,6 +89,9 @@ label-disableZoteroOutline =
   .label = Disable Zotero's Built-in Outline
 label-enableBookmark = 
   .label = Enable Outline Bookmark
+label-showSelectionPopupActions =
+  .label = Show bookmark and outline buttons in the text selection popup
+  .tooltiptext = When disabled, the context menu actions remain available. Applies to the next text selection.
 outline-desc = 
   .tooltiptext = Please note that when you modify the outline or bookmarks, you need to click the 'Save' button to save them to the PDF file. By default, bookmark and outline information is saved separately from the PDF file.
 
