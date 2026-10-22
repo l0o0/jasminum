@@ -55,8 +55,11 @@ function initialize(win: Window, task: OutlineTask) {
           : "quiet";
     button.onclick = async () => {
       try {
-        if (action === "apply") await task.apply();
-        else if (action === "undo") await task.undo();
+        if (action === "apply") {
+          if (!task.canApply) return;
+          await task.apply();
+          if (task.applied) win.close();
+        } else if (action === "undo") await task.undo();
         else if (action === "restart")
           await addon.taskRunner.retryOutlineTask(task);
         else win.close();
@@ -165,7 +168,7 @@ export function renderOutlineReview(task: OutlineTask, doc: Document) {
         page.blur();
       }
     };
-    page.title = `${t("page")} ${h.page}`;
+    page.title = t("edit-page");
     page.setAttribute("aria-label", page.title);
     button.append(title, confidence);
     button.dataset.headingIndex = String(index);
@@ -259,7 +262,12 @@ export function renderOutlineReview(task: OutlineTask, doc: Document) {
         jump.disabled = false;
       }
     };
-    row.append(button, page, jump);
+    const pageField = element(doc, "label");
+    pageField.className = "outline-page-field";
+    const pageLabel = element(doc, "span");
+    pageLabel.textContent = t("page");
+    pageField.append(pageLabel, page);
+    row.append(button, pageField, jump);
     for (const [key, label] of [
       ["ArrowLeft", "promote"],
       ["ArrowRight", "demote"],

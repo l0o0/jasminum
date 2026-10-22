@@ -98,14 +98,23 @@
         line-height: 1.5;
         overflow-wrap: anywhere;
       }
+      .outline-page-field {
+        display: inline-flex;
+        align-items: center;
+        align-self: center;
+        gap: 4px;
+        flex-shrink: 0;
+        color: #657084;
+        font-size: 13px;
+      }
       .outline-page {
-        width: 5ch;
+        width: 6ch;
         padding: 3px 4px;
-        border: 1px solid transparent;
+        border: 1px solid #b8c4d4;
         border-radius: 4px;
-        background: transparent;
+        background: #fff;
         font: inherit;
-        appearance: textfield;
+        appearance: auto;
         flex-shrink: 0;
         text-align: right;
         font-variant-numeric: tabular-nums;
@@ -115,6 +124,14 @@
       .outline-page:hover,
       .outline-page:focus {
         border-color: #90abd0;
+      }
+      .outline-page:focus-visible {
+        outline: 2px solid #4072e5;
+        outline-offset: 1px;
+      }
+      .outline-page:disabled {
+        opacity: 0.55;
+        cursor: not-allowed;
       }
       .outline-confidence {
         align-self: center;
@@ -259,6 +276,11 @@
           background: #303640;
           border-color: #586170;
         }
+        .outline-page {
+          background: #242a33;
+          border-color: #7b8da5;
+        }
+        .outline-page-field,
         .outline-page,
         #edit-hint,
         main p {

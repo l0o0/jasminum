@@ -192,3 +192,5 @@ selection-popup-add-bookmark = Add Bookmark
 selection-popup-add-outline = Add Outline
 
 outline-more-actions = More actions
+
+outline-ai-edit-page = Edit page number (type a number or use the up/down arrows)

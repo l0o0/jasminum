@@ -193,3 +193,5 @@ selection-popup-add-bookmark = 新增書籤
 selection-popup-add-outline = 新增大綱
 
 outline-more-actions = 更多操作
+
+outline-ai-edit-page = 編輯頁碼（可直接輸入或使用上下箭頭）

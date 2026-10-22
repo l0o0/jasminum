@@ -218,13 +218,36 @@ export class TaskRunner {
 
   // Serialize work, keeping one runningTask owner for provider diagnostics.
   private queue: Promise<void> = Promise.resolve();
-  private scheduled = new Set<string>();
+  private scheduled = new Set<AttachmentTask | ScraperTask | OutlineTask>();
+  private cancelled = new WeakSet<Task>();
+
+  clearTasks(): void {
+    const tasks = this.tasks;
+    this.tasks = [];
+    for (const task of tasks) {
+      this.cancelled.add(task);
+      if (task instanceof OutlineTask) task.stop();
+      else {
+        task.status = "fail";
+        // Release tasks waiting for a result selection without importing it.
+        task.deferred?.resolve(-1);
+      }
+    }
+  }
   runTask(task: AttachmentTask | ScraperTask | OutlineTask): Promise<void> {
-    if (this.scheduled.has(task.id)) return Promise.resolve();
-    this.scheduled.add(task.id);
+    if (
+      this.cancelled.has(task) ||
+      [...this.scheduled].some(
+        (scheduled) =>
+          scheduled.id === task.id && !this.cancelled.has(scheduled),
+      )
+    )
+      return Promise.resolve();
+    this.scheduled.add(task);
     const operation = this.queue.then(async () => {
-      this.runningTask = task;
       try {
+        if (this.cancelled.has(task)) return;
+        this.runningTask = task;
         if (task instanceof OutlineTask) await task.run();
         else if (this.getTaskType(task) === "attachmentScraper")
           await this.runAttachmentTask(task as AttachmentTask);
@@ -233,8 +256,8 @@ export class TaskRunner {
         task.addMsg(String(error));
         task.status = "fail";
       } finally {
-        this.runningTask = null;
-        this.scheduled.delete(task.id);
+        if (this.runningTask === task) this.runningTask = null;
+        this.scheduled.delete(task);
       }
     });
     this.queue = operation.catch(() => {});
@@ -242,7 +265,12 @@ export class TaskRunner {
   }
 
   async retryOutlineTask(task: OutlineTask): Promise<void> {
-    if (this.scheduled.has(task.id) || !task.prepareRetry()) return;
+    if (
+      this.cancelled.has(task) ||
+      this.scheduled.has(task) ||
+      !task.prepareRetry()
+    )
+      return;
     await this.runTask(task);
   }
 
@@ -257,22 +285,24 @@ export class TaskRunner {
       task.status = "fail";
       return;
     }
+    if (this.cancelled.has(task)) return;
     // Wait for user select result.
     if (task.status === "multiple_results") {
       task.resultIndex = await task.deferred?.promise;
     }
-    if (task.status != "fail") {
+    if (!this.cancelled.has(task) && task.status != "fail") {
       await metaTranslate(task);
     }
   }
 
   async runAttachmentTask(task: AttachmentTask): Promise<void> {
     await attachmentSearch(task);
+    if (this.cancelled.has(task)) return;
     // Wait for user select result.
     if (task.status === "multiple_results") {
       task.resultIndex = await task.deferred?.promise;
     }
-    if (task.status != "fail") {
+    if (!this.cancelled.has(task) && task.status != "fail") {
       await importAttachment(task);
     }
   }

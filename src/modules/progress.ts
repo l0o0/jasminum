@@ -1,3 +1,4 @@
+import { closeOutlineReviews } from "./outline/reviewView";
 import { OutlineTask } from "./outline/task";
 import { addOutlineControls, updateOutlineControls } from "./outline/taskView";
 import { ElementProps, TagElementProps } from "zotero-plugin-toolkit";
@@ -48,15 +49,7 @@ export class Progress {
 
     if (win) {
       this.progressWindow = win.openDialog(htmlUrl, "", chromeArgs, windowArgs);
-      this.progressWindow!.onbeforeunload = (e) => {
-        this.progressWindow = null;
-        // Tasks survive window closure; reopened windows restore their rows.
-      };
-      // For close button in header bar
-      this.progressWindow!.onclose = (e) => {
-        this.progressWindow = null;
-        // Tasks survive window closure; reopened windows restore their rows.
-      };
+      const progressWindow = this.progressWindow!;
       let t = 0;
       // Wait for window
       while (
@@ -69,6 +62,20 @@ export class Progress {
         t += 1;
       }
       await windowArgs._initPromise.promise;
+      // openDialog first replaces an initial about:blank document. Its unload
+      // is initialization, not the user closing the task window.
+      if (progressWindow.closed || this.progressWindow !== progressWindow)
+        return;
+      const taskDocument = progressWindow.document;
+      const onUnload = (event: Event) => {
+        if (event.target !== taskDocument) return;
+        progressWindow.removeEventListener("unload", onUnload);
+        if (this.progressWindow !== progressWindow) return;
+        this.progressWindow = null;
+        closeOutlineReviews();
+        addon.taskRunner.clearTasks();
+      };
+      progressWindow.addEventListener("unload", onUnload);
     } else {
       ztoolkit.log(`Maybe this is an error. No main window found.`);
       // return Services.ww.openWindow(null, htmlUrl, "", chromeArgs, io);
@@ -266,6 +273,7 @@ export class Progress {
 
   // Update task status icon. Display error msgs when task fails.
   public updateTaskStatus(task: Task, status: string): void {
+    if (addon.taskRunner.getTaskById(task.id) !== task) return;
     if (this.progressWindow) {
       if (task instanceof OutlineTask) {
         updateOutlineControls(task, this.progressWindow.document);
@@ -371,6 +379,7 @@ export class Progress {
     task: Task,
     searchResults: (ScrapeSearchResult | AttachmentSearchResult)[],
   ): void {
+    if (addon.taskRunner.getTaskById(task.id) !== task) return;
     if (this.progressWindow) {
       ztoolkit.log(searchResults);
       const props = this.createSearchResultProps(task, searchResults);

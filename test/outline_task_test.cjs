@@ -129,13 +129,26 @@ async function main() {
     },
     globals,
   );
+  let searchGate;
+  let translated = 0;
+  let imported = 0;
+  const search = async (task) => {
+    if (searchGate) await searchGate.promise;
+    task.status = "multiple_results";
+  };
   const { TaskRunner } = load(
     "src/utils/task.ts",
     {
       "../modules/outline/task": { OutlineTask },
-      "../modules/services": {},
+      "../modules/services": {
+        metaSearch: search,
+        metaTranslate: async () => translated++,
+      },
       "./locale": locale,
-      "../modules/attachments": {},
+      "../modules/attachments": {
+        attachmentSearch: search,
+        importAttachment: async () => imported++,
+      },
       "../../package.json": { version: "test" },
     },
     globals,
@@ -250,16 +263,94 @@ async function main() {
   assert.equal(updates, 1);
   assert(events.some((e) => e[1] === "fail"));
   assert(events.some((e) => e[1] === "paused"));
+  // Clearing cancels active and queued work, including same-ID replacement.
+  const clearingRunner = new TaskRunner();
+  addon.taskRunner = clearingRunner;
+  gate = deferred();
+  const oldTask = clearingRunner.createTask(item(80), "outline");
+  const queuedTask = clearingRunner.createTask(item(81), "outline");
+  const oldRun = clearingRunner.addTask(oldTask);
+  const queuedRun = clearingRunner.addTask(queuedTask);
+  await new Promise((r) => setImmediate(r));
+  const beforeClear = workerRuns;
+  clearingRunner.clearTasks();
+  assert.equal(clearingRunner.tasks.length, 0);
+  const replacement = clearingRunner.createTask(item(80), "outline");
+  const replacementRun = clearingRunner.addTask(replacement);
+  gate.resolve();
+  await Promise.all([oldRun, queuedRun, replacementRun]);
+  assert.equal(workerRuns, beforeClear + 1);
+  assert.equal(queuedTask.status, "paused");
+  assert.equal(replacement.status, "success");
+  assert.equal(clearingRunner.runningTask, null);
+  await clearingRunner.retryOutlineTask(oldTask);
+  assert.equal(workerRuns, beforeClear + 1);
+  gate = undefined;
+  // Waiting selections resolve on close and never translate/import a result.
+  for (const type of ["attachment", "remote"]) {
+    const waitingRunner = new TaskRunner();
+    addon.taskRunner = waitingRunner;
+    const waitingTask = waitingRunner.createTask(item(82), type);
+    const operation = waitingRunner.addTask(waitingTask);
+    await new Promise((r) => setImmediate(r));
+    assert.equal(waitingTask.status, "multiple_results");
+    waitingRunner.clearTasks();
+    await operation;
+    assert.equal(waitingRunner.runningTask, null);
+    // A search returning after closure must not start waiting for input.
+    searchGate = deferred();
+    const late = waitingRunner.addTask(
+      waitingRunner.createTask(item(83), type),
+    );
+    await new Promise((r) => setImmediate(r));
+    waitingRunner.clearTasks();
+    searchGate.resolve();
+    await late;
+    searchGate = undefined;
+  }
+  assert.equal(translated, 0);
+  assert.equal(imported, 0);
+  addon.taskRunner = runner;
+  let reviewsClosed = 0;
   const { Progress } = load(
     "src/modules/progress.ts",
     {
       "./outline/task": { OutlineTask },
       "./outline/taskView": {},
+      "./outline/reviewView": { closeOutlineReviews: () => reviewsClosed++ },
       "../utils/locale": locale,
       "./preferences/remoteHelp": {},
     },
     globals,
   );
+  const lifecycleProgress = new Progress();
+  const windowEvents = {};
+  const testWindow = {
+    document: { readyState: "complete" },
+    addEventListener: (name, callback) => {
+      windowEvents[name] = callback;
+    },
+  };
+  const initializedWindow = deferred();
+  testWindow.removeEventListener = (name) => {
+    delete windowEvents[name];
+  };
+  Zotero.Promise = { defer: () => initializedWindow };
+  Zotero.getMainWindow = () => ({ openDialog: () => testWindow });
+  const initialization = lifecycleProgress.initializeProgressWindow();
+  // No close listener while about:blank is being replaced.
+  assert.equal(windowEvents.unload, undefined);
+  initializedWindow.resolve();
+  await initialization;
+  addon.taskRunner = clearingRunner;
+  windowEvents.unload({ target: {} }); // Ignore child document unloads.
+  assert.equal(lifecycleProgress.progressWindow, testWindow);
+  assert.equal(clearingRunner.tasks.length, 1);
+  windowEvents.unload({ target: testWindow.document });
+  assert.equal(clearingRunner.tasks.length, 0);
+  assert.equal(lifecycleProgress.progressWindow, null);
+  assert.equal(reviewsClosed, 1);
+  addon.taskRunner = runner;
   const progress = new Progress();
   let opened = 0;
   const rendered = [];

@@ -192,3 +192,5 @@ selection-popup-add-bookmark = 添加书签
 selection-popup-add-outline = 添加大纲
 
 outline-more-actions = 更多操作
+
+outline-ai-edit-page = 编辑页码（可直接输入或使用上下箭头）

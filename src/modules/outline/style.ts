@@ -421,6 +421,7 @@ button:hover.j-bookmark-toolbar-button {
   width: 100%;
 }
 
+.empty-outline-prompt,
 .empty-bookmark-prompt {
   text-align: center;
   color: #999;
@@ -429,6 +430,15 @@ button:hover.j-bookmark-toolbar-button {
   border: 2px dashed #ddd;
   border-radius: 4px;
   margin: 10px 0;
+}
+
+.empty-outline-prompt svg,
+.empty-bookmark-prompt svg {
+  width: 20px;
+  height: 20px;
+  vertical-align: middle;
+  margin: 0 4px;
+  color: var(--fill-secondary, #808080);
 }
 
 /* 书签颜色选择器 */

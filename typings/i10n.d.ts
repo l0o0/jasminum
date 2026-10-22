@@ -188,6 +188,7 @@ export type FluentMessageId =
   | 'outline-ai-demote'
   | 'outline-ai-description'
   | 'outline-ai-edit-hint'
+  | 'outline-ai-edit-page'
   | 'outline-ai-empty'
   | 'outline-ai-error-details'
   | 'outline-ai-exact'
