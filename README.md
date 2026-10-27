@@ -1,74 +1,108 @@
-<div align=center>
+<div align="center">
 
 ![Jasminum](./addon/chrome/content/icons/icon.png)
 
 # 茉莉花 Jasminum
 
-[![zotero target version](https://img.shields.io/badge/Zotero-8/9-green?style=flat-square&logo=zotero&logoColor=CC2936)](https://www.zotero.org) [![Using Zotero Plugin Template](https://img.shields.io/badge/Using-Zotero%20Plugin%20Template-blue?style=flat-square&logo=github)](https://github.com/windingwind/zotero-plugin-template) ![Release](https://img.shields.io/github/release/l0o0/jasminum?style=flat-square)
-
-</div>
-</br>
+[![Release](https://img.shields.io/github/release/l0o0/jasminum?style=flat-square)](https://github.com/l0o0/jasminum/releases/latest)
+[![Using Zotero Plugin Template](https://img.shields.io/badge/Using-Zotero%20Plugin%20Template-blue?style=flat-square&logo=github)](https://github.com/windingwind/zotero-plugin-template)
 
 简体中文 | [English](doc/README-en.md)
 
-## 1. 基础功能
+</div>
 
-- 中文PDF元数据抓取
-- 中文转换器下载，转换器来源于 Zotero中文社区 [translators_CN](https://github.com/l0o0/translators_CN)
-- 中文引用格式下载，引用格式来源于项目 Zotero中文社区 [styles](https://github.com/zotero-chinese/styles)
-- 小工具
-  - 语言设置
-  - 中文姓名拆分与合并
+茉莉花是面向中文文献管理的 Zotero 插件，提供元数据抓取、本地附件匹配、中文转换器与引用格式下载，以及 PDF 书签和大纲管理。
 
-## 2.使用教程
+## 安装与兼容性
 
-### 2.1 元数据抓取
+以下说明对应已发布的 **v1.1.43**。
 
-目前支持仅支持从**中国知网**获取元数据，后续考虑会添加其他数据来源。
+- 插件最低要求 **Zotero 9.0.3**。旧版 Zotero 用户请查阅历史版本的发布说明。
+- **AI 元数据识别和 AI 大纲识别需要 Zotero 10 或更高版本**，以及支持图片输入和 JSON Object 输出的模型接口。
 
-在 Zotero 中添加中文附件后，右键附件，在菜单栏选择`茉莉花抓取` -> `抓取期刊元数据`，在弹出窗口可以看到元数据抓取的结果。
-如果有多个搜索结果，需要你手动选择最匹配的结果，再点击确认，即可完成抓取。
+1. 从 [Releases](https://github.com/l0o0/jasminum/releases/latest) 下载 `.xpi` 安装包，不要下载 Source code 压缩包。
+2. 在 Zotero 中打开“工具 → 插件”，点击齿轮菜单，选择“从文件安装插件”，选中下载的 `.xpi` 文件。菜单名称可能因 Zotero 版本和语言略有不同。
+3. 安装后，在 Zotero 设置中找到茉莉花页面。
 
-![alt text](doc/images/image2.png)
+## 元数据抓取
 
-### 2.3 本地附件匹配功能
+将中文 PDF 添加到 Zotero 后，右键尚未归属文献条目的附件，打开茉莉花元数据菜单，选择抓取元数据。任务窗口会显示处理结果；存在多个候选结果时，请选择匹配的文献并确认。
 
-在使用 Zotero Connector 在浏览器上抓取中文期刊时（尤其是中国知网），经常出现元数据抓取成功而附件无法下载自动的异常，当你手动下载期刊附件（PDF/CAJ）后，可以方便地用此功能来将下载的附件与元数据匹配。
+在茉莉花设置的“数据来源”中，可以启用、移除和调整来源顺序。目前提供 PubScholar、国家哲学社会科学文献中心（NCPSSD）、中国知网（CNKI）、中华医学期刊全文数据库（Yiigle）和 AI 识别。
 
-右键期刊条目，`小工具` -> `在下载文件夹中查找附件`，该功能会自动在当前`下载目录`中寻找与当前条目匹配的附件，匹配规划是**根据期刊标题与文件名的匹配度**。
+来源按设置顺序运行。AI 仅在前面的来源没有可靠结果时执行；希望优先使用 AI 时，可以将其移到前面。传统来源的检索会使用附件文件名，请尽量保留准确的文献标题，并按需要调整文件名解析设置。
 
-`下载目录`默认是系统的下载目录，Windows系统默认是`C:\Users\用户名\Downloads`，Mac系统默认是`/Users/用户名/Downloads`，Linux系统默认是`/home/用户名/Downloads`。也可以在`设置`中修改下载目录。
+## AI 接口配置
 
-下载目录中匹配成功的附件默认会移动到备份目录中`下载目录/jasminum-backup`中，在设置中还可以选择
+1. 打开茉莉花设置中的“AI 识别”接口配置。
+2. 选择预设平台或自定义 OpenAI 兼容接口，填写 Base URL、API Key 和模型 ID。Base URL 应为 API 根地址，而非完整的 `/chat/completions` 地址。
+3. 点击“测试连接”。插件会发送内置的茉莉花测试图片，并检查模型对图片文字、花瓣颜色和 JSON 输出的识别结果。测试超时为两分钟。
+4. 若用于元数据抓取，还需在数据来源中启用 AI。
 
-- 删除匹配成功的附件。匹配到元数据的附件已经保存到Zotero中，可以放心删除下载目录中的附件（个人建议删除，避免下载目录中附件过多）。
-- 无须处理。即使匹配成功，附件还是会在下载目录中，当然Zotero已经保存了一份。
+预设包含 MagicZotero、硅基流动和 DeepSeek。**预设不代表所选模型一定支持图片**，请以模型能力和连接测试结果为准。
 
-### 2.3 PDF大纲
+使用 MagicZotero 时，可安装 Garden 插件并注册账号，通过接口配置中的“打开模型商店”链接进入商店，在所选模型的“查看详情 → 显示配置”中复制 API Key。
 
-在 PDF 阅读窗口的左侧边栏中，点击茉莉花书签按钮，即可看到书签大纲窗口。
+**数据发送范围：**连接测试发送内置测试图片；元数据识别发送 PDF 前几页的图片；全文大纲识别会逐批发送 PDF 页面图片。图片发送至你配置的服务商，并可能产生该服务商的调用费用。请勿在问题反馈中公开 API Key，AI 识别结果也应人工核对。
 
-![alt text](doc/images/image.png)
+## 本地附件匹配
 
-最上方的5个按钮，功能分别是：
+浏览器已抓取文献条目、但未能自动下载附件时，可以手动下载 PDF 或 CAJ，然后右键文献条目，在“小工具”中选择“在下载文件夹中查找附件”。插件根据文献标题和文件名的匹配度寻找附件。
 
-- 展开所有书签
-- 折叠所有书签
-- 添加书签
-- 删除书签
-- 将书签内容保存到PDF（默认只以配置文件的形式保存到本地）
+下载目录默认为系统下载文件夹，可以在茉莉花设置中修改。匹配成功后，原下载文件默认移动到下载目录下的 `jasminum-backup`；也可在设置中选择删除原文件或保持不变。导入 Zotero 的附件副本不受原下载文件处理方式影响。
 
-**键盘快捷键导航**
+## PDF 书签与大纲
 
-- 键盘↑，上一个书签（跳过折叠内容）
-- 键盘↓，下一个书签（跳过折叠内容）
-- 键盘←或→，展开或折叠节点
-- 空格键，编辑书签内容
-- [，将书签移到上一级（作为原上级节点的下一个相邻节点）
-- ]，将书签移到下一级（自动将相邻的上一个节点作为上级节点）
-- \，创建新节点（默认作为选中节点的子节点）
-- Delete 或 Backspace，删除节点
+打开 PDF 阅读器的左侧栏，可以使用茉莉花的书签和大纲面板：
 
-## 3. ❤️致谢
+- **书签**：记录阅读位置，支持添加、删除和拖动排序。
+- **大纲**：组织带层级的章节标题，支持添加、编辑、删除、调整层级及拖动排序。
 
-特别感谢 [jiaojiaodubai](https://github.com/jiaojiaodubai) 同学，长期以来对 [translators_CN](https://github.com/l0o0/translators_CN) 和 本项目 的贡献。
+选中文字后，可通过划词弹窗或右键菜单分别选择“添加书签”和“添加大纲”。不需要划词弹窗按钮时，可以在茉莉花设置中关闭；右键菜单入口仍保留。
+
+手动编辑的大纲默认保存在插件的本地数据中。需要写入 PDF 时，在大纲工具栏右侧的“更多”（⋮）菜单中选择“保存大纲到 PDF”。
+
+### 大纲侧栏快捷键
+
+先选中一个大纲节点：
+
+| 按键 | 操作 |
+| --- | --- |
+| ↑ / ↓ | 选择上一个／下一个可见节点 |
+| ← / → | 展开或折叠节点 |
+| 空格 | 编辑标题 |
+| `[` / `]` | 提升／降低层级 |
+| `\` | 创建子节点 |
+| Delete / Backspace | 删除节点 |
+
+### AI 大纲识别
+
+从附件右键菜单的“小工具”，或大纲侧栏的“更多”（⋮）菜单启动 AI 全文大纲识别。
+
+1. 在茉莉花任务窗口查看进度；需要时可停止，再继续识别。
+2. 打开独立的大纲核对窗口，检查标题、层级和 PDF 页码。
+3. 使用 ↑ / ↓ 切换标题、拖动排序、Delete / Backspace 删除、← / → 调整层级。页码可直接编辑，右侧跳转按钮用于查看 PDF 对应位置。
+4. 原文匹配和估计位置通过图标及悬停提示区分。核对后点击“保存”，写入茉莉花大纲和 PDF；保存成功后核对窗口关闭。
+
+关闭任务窗口会清空任务列表，并停止大纲识别。需要核对结果时，请先完成核对和保存。
+
+## 中文转换器、引用格式与小工具
+
+- 在茉莉花设置中下载或更新[中文转换器](https://github.com/l0o0/translators_CN)，用于网页文献抓取。
+- 下载社区维护的[中文引用格式](https://github.com/zotero-chinese/styles)。
+- 使用语言设置、中文姓名拆分与合并等小工具。
+
+## 常见问题与反馈
+
+- **插件无法安装：**检查 Zotero 与插件版本是否兼容，确认下载的是 `.xpi` 文件。
+- **没有找到元数据：**检查附件标题、文件名解析规则及数据来源设置；网站访问限制也可能影响抓取。
+- **AI 测试或识别失败：**检查接口地址、密钥、模型图片输入及 JSON Object 支持；AI PDF 功能还需 Zotero 10 或更高版本。
+- **大纲无法写入 PDF：**检查文件是否可写，是否被其他应用占用。
+
+请通过 [GitHub Issues](https://github.com/l0o0/jasminum/issues) 反馈问题，附上 Zotero 版本、插件版本、操作系统、复现步骤及相关错误信息；删除密钥等敏感信息。
+
+## 致谢
+
+特别感谢 [jiaojiaodubai](https://github.com/jiaojiaodubai) 长期以来对 [translators_CN](https://github.com/l0o0/translators_CN) 和本项目的贡献。
+
+本项目基于 [Zotero Plugin Template](https://github.com/windingwind/zotero-plugin-template)，使用 [AGPL-3.0-or-later](LICENSE) 许可证。
