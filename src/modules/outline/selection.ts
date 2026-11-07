@@ -55,6 +55,38 @@ export function normalizeSelection(value: Selection): Selection | null {
   };
 }
 
+/** Insert before the first later page, keeping existing order and subtrees intact.
+ * Same-page entries retain their order; page numbers alone do not imply a level.
+ * The new entry inherits the following entry's level, or is appended at root.
+ */
+export function insertOutlineByPage(
+  outline: OutlineNode[],
+  node: OutlineNode,
+): number {
+  let index = 0;
+  const insert = (siblings: OutlineNode[], depth: number): boolean => {
+    for (let i = 0; i < siblings.length; i++) {
+      const current = siblings[i];
+      if (Number.isFinite(current.page) && current.page > node.page) {
+        node.level = depth;
+        siblings.splice(i, 0, node);
+        return true;
+      }
+      index++;
+      if (current.children?.length && insert(current.children, depth + 1)) {
+        current.collapsed = false;
+        return true;
+      }
+    }
+    return false;
+  };
+  if (!insert(outline, 1)) {
+    node.level = 1;
+    outline.push(node);
+  }
+  return index;
+}
+
 export async function addSelectionEntry(
   reader: _ZoteroTypes.ReaderInstance,
   selection: Selection,
@@ -84,10 +116,19 @@ export async function addSelectionEntry(
     doc.getElementById("j-bookmark-button")!.click();
   } else {
     const node: OutlineNode = { ...location, level: 1, children: [] };
-    await saveOutlineToJSON(reader._item, [...getOutlineFromPage(doc), node]);
-    doc.querySelector(".empty-outline-prompt")?.remove();
-    createTreeNodes([node], doc.getElementById("root-list")!, doc);
+    const outline = getOutlineFromPage(doc);
+    const index = insertOutlineByPage(outline, node);
+    await saveOutlineToJSON(reader._item, outline);
+    const root = doc.getElementById("root-list")!;
+    root.replaceChildren();
+    createTreeNodes(outline, root, doc);
     doc.getElementById("j-outline-button")!.click();
+    const inserted = root.querySelectorAll<HTMLElement>(".tree-node")[index];
+    if (inserted) {
+      inserted.classList.add("node-selected");
+      inserted.focus();
+      inserted.scrollIntoView({ block: "nearest" });
+    }
   }
 }
 
@@ -101,8 +142,10 @@ export const onSelectionContextMenu: _ZoteroTypes.Reader.EventHandler<
     return;
   const selection = getSelectedPDFText(reader);
   if (!selection) return;
-  for (const kind of ["bookmark", "outline"] as const) {
+  for (const kind of ["outline", "bookmark"] as const) {
     append({
+      // Zotero passes this directly to toggleAttribute; undefined toggles it on.
+      disabled: false,
       label: getString(
         kind === "bookmark"
           ? "selection-add-bookmark"
@@ -189,7 +232,7 @@ export const onSelectionPopup: _ZoteroTypes.Reader.EventHandler<
   icon.width = 18;
   icon.height = 18;
   row.append(icon);
-  for (const kind of ["bookmark", "outline"] as const) {
+  for (const kind of ["outline", "bookmark"] as const) {
     const button = doc.createElement("button");
     button.type = "button";
     button.textContent = getString(`selection-popup-add-${kind}`);

@@ -448,6 +448,10 @@ async function main() {
   const doc = {
     querySelector: () => null,
     getElementById: (id) => ({
+      replaceChildren() {},
+      querySelectorAll() {
+        return [];
+      },
       click() {
         clicked = id;
       },
@@ -505,6 +509,46 @@ async function main() {
     },
     { Zotero: { Utilities: { randomString: () => "test" } } },
   );
+  // Page-based insertion must preserve existing hierarchy and same-page order.
+  const outlineNode = (title, page, children = []) => ({
+    title,
+    page,
+    level: 1,
+    children,
+  });
+  const chapter = outlineNode("Chapter", 1, [
+    outlineNode("Section A", 3),
+    outlineNode("Section B", 8),
+  ]);
+  chapter.children.forEach((n) => (n.level = 2));
+  chapter.collapsed = true;
+  const tree = [chapter, outlineNode("Next chapter", 12)];
+  const middle = outlineNode("New section", 5);
+  assert.equal(selection.insertOutlineByPage(tree, middle), 2);
+  assert.equal(chapter.children[1], middle);
+  assert.equal(middle.level, 2);
+  assert.equal(chapter.collapsed, false);
+  assert.equal(tree[1].title, "Next chapter");
+  const samePage = outlineNode("Same page", 5);
+  selection.insertOutlineByPage(tree, samePage);
+  assert.equal(chapter.children[2], samePage);
+  const first = outlineNode("Before all", 0);
+  selection.insertOutlineByPage(tree, first);
+  assert.equal(tree[0], first);
+  const last = outlineNode("After all", 20);
+  selection.insertOutlineByPage(tree, last);
+  assert.equal(tree.at(-1), last);
+  assert.equal(last.level, 1);
+  const emptyTree = [];
+  assert.equal(
+    selection.insertOutlineByPage(emptyTree, outlineNode("Only", 1)),
+    0,
+  );
+  assert.equal(emptyTree.length, 1);
+  const unordered = [outlineNode("Ten", 10), outlineNode("Two", 2)];
+  selection.insertOutlineByPage(unordered, outlineNode("Five", 5));
+  assert.equal(unordered[1].title, "Ten");
+  assert.equal(unordered[2].title, "Two");
   // Turning off popup actions must not remove the two context-menu actions.
   showSelectionPopupActions = false;
   selectedReader._item.attachmentContentType = "application/pdf";
@@ -521,7 +565,11 @@ async function main() {
   });
   assert.deepEqual(
     menuActions.map((action) => action.label),
-    ["selection-add-bookmark", "selection-add-outline"],
+    ["selection-add-outline", "selection-add-bookmark"],
+  );
+  assert.ok(
+    menuActions.every((action) => action.disabled === false),
+    "Reader context menu actions must explicitly be enabled",
   );
   showSelectionPopupActions = true;
   const snapshot = selection.getSelectedPDFText(selectedReader);
