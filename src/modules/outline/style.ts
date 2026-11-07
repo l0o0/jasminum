@@ -297,7 +297,7 @@ button:hover.j-outline-toolbar-button {
   font-size: 10px;
   border-left-color: #e91e63; /* Pink */
 }
-.collapsed > ul {
+.collapsed:not(.outline-follow-expanded) > ul {
   display: none;
 }
 

@@ -197,6 +197,12 @@ export const onSelectionPopup: _ZoteroTypes.Reader.EventHandler<
     style.id = "jasminum-selection-actions-style";
     style.textContent = `
       .jasminum-selection-actions button {
+        width: 100%;
+        min-width: 0;
+        padding: 4px 6px;
+        white-space: normal;
+        overflow-wrap: anywhere;
+        text-align: start;
         border-radius: 4px;
         transition: background-color 120ms ease;
       }
@@ -217,9 +223,10 @@ export const onSelectionPopup: _ZoteroTypes.Reader.EventHandler<
   const row = doc.createElement("div");
   row.className = "jasminum-selection-actions";
   row.style.cssText =
-    "display:flex;align-items:center;gap:6px;padding:4px 6px;";
+    "display:grid;grid-template-columns:18px minmax(0,1fr);align-items:center;gap:4px 6px;width:100%;box-sizing:border-box;padding:4px 0;";
   const icon = doc.createElement("img");
-  icon.style.cssText = "width:18px;height:18px;flex:none;object-fit:contain;";
+  icon.style.cssText =
+    "width:18px;height:18px;grid-row:span 2;object-fit:contain;";
   void getPopupIconURL()
     .then((url) => {
       icon.src = url;
@@ -234,10 +241,10 @@ export const onSelectionPopup: _ZoteroTypes.Reader.EventHandler<
   row.append(icon);
   for (const kind of ["outline", "bookmark"] as const) {
     const button = doc.createElement("button");
+    button.className = "wide-button";
     button.type = "button";
     button.textContent = getString(`selection-popup-add-${kind}`);
     button.title = getString(`selection-add-${kind}`);
-    button.style.cssText = "width:auto;padding:4px 6px;white-space:nowrap;";
     button.addEventListener("click", () => {
       button.disabled = true;
       void addSelectionEntry(reader, selection, kind).catch((error) => {

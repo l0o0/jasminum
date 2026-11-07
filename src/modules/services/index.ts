@@ -82,6 +82,7 @@ export async function metaSearch(
   task: ScraperTask,
   options?: any,
 ): Promise<void> {
+  if (task.cancelled) return;
   // const scrapeServices = getPref("metadataSource").split(", ") || ["CNKI"];
   if (!isChineseTopAttachment(task.item) && !isChinsesSnapshot(task.item)) {
     ztoolkit.log("No Chinese attachment or snapshot items found. Stop search.");
@@ -104,6 +105,7 @@ export async function metaSearch(
     let searchOption: SearchOption | null | undefined;
     task.addMsg(`Source order: ${metadataSources.join(", ")}`);
     for (const source of metadataSources) {
+      if (task.cancelled) return;
       if (source === "AI") {
         // AI is used at its configured position only if earlier sources have no reliable results.
         if (scrapeSearchResults.length || !task.item.isPDFAttachment())
@@ -117,7 +119,27 @@ export async function metaSearch(
         }
         try {
           task.addMsg(getString("ai-recognition-start"));
-          const result = await recognizePDFAttachment(client, task.item.id);
+          task.pageProgress = { completed: 0, total: 0 };
+          task.summary = getString("metadata-update-rendering");
+          addon.data.progress.updateTaskStatus(task, task.status);
+          const result = await recognizePDFAttachment(client, task.item.id, {
+            signal: task.signal,
+            onProgress: (stage, pages) => {
+              if (task.cancelled) return;
+              task.pageProgress = {
+                completed: stage === "complete" ? (pages ?? 0) : 0,
+                total: pages ?? 0,
+              };
+              task.summary =
+                stage === "rendering"
+                  ? getString("metadata-update-rendering")
+                  : getString("metadata-update-recognizing", {
+                      args: { pages: pages ?? 0 },
+                    });
+              addon.data.progress.updateTaskStatus(task, task.status);
+            },
+          });
+          if (task.cancelled) return;
           if (result) {
             task.aiMetadata = result.metadata;
             task.searchResults = [];
@@ -125,8 +147,13 @@ export async function metaSearch(
           }
           task.addMsg(getString("ai-recognition-empty"));
         } catch {
+          if (task.cancelled) return;
           // Avoid exposing API credentials or response bodies through task logs.
           task.addMsg(getString("ai-recognition-failed"));
+        } finally {
+          task.pageProgress = undefined;
+          task.summary = undefined;
+          addon.data.progress.updateTaskStatus(task, task.status);
         }
         continue;
       }

@@ -277,7 +277,7 @@ async function expandAll(ev: Event) {
   const doc = (ev.target as Element).ownerDocument;
   const collapsedNodes = doc.querySelectorAll(".tree-item.collapsed");
   collapsedNodes.forEach((node) => {
-    node.classList.remove("collapsed");
+    node.classList.remove("collapsed", "outline-follow-expanded");
 
     const expander = node.querySelector(".expander");
     if (expander?.hasChildNodes()) {
@@ -292,6 +292,7 @@ async function collapseAll(ev: Event) {
   const doc = (ev.target as Element).ownerDocument;
   const parentNodes = doc.querySelectorAll(".tree-item.has-children");
   parentNodes.forEach((node) => {
+    node.classList.remove("outline-follow-expanded");
     node.classList.add("collapsed");
     const expander = node.querySelector(".expander");
     if (expander?.hasChildNodes()) {
@@ -305,7 +306,11 @@ async function collapseAll(ev: Event) {
 // 切换节点展开/折叠状态
 function toggleNode(node: Element) {
   if (node.classList.contains("has-children")) {
-    node.classList.toggle("collapsed");
+    // A follow-expanded branch is visibly open while retaining its saved state.
+    // Clicking its expander should collapse it rather than expand it again.
+    if (node.classList.contains("outline-follow-expanded"))
+      node.classList.remove("outline-follow-expanded");
+    else node.classList.toggle("collapsed");
 
     // 更新展开/折叠图标
     const expander = node.querySelector(".expander");

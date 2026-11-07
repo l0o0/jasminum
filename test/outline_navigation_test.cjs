@@ -24,6 +24,7 @@ class Element {
     this.classList = {
       add: (...xs) => xs.forEach((x) => this.classes.add(x)),
       remove: (...xs) => xs.forEach((x) => this.classes.delete(x)),
+      contains: (x) => this.classes.has(x),
     };
   }
   get parentNode() {
@@ -84,7 +85,8 @@ class Element {
   querySelector(s) {
     if (s === ":scope > ul" || s === "ul")
       return this.children.find((n) => n.tagName === "UL");
-    if (s === ".expander") return { textContent: "", innerHTML: "" };
+    if (s === ".expander")
+      return (this.expander ??= { textContent: "", innerHTML: "" });
     return this.querySelectorAll()[0];
   }
   scrollIntoView() {}
@@ -151,9 +153,31 @@ async function main() {
   selected = first.children[0];
   await changeOutlineLevel(doc, reader, 1);
   assert.equal(saves, 2, "first sibling cannot be demoted");
-  const { outlineIndexForPage, revealOutlineNode } = load("src/modules/outline/follow.ts", {
-    "./style": { ICONS: {} },
+  const {
+    outlineIndexForPage,
+    revealOutlineNode,
+    expandOutlineAncestors,
+    clearOutlineFollowExpansion,
+  } = load("src/modules/outline/follow.ts", {
+    "./style": { ICONS: { down: "down", right: "right" } },
   });
+  moved.classList.add("collapsed");
+  child.classList.add("collapsed");
+  expandOutlineAncestors(grandchild.children[0]);
+  for (const li of [moved, child]) {
+    assert(
+      li.classList.contains("collapsed"),
+      "follow must retain serialized collapse state",
+    );
+    assert(li.classList.contains("outline-follow-expanded"));
+    assert.equal(li.expander.innerHTML, "down");
+  }
+  clearOutlineFollowExpansion({ querySelectorAll: () => [moved, child] });
+  for (const li of [moved, child]) {
+    assert(li.classList.contains("collapsed"));
+    assert(!li.classList.contains("outline-follow-expanded"));
+    assert.equal(li.expander.innerHTML, "right");
+  }
   assert.equal(outlineIndexForPage([1, 4, 9], 7), 1);
   assert.equal(outlineIndexForPage([9, 1, 4], 7), 2);
   assert.equal(outlineIndexForPage([1, 4, 4, 9], 4), 2);

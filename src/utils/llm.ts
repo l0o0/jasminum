@@ -458,8 +458,12 @@ class OpenAIClient {
     };
   }
 
-  recognizePDFPages(images: LLMImage[]): Promise<PDFPageRecognitionResult> {
+  recognizePDFPages(
+    images: LLMImage[],
+    signal?: AbortSignal,
+  ): Promise<PDFPageRecognitionResult> {
     return this.createJSONCompletion<PDFPageRecognitionResult>({
+      signal,
       systemPrompt: PDF_PAGE_RECOGNITION_SYSTEM_PROMPT,
       prompt: PDF_PAGE_RECOGNITION_PROMPT,
       images: images.map((image) => ({

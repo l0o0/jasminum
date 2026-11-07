@@ -47,10 +47,11 @@ export function addOutlineControls(task: OutlineTask, row: Element) {
   progress.style.cssText =
     "margin-inline-start:10px;font-variant-numeric:tabular-nums;font-weight:normal;white-space:nowrap";
   progress.setAttribute("role", "status");
-  title?.append(progress);
+
   const controls = doc.createElement("span");
   controls.style.cssText =
     "display:flex;align-items:center;gap:8px;margin-inline-start:auto";
+  controls.append(progress);
   for (const action of ["stop", "continue", "review-open"] as const) {
     const button = doc.createElement("button");
     button.id = `outline-${action}-${task.id}`;
@@ -81,9 +82,9 @@ export function addOutlineControls(task: OutlineTask, row: Element) {
 export function updateOutlineControls(task: OutlineTask, doc: Document) {
   const progress = doc.getElementById(`outline-progress-${task.id}`);
   if (progress)
-    progress.textContent = task.totalPages
-      ? `${task.status === "processing" ? Math.min(task.completedPages + 1, task.totalPages) : task.completedPages}/${task.totalPages}`
-      : "0/—";
+    progress.textContent = getString("task-page-progress", {
+      args: { current: task.completedPages, total: task.totalPages || "—" },
+    });
   const enabled = {
     stop: ["processing", "waiting"].includes(task.status),
     continue: task.canResume,

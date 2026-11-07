@@ -9,7 +9,7 @@ import {
 } from "./tools";
 import { isChineseTopAttachment, isChinsesSnapshot } from "../utils/detect";
 
-import { openMetadataUpdate } from "./metadata/updateDialog";
+import { openMetadataUpdate } from "./metadata/taskView";
 
 import { openOutlineTask } from "./outline/taskView";
 
@@ -34,15 +34,25 @@ export function registerMenu() {
         onShowing: (_event, context) => {
           const items = context.items ?? [];
           context.setVisible(
-            items.length > 0 && items.every(canRetrieveMetadata),
+            (items.length > 0 && items.every(canRetrieveMetadata)) ||
+              (__env__ === "development" &&
+                items.length === 1 &&
+                items[0].isRegularItem() &&
+                items[0].isEditable()),
           );
         },
         menus: [
           {
             menuType: "menuitem",
             l10nID: getLocaleID("metadata-update-menu"),
-            // Hidden until the metadata update workflow has been tested.
-            onShowing: (_event, context) => context.setVisible(false),
+            // Keep this workflow in development until it has been tested.
+            onShowing: (_event, context) =>
+              context.setVisible(
+                __env__ === "development" &&
+                  context.items?.length === 1 &&
+                  context.items[0].isRegularItem() &&
+                  context.items[0].isEditable(),
+              ),
             onCommand: (_event, context) => {
               const item = context.items?.[0];
               if (item) openMetadataUpdate(item);

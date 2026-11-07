@@ -1,4 +1,5 @@
 import { stopOutlineFollowing } from "./modules/outline/follow";
+import { MetadataTask } from "./modules/metadata/task";
 import { config } from "../package.json";
 import { initLocale } from "./utils/locale";
 import {
@@ -70,6 +71,8 @@ async function onMainWindowLoad(win: Window): Promise<void> {
 function onShutdown(): void {
   stopOutlineFollowing();
   stopOutlineTasks();
+  for (const task of addon.taskRunner.tasks)
+    if (task instanceof MetadataTask) task.stop();
   closeMetadataUpdates();
   unregisterMenu();
   unregisterHeadlessActor();

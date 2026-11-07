@@ -1,3 +1,9 @@
+import { MetadataTask } from "./metadata/task";
+import { closeMetadataUpdates } from "./metadata/updateDialog";
+import {
+  addMetadataControls,
+  updateMetadataControls,
+} from "./metadata/taskView";
 import { closeOutlineReviews } from "./outline/reviewView";
 import { OutlineTask } from "./outline/task";
 import { addOutlineControls, updateOutlineControls } from "./outline/taskView";
@@ -22,6 +28,13 @@ export class Progress {
   }
 
   private opening?: Promise<void>;
+  private clearProgressWindow(progressWindow: Window): void {
+    if (this.progressWindow !== progressWindow) return;
+    this.progressWindow = null;
+    closeOutlineReviews();
+    closeMetadataUpdates();
+    addon.taskRunner.clearTasks();
+  }
   public async openProgressWindow(): Promise<void> {
     if (this.opening) return this.opening;
     if (this.progressWindow && !this.progressWindow.closed) {
@@ -50,30 +63,40 @@ export class Progress {
     if (win) {
       this.progressWindow = win.openDialog(htmlUrl, "", chromeArgs, windowArgs);
       const progressWindow = this.progressWindow!;
-      let t = 0;
-      // Wait for window
+      let initialized = false;
+      let initializationError: unknown;
+      void windowArgs._initPromise.promise.then(
+        () => {
+          initialized = true;
+        },
+        (error: unknown) => {
+          initializationError = error;
+          initialized = true;
+        },
+      );
+      // The init promise may never resolve if the user closes the initial
+      // document. Keep checking this particular window until it loads or closes.
       while (
-        t < 500 &&
-        this.progressWindow &&
-        this.progressWindow.document.readyState !== "complete"
+        this.progressWindow === progressWindow &&
+        !progressWindow.closed &&
+        (!initialized || progressWindow.document.readyState !== "complete")
       ) {
         // @ts-ignore -- Delay is not typed.
         await ztoolkit.getGlobal("Zotero").Promise.delay(10);
-        t += 1;
       }
-      await windowArgs._initPromise.promise;
+      if (this.progressWindow !== progressWindow) return;
+      if (progressWindow.closed) {
+        this.clearProgressWindow(progressWindow);
+        return;
+      }
+      if (initializationError) throw initializationError;
       // openDialog first replaces an initial about:blank document. Its unload
       // is initialization, not the user closing the task window.
-      if (progressWindow.closed || this.progressWindow !== progressWindow)
-        return;
       const taskDocument = progressWindow.document;
       const onUnload = (event: Event) => {
         if (event.target !== taskDocument) return;
         progressWindow.removeEventListener("unload", onUnload);
-        if (this.progressWindow !== progressWindow) return;
-        this.progressWindow = null;
-        closeOutlineReviews();
-        addon.taskRunner.clearTasks();
+        this.clearProgressWindow(progressWindow);
       };
       progressWindow.addEventListener("unload", onUnload);
     } else {
@@ -216,7 +239,14 @@ export class Progress {
     this.progressWindow!.document.querySelector("#task-list")?.appendChild(
       taskNode,
     );
-    if (task instanceof OutlineTask) addOutlineControls(task, taskNode);
+    const pageProgress = this.progressWindow!.document.createElement("span");
+    pageProgress.id = `task-page-progress-${task.id}`;
+    pageProgress.setAttribute("role", "status");
+    pageProgress.style.cssText =
+      "margin-inline-start:auto;white-space:nowrap;font-variant-numeric:tabular-nums;font-weight:normal";
+    taskNode.querySelector(`#task-header-${task.id}`)?.append(pageProgress);
+    if (task instanceof MetadataTask) addMetadataControls(task, taskNode);
+    else if (task instanceof OutlineTask) addOutlineControls(task, taskNode);
     else if (task.status === "multiple_results" && task.searchResults)
       this.updateTaskSearchResult(task, task.searchResults);
     this.updateTaskStatus(task, task.status);
@@ -275,6 +305,26 @@ export class Progress {
   public updateTaskStatus(task: Task, status: string): void {
     if (addon.taskRunner.getTaskById(task.id) !== task) return;
     if (this.progressWindow) {
+      const label = this.progressWindow.document.getElementById(
+        `task-page-progress-${task.id}`,
+      );
+      if (label) {
+        const pages = task.pageProgress;
+        const showPageCount =
+          pages &&
+          pages.total > 0 &&
+          (!(task instanceof MetadataTask) || status === "processing");
+        label.textContent = showPageCount
+          ? getString("task-page-progress", {
+              args: { current: pages.completed, total: pages.total },
+            })
+          : task instanceof OutlineTask
+            ? ""
+            : (task.summary ?? "");
+        label.title = task.summary ?? "";
+      }
+      if (task instanceof MetadataTask)
+        updateMetadataControls(task, this.progressWindow.document);
       if (task instanceof OutlineTask) {
         updateOutlineControls(task, this.progressWindow.document);
       }
@@ -282,7 +332,9 @@ export class Progress {
         `task-msg-${task.id}`,
       );
       const showMessage =
-        status === "fail" || (task instanceof OutlineTask && !!task.message);
+        status === "fail" ||
+        ((task instanceof OutlineTask || task instanceof MetadataTask) &&
+          !!task.message);
       const sameMessage =
         showMessage &&
         existingMessage?.getAttribute("data-message") === (task.message ?? "");

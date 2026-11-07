@@ -106,7 +106,7 @@ outline-refresh-failed = 目錄已儲存，但閱讀器重新整理失敗。請�
 
 # Existing-item metadata update
 metadata-update-menu =
-    .label = 茉莉花：更新中繼資料…
+    .label = 更新中繼資料
 metadata-update-title = 更新中繼資料
 metadata-update-description = 使用已設定的 AI 介面辨識所選 PDF。點擊辨識將傳送 PDF 前幾頁的圖片；確認後僅更新選取的欄位。
 metadata-update-pdf = PDF 附件：
@@ -195,6 +195,27 @@ selection-popup-add-outline = 新增大綱
 outline-more-actions = 更多操作
 
 outline-ai-edit-page = 編輯頁碼（可直接輸入或使用上下箭頭）
+
+metadata-update-queued = 等待辨識
+metadata-update-failed = 操作失敗
+metadata-update-stopped = 已停止
+metadata-update-rendering = 正在讀取 PDF
+metadata-update-recognizing = 正在辨識 { $pages } 頁
+metadata-update-ready = 等待核對
+metadata-update-review-title = 茉莉花 AI 中繼資料核對
+metadata-update-edit-hint = 請核對並編輯辨識值，勾選要儲存的欄位。預設只補充空欄位。
+metadata-update-save = 儲存
+metadata-update-name = 姓名／機構
+metadata-update-firstName = 名
+metadata-update-lastName = 姓
+metadata-update-stop = 停止辨識
+metadata-update-retry = 重新辨識
+metadata-update-review-open = 核對中繼資料
+
+task-page-progress = { $current }/{ $total } 頁
+
+metadata-update-creator-role = 類型
+metadata-update-select-pdf = 選擇 PDF
 
 outline-promote = 提升層級（含子節點）
 outline-demote = 降低層級（含子節點）

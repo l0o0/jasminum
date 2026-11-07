@@ -1,41 +1,43 @@
 import { config } from "../../../package.json";
 import { getString } from "../../utils/locale";
-import { buildChanges, type FieldChange, type FieldValue } from "./diff";
-import { applyChanges, snapshotItem } from "./apply";
-import { retrieveFromPDF } from "./retrieve";
+import type { FieldValue } from "./diff";
+import type { MetadataTask } from "./task";
 
 const windows = new Map<number, Window>();
 const text = (key: string) => getString(`metadata-update-${key}`);
-
 export function closeMetadataUpdates(): void {
   for (const win of windows.values()) if (!win.closed) win.close();
   windows.clear();
 }
-
-export function openMetadataUpdate(item: Zotero.Item): void {
-  const existing = windows.get(item.id);
+export function openMetadataReview(task: MetadataTask): void {
+  const candidate = task.candidate;
+  if (!task.canReview || !candidate) return;
+  const existing = windows.get(task.item.id);
   if (existing && !existing.closed) {
     existing.focus();
     return;
   }
-  if (!item.isRegularItem() || !item.isEditable() || item.deleted) return;
   const win = Zotero.getMainWindow().openDialog(
     `chrome://${config.addonRef}/content/metadata-update.xhtml`,
     "_blank",
     "chrome,centerscreen,resizable,width=850,height=650",
-    { init: (win: Window) => initialize(win, item) },
+    {
+      init: (win: Window) => {
+        if (!task.canReview || task.candidate !== candidate) {
+          win.close();
+          if (windows.get(task.item.id) === win) windows.delete(task.item.id);
+          return;
+        }
+        initialize(win, task);
+      },
+    },
   );
-  if (win) {
-    windows.set(item.id, win);
-    win.addEventListener("unload", () => windows.delete(item.id), {
-      once: true,
-    });
-  }
+  if (win) windows.set(task.item.id, win);
 }
-
-function initialize(win: Window, item: Zotero.Item): void {
+function initialize(win: Window, task: MetadataTask): void {
   const doc = win.document;
-  doc.title = text("title");
+  const candidate = task.candidate!;
+  doc.title = text("review-title");
   const root = doc.getElementById("root")!;
   function element<K extends keyof HTMLElementTagNameMap>(
     tag: K,
@@ -50,163 +52,245 @@ function initialize(win: Window, item: Zotero.Item): void {
     parent.append(el);
     return el;
   }
-  element("h1", text("title"));
-  element("p", String(item.getField("title")));
-  element("p", text("description"));
-  const label = element("label", text("pdf"));
-  const select = element("select", "", label);
-  for (const id of item.getAttachments()) {
-    const attachment = Zotero.Items.get(id);
-    if (!attachment.deleted && attachment.isPDFAttachment()) {
-      const option = element(
-        "option",
-        String(attachment.getField("title")) || attachment.attachmentFilename,
-        select,
-      );
-      option.value = String(id);
-    }
-  }
-  element("br");
-  const fetchButton = element("button", text("fetch"));
+  element("h1", text("review-title"));
+  element("p", String(task.item.getField("title")));
+  const panel = element("div");
+  panel.className = "panel";
+  panel.id = "changes";
+
+  const table = element("table", "", panel);
+  const header = element("tr", "", element("thead", "", table));
+  for (const heading of ["", text("field"), text("before"), text("after")])
+    element("th", heading, header);
+  const body = element("tbody", "", table);
   const status = element("p");
   status.id = "status";
   status.setAttribute("role", "status");
-  const panel = element("div");
-  panel.className = "panel";
-  panel.hidden = true;
-  panel.id = "changes";
-  const applyButton = element("button", text("apply"));
-  const undoButton = element("button", text("undo"));
-  const close = element("button", text("close"));
-  close.onclick = () => win.close();
-  applyButton.disabled = undoButton.disabled = true;
-  let snapshot = snapshotItem(item);
-  let changes: FieldChange[] = [];
-  let undoChanges: FieldChange[] = [];
+  const actions = element("div");
+  actions.id = "actions";
+  const bulk = element("div", "", actions);
+  bulk.className = "bulk-actions";
+  const all = element("button", text("select-all"), bulk);
+  const empty = element("button", text("empty-only"), bulk);
+  const undo = element("button", text("undo"), actions);
+  const close = element("button", text("close"), actions);
+  const apply = element("button", text("save"), actions);
+  apply.className = "primary";
+  const checks: HTMLInputElement[] = [];
   const describe = (value: FieldValue) =>
     typeof value === "string"
       ? value
       : value
           .map(
             (c) =>
-              `${"name" in c ? c.name : [c.firstName, c.lastName].filter(Boolean).join(" ")} (${Zotero.CreatorTypes.getLocalizedString(c.creatorType)})`,
+              `${"name" in c ? c.name : [`${text("lastName")}: ${c.lastName}`, `${text("firstName")}: ${c.firstName}`].join(" · ")} (${Zotero.CreatorTypes.getLocalizedString(c.creatorType)})`,
           )
           .join("\n");
-  function errorMessage(error: unknown): string {
-    const message = error instanceof Error ? error.message : String(error);
-    return message.startsWith("metadata-update-")
-      ? getString(message)
-      : message;
-  }
-  function refreshApply() {
-    applyButton.disabled = !changes.some((c) => c.selected);
-  }
-  function render(candidate: Awaited<ReturnType<typeof retrieveFromPDF>>) {
-    panel.replaceChildren();
-    panel.hidden = false;
-    element("p", text("source"), panel);
-    const all = element("button", text("select-all"), panel);
-    const empty = element("button", text("empty-only"), panel);
-    const table = element("table", "", panel);
-    const header = element("tr", "", element("thead", "", table));
-    for (const heading of ["", text("field"), text("before"), text("after")])
-      element("th", heading, header);
-    const body = element("tbody", "", table);
-    const checks: HTMLInputElement[] = [];
-    for (const change of changes) {
-      const row = element("tr", "", body);
-      const checkbox = element("input", "", element("td", "", row));
-      checkbox.type = "checkbox";
-      checkbox.checked = change.selected;
-      const name =
-        change.field === "creators"
-          ? text("creators")
-          : Zotero.ItemFields.getLocalizedString(change.field);
-      checkbox.setAttribute("aria-label", name);
-      checkbox.onchange = () => {
-        change.selected = checkbox.checked;
-        refreshApply();
-      };
-      checks.push(checkbox);
-      element("td", name, row);
-      element("td", describe(change.before) || "—", row);
-      const value = element("td", describe(change.after), row);
-      const evidence = candidate.evidence.filter(
-        (e) => e.field === change.field,
-      );
-      if (evidence.length)
-        value.title = evidence
-          .map((e) => `${text("page")} ${e.page}: ${e.text}`)
-          .join("\n");
-    }
-    const choose = (onlyEmpty: boolean) => {
-      changes.forEach((c, i) => {
-        c.selected = !onlyEmpty || c.before.length === 0;
-        checks[i].checked = c.selected;
-      });
-      refreshApply();
+  for (const change of task.changes) {
+    const row = element("tr", "", body);
+    const checkbox = element("input", "", element("td", "", row));
+    checkbox.type = "checkbox";
+    checkbox.checked = change.selected;
+    const name =
+      change.field === "creators"
+        ? text("creators")
+        : Zotero.ItemFields.getLocalizedString(change.field);
+    checkbox.setAttribute("aria-label", name);
+    checkbox.onchange = () => {
+      change.selected = checkbox.checked;
+      task.notify();
     };
-    all.onclick = () => choose(false);
-    empty.onclick = () => choose(true);
-    refreshApply();
+    checks.push(checkbox);
+    element("td", name, row);
+    element("td", describe(change.before) || "—", row);
+    const value = element("td", "", row);
+    if (typeof change.after === "string") {
+      const editor = element("textarea", "", value);
+      editor.value = change.after;
+      editor.rows = change.field === "abstractNote" ? 5 : 1;
+      editor.setAttribute("aria-label", name);
+      editor.oninput = () => {
+        change.after = editor.value;
+        change.selected = checkbox.checked = true;
+        task.notify();
+      };
+    } else {
+      for (const creator of change.after) {
+        const creatorRow = element("div", "", value);
+        creatorRow.className = "creator-editor";
+        const roleLabel = element("div", "", creatorRow);
+        roleLabel.className = "creator-role";
+        element("span", text("creator-role"), roleLabel);
+        const role = element(
+          "button",
+          Zotero.CreatorTypes.getLocalizedString(creator.creatorType),
+          roleLabel,
+        );
+        role.className = "role-trigger";
+        role.setAttribute("aria-label", text("creator-role"));
+        role.setAttribute("aria-haspopup", "true");
+        role.setAttribute("aria-expanded", "false");
+        const popup = element("div", "", roleLabel);
+        popup.className = "role-popup";
+        popup.hidden = true;
+        const closeRole = () => {
+          popup.hidden = true;
+          role.setAttribute("aria-expanded", "false");
+        };
+        role.onclick = () => {
+          popup.hidden = !popup.hidden;
+          if (!popup.hidden) {
+            const rect = role.getBoundingClientRect();
+            popup.style.left = `${Math.max(8, Math.min(rect.left, win.innerWidth - popup.offsetWidth - 8))}px`;
+            popup.style.top = `${Math.max(8, Math.min(rect.bottom + 4, win.innerHeight - popup.offsetHeight - 8))}px`;
+          }
+          role.setAttribute("aria-expanded", String(!popup.hidden));
+          if (!popup.hidden)
+            popup
+              .querySelector<HTMLButtonElement>("button[aria-pressed='true']")
+              ?.focus();
+        };
+        for (const type of Zotero.CreatorTypes.getTypesForItemType(
+          task.item.itemTypeID,
+        )) {
+          const option = element(
+            "button",
+            Zotero.CreatorTypes.getLocalizedString(type.name),
+            popup,
+          );
+          option.setAttribute(
+            "aria-pressed",
+            String(type.name === creator.creatorType),
+          );
+          option.onclick = () => {
+            creator.creatorType = type.name;
+            role.textContent = option.textContent;
+            for (const sibling of popup.querySelectorAll("button"))
+              (sibling as HTMLButtonElement).setAttribute(
+                "aria-pressed",
+                String(sibling === option),
+              );
+            closeRole();
+            role.focus();
+            change.selected = checkbox.checked = true;
+            task.notify();
+          };
+        }
+        doc.addEventListener("click", (event) => {
+          if (!roleLabel.contains(event.target as Node)) closeRole();
+        });
+        roleLabel.addEventListener("keydown", (event) => {
+          if (event.key === "Escape") {
+            closeRole();
+            role.focus();
+            event.stopPropagation();
+          }
+          if (!popup.hidden && ["ArrowDown", "ArrowUp"].includes(event.key)) {
+            event.preventDefault();
+            const buttons = Array.from(
+              popup.querySelectorAll("button"),
+            ) as HTMLButtonElement[];
+            const index = buttons.indexOf(
+              doc.activeElement as HTMLButtonElement,
+            );
+            buttons[
+              (index + (event.key === "ArrowDown" ? 1 : -1) + buttons.length) %
+                buttons.length
+            ]?.focus();
+          }
+        });
+        const keys =
+          "name" in creator
+            ? (["name"] as const)
+            : (["lastName", "firstName"] as const);
+        for (const key of keys) {
+          const label = element("label", text(key), creatorRow);
+          label.className = "creator-name";
+          const input = element("input", "", label);
+          input.type = "text";
+          input.value =
+            key === "name" && "name" in creator
+              ? creator.name
+              : key === "firstName" && "firstName" in creator
+                ? creator.firstName
+                : "lastName" in creator
+                  ? creator.lastName
+                  : "";
+          input.placeholder = text(key);
+          input.setAttribute("aria-label", `${name}: ${text(key)}`);
+          input.oninput = () => {
+            if (key === "name" && "name" in creator) creator.name = input.value;
+            if (key === "firstName" && "firstName" in creator)
+              creator.firstName = input.value;
+            if (key === "lastName" && "lastName" in creator)
+              creator.lastName = input.value;
+            change.selected = checkbox.checked = true;
+            task.notify();
+          };
+        }
+      }
+    }
+    value.title = candidate.evidence
+      .filter((e) => e.field === change.field)
+      .map((e) => `${text("page")} ${e.page}: ${e.text}`)
+      .join("\n");
   }
-  if (!select.options.length) {
-    fetchButton.disabled = true;
-    status.textContent = text("no-pdf");
-  }
-  fetchButton.onclick = async () => {
-    fetchButton.disabled = select.disabled = true;
-    applyButton.disabled = undoButton.disabled = true;
-    panel.hidden = true;
-    changes = [];
-    undoChanges = [];
-    status.textContent = text("loading");
+  const choose = (onlyEmpty: boolean) => {
+    task.changes.forEach((c, i) => {
+      c.selected = !onlyEmpty || c.before.length === 0;
+      checks[i].checked = c.selected;
+    });
+    task.notify();
+  };
+  all.onclick = () => choose(false);
+  empty.onclick = () => choose(true);
+  close.onclick = () => win.close();
+  apply.onclick = async () => {
+    if (!task.canApply || task.candidate !== candidate) return;
     try {
-      snapshot = snapshotItem(item);
-      const candidate = await retrieveFromPDF(Number(select.value), item.id);
-      if (win.closed || !addon.data.alive) return;
-      changes = buildChanges(snapshot, candidate.metadata);
-      render(candidate);
-      status.textContent = changes.length ? text("review") : text("no-changes");
+      await task.apply();
+      if (task.applied) win.close();
     } catch (error) {
-      if (!win.closed) status.textContent = errorMessage(error);
-    } finally {
-      if (!win.closed) fetchButton.disabled = select.disabled = false;
+      task.reportError(error);
     }
   };
-  applyButton.onclick = async () => {
-    applyButton.disabled = fetchButton.disabled = true;
+  undo.onclick = async () => {
+    if (task.candidate !== candidate) return;
     try {
-      // Freeze the selected patch before awaiting the transaction.
-      const selected = changes.filter((c) => c.selected).map((c) => ({ ...c }));
-      await applyChanges(item.id, snapshot, selected);
-      if (win.closed) return;
-      undoChanges = selected.map((c) => ({
-        ...c,
-        before: c.after,
-        after: c.before,
-        selected: true,
-      }));
-      panel.hidden = true;
-      status.textContent = text("saved");
-      undoButton.disabled = !undoChanges.length;
+      await task.undo();
     } catch (error) {
-      if (!win.closed) status.textContent = errorMessage(error);
-    } finally {
-      if (!win.closed) fetchButton.disabled = false;
+      task.reportError(error);
     }
   };
-  undoButton.onclick = async () => {
-    undoButton.disabled = fetchButton.disabled = true;
-    try {
-      await applyChanges(item.id, snapshot, undoChanges);
-      if (win.closed) return;
-      status.textContent = text("restored");
-      undoChanges = [];
-    } catch (error) {
-      if (!win.closed) status.textContent = errorMessage(error);
-    } finally {
-      if (!win.closed) fetchButton.disabled = false;
+  const update = () => {
+    if (win.closed) return;
+    if (task.candidate !== candidate) {
+      win.close();
+      return;
     }
+    status.textContent = task.message
+      ? `${task.summary}\n${task.message}`
+      : task.summary;
+    apply.disabled = !task.canApply;
+    undo.hidden = !task.applied;
+    undo.disabled = task.saving;
+    all.disabled = empty.disabled = task.saving || task.applied;
+    for (const input of panel.querySelectorAll<
+      | HTMLInputElement
+      | HTMLTextAreaElement
+      | HTMLButtonElement
+      | HTMLSelectElement
+    >("input,textarea,button,select"))
+      (input as HTMLInputElement).disabled = task.saving || task.applied;
   };
+  const unsubscribe = task.subscribe(update);
+  win.addEventListener(
+    "unload",
+    () => {
+      unsubscribe();
+      if (windows.get(task.item.id) === win) windows.delete(task.item.id);
+    },
+    { once: true },
+  );
+  update();
 }

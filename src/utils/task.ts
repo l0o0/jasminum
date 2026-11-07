@@ -1,3 +1,4 @@
+import { MetadataTask } from "../modules/metadata/task";
 import { OutlineTask } from "../modules/outline/task";
 import { metaSearch, metaTranslate } from "../modules/services";
 import { getString } from "./locale";
@@ -19,6 +20,8 @@ function createDeferred<T>(): DeferredResult<T> {
 }
 
 export class ScraperTask implements ScraperTask {
+  public pageProgress?: { completed: number; total: number };
+  public summary?: string;
   public aiMetadata?: ZoteroItemMetadata;
   public id: string;
   public item: Zotero.Item;
@@ -30,6 +33,25 @@ export class ScraperTask implements ScraperTask {
 
   private _status: TaskStatus;
   private _searchResults: ScrapeSearchResult[] = [];
+  private controller?: AbortController;
+  private stopped = false;
+
+  get cancelled() {
+    return this.stopped;
+  }
+  get signal(): AbortSignal {
+    if (!this.controller) {
+      const controller: AbortController =
+        new (Zotero.getMainWindow().AbortController)();
+      if (this.stopped) controller.abort();
+      this.controller = controller;
+    }
+    return this.controller.signal;
+  }
+  stop() {
+    this.stopped = true;
+    this.controller?.abort();
+  }
 
   constructor(item: Zotero.Item, type: ScraperTaskType, silent?: false) {
     this.id = Zotero.Utilities.Internal.md5(item.id.toString());
@@ -136,11 +158,17 @@ export class AttachmentTask implements AttachmentTask {
 }
 
 export class TaskRunner {
-  public runningTask: AttachmentTask | ScraperTask | OutlineTask | null = null;
-  public tasks: (AttachmentTask | ScraperTask | OutlineTask)[] = [];
+  public runningTask:
+    | AttachmentTask
+    | ScraperTask
+    | OutlineTask
+    | MetadataTask
+    | null = null;
+  public tasks: (AttachmentTask | ScraperTask | OutlineTask | MetadataTask)[] =
+    [];
   getTaskType(
-    task: AttachmentTask | ScraperTask | OutlineTask | string,
-  ): "metaScraper" | "attachmentScraper" | "outline" {
+    task: AttachmentTask | ScraperTask | OutlineTask | MetadataTask | string,
+  ): "metaScraper" | "attachmentScraper" | "outline" | "metadata-update" {
     let taskType: string;
     if (typeof task === "string") {
       taskType = task;
@@ -148,6 +176,7 @@ export class TaskRunner {
       taskType = task.type;
     }
 
+    if (taskType === "metadata-update") return "metadata-update";
     if (taskType === "outline") return "outline";
     if (taskType == "attachment" || taskType == "snapshot") {
       return "metaScraper";
@@ -159,9 +188,10 @@ export class TaskRunner {
   }
   createTask(
     item: Zotero.Item,
-    type: ScraperTaskType | AttachmentTaskType | "outline",
+    type: ScraperTaskType | AttachmentTaskType | "outline" | "metadata-update",
     silent?: false,
-  ): ScraperTask | AttachmentTask | OutlineTask {
+  ): ScraperTask | AttachmentTask | OutlineTask | MetadataTask {
+    if (type === "metadata-update") return new MetadataTask(item);
     if (type === "outline") return new OutlineTask(item);
     const taskType = this.getTaskType(type);
     let task: ScraperTask | AttachmentTask;
@@ -181,7 +211,7 @@ export class TaskRunner {
   }
 
   async addTask(
-    task: AttachmentTask | ScraperTask | OutlineTask,
+    task: AttachmentTask | ScraperTask | OutlineTask | MetadataTask,
   ): Promise<string | undefined> {
     if (this.getTaskById(task.id)) {
       ztoolkit.log(`Task with ID ${task.id} already exists.`);
@@ -203,7 +233,7 @@ export class TaskRunner {
 
   async createAndAddTask(
     item: Zotero.Item,
-    type: ScraperTaskType | AttachmentTaskType | "outline",
+    type: ScraperTaskType | AttachmentTaskType | "outline" | "metadata-update",
     silent?: false,
   ): Promise<string> {
     const task = this.createTask(item, type, silent);
@@ -218,7 +248,9 @@ export class TaskRunner {
 
   // Serialize work, keeping one runningTask owner for provider diagnostics.
   private queue: Promise<void> = Promise.resolve();
-  private scheduled = new Set<AttachmentTask | ScraperTask | OutlineTask>();
+  private scheduled = new Set<
+    AttachmentTask | ScraperTask | OutlineTask | MetadataTask
+  >();
   private cancelled = new WeakSet<Task>();
 
   clearTasks(): void {
@@ -226,15 +258,19 @@ export class TaskRunner {
     this.tasks = [];
     for (const task of tasks) {
       this.cancelled.add(task);
-      if (task instanceof OutlineTask) task.stop();
+      if (task instanceof OutlineTask || task instanceof MetadataTask)
+        task.stop();
       else {
+        if (task instanceof ScraperTask) task.stop();
         task.status = "fail";
         // Release tasks waiting for a result selection without importing it.
         task.deferred?.resolve(-1);
       }
     }
   }
-  runTask(task: AttachmentTask | ScraperTask | OutlineTask): Promise<void> {
+  runTask(
+    task: AttachmentTask | ScraperTask | OutlineTask | MetadataTask,
+  ): Promise<void> {
     if (
       this.cancelled.has(task) ||
       [...this.scheduled].some(
@@ -248,7 +284,8 @@ export class TaskRunner {
       try {
         if (this.cancelled.has(task)) return;
         this.runningTask = task;
-        if (task instanceof OutlineTask) await task.run();
+        if (task instanceof OutlineTask || task instanceof MetadataTask)
+          await task.run();
         else if (this.getTaskType(task) === "attachmentScraper")
           await this.runAttachmentTask(task as AttachmentTask);
         else await this.runScrapeTask(task as ScraperTask);
@@ -262,6 +299,16 @@ export class TaskRunner {
     });
     this.queue = operation.catch(() => {});
     return operation;
+  }
+
+  async retryMetadataTask(task: MetadataTask): Promise<void> {
+    if (
+      this.cancelled.has(task) ||
+      this.scheduled.has(task) ||
+      !task.prepareRetry()
+    )
+      return;
+    await this.runTask(task);
   }
 
   async retryOutlineTask(task: OutlineTask): Promise<void> {

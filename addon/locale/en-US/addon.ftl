@@ -105,7 +105,7 @@ outline-refresh-failed = The outline was saved, but the reader could not refresh
 
 # Existing-item metadata update
 metadata-update-menu =
-    .label = Jasminum: Update Metadata…
+    .label = Update Metadata
 metadata-update-title = Update Metadata
 metadata-update-description = Use the configured AI provider to recognize the selected PDF. Recognition sends images of its first pages. Only selected fields will be updated.
 metadata-update-pdf = PDF attachment:
@@ -194,6 +194,27 @@ selection-popup-add-outline = Add Outline
 outline-more-actions = More actions
 
 outline-ai-edit-page = Edit page number (type a number or use the up/down arrows)
+
+metadata-update-queued = Queued
+metadata-update-failed = Operation failed
+metadata-update-stopped = Stopped
+metadata-update-rendering = Reading PDF
+metadata-update-recognizing = Recognizing { $pages } pages
+metadata-update-ready = Ready for review
+metadata-update-review-title = Jasminum AI Metadata Review
+metadata-update-edit-hint = Review and edit the proposed values, then select fields to save. Only empty fields are selected by default.
+metadata-update-save = Save
+metadata-update-name = Name / organization
+metadata-update-firstName = First name
+metadata-update-lastName = Last name
+metadata-update-stop = Stop recognition
+metadata-update-retry = Recognize again
+metadata-update-review-open = Review metadata
+
+task-page-progress = { $current }/{ $total } pages
+
+metadata-update-creator-role = Role
+metadata-update-select-pdf = Select a PDF
 
 outline-promote = Promote entry and its children
 outline-demote = Demote entry and its children

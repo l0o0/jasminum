@@ -2,6 +2,7 @@ import { getConfiguredLLMClient } from "../../utils/llm";
 import {
   recognizePDFAttachment,
   type PDFRecognitionResult,
+  type PDFRecognitionOptions,
 } from "../../utils/pdfMetadata";
 
 export interface MetadataCandidate extends PDFRecognitionResult {
@@ -11,6 +12,7 @@ export interface MetadataCandidate extends PDFRecognitionResult {
 export async function retrieveFromPDF(
   attachmentID: number,
   parentID: number,
+  options: PDFRecognitionOptions = {},
 ): Promise<MetadataCandidate> {
   const attachment = Zotero.Items.get(attachmentID);
   if (
@@ -23,6 +25,7 @@ export async function retrieveFromPDF(
   const result = await recognizePDFAttachment(
     getConfiguredLLMClient(),
     attachmentID,
+    options,
   );
   if (!result) throw new Error("metadata-update-no-result");
   return {

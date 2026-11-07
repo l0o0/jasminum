@@ -117,16 +117,34 @@ function toZoteroMetadata(
   };
 }
 
+export interface PDFRecognitionOptions {
+  signal?: AbortSignal;
+  onProgress?: (
+    stage: "rendering" | "recognizing" | "complete",
+    pages?: number,
+  ) => void;
+}
+
 async function recognizePDFAttachment(
   client: OpenAIClient,
   attachmentID: number,
+  options: PDFRecognitionOptions = {},
 ): Promise<PDFRecognitionResult | null> {
+  const checkCancelled = () => {
+    if (options.signal?.aborted) throw new Error("Request cancelled");
+  };
+  checkCancelled();
+  options.onProgress?.("rendering");
   const images = await renderFirstPDFPagesAsPNG(attachmentID, "auto");
-  const recognition = await client.recognizePDFPages(images);
+  checkCancelled();
+  options.onProgress?.("recognizing", images.length);
+  const recognition = await client.recognizePDFPages(images, options.signal);
+  checkCancelled();
   const metadata = toZoteroMetadata(recognition.metadata);
   if (!metadata) {
     return null;
   }
+  options.onProgress?.("complete", images.length);
   return {
     metadata,
     outline: recognition.outline,

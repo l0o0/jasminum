@@ -45,6 +45,8 @@ type TaskStatus =
 type ScraperTaskType = "attachment" | "snapshot";
 type AttachmentTaskType = "local" | "remote";
 interface Task {
+  pageProgress?: { completed: number; total: number };
+  summary?: string;
   id: string;
   type: string;
   item: Zotero.Item;

@@ -19,6 +19,32 @@ export function outlineIndexForPage(pages: number[], page: number): number {
 }
 
 const cleanups = new Set<() => void>();
+
+export function clearOutlineFollowExpansion(doc: Document) {
+  const nodes = Array.from(
+    doc.querySelectorAll("#root-list .outline-follow-expanded"),
+  ) as HTMLElement[];
+  for (const node of nodes) {
+    node.classList.remove("outline-follow-expanded");
+    const expander = node.querySelector(".expander");
+    if (expander && node.classList.contains("collapsed"))
+      expander.innerHTML = ICONS.right;
+  }
+}
+
+export function expandOutlineAncestors(current: HTMLElement) {
+  let owner = current.closest("li")?.parentElement?.closest("li");
+  while (owner) {
+    // Keep the saved collapsed state; this class only affects the current view.
+    if (owner.classList.contains("collapsed")) {
+      owner.classList.add("outline-follow-expanded");
+      const expander = owner.querySelector(".expander");
+      if (expander) expander.innerHTML = ICONS.down;
+    }
+    owner = owner.parentElement?.closest("li") ?? null;
+  }
+}
+
 /** Scroll only the outline viewport, leaving the PDF and keyboard focus alone. */
 export function revealOutlineNode(viewport: HTMLElement, node: HTMLElement) {
   const bounds = viewport.getBoundingClientRect();
@@ -78,16 +104,11 @@ export function followOutlinePages(
       return;
     }
     for (const node of nodes) node.classList.remove("outline-reading-current");
+    clearOutlineFollowExpansion(doc);
     last = current;
     if (!current) return;
     current.classList.add("outline-reading-current");
-    let owner = current.closest("li")?.parentElement?.closest("li");
-    while (owner) {
-      owner.classList.remove("collapsed");
-      const expander = owner.querySelector(".expander");
-      if (expander) expander.innerHTML = ICONS.down;
-      owner = owner.parentElement?.closest("li") ?? null;
-    }
+    expandOutlineAncestors(current);
     if (viewport) revealOutlineNode(viewport, current);
   };
   const schedule = () => {
@@ -127,6 +148,7 @@ export function followOutlinePages(
     disposed = true;
     if (timer !== undefined) win.clearTimeout(timer);
     observer.disconnect();
+    clearOutlineFollowExpansion(doc);
     for (const [container, listener] of bound)
       container.removeEventListener("scroll", listener);
     bound.clear();

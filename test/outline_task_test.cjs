@@ -101,7 +101,11 @@ async function main() {
     Utilities: { Internal: { md5: (x) => x } },
     version: "10",
   };
-  const globals = { addon, Zotero, ztoolkit: { log() {} } };
+  const globals = {
+    addon,
+    Zotero,
+    ztoolkit: { log() {}, getGlobal: () => Zotero },
+  };
   const locale = { getString: (s) => s };
   const { OutlineTask } = load(
     "src/modules/outline/task.ts",
@@ -140,6 +144,7 @@ async function main() {
     "src/utils/task.ts",
     {
       "../modules/outline/task": { OutlineTask },
+      "../modules/metadata/task": { MetadataTask: class {} },
       "../modules/services": {
         metaSearch: search,
         metaTranslate: async () => translated++,
@@ -312,10 +317,14 @@ async function main() {
   assert.equal(imported, 0);
   addon.taskRunner = runner;
   let reviewsClosed = 0;
+  class UIMetadataTask {}
   const { Progress } = load(
     "src/modules/progress.ts",
     {
       "./outline/task": { OutlineTask },
+      "./metadata/task": { MetadataTask: UIMetadataTask },
+      "./metadata/taskView": { updateMetadataControls() {} },
+      "./metadata/updateDialog": { closeMetadataUpdates() {} },
       "./outline/taskView": {},
       "./outline/reviewView": { closeOutlineReviews: () => reviewsClosed++ },
       "../utils/locale": locale,
@@ -335,7 +344,10 @@ async function main() {
   testWindow.removeEventListener = (name) => {
     delete windowEvents[name];
   };
-  Zotero.Promise = { defer: () => initializedWindow };
+  Zotero.Promise = {
+    defer: () => initializedWindow,
+    delay: () => new Promise((r) => setImmediate(r)),
+  };
   Zotero.getMainWindow = () => ({ openDialog: () => testWindow });
   const initialization = lifecycleProgress.initializeProgressWindow();
   // No close listener while about:blank is being replaced.
@@ -350,7 +362,65 @@ async function main() {
   assert.equal(clearingRunner.tasks.length, 0);
   assert.equal(lifecycleProgress.progressWindow, null);
   assert.equal(reviewsClosed, 1);
+  // Closing before _initPromise resolves must not leave tasks running or hang opening.
+  const earlyProgress = new Progress();
+  const earlyWindow = {
+    closed: false,
+    document: { readyState: "complete" },
+  };
+  Zotero.Promise.defer = deferred;
+  Zotero.getMainWindow = () => ({ openDialog: () => earlyWindow });
+  const earlyTask = clearingRunner.createTask(item(84), "outline");
+  clearingRunner.tasks.push(earlyTask);
+  const earlyInitialization = earlyProgress.initializeProgressWindow();
+  earlyWindow.closed = true;
+  await earlyInitialization;
+  assert.equal(earlyProgress.progressWindow, null);
+  assert.equal(clearingRunner.tasks.length, 0);
+  assert.equal(earlyTask.status, "paused");
+  assert.equal(reviewsClosed, 2);
+  // A superseded dialog must not clear its replacement's queue.
+  earlyWindow.closed = false;
+  const supersededInitialization = earlyProgress.initializeProgressWindow();
+  const replacementWindow = {};
+  earlyProgress.progressWindow = replacementWindow;
+  earlyWindow.closed = true;
+  await supersededInitialization;
+  assert.equal(earlyProgress.progressWindow, replacementWindow);
+  assert.equal(reviewsClosed, 2);
   addon.taskRunner = runner;
+  const label = {};
+  const displayTask = Object.assign(new UIMetadataTask(), {
+    id: "display-test",
+    summary: "rendering",
+    pageProgress: { completed: 0, total: 0 },
+  });
+  runner.tasks.push(displayTask);
+  const displayProgress = new Progress();
+  displayProgress.progressWindow = {
+    document: {
+      getElementById: (id) =>
+        id.startsWith("task-page-progress-") ? label : null,
+      querySelector: () => null,
+    },
+  };
+  displayProgress.updateTaskStatus(displayTask, "processing");
+  assert.equal(
+    label.textContent,
+    "rendering",
+    "unknown total must show the stage",
+  );
+  displayTask.pageProgress = { completed: 0, total: 3 };
+  displayProgress.updateTaskStatus(displayTask, "processing");
+  assert.equal(label.textContent, "task-page-progress");
+  displayTask.pageProgress.completed = 3;
+  displayTask.summary = "ready for review";
+  displayProgress.updateTaskStatus(displayTask, "success");
+  assert.equal(label.textContent, "ready for review");
+  displayTask.summary = "stopped";
+  displayProgress.updateTaskStatus(displayTask, "paused");
+  assert.equal(label.textContent, "stopped");
+  runner.tasks.pop();
   const progress = new Progress();
   let opened = 0;
   const rendered = [];

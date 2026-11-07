@@ -105,7 +105,7 @@ outline-refresh-failed = 目录已保存，但阅读器刷新失败。请重新�
 
 # Existing-item metadata update
 metadata-update-menu =
-    .label = 茉莉花：更新元数据…
+    .label = 更新元数据
 metadata-update-title = 更新元数据
 metadata-update-description = 使用已配置的 AI 接口识别所选 PDF。点击识别将发送 PDF 前几页的图片；确认后仅更新选中的字段。
 metadata-update-pdf = PDF 附件：
@@ -194,6 +194,27 @@ selection-popup-add-outline = 添加大纲
 outline-more-actions = 更多操作
 
 outline-ai-edit-page = 编辑页码（可直接输入或使用上下箭头）
+
+metadata-update-queued = 等待识别
+metadata-update-failed = 操作失败
+metadata-update-stopped = 已停止
+metadata-update-rendering = 正在读取 PDF
+metadata-update-recognizing = 正在识别 { $pages } 页
+metadata-update-ready = 等待核对
+metadata-update-review-title = 茉莉花 AI 元数据核对
+metadata-update-edit-hint = 请核对并编辑识别值，勾选要保存的字段。默认只补充空字段。
+metadata-update-save = 保存
+metadata-update-name = 姓名／机构
+metadata-update-firstName = 名
+metadata-update-lastName = 姓
+metadata-update-stop = 停止识别
+metadata-update-retry = 重新识别
+metadata-update-review-open = 核对元数据
+
+task-page-progress = { $current }/{ $total } 页
+
+metadata-update-creator-role = 类型
+metadata-update-select-pdf = 选择 PDF
 
 outline-promote = 提升层级（含子节点）
 outline-demote = 降低层级（含子节点）

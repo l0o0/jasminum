@@ -19,10 +19,11 @@
       }
       h1 {
         font-size: 20px;
-        margin: 0 0 12px;
+        margin: 0 0 8px;
       }
       p {
         line-height: 1.5;
+        margin: 8px 0;
         overflow-wrap: anywhere;
       }
       select {
@@ -31,7 +32,7 @@
       }
       button {
         padding: 7px 14px;
-        margin: 8px 8px 8px 0;
+        margin: 0;
         cursor: pointer;
       }
       button:disabled {
@@ -71,10 +72,134 @@
       #status {
         min-height: 1.5em;
       }
+      textarea,
+      input[type="text"] {
+        box-sizing: border-box;
+        width: 100%;
+        min-width: 0;
+        border: 1px solid #a8b5c6;
+        border-radius: 5px;
+        padding: 7px;
+        font: inherit;
+        color: inherit;
+        background: Field;
+      }
+      textarea {
+        resize: vertical;
+      }
+      .creator-editor {
+        display: flex;
+        align-items: flex-end;
+        gap: 8px;
+        margin-bottom: 8px;
+        white-space: normal;
+      }
+      .creator-role {
+        position: relative;
+        flex: 0 0 88px;
+        min-width: 0;
+        font-size: 12px;
+      }
+      .role-trigger {
+        display: block;
+        width: 100%;
+        margin-top: 4px;
+        text-align: left;
+        height: 34px;
+        padding: 6px 8px;
+        font-size: 13px;
+      }
+      .role-trigger::after {
+        content: "⌄";
+        float: right;
+      }
+      .role-popup {
+        position: fixed;
+        max-height: min(280px, 70vh);
+        overflow-y: auto;
+        left: 0;
+        z-index: 10;
+        min-width: 130px;
+        padding: 4px;
+        background: #fff;
+        color: #242b36;
+        border: 1px solid #cdd5e1;
+        border-radius: 7px;
+        box-shadow: 0 4px 16px #0003;
+      }
+      .role-popup[hidden] {
+        display: none;
+      }
+      .role-popup button {
+        display: block;
+        width: 100%;
+        text-align: left;
+        border: 0;
+        padding: 7px 10px;
+        background: transparent;
+      }
+      .role-popup button[aria-pressed="true"] {
+        background: #e2eaf6;
+      }
+      .creator-name {
+        flex: 1;
+        min-width: 0;
+        font-size: 12px;
+      }
+      .creator-name input {
+        display: block;
+        margin-top: 4px;
+        font-size: 14px;
+        height: 34px;
+      }
+      .bulk-actions {
+        margin-inline-end: auto;
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+      }
+
+      #actions {
+        margin-top: 16px;
+        display: flex;
+        justify-content: flex-end;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 8px;
+      }
+      button {
+        border: 1px solid #a8b5c6;
+        border-radius: 6px;
+        background: Field;
+        color: inherit;
+      }
+      button:hover:not(:disabled) {
+        background: #e2eaf6;
+      }
+      button.primary {
+        background: #2868bd;
+        color: white;
+        border-color: #2868bd;
+      }
+      button:disabled {
+        opacity: 0.5;
+      }
+      #status {
+        white-space: pre-wrap;
+      }
       @media (prefers-color-scheme: dark) {
         :root {
           background: #252a33;
           color: #e6e9ef;
+        }
+        .role-popup {
+          background: #303640;
+          color: #e6e9ef;
+          border-color: #586170;
+        }
+        .role-popup button[aria-pressed="true"],
+        button:hover:not(:disabled) {
+          background: #414c60;
         }
         .panel {
           background: #303640;
