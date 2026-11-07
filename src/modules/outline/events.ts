@@ -192,6 +192,17 @@ export function initEventListener(
       }
     });
 
+  for (const [id, direction] of [
+    ["promote", -1],
+    ["demote", 1],
+  ] as const) {
+    doc.getElementById(`j-outline-${id}`)?.addEventListener("click", () => {
+      void changeOutlineLevel(doc, reader, direction).catch((error) =>
+        ztoolkit.log("Unable to change outline level", error),
+      );
+    });
+  }
+
   // 拖拽相关事件
   treeContainer.addEventListener("dragstart", handleDragStart);
   treeContainer.addEventListener("dragover", handleDragOver);
@@ -321,6 +332,51 @@ function selectNode(node: Element) {
   node.classList.add("node-selected");
 }
 
+export async function changeOutlineLevel(
+  doc: Document,
+  reader: _ZoteroTypes.ReaderInstance,
+  direction: -1 | 1,
+): Promise<void> {
+  const selected = doc.querySelector<HTMLElement>("#root-list .node-selected");
+  const li = selected?.closest("li");
+  if (!selected || !li) return;
+  const parent = li.parentElement!;
+  if (direction === -1) {
+    if (parent.id === "root-list") return;
+    const owner = parent.closest("li")!;
+    owner.parentElement!.insertBefore(li, owner.nextSibling);
+    if (!parent.children.length) {
+      parent.remove();
+      owner.classList.remove("has-children", "collapsed");
+      const expander = owner.querySelector(".expander");
+      if (expander) expander.textContent = " ";
+    }
+  } else {
+    const previous = li.previousElementSibling;
+    if (!previous) return;
+    const deepest = Math.max(
+      ...Array.from(li.querySelectorAll(".tree-node"), (node) =>
+        Number((node as Element).getAttribute("level")),
+      ),
+    );
+    if (deepest >= MAX_LEVEL) return;
+    let children = previous.querySelector<HTMLUListElement>(":scope > ul");
+    if (!children) {
+      children = doc.createElement("ul");
+      children.className = "tree-list";
+      previous.append(children);
+    }
+    children.append(li);
+    previous.classList.add("has-children");
+    previous.classList.remove("collapsed");
+    const expander = previous.querySelector(".expander");
+    if (expander) expander.innerHTML = ICONS.down;
+  }
+  updateNodeLevels(li);
+  await saveOutlineToJSON(reader._item, getOutlineFromPage(doc));
+  selected.scrollIntoView({ block: "nearest" });
+}
+
 // Key events for the outline panel.
 export async function handleKeydownEvent(
   ev: KeyboardEvent,
@@ -375,62 +431,14 @@ export async function handleKeydownEvent(
     deleteSelectedNode(ev);
   }
 
-  // Level up
-  if (ev.key === "[") {
-    // ztoolkit.log("[ key pressed");
-    const targetNode = (ev.target as Element).querySelector<Element>(
-      ".node-selected",
-    )!;
-    const targetLi = targetNode.closest("li")!;
-    const oldParentUl = targetLi.parentElement!;
-    const oldGrandParent = oldParentUl.parentElement!;
-    // 如果是根节点，直接返回
-    if (oldParentUl.id === "root-list") return;
-    oldParentUl.removeChild(targetLi);
-    // 此时原来的父节点已经没有子节点了，删除
-    if (oldParentUl.children.length === 0) {
-      oldGrandParent.removeChild(oldParentUl);
-      oldGrandParent.classList.remove("has-children");
-      const expander = oldGrandParent.querySelector(".expander")!;
-      expander.textContent = " ";
-    }
-    oldGrandParent.parentElement!.insertBefore(
-      targetLi,
-      oldGrandParent.nextSibling,
-    );
-    updateNodeLevels(targetLi);
-    await saveOutlineToJSON();
-  }
-  // Level down
-  if (ev.key === "]") {
-    // ztoolkit.log("] key pressed");
-    const targetNode = (ev.target as Element).querySelector<Element>(
-      ".node-selected",
-    )!;
-    const targetLi = targetNode.closest("li")!;
-    const parentLi = targetLi.previousElementSibling;
-    if (!parentLi) return;
-    let parentUl = parentLi.querySelector("ul");
-
-    // 如果没有子列表，创建一个
-    if (!parentUl) {
-      parentUl = targetNode.ownerDocument.createElement("ul");
-      parentUl.classList.add("tree-list");
-      parentLi.appendChild(parentUl);
-
-      // 更新父节点状态
-      parentLi.classList.add("has-children");
-      const expander = parentLi.querySelector(".expander")!;
-      // expander.textContent = "▼";
-      expander.innerHTML = ICONS.down;
-    }
-    // 添加到子列表
-    parentUl.appendChild(targetLi);
-    // 确保目标节点展开
-    targetLi.classList.remove("collapsed");
-
-    updateNodeLevels(targetLi);
-    await saveOutlineToJSON();
+  if (ev.key === "[" || ev.key === "]") {
+    ev.preventDefault();
+    if (reader)
+      await changeOutlineLevel(
+        newPanel.ownerDocument,
+        reader,
+        ev.key === "[" ? -1 : 1,
+      );
   }
 
   // Add new node

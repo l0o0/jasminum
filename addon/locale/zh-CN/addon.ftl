@@ -194,3 +194,6 @@ selection-popup-add-outline = 添加大纲
 outline-more-actions = 更多操作
 
 outline-ai-edit-page = 编辑页码（可直接输入或使用上下箭头）
+
+outline-promote = 提升层级（含子节点）
+outline-demote = 降低层级（含子节点）

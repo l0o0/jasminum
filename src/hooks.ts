@@ -1,3 +1,4 @@
+import { stopOutlineFollowing } from "./modules/outline/follow";
 import { config } from "../package.json";
 import { initLocale } from "./utils/locale";
 import {
@@ -67,6 +68,7 @@ async function onMainWindowLoad(win: Window): Promise<void> {
 }
 
 function onShutdown(): void {
+  stopOutlineFollowing();
   stopOutlineTasks();
   closeMetadataUpdates();
   unregisterMenu();

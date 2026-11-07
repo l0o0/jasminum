@@ -194,3 +194,6 @@ selection-popup-add-outline = Add Outline
 outline-more-actions = More actions
 
 outline-ai-edit-page = Edit page number (type a number or use the up/down arrows)
+
+outline-promote = Promote entry and its children
+outline-demote = Demote entry and its children

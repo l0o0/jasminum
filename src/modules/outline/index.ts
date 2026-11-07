@@ -1,3 +1,4 @@
+import { followOutlinePages } from "./follow";
 import { openOutlineTask } from "./taskView";
 import { wait } from "zotero-plugin-toolkit";
 import { getString } from "../../utils/locale";
@@ -83,6 +84,19 @@ export function renderTree(
       },
     ],
   });
+  for (const [action, icon] of [
+    ["promote", ICONS.minus],
+    ["demote", ICONS.plus],
+  ] as const) {
+    const button = doc.createElement("button");
+    button.id = `j-outline-${action}`;
+    button.type = "button";
+    button.className = "j-outline-toolbar-button toolbar-button";
+    button.innerHTML = icon;
+    button.title = getString(`outline-${action}`);
+    button.setAttribute("aria-label", button.title);
+    toolbar.append(button);
+  }
   const more = doc.createElement("button");
   more.id = "j-outline-more";
   more.type = "button";
@@ -359,6 +373,7 @@ async function initializeOutline(reader: _ZoteroTypes.ReaderInstance) {
   renderTree(reader, doc, joutline);
   renderBookmarkTree(reader, doc, bookmarks);
   initEventListener(reader, doc);
+  followOutlinePages(reader, doc);
 }
 
 export async function registerOutline(tabID: string) {

@@ -33,9 +33,17 @@ export const outline_css = `
   --drop-indicator-color: #3498db;
 }
 
+#jasminum-outline {
+  height: 100%;
+  min-height: 0;
+}
+
 #j-outline-viewer {
+  box-sizing: border-box;
+  height: calc(100% - 37px);
+  overflow-y: auto;
   max-width: 1000px;
-  margin: 0 auto 37px auto;
+  margin: 0 auto;
   background: var(--container-bg);
   border-bottom-left-radius: 4px;
   border-bottom-right-radius: 4px;
@@ -180,6 +188,9 @@ button:hover.j-outline-toolbar-button {
 }
 .tree-node:hover {
   background: var(--node-hover-bg);
+}
+.tree-node.outline-reading-current {
+  box-shadow: inset 3px 0 0 #3273c8;
 }
 .node-selected {
   background: var(--selected-node-bg);
