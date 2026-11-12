@@ -5,6 +5,7 @@
 # 茉莉花 Jasminum
 
 [![Release](https://img.shields.io/github/release/l0o0/jasminum?style=flat-square)](https://github.com/l0o0/jasminum/releases/latest)
+[![Zotero 中文社区 · 已收录](https://zotero-chinese.com/badges/listed.svg)](https://zotero-chinese.com/plugins/)
 [![Using Zotero Plugin Template](https://img.shields.io/badge/Using-Zotero%20Plugin%20Template-blue?style=flat-square&logo=github)](https://github.com/windingwind/zotero-plugin-template)
 
 简体中文 | [English](doc/README-en.md)
