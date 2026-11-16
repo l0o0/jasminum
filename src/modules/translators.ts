@@ -67,6 +67,61 @@ export async function getLastUpdatedFromFile(
   }
 }
 
+/** Install a missing translator or update a version incompatible with a service. */
+export async function ensureTranslator(
+  translatorID: string,
+  filename: string,
+  minimumLastUpdated = "",
+) {
+  const installed = await Zotero.Translators.get(translatorID);
+  if (
+    installed &&
+    installed.lastUpdated >= minimumLastUpdated &&
+    installed.path &&
+    (await IOUtils.exists(installed.path))
+  )
+    return installed;
+
+  try {
+    const source = getPref("translatorSource") || (await bestSpeedBaseUrl());
+    const download = (baseURL: string) =>
+      Zotero.File.getContentsFromURLAsync(
+        `${baseURL.replace(/\/+$/, "")}/${filename}`,
+        { noCache: true },
+      );
+    let code: string;
+    try {
+      code = await download(source);
+    } catch {
+      code = await download(await bestSpeedBaseUrl());
+    }
+    const header = /^\s*{[\S\s]*?}\s*?[\r\n]/.exec(code);
+    if (!header) throw new Error("Invalid translator metadata");
+    const metadata = JSON.parse(header[0]);
+    if (
+      metadata.translatorID !== translatorID ||
+      !(metadata.translatorType & 4) ||
+      typeof metadata.lastUpdated !== "string" ||
+      metadata.lastUpdated < minimumLastUpdated
+    )
+      throw new Error("Unexpected translator or unsupported version");
+    await Zotero.Translators.save(metadata, code.slice(header[0].length));
+    // @ts-ignore - reinit is not typed.
+    await Zotero.Translators.reinit({ fromSchemaUpdate: false });
+    const translator = await Zotero.Translators.get(translatorID);
+    if (!translator)
+      throw new Error("Translator failed to load after updating");
+    return translator;
+  } catch (error) {
+    ztoolkit.log(`Unable to load ${filename}`, error);
+    throw new Error(
+      getString("book-metadata-translator-unavailable", {
+        args: { name: filename.replace(/\.js$/i, "") },
+      }),
+    );
+  }
+}
+
 export async function getLastUpdatedMap(
   refresh = true,
 ): Promise<LastUpdatedMap> {

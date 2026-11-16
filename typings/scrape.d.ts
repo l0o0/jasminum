@@ -42,7 +42,7 @@ type TaskStatus =
   | "multiple_results"
   | "success"
   | "fail";
-type ScraperTaskType = "attachment" | "snapshot";
+type ScraperTaskType = "attachment" | "snapshot" | "book";
 type AttachmentTaskType = "local" | "remote";
 interface Task {
   pageProgress?: { completed: number; total: number };

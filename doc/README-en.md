@@ -15,7 +15,7 @@ Jasminum is a Zotero plugin focused on managing Chinese-language literature. It 
 
 ## Installation and compatibility
 
-This guide covers the released **v1.1.43**.
+This guide covers **v1.1.45**.
 
 - The plugin requires **Zotero 9.0.3 or later**. If you use an older Zotero version, check the release notes for older plugin versions.
 - **AI metadata recognition and AI outline recognition require Zotero 10 or later**, plus a model API that supports image input and JSON Object output.
@@ -31,6 +31,8 @@ Add a Chinese-language PDF to Zotero. Right-click the standalone attachment, ope
 In Jasminum settings, open **Data sources** to enable, remove, or reorder sources. Available sources include PubScholar, the National Center for Philosophy and Social Sciences Documentation (NCPSSD), China National Knowledge Infrastructure (CNKI), Yiigle, and AI recognition.
 
 Sources run in the configured order. AI runs only when earlier sources have no reliable results; move it earlier to give it priority. Traditional sources use the attachment filename to form search queries, so keep the publication title accurate and adjust filename parsing settings when needed.
+
+For a standalone book PDF, right-click and choose **Metadata(CN) → Find book metadata**. Jasminum searches Douban and Wenjin by title. Choose the matching edition in the task window to create a book item and attach the original PDF. Missing or incompatible translators are updated automatically when possible.
 
 ## AI configuration
 
@@ -77,12 +79,14 @@ Select an outline entry first:
 
 ### AI outline recognition
 
-Start full-document AI outline recognition from the attachment context menu under **Tools**, or from **More (⋮)** in the outline sidebar.
+Start AI outline recognition from the attachment context menu under **Tools**, or from **More (⋮)** in the outline sidebar.
+
+For long documents, Jasminum first checks the first 15 pages for a table of contents. If the contents continue beyond that boundary, it checks additional batches up to page 30. A complete table is mapped to physical PDF pages, checking destinations near the beginning, middle, and end. Reliable mappings generate an outline without scanning every page image. Otherwise recognition continues through the PDF, reusing pages already checked. Each request sends up to 5 page images to the configured AI provider and may incur charges.
 
 1. Follow progress in the Jasminum task window. You can stop recognition and resume it later while the task remains in the list.
 2. Open the separate outline review window to check titles, levels, and PDF page numbers.
 3. Use ↑ / ↓ to select entries, drag to reorder, Delete / Backspace to delete, and ← / → to change levels. Page numbers are editable. Use the jump button on the right to inspect the corresponding PDF location.
-4. Icons and tooltips distinguish text-matched locations from estimated ones. Click **Save** after reviewing: this writes the outline to Jasminum's data and the PDF, then closes the review window on success.
+4. Icons and tooltips distinguish text matches, visual estimates, and entries mapped only to a page. Arabic and Roman page numbers are calibrated separately. Entries without a located heading jump to the top of the mapped page. Click **Save** after reviewing: this writes the outline to Jasminum's data and the PDF, then closes the review window on success.
 
 Closing the task window clears its task list and stops outline recognition. Review and save any results you want to keep before closing it.
 

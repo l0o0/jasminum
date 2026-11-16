@@ -2,21 +2,19 @@ const assert = require("node:assert/strict");
 const fs = require("node:fs");
 const vm = require("node:vm");
 const ts = require("typescript");
-function load(mocks) {
+function load(mocks, file = "src/modules/outline/recognitionAgent.ts") {
   const exports = {};
   vm.runInNewContext(
-    ts.transpileModule(
-      fs.readFileSync("src/modules/outline/recognitionAgent.ts", "utf8"),
-      {
-        compilerOptions: {
-          module: ts.ModuleKind.CommonJS,
-          target: ts.ScriptTarget.ES2022,
-        },
+    ts.transpileModule(fs.readFileSync(file, "utf8"), {
+      compilerOptions: {
+        module: ts.ModuleKind.CommonJS,
+        target: ts.ScriptTarget.ES2022,
       },
-    ).outputText,
+    }).outputText,
     {
       exports,
-      require: (n) => mocks[n],
+      require: (n) =>
+        mocks[n] ?? load(mocks, `src/modules/outline/${n.slice(2)}.ts`),
       Error,
       Zotero: { getMainWindow: () => ({ AbortController }) },
     },

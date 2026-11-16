@@ -81,10 +81,13 @@ export function addOutlineControls(task: OutlineTask, row: Element) {
 }
 export function updateOutlineControls(task: OutlineTask, doc: Document) {
   const progress = doc.getElementById(`outline-progress-${task.id}`);
-  if (progress)
+  if (progress) {
+    const pages = task.recognitionProgress;
     progress.textContent = getString("task-page-progress", {
-      args: { current: task.completedPages, total: task.totalPages || "—" },
+      args: { current: pages.completed, total: pages.total || "—" },
     });
+    progress.title = task.summary;
+  }
   const enabled = {
     stop: ["processing", "waiting"].includes(task.status),
     continue: task.canResume,

@@ -245,6 +245,10 @@ export class Progress {
     pageProgress.style.cssText =
       "margin-inline-start:auto;white-space:nowrap;font-variant-numeric:tabular-nums;font-weight:normal";
     taskNode.querySelector(`#task-header-${task.id}`)?.append(pageProgress);
+    if (task.type === "book")
+      taskNode
+        .querySelector(".task-title")
+        ?.prepend(`${getString("book-metadata-task")} · `);
     if (task instanceof MetadataTask) addMetadataControls(task, taskNode);
     else if (task instanceof OutlineTask) addOutlineControls(task, taskNode);
     else if (task.status === "multiple_results" && task.searchResults)

@@ -56,7 +56,17 @@ export class OutlineTask implements Task {
     return this.agent?.headings ?? [];
   }
   get completedPages() {
-    return (this.agent?.nextPage ?? 1) - 1;
+    return (
+      this.agent?.pageProgress?.completed ?? (this.agent?.nextPage ?? 1) - 1
+    );
+  }
+  get recognitionProgress() {
+    return (
+      this.agent?.pageProgress ?? {
+        completed: this.completedPages,
+        total: this.totalPages,
+      }
+    );
   }
   get totalPages() {
     return this.agent?.pdf.numPages ?? 0;
@@ -151,12 +161,29 @@ export class OutlineTask implements Task {
         return;
       }
       const complete = await this.agent.run((page, total, lastPage) => {
-        this.summary = `${t("running")} ${page}–${lastPage ?? page} / ${total}`;
+        this.summary =
+          this.agent?.stage === "contents"
+            ? t("contents-check")
+            : this.agent?.stage === "calibrating"
+              ? t("contents-calibrating")
+              : `${t("running")} ${page}–${lastPage ?? page} / ${total}`;
         this.notify();
       });
-      this.summary = t(
-        complete ? (this.headings.length ? "review" : "empty") : "stopped",
-      );
+      this.summary =
+        complete && this.agent.usedContents
+          ? getString("outline-ai-contents-review", {
+              args: {
+                pages: this.agent.inspectedPages,
+                total: this.totalPages,
+              },
+            })
+          : t(
+              complete
+                ? this.headings.length
+                  ? "review"
+                  : "empty"
+                : "stopped",
+            );
       this.status = complete ? "success" : "paused";
     } catch (error) {
       const detail = error instanceof Error ? error.message : String(error);
@@ -186,11 +213,13 @@ export class OutlineTask implements Task {
     if (!this.canEdit || !headings[index]) return index;
     let focus = index;
     if (key === "Delete" || key === "Backspace") {
+      this.agent?.keepPartialOutline?.();
       headings.splice(index, 1);
       focus = Math.min(index, headings.length - 1);
     } else if (key === "ArrowLeft" || key === "ArrowRight") {
       const level = headings[index].level + (key === "ArrowLeft" ? -1 : 1);
       if (level < 1 || level > 7) return index;
+      this.agent?.keepPartialOutline?.();
       headings[index].level = level;
     } else return index;
     this.previewRevision++;
@@ -208,6 +237,7 @@ export class OutlineTask implements Task {
     )
       return false;
     if (heading.page === page) return true;
+    this.agent?.keepPartialOutline?.();
     this.saving = true;
     this.notify();
     try {
@@ -237,6 +267,7 @@ export class OutlineTask implements Task {
       return from;
     const target = slot > from ? slot - 1 : slot;
     if (target === from) return from;
+    this.agent?.keepPartialOutline?.();
     const [heading] = this.headings.splice(from, 1);
     this.headings.splice(target, 0, heading);
     this.previewRevision++;

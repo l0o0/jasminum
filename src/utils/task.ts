@@ -55,6 +55,7 @@ export class ScraperTask implements ScraperTask {
 
   constructor(item: Zotero.Item, type: ScraperTaskType, silent?: false) {
     this.id = Zotero.Utilities.Internal.md5(item.id.toString());
+    if (type === "book") this.id = `book-${this.id}`;
     this.item = item;
     this.type = type;
     this.silent = false;
@@ -178,7 +179,11 @@ export class TaskRunner {
 
     if (taskType === "metadata-update") return "metadata-update";
     if (taskType === "outline") return "outline";
-    if (taskType == "attachment" || taskType == "snapshot") {
+    if (
+      taskType == "attachment" ||
+      taskType == "snapshot" ||
+      taskType === "book"
+    ) {
       return "metaScraper";
     } else if (taskType == "local" || taskType == "remote") {
       return "attachmentScraper";

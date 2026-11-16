@@ -1,423 +1,385 @@
+import { compareTwoStrings } from "string-similarity";
 import { getArgsFromPattern } from "../../utils/pattern";
 import { getPDFTitle } from "../../utils/pdfParser";
 import { getMetadataSources, getPref } from "../../utils/prefs";
-import { ScraperTask } from "../../utils/task";
+import type { ScraperTask } from "../../utils/task";
 import { isChineseTopAttachment, isChinsesSnapshot } from "../../utils/detect";
-// import { ChinaDOI } from "./chinadoi";
+import { getConfiguredLLMClient } from "../../utils/llm";
+import { recognizePDFAttachment } from "../../utils/pdfMetadata";
+import { getString } from "../../utils/locale";
 import { CNKI } from "./cnki";
 import { PubScholar } from "./pubscholar";
 import { NCPSSD } from "./ncpssd";
 import { Yiigle } from "./yiigle";
-import { compareTwoStrings } from "string-similarity";
 import { WanfangData } from "./wanfangdata";
+import { Douban } from "./douban";
+import { Wenjin } from "./wenjin";
 import { runSequentialSearchChain } from "./searchChain";
-import { getConfiguredLLMClient } from "../../utils/llm";
-import { recognizePDFAttachment } from "../../utils/pdfMetadata";
-import { getString } from "../../utils/locale";
+import { saveMetadataItem } from "./importItem";
 
-// const chinaDOI = new ChinaDOI();
-const cnki = new CNKI();
-const pubscholar = new PubScholar();
-const ncpssd = new NCPSSD();
-const yiigle = new Yiigle();
-const wanfangData = new WanfangData();
+interface MetadataSource {
+  service: ScrapeService;
+  kind: "article" | "book";
+  resultSource?: string;
+  searchDisabled?: boolean;
+}
+
+const sources: Record<string, MetadataSource> = {
+  CNKI: { service: new CNKI(), kind: "article" },
+  PubScholar: { service: new PubScholar(), kind: "article" },
+  NCPSSD: { service: new NCPSSD(), kind: "article" },
+  Yiigle: {
+    service: new Yiigle(),
+    kind: "article",
+    resultSource: "中华医学",
+  },
+  WanFangData: {
+    service: new WanfangData(),
+    kind: "article",
+    resultSource: "万方数据",
+    searchDisabled: true,
+  },
+  Douban: { service: new Douban(), kind: "book" },
+  Wenjin: { service: new Wenjin(), kind: "book" },
+};
+const getBookString = (key: string) => getString(`book-metadata-${key}`);
 
 async function getSearchOption(
   item: Zotero.Item,
+  kind: MetadataSource["kind"] = "article",
 ): Promise<SearchOption | null> {
-  let namepattern = getPref("namePattern");
-  // Get title from pdf page content.
-  // 1: title from PDF, 2: {%t}_{%g}
-  if (namepattern == "auto") {
-    let title = undefined;
+  const pattern = getPref("namePattern");
+  let option: SearchOption | null = null;
+  if (pattern === "auto") {
     try {
-      title = await getPDFTitle(item.id);
-    } catch (e) {
-      ztoolkit.log(`Pdf parsing error ${e}`);
+      const title = await getPDFTitle(item.id);
+      if (title) option = { title };
+    } catch (error) {
+      ztoolkit.log(`PDF title parsing error: ${error}`);
     }
-    if (title) return { title };
-
-    return getArgsFromPattern(item.attachmentFilename, "{%t}_{%g}");
+    if (!option && kind === "article")
+      option = getArgsFromPattern(item.attachmentFilename, "{%t}_{%g}");
   } else {
-    if (namepattern == "custom") namepattern = getPref("namePatternCustom");
-    return getArgsFromPattern(item.attachmentFilename, namepattern);
+    option = getArgsFromPattern(
+      item.attachmentFilename,
+      pattern === "custom" ? getPref("namePatternCustom") : pattern,
+    );
   }
+  if (kind === "article") return option;
+  const title = (
+    option?.title || item.attachmentFilename.replace(/\.pdf$/i, "")
+  ).trim();
+  if (!title) throw new Error(getBookString("no-query"));
+  return { title };
 }
 
-// Calculate similarity for search results
+function normalizeBookTitle(title: string): string {
+  return title.replace(/[《》\s]/g, "").toLowerCase();
+}
+
 function calculateSimilarity(
   results: ScrapeSearchResult[],
   searchTitle: string,
+  kind: MetadataSource["kind"] = "article",
 ): void {
-  results.forEach((result) => {
-    result.similarity = compareTwoStrings(
-      searchTitle,
-      result.articleTitle as string,
-    );
-  });
+  const book = kind === "book";
+  const title = book ? normalizeBookTitle(searchTitle) : searchTitle;
+  for (const result of results) {
+    const resultTitle = book
+      ? normalizeBookTitle(String(result.articleTitle || result.title))
+      : (result.articleTitle as string);
+    result.similarity = compareTwoStrings(title, resultTitle);
+  }
 }
 
-function normalizeTitleTokens(title: string): string[] {
-  return title
+function isTokenCovered(searchTitle: string, resultTitle: string): boolean {
+  const tokens = searchTitle
     .replace(/\.{2,}|…+/g, " ")
     .replace(/[_＿]+/g, " ")
     .replace(/[《》“”"':：,，.。;；()[\]（）【】]/g, " ")
     .split(/\s+/g)
     .map((token) => token.trim())
     .filter((token) => token.length >= 2);
+  return (
+    tokens.length >= 2 && tokens.every((token) => resultTitle.includes(token))
+  );
 }
 
-function isTokenCovered(searchTitle: string, resultTitle: string): boolean {
-  const tokens = normalizeTitleTokens(searchTitle);
-  if (tokens.length < 2) return false;
-  return tokens.every((token) => resultTitle.includes(token));
-}
-
-// Check if there is an exact match (similarity === 1)
 function hasExactMatch(results: ScrapeSearchResult[]): boolean {
-  return results.some((r) => r.similarity === 1);
+  return results.some((result) => result.similarity === 1);
 }
 
-export async function metaSearch(
-  task: ScraperTask,
-  options?: any,
-): Promise<void> {
+function finishSearch(task: ScraperTask, results: ScrapeSearchResult[]): void {
   if (task.cancelled) return;
-  // const scrapeServices = getPref("metadataSource").split(", ") || ["CNKI"];
+  if (task.type === "book") {
+    task.summary = getBookString(
+      results.length > 1 ? "found" : results.length ? "importing" : "empty",
+    );
+  }
+  task.searchResults = results;
+  if (!results.length) task.addMsg(task.summary || "No search results");
+  task.status = !results.length
+    ? "fail"
+    : results.length > 1
+      ? "multiple_results"
+      : "processing";
+}
+
+async function recognizeMetadata(task: ScraperTask): Promise<boolean> {
+  let client;
+  try {
+    client = getConfiguredLLMClient();
+  } catch (error) {
+    task.addMsg((error as Error).message);
+    return false;
+  }
+  try {
+    task.addMsg(getString("ai-recognition-start"));
+    task.pageProgress = { completed: 0, total: 0 };
+    task.summary = getString("metadata-update-rendering");
+    addon.data.progress.updateTaskStatus(task, task.status);
+    const result = await recognizePDFAttachment(client, task.item.id, {
+      signal: task.signal,
+      onProgress: (stage, pages) => {
+        if (task.cancelled) return;
+        task.pageProgress = {
+          completed: stage === "complete" ? (pages ?? 0) : 0,
+          total: pages ?? 0,
+        };
+        task.summary =
+          stage === "rendering"
+            ? getString("metadata-update-rendering")
+            : getString("metadata-update-recognizing", {
+                args: { pages: pages ?? 0 },
+              });
+        addon.data.progress.updateTaskStatus(task, task.status);
+      },
+    });
+    if (task.cancelled) return false;
+    if (result) {
+      task.aiMetadata = result.metadata;
+      return true;
+    }
+    task.addMsg(getString("ai-recognition-empty"));
+  } catch {
+    // Response bodies and API credentials must stay out of task logs.
+    if (!task.cancelled) task.addMsg(getString("ai-recognition-failed"));
+  } finally {
+    task.pageProgress = undefined;
+    task.summary = undefined;
+    addon.data.progress.updateTaskStatus(task, task.status);
+  }
+  return false;
+}
+
+export async function metaSearch(task: ScraperTask): Promise<void> {
+  if (task.cancelled) return;
+  task.aiMetadata = undefined;
+  task.searchResults = [];
+  task.resultIndex = undefined;
+  task.summary = task.type === "book" ? getBookString("searching") : undefined;
+  task.status = "processing";
+  if (task.type === "book") return searchBookMetadata(task);
   if (!isChineseTopAttachment(task.item) && !isChinsesSnapshot(task.item)) {
-    ztoolkit.log("No Chinese attachment or snapshot items found. Stop search.");
+    task.addMsg("No Chinese attachment or snapshot items found.");
+    task.status = "fail";
+    return;
+  }
+  if (task.type === "snapshot") {
+    const results = await sources.CNKI.service.searchSnapshot!(task);
+    finishSearch(task, results || []);
     return;
   }
 
-  ztoolkit.log("search task", task);
-  task.status = "processing";
-  task.aiMetadata = undefined;
-  // Searching by different scrape services
-  let scrapeSearchResults: ScrapeSearchResult[] = [];
-  if (task.type == "attachment") {
-    const metadataSources = getMetadataSources();
-    const services: Record<string, ScrapeService> = {
-      PubScholar: pubscholar,
-      NCPSSD: ncpssd,
-      Yiigle: yiigle,
-      CNKI: cnki,
-    };
-    let searchOption: SearchOption | null | undefined;
-    task.addMsg(`Source order: ${metadataSources.join(", ")}`);
-    for (const source of metadataSources) {
-      if (task.cancelled) return;
-      if (source === "AI") {
-        // AI is used at its configured position only if earlier sources have no reliable results.
-        if (scrapeSearchResults.length || !task.item.isPDFAttachment())
-          continue;
-        let client;
-        try {
-          client = getConfiguredLLMClient();
-        } catch (error) {
-          task.addMsg((error as Error).message);
-          continue;
-        }
-        try {
-          task.addMsg(getString("ai-recognition-start"));
-          task.pageProgress = { completed: 0, total: 0 };
-          task.summary = getString("metadata-update-rendering");
-          addon.data.progress.updateTaskStatus(task, task.status);
-          const result = await recognizePDFAttachment(client, task.item.id, {
-            signal: task.signal,
-            onProgress: (stage, pages) => {
-              if (task.cancelled) return;
-              task.pageProgress = {
-                completed: stage === "complete" ? (pages ?? 0) : 0,
-                total: pages ?? 0,
-              };
-              task.summary =
-                stage === "rendering"
-                  ? getString("metadata-update-rendering")
-                  : getString("metadata-update-recognizing", {
-                      args: { pages: pages ?? 0 },
-                    });
-              addon.data.progress.updateTaskStatus(task, task.status);
-            },
-          });
-          if (task.cancelled) return;
-          if (result) {
-            task.aiMetadata = result.metadata;
-            task.searchResults = [];
-            return;
-          }
-          task.addMsg(getString("ai-recognition-empty"));
-        } catch {
-          if (task.cancelled) return;
-          // Avoid exposing API credentials or response bodies through task logs.
-          task.addMsg(getString("ai-recognition-failed"));
-        } finally {
-          task.pageProgress = undefined;
-          task.summary = undefined;
-          addon.data.progress.updateTaskStatus(task, task.status);
-        }
-        continue;
+  const metadataSources = getMetadataSources();
+  const results: ScrapeSearchResult[] = [];
+  let option: SearchOption | null | undefined;
+  task.addMsg(`Source order: ${metadataSources.join(", ")}`);
+  for (const name of metadataSources) {
+    if (task.cancelled) return;
+    if (name === "AI") {
+      if (!results.length && task.item.isPDFAttachment()) {
+        if (await recognizeMetadata(task)) return;
       }
-      const service = services[source];
-      if (!Object.hasOwn(services, source)) {
-        task.addMsg(`Skipping unavailable source: ${source}`);
-        continue;
-      }
-      // Parse only when a website needs search terms; AI uses the PDF directly.
-      if (searchOption === undefined) {
-        try {
-          searchOption = await getSearchOption(task.item);
-        } catch {
-          searchOption = null;
-        }
-        task.addMsg(`Search option: ${JSON.stringify(searchOption)}`);
-        if (!searchOption) task.addMsg("Filename parsing error");
-      }
-      if (!searchOption) continue;
-      const option = searchOption;
-      const results = await runSequentialSearchChain(
-        [{ name: source, enabled: true, search: () => service.search(option) }],
-        option.title,
-        {
-          scoreResults: calculateSimilarity,
-          hasExactMatch,
-          onResult(name, results) {
-            task.addMsg(`Found ${results.length} results from ${name}`);
-          },
-          onError(name, error) {
-            task.addMsg(`${name} search error: ${error}`);
-          },
-        },
-      );
-      const reliableResults = results.filter(
-        (result) =>
-          (result.articleTitle as string).includes(option.title) ||
-          (result.similarity as number) >
-            parseFloat(getPref("similarityThresholdForMetaData")) ||
-          isTokenCovered(option.title, result.articleTitle as string),
-      );
-      scrapeSearchResults.push(...reliableResults);
-      task.addMsg(
-        `After filtering, ${reliableResults.length} results left from ${source}.`,
-      );
-      if (hasExactMatch(reliableResults)) {
-        task.addMsg(`Exact match found in ${source}, skipping later services`);
-        break;
-      }
+      continue;
     }
-  } else if (task.type == "snapshot") {
-    const tmp = await cnki.searchSnapshot!(task);
-    if (tmp) scrapeSearchResults = scrapeSearchResults.concat(tmp);
+    const source = Object.hasOwn(sources, name) ? sources[name] : undefined;
+    if (!source || source.kind !== "article" || source.searchDisabled) {
+      task.addMsg(`Skipping unavailable source: ${name}`);
+      continue;
+    }
+    // AI reads the PDF directly, so website query preparation stays lazy.
+    if (option === undefined) {
+      try {
+        option = await getSearchOption(task.item);
+      } catch {
+        option = null;
+      }
+      task.addMsg(`Search option: ${JSON.stringify(option)}`);
+      if (!option) task.addMsg("Filename parsing error");
+    }
+    if (task.cancelled) return;
+    if (!option) continue;
+    const query = option;
+    const found = await runSequentialSearchChain(
+      [{ name, enabled: true, search: () => source.service.search(query) }],
+      query.title,
+      {
+        scoreResults: calculateSimilarity,
+        hasExactMatch,
+        onResult: (name, found) =>
+          task.addMsg(`Found ${found.length} results from ${name}`),
+        onError: (name, error) => task.addMsg(`${name} search error: ${error}`),
+      },
+    );
+    if (task.cancelled) return;
+    const reliable = found.filter(
+      (result) =>
+        (result.articleTitle as string).includes(query.title) ||
+        Number(result.similarity) >
+          parseFloat(getPref("similarityThresholdForMetaData")) ||
+        isTokenCovered(query.title, result.articleTitle as string),
+    );
+    results.push(...reliable);
+    task.addMsg(
+      `After filtering, ${reliable.length} results left from ${name}.`,
+    );
+    if (hasExactMatch(reliable)) {
+      task.addMsg(`Exact match found in ${name}, skipping later services`);
+      break;
+    }
   }
+  finishSearch(task, results);
+}
 
-  if (scrapeSearchResults.length == 0) {
-    task.addMsg("No search results");
-    task.status = "fail";
-  } else if (scrapeSearchResults.length > 1) {
-    task.status = "multiple_results";
-  }
-  task.searchResults = scrapeSearchResults;
+export function canRetrieveBookMetadata(item: Zotero.Item): boolean {
+  return (
+    !item.deleted &&
+    item.isPDFAttachment() &&
+    item.isTopLevelItem() &&
+    item.isEditable()
+  );
+}
+
+export async function getBookSearchOption(
+  item: Zotero.Item,
+): Promise<SearchOption> {
+  return (await getSearchOption(item, "book"))!;
+}
+
+async function searchBookMetadata(task: ScraperTask): Promise<void> {
+  if (!canRetrieveBookMetadata(task.item))
+    throw new Error(getBookString("unavailable"));
+  const option = await getBookSearchOption(task.item);
+  if (task.cancelled) return;
+  task.addMsg(`Title: ${option.title}`);
+  const threshold =
+    Number.parseFloat(getPref("similarityThresholdForMetaData")) || 0.6;
+  const results = await runSequentialSearchChain(
+    Object.entries(sources)
+      .filter(([, source]) => source.kind === "book" && !source.searchDisabled)
+      .map(([name, source]) => ({
+        name,
+        enabled: true,
+        search: async () => {
+          if (task.cancelled) return null;
+          const found = await source.service.search(option);
+          return task.cancelled ? null : found;
+        },
+      })),
+    option.title,
+    {
+      scoreResults: (found, title) => calculateSimilarity(found, title, "book"),
+      // Matching titles can represent different editions across book sources.
+      hasExactMatch: () => false,
+      onResult: (name, found) => task.addMsg(`${name}: ${found.length}`),
+      onError: (name, error) => task.addMsg(`${name}: ${error}`),
+    },
+  );
+  finishSearch(
+    task,
+    results.filter((result) => Number(result.similarity) >= threshold),
+  );
 }
 
 export async function metaTranslate(task: ScraperTask): Promise<void> {
-  if (task.aiMetadata) {
-    try {
-      await Zotero.DB.executeTransaction(async () => {
-        const item = new Zotero.Item(task.aiMetadata!.itemType);
-        item.libraryID = task.item.libraryID;
-        item.fromJSON(task.aiMetadata!);
-        item.setCollections(task.item.getCollections());
-        await item.save();
-        task.item.parentID = item.id;
-        await task.item.save();
-      });
-      task.status = "success";
-    } catch {
-      await task.item.reload(["primaryData"], true);
-      task.addMsg(getString("ai-recognition-save-failed"));
-      task.status = "fail";
-    }
-    return;
-  }
-  if (task.searchResults.length === 0) {
-    task.addMsg("No search results found.");
-    task.status = "fail";
-    return;
-  }
-
+  if (task.cancelled) return;
+  const originalParentID = task.item.parentID;
+  let createdItems: Zotero.Item[] = [];
+  let saved = false;
   try {
-    const resultIndex = task.resultIndex || 0; // default is 0
-    task.resultIndex = resultIndex;
-    const searchResult = task.searchResults[resultIndex];
-    const libraryID = task.item.libraryID;
-    ztoolkit.log(`start translate for search result: ${searchResult.title}`);
-    let translateResult: ScrapeTranslateResult;
-    switch (searchResult.source) {
-      case "CNKI":
-        ztoolkit.log("translated by CNKI");
-        translateResult = await cnki.translate(searchResult, libraryID, false);
-        break;
-      case "万方数据":
-        ztoolkit.log("translated by WanfangData");
-        translateResult = await wanfangData.translate(
-          searchResult,
-          libraryID,
-          false,
+    let item: Zotero.Item;
+    let selected: ScrapeSearchResult | undefined;
+    if (task.aiMetadata) {
+      item = new Zotero.Item(task.aiMetadata.itemType);
+      item.libraryID = task.item.libraryID;
+      item.fromJSON(task.aiMetadata);
+    } else {
+      task.resultIndex = task.resultIndex ?? 0;
+      selected = task.searchResults[task.resultIndex];
+      if (!selected)
+        throw new Error(
+          task.type === "book"
+            ? getBookString("empty")
+            : "No search results found.",
         );
-        break;
-      case "中华医学":
-        ztoolkit.log("translated by Yiigle");
-        translateResult = await yiigle.translate(
-          searchResult,
-          libraryID,
-          false,
-        );
-        break;
-      case "PubScholar":
-        ztoolkit.log("translated by PubScholar");
-        translateResult = await pubscholar.translate(
-          searchResult,
-          libraryID,
-          false,
-        );
-        break;
-      case "NCPSSD":
-        ztoolkit.log("translated by NCPSSD");
-        translateResult = await ncpssd.translate(
-          searchResult,
-          libraryID,
-          false,
-        );
-        break;
-      // ChinaDOI is temporarily disabled while its redirect/translation flow is fixed.
-      // case "ChinaDOI":
-      //   ztoolkit.log("translated by ChinaDOI");
-      //   translateResult = await chinaDOI.translate(
-      //     searchResult,
-      //     libraryID,
-      //     false,
-      //   );
-      //   break;
-      default:
-        translateResult = {
-          status: "error",
-          error: `Unsupported source: ${searchResult.source}`,
-        };
-        break;
-    }
-
-    if (translateResult.status === "error") {
-      task.addMsg(translateResult.error);
-      task.status = "fail";
-      return;
-    }
-
-    if (translateResult.status === "empty") {
-      task.addMsg("Translation returned no item.");
-      task.status = "fail";
-      return;
-    }
-
-    const translatedItems = translateResult.items;
-    ztoolkit.log(translatedItems);
-
-    if (translatedItems.length === 1) {
-      // if (addon.data.env != "development")
-      const translatedItem = await globalItemFix(
-        task.item,
-        translatedItems[0],
-        task,
+      const sourceName = selected.source;
+      const source = Object.entries(sources).find(
+        ([name, source]) =>
+          name === sourceName || source.resultSource === sourceName,
+      )?.[1];
+      const kind = task.type === "book" ? "book" : "article";
+      if (!source || source.kind !== kind)
+        throw new Error(`Unsupported source: ${selected.source}`);
+      if (task.type === "book") task.summary = getBookString("importing");
+      task.status = "processing";
+      const result = await source.service.translate(
+        selected,
+        task.item.libraryID,
+        false,
       );
-      if (task.type == "attachment") {
-        task.item.parentID = translatedItem.id;
-      } else if (task.type == "snapshot") {
-        if (task.item.isTopLevelItem()) {
-          ztoolkit.log("Translate snapshot item for webpage item");
-          const tmpJSON = translatedItem.toJSON();
-          task.item.fromJSON(tmpJSON);
-          await translatedItem.eraseTx();
-        } else {
-          ztoolkit.log("Translate snapshot attachment item");
-          const oldParentItem = task.item.parentItem!;
-          const collectionIDs = oldParentItem.getCollections();
-          task.item.parentID = translatedItem.id;
-          // When parent item is erased, the attachment item will be erased. Set new parent item before the old parent will be earsed.
-          await task.item.saveTx();
-          await oldParentItem.eraseTx();
-          translatedItem.setCollections(collectionIDs);
-          await translatedItem.saveTx();
+      if (result.status === "error") throw new Error(result.error);
+      if (result.status === "empty")
+        throw new Error("Translation returned no item.");
+      createdItems = result.items;
+      if (task.cancelled) return;
+      if (createdItems.length !== 1)
+        throw new Error(
+          `Expected one translated item, received ${createdItems.length}.`,
+        );
+      item = createdItems[0];
+      if (task.type === "book" && item.itemType !== "book")
+        throw new Error(getBookString("not-book"));
+    }
+    if (task.item.parentID !== originalParentID)
+      throw new Error(
+        "The original item's parent changed during metadata retrieval.",
+      );
+    await saveMetadataItem(task, item, selected);
+    saved = true;
+    if (task.cancelled) return;
+    task.summary = task.type === "book" ? getBookString("complete") : undefined;
+    task.status = "success";
+  } catch (error) {
+    if (task.cancelled) return;
+    task.summary = undefined;
+    task.addMsg(
+      task.aiMetadata
+        ? getString("ai-recognition-save-failed")
+        : `ERROR: ${error}`,
+    );
+    task.status = "fail";
+  } finally {
+    if (!saved) {
+      // Web translators create these items before the attachment transaction.
+      for (const item of createdItems) {
+        try {
+          await item.eraseTx();
+        } catch (error) {
+          task.addMsg(`Failed to remove translated item ${item.id}: ${error}`);
+          if (!task.cancelled) task.status = "fail";
         }
       }
-      await task.item.saveTx();
-      task.status = "success";
-    } else if (translatedItems.length > 1) {
-      task.addMsg(
-        `Multiple items (${translatedItems.length}) translated, please check details.`,
-      );
-      task.status = "fail";
-    } else {
-      task.addMsg("Translation error");
-      task.status = "fail";
     }
-  } catch (e) {
-    task.addMsg(`ERROR: ${e}`);
-    task.status = "fail";
   }
-}
-
-// Need to update data in item returned by translator.
-// Add some extra data.
-async function globalItemFix(
-  oldItem: Zotero.Item,
-  newItem: Zotero.Item,
-  task: ScraperTask,
-): Promise<Zotero.Item> {
-  if (Zotero.Prefs.get("extensions.zotero.automaticTags", true)) {
-    // Keyword tag type is automatic.
-    ztoolkit.log("update auto tags");
-    newItem.setTags(
-      newItem.getTags().map((t: { tag: string; type?: number }) => ({
-        tag: t.tag,
-        type: 1,
-      })),
-    );
-  } else {
-    // Remove automatic tags
-    ztoolkit.log("remove all tags");
-    newItem.removeAllTags();
-  }
-  // Preserve collections
-  oldItem.getCollections().forEach((cid) => newItem!.addToCollection(cid));
-  await newItem.saveTx();
-
-  // CNKI extra data fix
-  const searchResult = task.searchResults[task.resultIndex!];
-  if (searchResult.citation) {
-    ztoolkit.ExtraField.setExtraField(
-      newItem,
-      "CNKICite",
-      `${searchResult.citation}`,
-    );
-  }
-
-  if (searchResult.netFirst) {
-    ztoolkit.ExtraField.setExtraField(
-      newItem,
-      "Status",
-      "advance online publication",
-    );
-  }
-
-  // Remove unmatched Zotero fields note.
-  if (newItem.getNotes().length > 0) {
-    newItem.getNotes().forEach(async (nid) => {
-      const nItem = Zotero.Items.get(nid);
-      await nItem.eraseTx();
-    });
-  }
-
-  if (!newItem.getField("date") && searchResult.date) {
-    newItem.setField("date", searchResult.date);
-  }
-
-  return newItem;
 }

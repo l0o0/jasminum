@@ -161,25 +161,6 @@ export const onSelectionContextMenu: _ZoteroTypes.Reader.EventHandler<
   }
 };
 
-let popupIconURL: Promise<string> | undefined;
-function getPopupIconURL(): Promise<string> {
-  return (popupIconURL ??= Zotero.HTTP.request(
-    "GET",
-    "chrome://jasminum/content/icons/icon.png",
-    { responseType: "arraybuffer", successCodes: [0, 200] },
-  )
-    .then((response) => {
-      const bytes = new Uint8Array(response.response);
-      let binary = "";
-      for (const byte of bytes) binary += String.fromCharCode(byte);
-      return `data:image/png;base64,${Zotero.getMainWindow().btoa(binary)}`;
-    })
-    .catch((error) => {
-      popupIconURL = undefined;
-      throw error;
-    }));
-}
-
 // Keep a snapshot before clicking the popup moves focus away from the PDF.
 export const onSelectionPopup: _ZoteroTypes.Reader.EventHandler<
   "renderTextSelectionPopup"
@@ -196,13 +177,16 @@ export const onSelectionPopup: _ZoteroTypes.Reader.EventHandler<
     const style = doc.createElement("style");
     style.id = "jasminum-selection-actions-style";
     style.textContent = `
-      .jasminum-selection-actions button {
-        width: 100%;
-        min-width: 0;
-        padding: 4px 6px;
-        white-space: normal;
-        overflow-wrap: anywhere;
-        text-align: start;
+      .selection-popup:has(.jasminum-selection-actions) {
+        max-width: none;
+      }
+      .jasminum-selection-actions button.wide-button {
+        flex: 1 0 auto;
+        width: auto;
+        min-width: max-content;
+        padding: 0 6px;
+        white-space: nowrap;
+        text-align: center;
         border-radius: 4px;
         transition: background-color 120ms ease;
       }
@@ -223,22 +207,7 @@ export const onSelectionPopup: _ZoteroTypes.Reader.EventHandler<
   const row = doc.createElement("div");
   row.className = "jasminum-selection-actions";
   row.style.cssText =
-    "display:grid;grid-template-columns:18px minmax(0,1fr);align-items:center;gap:4px 6px;width:100%;box-sizing:border-box;padding:4px 0;";
-  const icon = doc.createElement("img");
-  icon.style.cssText =
-    "width:18px;height:18px;grid-row:span 2;object-fit:contain;";
-  void getPopupIconURL()
-    .then((url) => {
-      icon.src = url;
-    })
-    .catch((error) => {
-      ztoolkit.log("Unable to load selection popup icon", error);
-    });
-  icon.alt = "茉莉花";
-  icon.title = "Jasminum";
-  icon.width = 18;
-  icon.height = 18;
-  row.append(icon);
+    "display:flex;align-items:center;gap:4px;width:100%;box-sizing:border-box;padding:4px 0;";
   for (const kind of ["outline", "bookmark"] as const) {
     const button = doc.createElement("button");
     button.className = "wide-button";

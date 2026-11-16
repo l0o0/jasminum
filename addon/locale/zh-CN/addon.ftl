@@ -30,7 +30,8 @@ menu-metadata =
     .label = 茉莉花抓取
 menuitem-retrieveMetadata =
     .label = 抓取期刊元数据
-menuitem-retrieveMetadataForBook = 抓取书籍元数据
+menuitem-retrieveMetadataForBook =
+    .label = 抓取图书元数据
 
 menuitem-find-attachment =
     .label = 在下载文件夹中查找附件
@@ -133,10 +134,10 @@ metadata-update-unavailable = 条目已删除或不可编辑，未应用修改�
 metadata-update-stale = 条目内容已发生变化，未应用修改。请重新识别并核对。
 
 # AI full-document outline
-outline-ai-title = AI 全文大纲识别
-outline-ai-description = 每批向当前 AI 接口发送最多 5 页 PDF 图片，可能产生较多费用。识别全部完成后可预览并替换茉莉花大纲；不会自动修改 PDF 文件。扫描件位置为估计值。
+outline-ai-title = AI 大纲识别
+outline-ai-description = 先检查前 15 页的目录，校准页码后生成大纲；否则继续全文识别。每次最多发送 5 页图片，可能产生费用。请核对后保存。
 outline-ai-pdf = PDF 附件：
-outline-ai-start = 开始识别全文
+outline-ai-start = 开始识别
 outline-ai-stop = 停止
 outline-ai-stopping = 正在停止，当前请求返回后结束…
 outline-ai-stopped = 已停止，可继续识别剩余页面。
@@ -158,7 +159,7 @@ outline-ai-changed = 大纲在识别后已被修改，未覆盖。请关闭窗�
 outline-ai-saved = 已保存到 PDF，并同步茉莉花大纲。
 outline-ai-restored = 已恢复原大纲，并同步到 PDF。
 outline-ai-menu =
-    .label = AI 全文大纲识别…
+    .label = AI 大纲识别…
 outline-ai-queued = 等待识别
 outline-ai-preview = 预览大纲
 
@@ -218,3 +219,18 @@ metadata-update-select-pdf = 选择 PDF
 
 outline-promote = 提升层级（含子节点）
 outline-demote = 降低层级（含子节点）
+outline-ai-contents-check = 正在检查目录页
+outline-ai-contents-calibrating = 正在校准目录页码
+outline-ai-contents-review = 目录识别完成，AI 已检查 { $pages }/{ $total } 页图片。请核对标题和页码后保存。
+outline-ai-page-only-tip = 已校准到 PDF 页面，尚未定位标题在页内的具体位置。
+
+book-metadata-task = 抓取图书元数据
+book-metadata-searching = 正在检索图书
+book-metadata-found = 等待选择图书
+book-metadata-importing = 正在导入图书
+book-metadata-complete = 已关联图书条目
+book-metadata-empty = 未找到匹配的图书
+book-metadata-no-query = 无法获取书名，请检查 PDF 文件名。
+book-metadata-unavailable = PDF 附件不可用或已关联条目。
+book-metadata-not-book = 转换器未返回图书条目，请核对所选结果并更新图书转换器。
+book-metadata-translator-unavailable = 无法加载 { $name } 转换器，请在茉莉花设置中更新中文转换器后重试。

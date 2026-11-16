@@ -65,8 +65,11 @@ async function main() {
       "./ncpssd": { NCPSSD: Service },
       "./yiigle": { Yiigle: Service },
       "./wanfangdata": { WanfangData: Service },
+      "./douban": { Douban: Service },
+      "./wenjin": { Wenjin: Service },
       "string-similarity": {},
       "./searchChain": {},
+      "./importItem": {},
       "../../utils/llm": { getConfiguredLLMClient: () => ({}) },
       "../../utils/locale": locale,
       "../../utils/pdfMetadata": {

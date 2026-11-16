@@ -12,6 +12,7 @@ import { isChineseTopAttachment, isChinsesSnapshot } from "../utils/detect";
 import { openMetadataUpdate } from "./metadata/taskView";
 
 import { openOutlineTask } from "./outline/taskView";
+import { canRetrieveBookMetadata } from "./services";
 
 const registeredMenuIDs: string[] = [];
 
@@ -35,6 +36,7 @@ export function registerMenu() {
           const items = context.items ?? [];
           context.setVisible(
             (items.length > 0 && items.every(canRetrieveMetadata)) ||
+              (items.length > 0 && items.every(canRetrieveBookMetadata)) ||
               (__env__ === "development" &&
                 items.length === 1 &&
                 items[0].isRegularItem() &&
@@ -59,6 +61,19 @@ export function registerMenu() {
             },
           },
 
+          {
+            menuType: "menuitem",
+            l10nID: getLocaleID("menuitem-retrieveMetadataForBook"),
+            onShowing: (_event, context) =>
+              context.setVisible(
+                !!context.items?.length &&
+                  context.items.every(canRetrieveBookMetadata),
+              ),
+            onCommand: async (_event, context) => {
+              for (const item of context.items ?? [])
+                await addon.taskRunner.createAndAddTask(item, "book");
+            },
+          },
           {
             menuType: "menuitem",
             l10nID: getLocaleID("menuitem-retrieveMetadata"),

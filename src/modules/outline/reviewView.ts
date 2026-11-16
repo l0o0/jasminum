@@ -131,7 +131,9 @@ export function renderOutlineReview(task: OutlineTask, doc: Document) {
     const confidence = element(doc, "span");
     confidence.className = `outline-confidence ${h.exact ? "exact" : "approx"}`;
     setOutlineButtonIcon(confidence, "info");
-    confidence.title = t(h.exact ? "exact-tip" : "approx-tip");
+    confidence.title = t(
+      h.pageOnly ? "page-only-tip" : h.exact ? "exact-tip" : "approx-tip",
+    );
     confidence.setAttribute("aria-label", confidence.title);
     const page = element(doc, "input");
     page.className = "outline-page";

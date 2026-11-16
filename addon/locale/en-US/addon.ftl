@@ -30,7 +30,8 @@ menu-metadata =
     .label = Metadata(CN)
 menuitem-retrieveMetadata =
     .label = Find article metadata
-menuitem-retrieveMetadataForBook = Find book metadata
+menuitem-retrieveMetadataForBook =
+    .label = Find Book Metadata
 
 menuitem-find-attachment =
     .label = Find attachment in Folder
@@ -133,10 +134,10 @@ metadata-update-unavailable = The item was deleted or is not editable. No change
 metadata-update-stale = The item changed since this preview. No changes applied. Recognize again and review.
 
 # AI full-document outline
-outline-ai-title = AI Full-PDF Outline
-outline-ai-description = Send up to 5 PDF page images per request to the configured AI provider. Long documents may incur substantial usage. Preview before replacing the Jasminum outline; the PDF is not modified automatically. Scanned-page positions are approximate.
+outline-ai-title = AI Outline Recognition
+outline-ai-description = Check the first 15 pages for a table of contents and calibrate page numbers; otherwise continue scanning the PDF. Each request sends up to 5 page images and may incur charges. Review before saving.
 outline-ai-pdf = PDF attachment:
-outline-ai-start = Recognize Entire PDF
+outline-ai-start = Recognize Outline
 outline-ai-stop = Stop
 outline-ai-stopping = Stopping after the current request returns…
 outline-ai-stopped = Stopped. Continue to process the remaining pages.
@@ -158,7 +159,7 @@ outline-ai-changed = The outline changed since recognition started. Nothing over
 outline-ai-saved = Saved to the PDF and synchronized with the Jasminum outline.
 outline-ai-restored = Original outline restored and saved to the PDF.
 outline-ai-menu =
-    .label = AI Full-PDF Outline…
+    .label = AI Outline Recognition…
 outline-ai-queued = Waiting for recognition
 outline-ai-preview = Preview Outline
 
@@ -218,3 +219,18 @@ metadata-update-select-pdf = Select a PDF
 
 outline-promote = Promote entry and its children
 outline-demote = Demote entry and its children
+outline-ai-contents-check = Checking contents pages
+outline-ai-contents-calibrating = Calibrating contents page numbers
+outline-ai-contents-review = Outline from contents: AI checked { $pages }/{ $total } page images. Check headings and page numbers before saving.
+outline-ai-page-only-tip = Mapped to a PDF page; the heading position within that page has not been located.
+
+book-metadata-task = Find Book Metadata
+book-metadata-searching = Searching for books
+book-metadata-found = Select a book
+book-metadata-importing = Importing book
+book-metadata-complete = PDF linked to book
+book-metadata-empty = No matching books found
+book-metadata-no-query = Cannot determine the book title. Check the PDF filename.
+book-metadata-unavailable = The PDF is unavailable or already belongs to an item.
+book-metadata-not-book = The translator did not return a book. Check the selected result and update the book translators.
+book-metadata-translator-unavailable = Could not load the { $name } translator. Update Chinese translators in Jasminum settings and try again.
