@@ -64,6 +64,7 @@ export function registerMenu() {
           {
             menuType: "menuitem",
             l10nID: getLocaleID("menuitem-retrieveMetadataForBook"),
+            icon: `chrome://${config.addonRef}/content/icons/book-search.svg`,
             onShowing: (_event, context) =>
               context.setVisible(
                 !!context.items?.length &&
