@@ -34,8 +34,12 @@ export function getReaderPagePosition(
   const app = view._iframeWindow!.PDFViewerApplication;
   const container =
     view._iframeWindow!.document.getElementById("viewerContainer")!;
-  const pageIndex = app.pdfViewer!.currentPageNumber - 1;
-  const pageView = app.pdfViewer!.getPageView(pageIndex);
+  const viewer = app.pdfViewer!;
+  // PDF.js may mark the next page as current while the viewport still starts
+  // inside this page. Capture the first visible page to retain that position.
+  const visible = viewer._getVisiblePages() as { first?: { id: number } };
+  const pageIndex = (visible.first?.id ?? viewer.currentPageNumber) - 1;
+  const pageView = viewer.getPageView(pageIndex);
   // Ignore the gutter outside the page, as native XYZ navigation does.
   // Include the page border, just as PDF.js scrollPageIntoView does.
   const scrollX = Math.max(

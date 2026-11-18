@@ -142,6 +142,7 @@ async function main() {
           PDFViewerApplication: {
             pdfViewer: {
               currentPageNumber: 3,
+              _getVisiblePages: () => ({ first: { id: 3 } }),
               getPageView(index) {
                 assert.equal(index, 2);
                 return { div: page, viewport: { convertToPdfPoint: toPDF } };
@@ -175,6 +176,14 @@ async function main() {
         Math.abs(top + page.offsetTop + page.clientTop - scroll.scrollTop) <
           1e-8,
       );
+      // PDF.js can mark the next page as current while the viewport still
+      // starts inside the preceding page. Manual outlines must retain that point.
+      const viewer = active._iframeWindow.PDFViewerApplication.pdfViewer;
+      viewer.currentPageNumber = 4;
+      const captured = events.getReaderPagePosition(reader).position;
+      assert.equal(captured.pageIndex, 2);
+      assert.deepEqual(Array.from(captured.rects[0]), [x, y, x, y]);
+      viewer.currentPageNumber = 3;
       // Older readers without _lastView still use their own primary view.
       reader._internalReader = { _primaryView: active };
       assert.equal(events.getReaderPagePosition(reader).position.pageIndex, 2);
