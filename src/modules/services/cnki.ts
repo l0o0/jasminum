@@ -379,9 +379,12 @@ export class CNKI implements ScrapeService {
       if (doc.title != "知网节超时验证" && doc.title != "captcha") {
         // @ts-ignore - Translate is not typed.
         const translator = new Zotero.Translate.Web();
-        // CNKI.js
-        // If the loading of translators fails, the following code might return nothing.
-        translator.setTranslator("5c95b67b-41c5-4f55-b71a-48d5d7183063");
+        const cnkiTranslator = await Zotero.Translators.get(
+          "9b2409a0-34b1-480c-a9e0-1bda74eadcd7",
+        );
+        translator.setTranslator(
+          cnkiTranslator || "5c95b67b-41c5-4f55-b71a-48d5d7183063",
+        );
         translator.setDocument(doc);
         translatedItems = await translator.translate({
           libraryID: libraryID,

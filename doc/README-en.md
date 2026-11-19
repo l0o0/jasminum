@@ -15,7 +15,7 @@ Jasminum is a Zotero plugin focused on managing Chinese-language literature. It 
 
 ## Installation and compatibility
 
-This guide covers **v1.1.47**.
+This guide covers **v1.1.48**.
 
 - The plugin requires **Zotero 9.0.3 or later**. If you use an older Zotero version, check the release notes for older plugin versions.
 - **AI metadata recognition and AI outline recognition require Zotero 10 or later**, plus a model API that supports image input and JSON Object output.

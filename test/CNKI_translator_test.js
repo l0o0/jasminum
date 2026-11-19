@@ -24,8 +24,12 @@ async function getDoc(url) {
 
 async function translate(doc) {
   const translate = new Zotero.Translate.Web();
-  // CNKI
-  translate.setTranslator("5c95b67b-41c5-4f55-b71a-48d5d7183063");
+  const cnkiTranslator = await Zotero.Translators.get(
+    "9b2409a0-34b1-480c-a9e0-1bda74eadcd7",
+  );
+  translate.setTranslator(
+    cnkiTranslator || "5c95b67b-41c5-4f55-b71a-48d5d7183063",
+  );
   translate.setDocument(doc);
   const items = await translate.translate({
     libraryID: false, // 不保存
