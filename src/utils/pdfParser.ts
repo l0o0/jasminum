@@ -28,7 +28,7 @@ function isValidTitle(line: PdfParagraph): boolean {
 
 function getThesisTitle(data: PdfData): string {
   const contextLine = findParagraphInPagesReversed(data.pages, (pages) =>
-    findParagraphAfter(pages.paragraphs, keyPatterns.thesis["bfore-title"]),
+    findParagraphAfter(pages.paragraphs, keyPatterns.thesis["before-title"]),
   );
   const maxSizeLine = findMaxSizeParagraph(
     data.pages.flatMap((page) => page.paragraphs),
@@ -373,11 +373,7 @@ const breakMarks = [
   /^(中文)?摘要$/,
 ];
 
-const keyPatterns: {
-  [type in DocType]: {
-    [className: string]: RegExp[];
-  };
-} = {
+const keyPatterns = {
   article: {},
   thesis: {
     "before-title": [
@@ -391,7 +387,7 @@ const keyPatterns: {
     ],
   },
   book: {},
-};
+} satisfies Record<DocType, Record<string, RegExp[]>>;
 
 function patternsInType(type: DocType): RegExp[] {
   return Object.values(keyPatterns[type]).flat();
